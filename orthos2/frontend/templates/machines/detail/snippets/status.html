@@ -1,0 +1,26 @@
+{% load filters %}
+{% load tags %}
+<div class="title">
+  <h5>Status</h5>Last check: {{ machine.last_check }}
+</div>
+
+<table class="table table-striped small table-bordered table-fixed">
+  <thead class="thead-default">
+    <tr>
+      <th width="25%">IPv4</th>
+      <th width="25%">IPv6</th>
+      <th width="25%">SSH</th>
+      <th width="25%">Login</th>
+      <th width="25%">ABuild</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      {% status_ipv4 machine %}
+      {% status_ipv6 machine %}
+      {% status_ssh machine %}
+      {% status_login machine %}
+      {% status_abuild machine %}
+    </tr>
+  </tbody>
+</table>

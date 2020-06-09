@@ -1,0 +1,122 @@
+[
+  {
+    "model": "data.system",
+    "pk": 0,
+    "fields": {
+      "name": "BareMetal",
+      "administrative": false,
+      "virtual": false,
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.system",
+    "pk": 1,
+    "fields": {
+      "name": "BladeServer",
+      "virtual": false,
+      "administrative": false,
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.system",
+    "pk": 20,
+    "fields": {
+      "name": "VM KVM",
+      "virtual": true,
+      "administrative": false,
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.system",
+    "pk": 21,
+    "fields": {
+      "name": "VM PowerKVM",
+      "virtual": true,
+      "administrative": false,
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.system",
+    "pk": 22,
+    "fields": {
+      "name": "VM XEN",
+      "virtual": true,
+      "administrative": false,
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.system",
+    "pk": 23,
+    "fields": {
+      "name": "VM zVM",
+      "virtual": true,
+      "administrative": false,
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.system",
+    "pk": 24,
+    "fields": {
+      "name": "VM zKVM",
+      "virtual": true,
+      "administrative": false,
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.system",
+    "pk": 30,
+    "fields": {
+      "name": "LPAR PowerPC",
+      "virtual": true,
+      "administrative": false,
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.system",
+    "pk": 31,
+    "fields": {
+      "name": "LPAR zSeries",
+      "virtual": true,
+      "administrative": false,
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.system",
+    "pk": 40,
+    "fields": {
+      "name": "Desktop",
+      "virtual": false,
+      "administrative": false,
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.system",
+    "pk": 90,
+    "fields": {
+      "name": "RemotePower",
+      "virtual": false,
+      "administrative": true,
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.system",
+    "pk": 91,
+    "fields": {
+      "name": "BMC",
+      "virtual": false,
+      "administrative": true,
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  }
+]

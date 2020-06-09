@@ -1,0 +1,83 @@
+[
+  {
+    "model": "data.architecture",
+    "pk": 0,
+    "fields": {
+      "name": "x86_64",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.architecture",
+    "pk": 10,
+    "fields": {
+      "name": "ppc",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.architecture",
+    "pk": 11,
+    "fields": {
+      "name": "ppc64",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.architecture",
+    "pk": 12,
+    "fields": {
+      "name": "ppc64le",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.architecture",
+    "pk": 21,
+    "fields": {
+      "name": "aarch64",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.architecture",
+    "pk": 30,
+    "fields": {
+      "name": "s390x",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.architecture",
+    "pk": 40,
+    "fields": {
+      "name": "ia64",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.architecture",
+    "pk": 99,
+    "fields": {
+      "name": "embedded",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.architecture",
+    "pk": 100,
+    "fields": {
+      "name": "unspecified",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  }
+]

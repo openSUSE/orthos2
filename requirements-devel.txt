@@ -1,0 +1,14 @@
+# Requirements for development
+# pip install -r requirements-devel.txt
+#
+
+-r requirements.txt
+
+flake8
+isort
+pytest
+mock
+django-webtest
+
+# generate UML diagram:
+# pygraphviz

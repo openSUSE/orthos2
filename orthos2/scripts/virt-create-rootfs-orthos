@@ -1,0 +1,211 @@
+#!/bin/sh
+
+function fail
+{
+    echo $1
+    exit 1
+}
+
+function print_help
+{
+cat << EOF
+virt-create-rootfs --root /path/to/rootfs [ARGS]
+
+Create a new root file system to use for distribution containers.
+
+ARGUMENTS
+
+    -h, --help          print this help and exit
+    -r, --root          path where to create the root FS
+    -d, --distro        distribution to install
+    -a, --arch          target architecture
+    -c, --regcode       registration code for the product
+    -p, --root-pass     the root password to set in the root FS 
+    -q, --quiet         non-interactive mode 
+    --dry-run           don't actually run it
+EOF
+}
+
+ARCH=$(uname -i)
+ROOT=
+DISTRO=
+REG_CODE=
+QUIET=
+ROOT_PASS=
+DRY_RUN=
+
+while test $# -gt 0
+do
+    case $1 in
+
+    -h | --help)
+        # usage and help
+        print_help
+        ;;
+
+    -r | --root)
+        if test $# -lt 2; then
+            fail "$1 needs a value"
+        fi
+        ROOT="$2"
+        shift
+        ;;
+
+    -a | --arch)
+        if test $# -lt 2; then
+            fail "$1 needs a value"
+        fi
+        case "$2" in
+            i586 | x86_64)
+                ARCH=$2
+                shift
+                ;;
+            *)
+                fail "$1 valid values are 'i586', 'x86_64'"
+        esac
+        # Sanity checks for the arch
+        HOST_ARCH=$(uname -i)
+        case "$HOST_ARCH" in
+            i?86)
+                if test $ARCH = "x86_64"; then
+                    fail "Host won't run x86_64 container"
+                fi
+            ;;
+        esac
+        ;;
+
+    -d | --distro)
+        if test $# -lt 2; then
+            fail "$1 needs a value"
+        fi
+        case "$2" in
+            SLED-* | SLES-* | openSUSE-*)
+                DISTRO=$2
+                shift
+                ;;
+            *)
+                fail "$1 valid values are 'SLED-*', 'SLES-*', 'openSUSE-*'"
+        esac
+        ;;
+
+    -c | --regcode)
+        if test $# -lt 2; then
+            fail "$1 needs a value"
+        fi
+        REG_CODE=$2
+        shift
+        ;;
+
+    -p | --root-pass)
+        if test $# -lt 2; then
+            fail "$1 needs a value"
+        fi
+        ROOT_PASS=$2
+        shift
+        ;;
+
+    -q | --quiet)
+	QUIET="--non-interactive --quiet"
+	shift
+	;;
+
+    --dry-run)
+        DRY_RUN="yes"
+        ;;
+
+    *)
+        fail "Unknown option: $1"
+        ;;
+    esac
+
+    shift
+done
+
+if test -z "$ROOT"; then
+    fail "--root argument need to be provided"
+fi
+
+RUN=
+if test "$DRY_RUN" = "yes"; then
+    RUN="echo"
+fi
+
+function call_zypper
+{
+    $RUN zypper $QUIET  --root "$ROOT"   $*
+}
+
+function install_sle
+{
+    PRODUCT="$1"
+    VERSION="$2"
+
+    case "$VERSION" in
+        12.0)
+            # Transform into zypper internal version scheme
+            VERSION="12"
+            ;;
+        *)
+            fail "Unhandled SLE version: $VERSION"
+            ;;
+    esac
+
+    if test -z "$REG_CODE"; then
+        fail "Registration code is needed"
+    fi
+
+    # First copy the SUSE GPG keys from the host to the new root
+    rpm -qa gpg-pubkey\* --qf "%{name}-%{version}-%{release}: %{summary}\n" | \
+    grep 'gpg(SuSE Package Signing Key <build@suse.de>)' | \
+    while read -r line; do
+        key=$(echo $line | cut -d ':' -f 1)
+        tmpkey=$(mktemp)
+        rpm -qi $key | sed -n '/BEGIN/,/END/p' > "$tmpkey"
+        rpm --root "$ROOT" --import "$tmpkey"
+        rm "$tmpkey"
+    done
+
+    # SUSE Connect adds the repositories, and refreshes them,
+    # but requires the GPG key to be already imported
+    $RUN SUSEConnect -p "$PRODUCT/$VERSION/$ARCH" --root "$ROOT" -r "$REG_CODE"
+
+    # Then we install what we need
+    call_zypper in -t pattern Minimal
+}
+
+case "$DISTRO" in
+    SLED-*)
+        install_sle "SLED" "${DISTRO:5}"
+        ;;
+    SLED-* | SLES-*)
+        install_sle "SLES" "${DISTRO:5}"
+        ;;
+
+    openSUSE-*)
+        VERSION=${DISTRO:9}
+        case "$VERSION" in
+            13.1)
+                REPO="http://download.opensuse.org/distribution/13.1/repo/oss/"
+                UPDATE_REPO="http://download.opensuse.org/update/13.1/"
+                ;;
+            *)
+                fail "Unhandled openSUSE version: $VERSION"
+                ;;
+        esac
+        call_zypper ar "$REPO" "openSUSE"
+        call_zypper ar "$UPDATE_REPO" "openSUSE udpate"
+        call_zypper in --no-recommends -t pattern base
+        ;;
+esac
+
+if test "$DRY_RUN" != "yes"; then
+    echo "pts/0" >> "$ROOT/etc/securetty"
+    if test "$QUIET" != "--non-interactive" && test -z "$ROOT_PASS"; then
+	chroot "$ROOT" /usr/bin/passwd
+    fi
+    if test -n "$ROOT_PASS";then
+	sed -i 's/root:.*:\(.*:.*:.*:.*:.*:.*:.*\)/root:'$ROOT_PASS':\1/' "$ROOT"/etc/shadow
+    fi
+fi
+
+exit 0

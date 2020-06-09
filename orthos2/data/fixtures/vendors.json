@@ -1,0 +1,11 @@
+[
+  {
+    "model": "data.vendor",
+    "pk": 1,
+    "fields": {
+      "name": "Other",
+      "updated": "2016-01-01T10:00:00+00:00",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  }
+]

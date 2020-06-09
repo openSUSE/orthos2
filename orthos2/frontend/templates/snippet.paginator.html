@@ -1,0 +1,41 @@
+{% load tags %}
+
+{% if is_paginated %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+    <ul class="pagination pagination-sm" style="justify-content: center;">
+
+      {% if page_obj.has_previous %}
+      <li class="page-item">
+        <span><a class="page-link" href="?{% url_replace request 'page' page_obj.previous_page_number %}">Previous</a></span>
+      </li>
+      {% else %}
+      <li class="page-item disabled">
+        <span>
+          <a class="page-link" href="#">Previous</a>
+        </span>
+      </li>
+      {% endif %}
+
+      {% for number in page_obj.paginator.page_range %}
+      <li class="page-item {% if number == page_obj.number %}active{% endif %}">
+        <span><a class="page-link" href="?{% url_replace request 'page' number %}">{{ number }}</a></span>
+      </li>
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+      <li class="page-item">
+        <span><a class="page-link" href="?{% url_replace request 'page' page_obj.next_page_number %}">Next</a></span>
+      </li>
+      {% else %}
+      <li class="page-item disabled">
+        <span><a class="page-link" href="#">Next</a></span>
+      </li>
+      {% endif %}
+
+    </ul>
+    </div>
+  </div>
+</div>
+{% endif %}

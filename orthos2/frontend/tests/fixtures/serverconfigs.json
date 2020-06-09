@@ -1,0 +1,29 @@
+[
+  {
+    "model": "data.serverconfig",
+    "pk": 11,
+    "fields": {
+      "key": "orthos.web.welcomemessage",
+      "value": "Hello to the web frontend!",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 13,
+    "fields": {
+      "key": "orthos.bugreport.url",
+      "value": "https://github.com/openSUSE/orthos2/issues",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 14,
+    "fields": {
+      "key": "orthos.cli.url",
+      "value": "",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  }
+]

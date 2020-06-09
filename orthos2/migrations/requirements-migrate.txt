@@ -1,0 +1,7 @@
+# Requirements for development
+# pip install -r requirements-devel.txt
+#
+
+-r ../../requirements.txt
+
+psycopg2

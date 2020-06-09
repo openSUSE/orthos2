@@ -1,0 +1,294 @@
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.spacer-05 {
+  margin-left: 0.5em;
+}
+
+.spacer-10 {
+  margin-left: 1.0em;
+}
+
+.spacer-15 {
+  margin-left: 1.5em;
+}
+
+.spacer-20 {
+  margin-left: 2.0em;
+}
+
+.navbar-nav > li {
+  float: left;
+  position: relative;
+}
+
+.navbar-nav .active a::after {
+  border-bottom: 5px solid #02D35F;
+  bottom: -8px;
+  content: " ";
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.page-item.active .page-link {
+  z-index: 2;
+  color: #fff;
+  background-color: #5F5F5F;
+  border-color: #5F5F5F;
+}
+
+.page-link:focus, .page-link:hover {
+  color: #5F5F5F;
+  text-decoration: none;
+  background-color: #e9ecef;
+  border-color: #ddd;
+}
+
+.page-link {
+  position: relative;
+  display: block;
+  padding: 0.5rem 0.75rem;
+  margin-left: -1px;
+  line-height: 1.25;
+  color: #5F5F5F;
+  background-color: #fff;
+  border: 1px solid #ddd;
+}
+
+.tab-content {
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  border-radius: 0px 0px 5px 5px;
+  padding: 10px;
+}
+
+.nav-tabs {
+  margin-bottom: 0;
+}
+
+.header a:link {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.header a:hover {
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+}
+
+.header a:active {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.header a:visited {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.tab-content th, .tab-content td {
+    padding: 5px;
+    text-align: left;
+}
+
+table.table-fixed {
+    table-layout: fixed;
+}
+
+td.red {
+    background-color: #ffb3b3;
+    text-align: center;
+}
+
+td.green {
+    background-color: #ccffcc;
+    text-align: center;
+}
+
+td.blue {
+    background-color: #71D6E0;
+    text-align: center;
+}
+
+td.gray {
+    background-color: #868e96;
+    text-align: center;
+}
+
+td.yellow {
+    background-color: #ffc107;
+    text-align: center;
+}
+
+span.hint {
+  font-size: 9px;
+  color: #666;
+}
+
+.title {
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 15px;
+  font-size: 9px;
+}
+
+.title h1, h2, h3, h4, h5, h6 {
+  margin-top: 0.5em;
+  display: inline-block;
+  margin-right: 0.5em;
+}
+
+.monospace {
+  font-family: Monospace;
+}
+
+.scrolltablecontainer {
+  overflow-y: auto;
+  height: 150px;
+  border: 1px solid #ddd;
+}
+
+.scrolltablecontainer table {
+  border-spacing: 0;
+  width:100%;
+}
+
+.scrolltablecontainer th {
+    height: 0px;
+    padding-top: 0;
+    padding-bottom: 0;
+    line-height: 0;
+    visibility: hidden;
+    white-space: nowrap;
+}
+
+.scrolltablecontainer th div{
+  visibility: visible;
+  position: absolute;
+  padding: 9px 10px;
+  top: 0;
+  margin-left: -10px;
+  line-height: normal;
+}
+
+td.th {
+  background-color: #e9ecef;
+  color: #495057;
+  font-weight: bold;
+  border-bottom: 1px solid #ddd;
+}
+
+.leftnav {
+  background: #0D2C40;
+  margin-top: -15px;
+  padding: 10px;
+}
+
+.leftnav a:link {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.leftnav a:hover {
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+}
+
+.leftnav a:active {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.leftnav a:visited {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.gray a:link {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.gray a:hover {
+  color: rgba(0, 0, 0, 0.75);
+  text-decoration: none;
+}
+
+.gray a:active {
+  color: rgba(0, 0, 0, 1);
+}
+
+.gray a:visited {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.machine-statusbar {
+  float: right;
+  font-size: 12px;
+}
+
+.spinner {
+  margin-left: 1em;
+  display: block;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 18px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {display:none;}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 10px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+.text-small {
+  font-size: 9px;
+}
+
+.text-small {
+  font-size: 9px;
+}
+
+ul.errorlist {
+  font-size: 80%;
+  color: #ba2121;
+  padding: 10px;
+  border: 1px solid #ba2121;
+  border-radius: 5px;
+  list-style: none;
+}

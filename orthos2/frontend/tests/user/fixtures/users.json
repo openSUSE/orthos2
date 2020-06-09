@@ -1,0 +1,54 @@
+[
+  {
+    "model": "auth.user",
+    "pk": 0,
+    "fields": {
+      "username": "superuser",
+      "password": "pbkdf2_sha256$36000$FFhkWCuL1AyE$QFlRwInY3INsxQ0Y+N5rWGpp/3MSTsU72PRkkEnZkvs=",
+      "email": "superuser@foo.bar",
+      "is_superuser": true,
+      "is_staff": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 2,
+    "fields": {
+      "username": "user",
+      "password": "pbkdf2_sha256$36000$FFhkWCuL1AyE$QFlRwInY3INsxQ0Y+N5rWGpp/3MSTsU72PRkkEnZkvs=",
+      "email": "user@foo.bar",
+      "is_superuser": false,
+      "is_staff": false
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 3,
+    "fields": {
+      "username": "user-nopassword",
+      "email": "user-nopassword@foo.bar",
+      "is_superuser": false,
+      "is_staff": false
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 4,
+    "fields": {
+      "username": "user-nopassword-multiple1",
+      "email": "user-nopassword-multiple@foo.bar",
+      "is_superuser": false,
+      "is_staff": false
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 5,
+    "fields": {
+      "username": "user-nopassword-multiple2",
+      "email": "user-nopassword-multiple@foo.baz",
+      "is_superuser": false,
+      "is_staff": false
+    }
+  }
+]

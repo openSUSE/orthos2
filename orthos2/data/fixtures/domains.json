@@ -1,0 +1,11 @@
+[
+  {
+    "model": "data.domain",
+    "pk": 1,
+    "fields": {
+      "name": "example.our-org.tld",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  }
+]

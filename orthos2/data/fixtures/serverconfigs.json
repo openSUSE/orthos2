@@ -1,0 +1,362 @@
+[
+  {
+    "model": "data.serverconfig",
+    "pk": 0,
+    "fields": {
+      "key": "ssh.keys.paths",
+      "value": "./keys/orthos2-master-test",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 1,
+    "fields": {
+      "key": "ssh.timeout.seconds",
+      "value": "10",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 2,
+    "fields": {
+      "key": "ssh.scripts.remote.directory",
+      "value": "/tmp/orthos-scripts",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 3,
+    "fields": {
+      "key": "ssh.scripts.local.directory",
+      "value": "./scripts",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 4,
+    "fields": {
+      "key": "domain.validendings",
+      "value": "example.de, excample.com",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 5,
+    "fields": {
+      "key": "tasks.daily.executiontime",
+      "value": "00:00",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 6,
+    "fields": {
+      "key": "mail.smtprelay.fqdn",
+      "value": "relay.mail-server.de",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 7,
+    "fields": {
+      "key": "mail.subject.prefix",
+      "value": "[ORTHOS] ",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 8,
+    "fields": {
+      "key": "setup.execute.command",
+      "value":  "/usr/bin/cobbler system edit --name={{machine.fqdn}}  --profile={{choice}} --netboot=True",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 9,
+    "fields": {
+      "key": "setup.list.command",
+      "value": "/usr/bin/cobbler system  --list {{ architecture }}",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 10,
+    "fields": {
+      "key": "racktables.url.query",
+      "value": "https://racktables.our/domain.de/cgi-bin/get_location_from_racktables.pl?orthos_id={{ id }}",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 11,
+    "fields": {
+      "key": "orthos.web.welcomemessage",
+      "value": "",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 12,
+    "fields": {
+      "key": "orthos.api.welcomemessage",
+      "value": "",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 13,
+    "fields": {
+      "key": "orthos.bugreport.url",
+      "value": "https://github.de/openSUSE/orthos2/issues",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 14,
+    "fields": {
+      "key": "orthos.cli.url",
+      "value": "https://build.openSUSE.de/package/show/Devel:Archteam:Orthos/orthos-cli",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 15,
+    "fields": {
+      "key": "mail.from.address",
+      "value": "orthos-noreply@domain.de",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 16,
+    "fields": {
+      "key": "orthos.configuration.inline.begin",
+      "value": "# -- BEGIN ORTHOS SECTION --",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 17,
+    "fields": {
+      "key": "orthos.configuration.inline.end",
+      "value": "# -- END ORTHOS SECTION --",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 18,
+    "fields": {
+      "key": "orthos.debug.mail.send",
+      "value": "bool:false",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 19,
+    "fields": {
+      "key": "orthos.debug.serialconsole.write",
+      "value": "bool:false",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 20,
+    "fields": {
+      "key": "orthos.debug.dhcp.write",
+      "value": "bool:false",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 21,
+    "fields": {
+      "key": "orthos.debug.motd.write",
+      "value": "bool:false",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 22,
+    "fields": {
+      "key": "orthos.debug.setup.execute",
+      "value": "bool:false",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 23,
+    "fields": {
+      "key": "websocket.cscreen.port",
+      "value": "8010",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 24,
+    "fields": {
+      "key": "websocket.cscreen.command",
+      "value": "usr/bin/screen",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 25,
+    "fields": {
+      "key": "serialization.output.format",
+      "value": "json",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 26,
+    "fields": {
+      "key": "serialization.output.directory",
+      "value": "/tmp",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 27,
+    "fields": {
+      "key": "serialization.execute",
+      "value": "bool:true",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 28,
+    "fields": {
+      "key": "ssh.use.systemuser",
+      "value": "bool:false",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 29,
+    "fields": {
+      "key": "orthos.documentation.url",
+      "value": "https://github.com/openSUSE/orthos2/tree/development/docs",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 30,
+    "fields": {
+      "key": "mail.validdomains",
+      "value": "example.de, example.com",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 50,
+    "fields": {
+      "key": "virtualization.libvirt.bridge",
+      "value": "br0",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 51,
+    "fields": {
+      "key": "virtualization.libvirt.images.directory",
+      "value": "/var/lib/orthos/orthos-vm-images",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 52,
+    "fields": {
+      "key": "virtualization.libvirt.ovmf.path",
+      "value": "/usr/share/qemu/ovmf-x86_64-opensuse.bin",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 100,
+    "fields": {
+      "key": "serialconsole.ipmi.username",
+      "value": "",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 101,
+    "fields": {
+      "key": "serialconsole.ipmi.password",
+      "value": "",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 200,
+    "fields": {
+      "key": "remotepower.default.username",
+      "value": "",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 201,
+    "fields": {
+      "key": "remotepower.default.password",
+      "value": "",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 202,
+    "fields": {
+      "key": "remotepower.ipmi.command",
+      "value": "/usr/bin/ipmitool -I lanplus -H {{ machine.bmc.fqdn }} -U {{ ipmi.user }} -P {{ ipmi.password }} power {{ action }}",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 300,
+    "fields": {
+      "key": "cobbler.command",
+      "value": "/usr/bin/cobbler",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  }
+]

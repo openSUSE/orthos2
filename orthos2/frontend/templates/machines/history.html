@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block navbar %}
+{% include 'snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="col-md-12 bg-faded p-02 panel">
+    <a class="btn btn-secondary btn-sm" href="{% url 'frontend:detail' machine.id %}" role="button"><img width="10px" src="{% static 'frontend/images/back.png' %}"/>&nbsp;Back</a>
+  </div>
+</div>
+
+<div class="container-fluid small">
+  <table class="table table-striped table-bordered table-sm">
+    <thead class="bg-suse-green">
+      <th colspan="4">Reservation History of <strong>{{ machine.fqdn }}</strong></th>
+    </thead>
+    <tbody>
+      <tr>
+        <th>User</th>
+        <th>At</th>
+        <th>Until</th>
+        <th>Reason</th>
+      </tr>
+      {% for reservation in machine.reservationhistory_set.all|dictsortreversed:"created" %}
+      <tr>
+        <td width="10%">{{ reservation.reserved_by }}</td>
+        <td width="10%">{{ reservation.reserved_at }}</td>
+        <td width="10%">{{ reservation.reserved_until }}</td>
+        <td>{{ reservation.reserved_reason }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

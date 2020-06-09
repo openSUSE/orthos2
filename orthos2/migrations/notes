@@ -1,0 +1,4 @@
+- psql bei create mit id muss der autoincrement zähler erhöht werden (machine table)
+    orthos-next=> alter sequence <TABLENAME>_id_seq restart with 1;
+
+- IPv6 address auf server einrichten

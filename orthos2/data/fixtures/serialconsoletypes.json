@@ -1,0 +1,101 @@
+[
+  {
+    "model": "data.serialconsoletype",
+    "pk": 1,
+    "fields": {
+      "name": "Device",
+      "command": "{{ device }} {{ baud_rate }}",
+      "comment": "Device",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serialconsoletype",
+    "pk": 2,
+    "fields": {
+      "name": "Telnet",
+      "command": "telnet {{ console_server.fqdn }} {{ port }}",
+      "comment": "Telnet",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serialconsoletype",
+    "pk": 3,
+    "fields": {
+      "name": "Command",
+      "command": "{{ command }}",
+      "comment": "Command",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serialconsoletype",
+    "pk": 4,
+    "fields": {
+      "name": "IPMI",
+      "command": "ipmitool -I lanplus -H {{ machine.bmc.fqdn }} -U {{ ipmi.user}} -P {{ ipmi.password }} sol activate",
+      "comment": "IPMI",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serialconsoletype",
+    "pk": 5,
+    "fields": {
+      "name": "ILO",
+      "command": "ssh root@{{ machine.bmc.fqdn }}",
+      "comment": "ILO",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serialconsoletype",
+    "pk": 6,
+    "fields": {
+      "name": "ILO2",
+      "command": "ssh -o MACs=hmac-sha1 root@{{ machine.bmc.fqdn }}",
+      "comment": "ILO2",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serialconsoletype",
+    "pk": 7,
+    "fields": {
+      "name": "s390",
+      "command": "ssh -o StrictHostKeyChecking=no {{ machine.get_s390_hostname }}@{{ console_server.fqdn }}",
+      "comment": "s390",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serialconsoletype",
+    "pk": 8,
+    "fields": {
+      "name": "libvirt/qemu",
+      "command": "virsh -c qemu+ssh://root@{{ machine.hypervisor.fqdn }}/system console {{ machine.hostname }}",
+      "comment": "libvirt/qemu",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serialconsoletype",
+    "pk": 9,
+    "fields": {
+      "name": "libvirt/lxc",
+      "command": "virsh -c lxc+ssh://root@{{ machine.hypervisor.fqdn }}/system console {{ machine.hostname }}",
+      "comment": "libvirt/lxc",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  }
+]

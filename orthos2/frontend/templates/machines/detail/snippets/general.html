@@ -1,0 +1,69 @@
+{% load static %}
+{% load filters %}
+<div class="title">
+    <h5>General Information
+    {% if machine.bmc %}
+    <span class="spacer-05"/>
+    <i class="fa fa-heartbeat" title="Machine has BMC: {{ machine.bmc.fqdn}}"></i>
+    {% endif %}
+    {% if machine.serialconsole %}
+    <span class="spacer-05"/>
+    <i class="fa fa-desktop" title="Machine has serial console ({{ machine.serialconsole.type.name }})"></i>
+    {% endif %}
+    {% if machine.remotepower %}
+    <span class="spacer-05"/>
+    <i class="fa fa-plug" title="Machine has remote power ({{ machine.remotepower.name }})"></i>
+    {% endif %}
+    </h5>
+</div>
+
+<table class="table table-striped table-bordered small">
+  <tbody class="thead-default">
+    <tr>
+      <td class="th" width="150px">FQDN</td>
+      <td>{{ machine.fqdn }}</td>
+    </tr>
+    <tr>
+      <td class="th">Architecture</td>
+      <td>{{ machine.architecture.name }}</td>
+    </tr>
+    <tr>
+      <td class="th">IPv4</td>
+      <td>{{ machine.ipv4 }}</td>
+    </tr>
+    <tr>
+      <td class="th">IPv6</td>
+      <td>{{ machine.ipv6|default_if_none:"-" }}</td>
+    </tr>
+    <tr>
+      <td class="th">System Type</td>
+      <td>{{ machine.system }}</td>
+    </tr>
+    <tr>
+      <td class="th">Comment</td>
+      <td>{{ machine.comment }}</td>
+    </tr>
+    <tr>
+      <td class="th">Product Code</td>
+      <td>{{ machine.product_code }}</td>
+    </tr>
+    <tr>
+      <td class="th">Serial Number</td>
+      <td>{{ machine.serial_number }}</td>
+    </tr>
+    <tr>
+      <td class="th">NDA Hardware</td>
+      <td>{{ machine.nda|boolean_image:15|safe }}</td>
+    </tr>
+    {% if machine.group %}
+    <tr>
+      <td class="th">Group</td>
+      <td>{{ machine.group }}</td>
+    </tr>
+    {% endif %}
+    <tr>
+      <td class="th">ID</td>
+      <td>{{ machine.id }}</td>
+    </tr>
+  </tbody>
+</table>
