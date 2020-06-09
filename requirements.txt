@@ -2,7 +2,7 @@
 # pip install -r requirements.txt
 #
 
-django==2.2.11
+django==2.2.13
 django-extensions
 paramiko
 djangorestframework
