@@ -38,4 +38,5 @@ jobs:
         python manage.py loaddata taskmanager/fixtures/*.json
     - name: Run Tests
       run: |
+        cd orthos2
         python manage.py test
