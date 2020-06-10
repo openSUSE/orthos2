@@ -30,12 +30,6 @@ jobs:
         sudo mkdir -p /var/log/orthos2
         sudo touch /var/log/orthos2/default.log
         sudo chmod o+w /var/log/orthos2/default.log
-    - name: Create DB
-      run: |
-        cd orthos2
-        python manage.py migrate
-        python manage.py loaddata data/fixtures/*.json
-        python manage.py loaddata taskmanager/fixtures/*.json
     - name: Run Tests
       run: |
         cd orthos2
