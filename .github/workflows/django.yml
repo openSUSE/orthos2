@@ -27,4 +27,5 @@ jobs:
         pip install -r requirements.txt
     - name: Run Tests
       run: |
+        cd orthos2
         python manage.py test
