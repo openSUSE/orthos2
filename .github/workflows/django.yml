@@ -21,9 +21,11 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: pycodestyle
+    - name: install pycodestyle
       run: |
         python -m pip install pycodestyle
+    - name: run pycodestyle
+      run: |
         pycodestyle .
     - name: Install Dependencies
       run: |
