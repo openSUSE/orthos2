@@ -52,7 +52,6 @@ class RegenerateCobbler(Task):
 
                 logger.info("Generate Cobbler configuration for '{}'...".format(domain.name))
 
-
                 # deploy generated DHCP files on all servers belonging to one domain
                 for server in domain.cobbler_server.all():
 

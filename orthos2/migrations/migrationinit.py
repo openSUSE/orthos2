@@ -6,12 +6,11 @@
 import sys
 import os
 import json
+import orthos2.wsgi
+import configparser
 proj_path = os.path.dirname(os.path.abspath(__file__)) + '/../'
 sys.path.append(proj_path)
 
-import orthos2.wsgi
-
-import configparser
 
 try:
     config = configparser.ConfigParser()

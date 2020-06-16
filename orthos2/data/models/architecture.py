@@ -59,6 +59,7 @@ class Architecture(models.Model):
         null=True,
         blank=True
     )
+
     def __init__(self, *args, **kwargs):
         """
         Deep copy object for comparison in `save()`.

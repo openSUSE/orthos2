@@ -26,7 +26,7 @@ import termios
 if int(sys.version[0]) == 3:
     import urllib.request as urllib_request
     from urllib.parse import urlencode
-    from configparser import ConfigParser, RawConfigParser
+    from configparser import RawConfigParser
     PYTHON_VERSION = 3
 else:
     print("Python version not supported!")
