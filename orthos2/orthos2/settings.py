@@ -221,6 +221,9 @@ STATIC_URL = '/static/'
 # Login URL
 LOGIN_URL = '/login/'
 
+# On logout, go back to the starting page
+LOGOUT_REDIRECT_URL = "/"
+
 
 # Override messages settings for Bootstrap
 MESSAGE_TAGS = {
