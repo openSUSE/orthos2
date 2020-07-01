@@ -9,7 +9,8 @@ class ChangeView(WebTest):
 
     fixtures = [
         'data/fixtures/systems.json',
-        'frontend/tests/user/fixtures/users.json'
+        'frontend/tests/user/fixtures/users.json',
+        'data/fixtures/architectures.json'
     ]
 
     @mock.patch('data.models.machine.is_dns_resolvable')
