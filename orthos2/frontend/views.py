@@ -895,7 +895,7 @@ def login(request, template_name='registration/login.html',
                 user = User.objects.get(username=request.POST['username'])
                 if user.is_active and not user.password:
                     messages.info(request, "Please receive your inital password.")
-                    url = reverse('password_restore')
+                    url = reverse('frontend:password_restore')
                     return redirect('{}?user_id={}'.format(url, user.pk))
             except Exception:
                 pass
