@@ -595,6 +595,10 @@ def users_create(request):
     if request.method == 'GET':
         form = NewUserForm()
     else:
+        if not ServerConfig.objects.bool_by_key('auth.account.creation'):
+            messages.error(request, "Account creation is disabled!")
+            return redirect('frontend:login')
+
         form = NewUserForm(request.POST)
 
         if form.is_valid():
@@ -913,6 +917,8 @@ def login(request, template_name='registration/login.html',
         redirect_field_name: redirect_to,
         'site': current_site,
         'site_name': current_site.name,
+        'account_creation': ServerConfig.objects.bool_by_key(
+            'auth.account.creation'),
         'title': 'Login'
     }
     if extra_context is not None:
