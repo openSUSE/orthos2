@@ -282,6 +282,15 @@
     "model": "data.serverconfig",
     "pk": null,
     "fields": {
+      "key": "auth.account.creation",
+      "value": "bool:true",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": null,
+    "fields": {
       "key": "virtualization.libvirt.bridge",
       "value": "br0",
       "created": "2016-01-01T10:00:00+00:00"

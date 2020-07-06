@@ -6,12 +6,14 @@
   <li class="nav-item {% active_view request 'login' %}">
     <a class="nav-link" href="{% url 'frontend:login' %}">Login</a>
   </li>
+  {% if account_creation %}
   <li class="nav-item {% active_view request 'create_user' %}">
     <a class="nav-link" href="{% url 'frontend:create_user' %}">Create Account</a>
   </li>
   <li class="nav-item {% active_view request 'password_restore' %}">
     <a class="nav-link" href="{% url 'frontend:password_restore' %}">Restore Password</a>
   </li>
+  {% endif %}
 </ul>
 {% endblock %}
 
