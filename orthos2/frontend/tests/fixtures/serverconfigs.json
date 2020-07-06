@@ -34,5 +34,14 @@
       "value": "example.de, example.com, foo.bar",
       "created": "2016-01-01T10:00:00+00:00"
     }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": 31,
+    "fields": {
+      "key": "auth.account.creation",
+      "value": "bool:true",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
   }
 ]
