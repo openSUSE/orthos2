@@ -1,7 +1,7 @@
 [
   {
     "model": "data.serverconfig",
-    "pk": 0,
+    "pk": null,
     "fields": {
       "key": "ssh.keys.paths",
       "value": "./keys/orthos2-master-test",
@@ -10,7 +10,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 1,
+    "pk": null,
     "fields": {
       "key": "ssh.timeout.seconds",
       "value": "10",
@@ -19,7 +19,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 2,
+    "pk": null,
     "fields": {
       "key": "ssh.scripts.remote.directory",
       "value": "/tmp/orthos-scripts",
@@ -28,7 +28,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 3,
+    "pk": null,
     "fields": {
       "key": "ssh.scripts.local.directory",
       "value": "./scripts",
@@ -37,7 +37,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 4,
+    "pk": null,
     "fields": {
       "key": "domain.validendings",
       "value": "example.de, excample.com",
@@ -46,7 +46,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 5,
+    "pk": null,
     "fields": {
       "key": "tasks.daily.executiontime",
       "value": "00:00",
@@ -55,7 +55,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 6,
+    "pk": null,
     "fields": {
       "key": "mail.smtprelay.fqdn",
       "value": "relay.mail-server.de",
@@ -64,7 +64,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 7,
+    "pk": null,
     "fields": {
       "key": "mail.subject.prefix",
       "value": "[ORTHOS] ",
@@ -73,7 +73,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 8,
+    "pk": null,
     "fields": {
       "key": "setup.execute.command",
       "value":  "/usr/bin/cobbler system edit --name={{machine.fqdn}}  --profile={{choice}} --netboot=True",
@@ -82,7 +82,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 9,
+    "pk": null,
     "fields": {
       "key": "setup.list.command",
       "value": "/usr/bin/cobbler system  --list {{ architecture }}",
@@ -91,7 +91,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 10,
+    "pk": null,
     "fields": {
       "key": "racktables.url.query",
       "value": "https://racktables.our/domain.de/cgi-bin/get_location_from_racktables.pl?orthos_id={{ id }}",
@@ -100,7 +100,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 11,
+    "pk": null,
     "fields": {
       "key": "orthos.web.welcomemessage",
       "value": "",
@@ -109,7 +109,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 12,
+    "pk": null,
     "fields": {
       "key": "orthos.api.welcomemessage",
       "value": "",
@@ -118,7 +118,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 13,
+    "pk": null,
     "fields": {
       "key": "orthos.bugreport.url",
       "value": "https://github.de/openSUSE/orthos2/issues",
@@ -127,7 +127,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 14,
+    "pk": null,
     "fields": {
       "key": "orthos.cli.url",
       "value": "https://build.openSUSE.de/package/show/Devel:Archteam:Orthos/orthos-cli",
@@ -136,7 +136,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 15,
+    "pk": null,
     "fields": {
       "key": "mail.from.address",
       "value": "orthos-noreply@domain.de",
@@ -145,7 +145,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 16,
+    "pk": null,
     "fields": {
       "key": "orthos.configuration.inline.begin",
       "value": "# -- BEGIN ORTHOS SECTION --",
@@ -154,7 +154,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 17,
+    "pk": null,
     "fields": {
       "key": "orthos.configuration.inline.end",
       "value": "# -- END ORTHOS SECTION --",
@@ -163,7 +163,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 18,
+    "pk": null,
     "fields": {
       "key": "orthos.debug.mail.send",
       "value": "bool:false",
@@ -172,7 +172,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 19,
+    "pk": null,
     "fields": {
       "key": "orthos.debug.serialconsole.write",
       "value": "bool:false",
@@ -181,7 +181,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 20,
+    "pk": null,
     "fields": {
       "key": "orthos.debug.dhcp.write",
       "value": "bool:false",
@@ -190,7 +190,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 21,
+    "pk": null,
     "fields": {
       "key": "orthos.debug.motd.write",
       "value": "bool:false",
@@ -199,7 +199,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 22,
+    "pk": null,
     "fields": {
       "key": "orthos.debug.setup.execute",
       "value": "bool:false",
@@ -208,7 +208,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 23,
+    "pk": null,
     "fields": {
       "key": "websocket.cscreen.port",
       "value": "8010",
@@ -217,7 +217,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 24,
+    "pk": null,
     "fields": {
       "key": "websocket.cscreen.command",
       "value": "usr/bin/screen",
@@ -226,7 +226,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 25,
+    "pk": null,
     "fields": {
       "key": "serialization.output.format",
       "value": "json",
@@ -235,7 +235,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 26,
+    "pk": null,
     "fields": {
       "key": "serialization.output.directory",
       "value": "/tmp",
@@ -244,7 +244,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 27,
+    "pk": null,
     "fields": {
       "key": "serialization.execute",
       "value": "bool:true",
@@ -253,7 +253,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 28,
+    "pk": null,
     "fields": {
       "key": "ssh.use.systemuser",
       "value": "bool:false",
@@ -262,7 +262,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 29,
+    "pk": null,
     "fields": {
       "key": "orthos.documentation.url",
       "value": "https://github.com/openSUSE/orthos2/tree/development/docs",
@@ -271,7 +271,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 30,
+    "pk": null,
     "fields": {
       "key": "mail.validdomains",
       "value": "example.de, example.com",
@@ -280,7 +280,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 50,
+    "pk": null,
     "fields": {
       "key": "virtualization.libvirt.bridge",
       "value": "br0",
@@ -289,7 +289,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 51,
+    "pk": null,
     "fields": {
       "key": "virtualization.libvirt.images.directory",
       "value": "/var/lib/orthos/orthos-vm-images",
@@ -298,7 +298,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 52,
+    "pk": null,
     "fields": {
       "key": "virtualization.libvirt.ovmf.path",
       "value": "/usr/share/qemu/ovmf-x86_64-opensuse.bin",
@@ -307,7 +307,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 100,
+    "pk": null,
     "fields": {
       "key": "serialconsole.ipmi.username",
       "value": "",
@@ -316,7 +316,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 101,
+    "pk": null,
     "fields": {
       "key": "serialconsole.ipmi.password",
       "value": "",
@@ -325,7 +325,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 200,
+    "pk": null,
     "fields": {
       "key": "remotepower.default.username",
       "value": "",
@@ -334,7 +334,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 201,
+    "pk": null,
     "fields": {
       "key": "remotepower.default.password",
       "value": "",
@@ -343,7 +343,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 202,
+    "pk": null,
     "fields": {
       "key": "remotepower.ipmi.command",
       "value": "/usr/bin/ipmitool -I lanplus -H {{ machine.bmc.fqdn }} -U {{ ipmi.user }} -P {{ ipmi.password }} power {{ action }}",
@@ -352,7 +352,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 300,
+    "pk": null,
     "fields": {
       "key": "cobbler.command",
       "value": "/usr/bin/cobbler",

@@ -1,7 +1,7 @@
 [
   {
     "model": "auth.user",
-    "pk": 0,
+    "pk": null,
     "fields": {
       "username": "superuser",
       "password": "pbkdf2_sha256$36000$FFhkWCuL1AyE$QFlRwInY3INsxQ0Y+N5rWGpp/3MSTsU72PRkkEnZkvs=",
@@ -12,7 +12,7 @@
   },
   {
     "model": "auth.user",
-    "pk": 2,
+    "pk": null,
     "fields": {
       "username": "user",
       "password": "pbkdf2_sha256$36000$FFhkWCuL1AyE$QFlRwInY3INsxQ0Y+N5rWGpp/3MSTsU72PRkkEnZkvs=",
@@ -23,7 +23,7 @@
   },
   {
     "model": "auth.user",
-    "pk": 3,
+    "pk": null,
     "fields": {
       "username": "user-nopassword",
       "email": "user-nopassword@foo.bar",
@@ -33,7 +33,7 @@
   },
   {
     "model": "auth.user",
-    "pk": 4,
+    "pk": null,
     "fields": {
       "username": "user-nopassword-multiple1",
       "email": "user-nopassword-multiple@foo.bar",
@@ -43,7 +43,7 @@
   },
   {
     "model": "auth.user",
-    "pk": 5,
+    "pk": null,
     "fields": {
       "username": "user-nopassword-multiple2",
       "email": "user-nopassword-multiple@foo.baz",

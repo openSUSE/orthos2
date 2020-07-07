@@ -1,7 +1,7 @@
 [
   {
     "model": "data.architecture",
-    "pk": 0,
+    "pk": null,
     "fields": {
       "name": "x86_64",
       "created": "2016-01-01T10:00:00+00:00",
@@ -10,7 +10,7 @@
   },
   {
     "model": "data.architecture",
-    "pk": 10,
+    "pk": null,
     "fields": {
       "name": "ppc",
       "created": "2016-01-01T10:00:00+00:00",
@@ -19,7 +19,7 @@
   },
   {
     "model": "data.architecture",
-    "pk": 11,
+    "pk": null,
     "fields": {
       "name": "ppc64",
       "created": "2016-01-01T10:00:00+00:00",
@@ -28,7 +28,7 @@
   },
   {
     "model": "data.architecture",
-    "pk": 12,
+    "pk": null,
     "fields": {
       "name": "ppc64le",
       "created": "2016-01-01T10:00:00+00:00",
@@ -37,7 +37,7 @@
   },
   {
     "model": "data.architecture",
-    "pk": 21,
+    "pk": null,
     "fields": {
       "name": "aarch64",
       "created": "2016-01-01T10:00:00+00:00",
@@ -46,7 +46,7 @@
   },
   {
     "model": "data.architecture",
-    "pk": 30,
+    "pk": null,
     "fields": {
       "name": "s390x",
       "created": "2016-01-01T10:00:00+00:00",
@@ -55,7 +55,7 @@
   },
   {
     "model": "data.architecture",
-    "pk": 40,
+    "pk": null,
     "fields": {
       "name": "ia64",
       "created": "2016-01-01T10:00:00+00:00",
@@ -64,7 +64,7 @@
   },
   {
     "model": "data.architecture",
-    "pk": 99,
+    "pk": null,
     "fields": {
       "name": "embedded",
       "created": "2016-01-01T10:00:00+00:00",
@@ -73,7 +73,7 @@
   },
   {
     "model": "data.architecture",
-    "pk": 100,
+    "pk": null,
     "fields": {
       "name": "unspecified",
       "created": "2016-01-01T10:00:00+00:00",
