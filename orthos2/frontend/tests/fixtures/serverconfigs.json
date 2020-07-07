@@ -1,7 +1,7 @@
 [
   {
     "model": "data.serverconfig",
-    "pk": 11,
+    "pk": null,
     "fields": {
       "key": "orthos.web.welcomemessage",
       "value": "Hello to the web frontend!",
@@ -10,7 +10,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 13,
+    "pk": null,
     "fields": {
       "key": "orthos.bugreport.url",
       "value": "https://github.com/openSUSE/orthos2/issues",
@@ -19,7 +19,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 14,
+    "pk": null,
     "fields": {
       "key": "orthos.cli.url",
       "value": "",
@@ -28,7 +28,7 @@
   },
   {
     "model": "data.serverconfig",
-    "pk": 30,
+    "pk": null,
     "fields": {
       "key": "mail.validdomains",
       "value": "example.de, example.com, foo.bar",
