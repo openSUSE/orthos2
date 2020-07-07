@@ -174,7 +174,7 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'formatter': 'syslog',
-            'filename': '/var/log/orthos2/default.log',
+            'filename': 'default.log',
         },
     },
     'loggers': {
