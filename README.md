@@ -1,3 +1,4 @@
+[![Gitter](https://badges.gitter.im/orthos2/community.svg)](https://gitter.im/orthos2/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 # Orthos - Machine Administration Tool
 
 ## Introduction
