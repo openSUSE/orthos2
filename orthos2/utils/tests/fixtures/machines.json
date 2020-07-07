@@ -1,7 +1,7 @@
 [
 {
   "model": "data.machine",
-  "pk": 1,
+  "pk": null,
   "fields": {
     "enclosure": 1,
     "fqdn": "machine.foo.bar.de",

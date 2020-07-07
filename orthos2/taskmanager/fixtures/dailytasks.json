@@ -1,7 +1,7 @@
 [
    {
       "model":"taskmanager.dailytask",
-      "pk":1,
+      "pk": null,
       "fields":{
          "name": "DailyMachineChecks",
          "module": "taskmanager.tasks.daily",
@@ -17,7 +17,7 @@
    },
    {
       "model":"taskmanager.dailytask",
-      "pk":2,
+      "pk": null,
       "fields":{
          "name": "DailyCheckReservationExpirations",
          "module": "taskmanager.tasks.daily",

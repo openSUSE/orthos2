@@ -1,7 +1,7 @@
 [
   {
     "model": "data.system",
-    "pk": 0,
+    "pk": null,
     "fields": {
       "name": "BareMetal",
       "administrative": false,
@@ -11,7 +11,7 @@
   },
   {
     "model": "data.system",
-    "pk": 1,
+    "pk": null,
     "fields": {
       "name": "BladeServer",
       "virtual": false,
@@ -21,7 +21,7 @@
   },
   {
     "model": "data.system",
-    "pk": 20,
+    "pk": null,
     "fields": {
       "name": "VM KVM",
       "virtual": true,
@@ -31,7 +31,7 @@
   },
   {
     "model": "data.system",
-    "pk": 21,
+    "pk": null,
     "fields": {
       "name": "VM PowerKVM",
       "virtual": true,
@@ -41,7 +41,7 @@
   },
   {
     "model": "data.system",
-    "pk": 22,
+    "pk": null,
     "fields": {
       "name": "VM XEN",
       "virtual": true,
@@ -51,7 +51,7 @@
   },
   {
     "model": "data.system",
-    "pk": 23,
+    "pk": null,
     "fields": {
       "name": "VM zVM",
       "virtual": true,
@@ -61,7 +61,7 @@
   },
   {
     "model": "data.system",
-    "pk": 24,
+    "pk": null,
     "fields": {
       "name": "VM zKVM",
       "virtual": true,
@@ -71,7 +71,7 @@
   },
   {
     "model": "data.system",
-    "pk": 30,
+    "pk": null,
     "fields": {
       "name": "LPAR PowerPC",
       "virtual": true,
@@ -81,7 +81,7 @@
   },
   {
     "model": "data.system",
-    "pk": 31,
+    "pk": null,
     "fields": {
       "name": "LPAR zSeries",
       "virtual": true,
@@ -91,7 +91,7 @@
   },
   {
     "model": "data.system",
-    "pk": 40,
+    "pk": null,
     "fields": {
       "name": "Desktop",
       "virtual": false,
@@ -101,7 +101,7 @@
   },
   {
     "model": "data.system",
-    "pk": 90,
+    "pk": null,
     "fields": {
       "name": "RemotePower",
       "virtual": false,
@@ -111,7 +111,7 @@
   },
   {
     "model": "data.system",
-    "pk": 91,
+    "pk": null,
     "fields": {
       "name": "BMC",
       "virtual": false,

@@ -1,7 +1,7 @@
 [
   {
     "model": "data.platform",
-    "pk": 1,
+    "pk": null,
     "fields": {
       "name": "Other",
       "vendor": 1,

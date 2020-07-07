@@ -2,7 +2,7 @@
 [
   {
     "model": "data.enclosure",
-    "pk": 1,
+    "pk": null,
     "fields": {
       "name": "test",
       "platform": 1,
@@ -13,7 +13,7 @@
   },
   {
     "model": "data.machine",
-    "pk": 1,
+    "pk": null,
     "fields": {
       "enclosure": 1,
       "fqdn": "test.testing.suse.de",
@@ -50,7 +50,7 @@
   },
   {
     "model": "data.machine",
-    "pk": 2,
+    "pk": null,
     "fields": {
       "enclosure": 1,
       "fqdn": "test-sp.testing.suse.de",
@@ -75,7 +75,7 @@
   },
   {
     "model": "data.installation",
-    "pk": 1,
+    "pk": null,
     "fields": {
       "machine": 1,
       "active": true,
@@ -87,7 +87,7 @@
   },
   {
     "model": "data.networkinterface",
-    "pk": 1,
+    "pk": null,
     "fields": {
       "machine": 1,
       "primary": true,
@@ -101,7 +101,7 @@
   },
   {
     "model": "data.networkinterface",
-    "pk": 2,
+    "pk": null,
     "fields": {
       "machine": 1,
       "primary": false,
@@ -115,7 +115,7 @@
   },
   {
     "model": "data.networkinterface",
-    "pk": 3,
+    "pk": null,
     "fields": {
       "machine": 1,
       "primary": false,
