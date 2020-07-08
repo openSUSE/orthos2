@@ -357,3 +357,16 @@ def format_cli_form_errors(form):
         for error in errors:
             output += '* {} [{}]\n'.format(error, label)
     return output.rstrip('\n')
+
+
+def safe_get_or_default(model, key, value, field, default=None):
+    """
+    Allows access to a `field` of a specified `model`. `key` and `value` is
+    needed for filtering down to the expected object. If there is no object,
+    multiple objects or any other exception, `default` gets returned.
+    """
+    try:
+        return getattr(model.objects.get(**{key: value}), field)
+    except Exception:
+        pass
+    return default
