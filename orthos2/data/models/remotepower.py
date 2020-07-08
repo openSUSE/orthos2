@@ -105,6 +105,13 @@ class RemotePower(models.Model):
         (Type.S390, 's390')
     )
 
+    def limit_remote_power_device_choices():
+        """
+        Allow only devices of type remote power. This needs to be in callable
+        form because of later assignment of the type variable.
+        """
+        return {'system': System.Type.REMOTEPOWER}
+
     machine = models.OneToOneField(
         'data.Machine',
         on_delete=models.CASCADE,
@@ -129,7 +136,7 @@ class RemotePower(models.Model):
     remote_power_device = models.ForeignKey(
         'data.Machine',
         related_name='+',
-        limit_choices_to={'system': System.Type.REMOTEPOWER},
+        limit_choices_to=limit_remote_power_device_choices,
         null=True,
         blank=True,
         on_delete=models.CASCADE
