@@ -39,4 +39,5 @@ jobs:
     - name: Run Tests
       run: |
         cd orthos2
+        sh ./bin/install_all_fixtures.sh
         python manage.py test
