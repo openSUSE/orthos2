@@ -2,20 +2,33 @@ from copy import deepcopy
 
 from django.db import models
 
+from utils.misc import safe_get_or_default
+
 
 class Architecture(models.Model):
 
     class Type:
-        X86_64 = 0
-        PPC = 10
-        PPC64 = 11
-        PPC64LE = 12
-        ARMV7 = 20
-        AARCH64 = 21
-        S390X = 30
-        IA64 = 40
-        EMBEDDED = 99
-        UNSPECIFIED = 100
+
+        @classmethod
+        def prep(cls):
+            """
+            Preparation of const variables for fast and developer-friendly
+            handling.
+            """
+            cls.X86_64 = safe_get_or_default(
+                    Architecture,
+                    'name',
+                    'x86_64',
+                    'pk',
+                    -1
+            )
+            cls.PPC64LE = safe_get_or_default(
+                    Architecture,
+                    'name',
+                    'ppc64le',
+                    'pk',
+                    -1
+            )
 
     name = models.CharField(
         max_length=200,

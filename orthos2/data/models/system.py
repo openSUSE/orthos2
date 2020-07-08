@@ -1,22 +1,40 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
+from utils.misc import safe_get_or_default
+
 
 class System(models.Model):
 
     class Type:
-        BAREMETAL = 0
-        BLADESERVER = 1
-        KVM_VM = 20
-        PKVM_VM = 21
-        XEN_VM = 22
-        ZVM_VM = 23
-        ZVM_KVM = 24
-        LPAR_POWERPC = 30
-        LPAR_ZSERIES = 31
-        DESKTOP = 40
-        REMOTEPOWER = 90
-        BMC = 91
+
+        @classmethod
+        def prep(cls):
+            """
+            Preparation of const variables for fast and developer-friendly
+            handling.
+            """
+            cls.BAREMETAL = safe_get_or_default(
+                    System,
+                    'name',
+                    'BareMetal',
+                    'pk',
+                    -1
+            )
+            cls.REMOTEPOWER = safe_get_or_default(
+                    System,
+                    'name',
+                    'RemotePower',
+                    'pk',
+                    -1
+            )
+            cls.BMC = safe_get_or_default(
+                    System,
+                    'name',
+                    'BMC',
+                    'pk',
+                    -1
+            )
 
     name = models.CharField(
         max_length=200,
