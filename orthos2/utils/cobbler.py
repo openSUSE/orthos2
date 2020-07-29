@@ -1,13 +1,6 @@
 import logging
-import os
-
-import netaddr.ip
-from django.db.models import Q
 from django.template import Context, Template
-
-from data.models import Domain, Machine, ServerConfig, Architecture
-from utils.ipmf import IPMatchFilter
-from utils.misc import DHCPRecordOption, get_hostname, get_ipv4, get_ipv6
+from data.models import Machine, ServerConfig
 from utils.ssh import SSH
 
 logger = logging.getLogger('utils')
@@ -18,7 +11,7 @@ class CobblerException(Exception):
 
 
 def get_default_profile(machine):
-    default= machine.architecture.default_profile
+    default = machine.architecture.default_profile
     if default:
         return default
     raise ValueError("Machine {machine} has no default profile".format(machine=machine.fqdn))
