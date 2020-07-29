@@ -18,7 +18,10 @@ class CobblerException(Exception):
 
 
 def get_default_profile(machine):
-    return machine.architecture.default_profile
+    default= machine.architecture.default_profile
+    if default:
+        return default
+    raise ValueError("Machine {machine} has no default profile".format(machine=machine.fqdn))
 
 
 def create_cobbler_options(machine):
@@ -92,8 +95,9 @@ class CobblerServer:
     def deploy(self):
         self.connect()
         if not self.is_installed():
-            raise SystemError("No Cobbler service found: {}".format(self._fqdn))
-
+            raise CobblerException("No Cobbler service found: {}".format(self._fqdn))
+        if not self.is_running():
+            raise CobblerException("Cobbler server is not running: {}".format(self._fqdn))
         machines = Machine.active_machines.filter(fqdn_domain=self._domain.pk)
         cobbler_machines = self.get_machines()
         cobbler_commands = []
@@ -105,7 +109,8 @@ class CobblerServer:
         for command in cobbler_commands:  # TODO: Convert this to a single ssh call (performance)
             _, stderr, exitcode = self._conn.execute(command)
             if exitcode:
-                logger.error("failed to execute %s on %s", command, self._fqdn)
+                logger.error("failed to execute %s on %s with error %s",
+                             command, self._fqdn, stderr)
 
         self.close()
 
