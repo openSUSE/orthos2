@@ -800,7 +800,8 @@ class OrthosLineReader:
         try:
             result = input(prompt)
             if not history and len(result) > 0:
-                readline.remove_history_item(readline.get_current_history_length() - 1)
+                if sys.stdin.isatty():
+                    readline.remove_history_item(readline.get_current_history_length() - 1)
 
         finally:
             if default:
