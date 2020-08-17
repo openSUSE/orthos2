@@ -1,7 +1,7 @@
 import collections
 import logging
 import os
-
+from django.conf import settings
 from data.models import Domain, Machine, ServerConfig
 from taskmanager.models import Task
 from utils.cobbler import CobblerServer
@@ -33,7 +33,7 @@ class RegenerateCobbler(Task):
         Executes the task.
         """
 
-        if not ServerConfig.objects.bool_by_key('orthos.debug.dhcp.write'):
+        if settings.DEBUG and not ServerConfig.objects.bool_by_key('orthos.debug.dhcp.write'):
             logger.warning("Disabled: set 'orthos.debug.dhcp.write' to 'true'")
             return
 
