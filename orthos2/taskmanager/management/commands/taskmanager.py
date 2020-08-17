@@ -39,7 +39,7 @@ class Command(BaseCommand):
         if (not settings.DEBUG) and (run_as_user != settings.RUN_AS_USER):
             logger.error(
                 "TaskManager needs to be run as user '{}', not '{}'! Exit.".format(
-                    settings.USER,
+                    settings.RUN_AS_USER,
                     run_as_user
                 )
             )
