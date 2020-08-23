@@ -8,3 +8,4 @@ paramiko
 djangorestframework
 validators
 netaddr
+django-auth-ldap

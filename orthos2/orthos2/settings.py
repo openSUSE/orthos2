@@ -17,7 +17,9 @@ import sys
 from logging.handlers import SysLogHandler
 from socket import getfqdn, gethostbyname, gethostname
 
+import ldap
 from django.contrib.messages import constants as messages
+from django_auth_ldap.config import GroupOfNamesType, LDAPSearch
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -133,6 +135,27 @@ DATE_INPUT_FORMATS = [
     '%Y-%m-%d',
 ]
 
+# LDAP authentication
+AUTH_LDAP_SERVER_URI = os.environ.get('LDAP_HOST', default="")
+AUTH_LDAP_BIND_DN = os.environ.get('LDAP_USERNAME')
+AUTH_LDAP_BIND_PASSWORD = os.environ.get('LDAP_PASSWORD')
+AUTH_LDAP_USER_SEARCH = LDAPSearch(
+    'dc=example,dc=com',
+    ldap.SCOPE_SUBTREE,
+    '(uid=%(user)s)',
+)
+AUTH_LDAP_USER_ATTR_MAP = {
+    'username': 'uid',
+    'first_name': 'givenName',
+    'last_name': 'sn',
+    'email': 'mail',
+}
+AUTH_LDAP_ALWAYS_UPDATE_USER = True
+AUTH_LDAP_CACHE_TIMEOUT = 3600
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
@@ -206,6 +229,10 @@ LOGGING = {
             'handlers': DEFAULT_LOG,
             'level': 'DEBUG',
         },
+        "django_auth_ldap": {
+            "handlers": DEFAULT_LOG,
+            "level": "DEBUG",
+        }
     }
 }
 
