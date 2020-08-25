@@ -119,11 +119,11 @@ class CobblerMethodTests(TestCase):
         server._conn = conn
         self.assertFalse(server.is_installed())
         expected = [mock.call.check_path("/cobbler/path", "-x")]
-        self.assertEquals(expected, server._conn.mock_calls)
+        self.assertEqual(expected, server._conn.mock_calls)
         server._conn.mock_calls = []
         server._conn.check_path.return_value = True
         self.assertTrue(server.is_installed())
-        self.assertEquals(expected, server._conn.mock_calls)
+        self.assertEqual(expected, server._conn.mock_calls)
 
     def test_cobbler_is_running(self):
         server = cobbler.CobblerServer("test.foo.bar", "foo.bar")
@@ -135,7 +135,7 @@ class CobblerMethodTests(TestCase):
         running = server.is_running()
         self.assertTrue(running)
         expected = [mock.call.execute("/cobbler/path version")]
-        self.assertEquals(expected, conn.mock_calls)
+        self.assertEqual(expected, conn.mock_calls)
         conn.execute.return_value = ["", "cobblerd does not appear to be running/accessible: "
                                      "ConnectionRefusedError(111, 'Connection refused')", 155]
         running = server.is_running()
@@ -148,9 +148,9 @@ class CobblerMethodTests(TestCase):
         conn.execute.return_value = [["test1.foo.bar", "test2.foo.bar"], "", 0]
         server._conn = conn
         machines = server.get_machines()
-        self.assertEquals(machines, ["test1.foo.bar", "test2.foo.bar"])
+        self.assertEqual(machines, ["test1.foo.bar", "test2.foo.bar"])
         expected = [mock.call.execute("/cobbler/path system list")]
-        self.assertEquals(expected, server._conn.mock_calls)
+        self.assertEqual(expected, server._conn.mock_calls)
         conn.execute.return_value = [["test1.foo.bar", "test2.foo.bar"], "", 1]
         self.assertRaises(cobbler.CobblerException, server.get_machines)
 
