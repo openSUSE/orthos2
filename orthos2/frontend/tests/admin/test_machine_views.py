@@ -40,21 +40,21 @@ class ChangeView(WebTest):
     def test_visible_fieldsets_non_administrative_systems(self):
         """Test for fieldsets."""
         page = self.app.get(reverse('admin:data_machine_change', args=['1']), user='superuser')
-        self.assertContains(page, 'VIRTUALIZATION')
+        self.assertContains(page, '<h2>VIRTUALIZATION</h2>')
 
     def test_visible_inlines_non_administrative_systems(self):
         """Test for inlines."""
         page = self.app.get(reverse('admin:data_machine_change', args=['1']), user='superuser')
-        self.assertContains(page, 'Serial Console')
-        self.assertContains(page, 'Remote Power')
+        self.assertContains(page, '<h2>Serial Console</h2>')
+        self.assertContains(page, '<h2>Remote Power</h2>')
 
     def test_visible_fieldsets_administrative_systems(self):
         """Test for fieldsets."""
         page = self.app.get(reverse('admin:data_machine_change', args=['2']), user='superuser')
-        self.assertNotContains(page, 'VIRTUALIZATION')
+        self.assertNotContains(page, '<h2>VIRTUALIZATION</h2>')
 
     def test_visible_inlines_administrative_systems(self):
         """Test for inlines."""
         page = self.app.get(reverse('admin:data_machine_change', args=['2']), user='superuser')
-        self.assertNotContains(page, 'Serial Console')
-        self.assertNotContains(page, 'Remote Power')
+        self.assertNotContains(page, '<h2>Serial Console</h2>')
+        self.assertNotContains(page, '<h2>Remote Power</h2>')
