@@ -1,7 +1,7 @@
 import datetime
 import json
 
-from django.conf.urls import url
+from django.conf.urls import re_path
 from django.contrib.auth.models import AnonymousUser, User
 from django.http import HttpResponseRedirect
 
@@ -38,8 +38,8 @@ Example:
     @staticmethod
     def get_urls():
         return [
-            url(r'^reserve$', ReserveCommand.as_view(), name='reserve'),
-            url(r'^machine/(?P<id>[0-9]+)/reserve$', ReserveCommand.as_view(), name='reserve'),
+            re_path(r'^reserve$', ReserveCommand.as_view(), name='reserve'),
+            re_path(r'^machine/(?P<id>[0-9]+)/reserve$', ReserveCommand.as_view(), name='reserve'),
         ]
 
     def get(self, request, *args, **kwargs):

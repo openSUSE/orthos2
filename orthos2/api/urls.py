@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import re_path
 from rest_framework.authtoken import views as authtoken_views
 
 from api import views
@@ -6,8 +6,8 @@ from api.commands import *  # noqa: F403
 
 app_name = 'api'
 urlpatterns = [
-    url(r'^$', views.root, name='root'),
-    url(r'^login', authtoken_views.obtain_auth_token),
+    re_path(r'^$', views.root, name='root'),
+    re_path(r'^login', authtoken_views.obtain_auth_token),
 ]
 
 urlpatterns += InfoCommand.get_urls()                   # noqa: F405

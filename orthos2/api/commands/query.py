@@ -1,6 +1,6 @@
 import json
 
-from django.conf.urls import url
+from django.conf.urls import re_path
 from django.http import JsonResponse
 
 from api.commands import BaseAPIView, get_machine
@@ -43,7 +43,7 @@ OR                  logical disjunction
     @staticmethod
     def get_urls():
         return [
-            url(r'^query$', QueryCommand.as_view(), name='query'),
+            re_path(r'^query$', QueryCommand.as_view(), name='query'),
         ]
 
     @staticmethod
