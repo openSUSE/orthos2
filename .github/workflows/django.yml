@@ -29,6 +29,7 @@ jobs:
         pycodestyle .
     - name: Install Dependencies
       run: |
+        sudo apt-get install libldap2-dev libsasl2-dev
         python -m pip install --upgrade pip
         pip install -r requirements-devel.txt
     - name: Create Logfiles
