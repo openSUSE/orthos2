@@ -1,5 +1,5 @@
 from django import forms
-from django.conf.urls import url
+from django.conf.urls import re_path
 from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_list import _boolean_icon
 from django.core.exceptions import ValidationError
@@ -98,7 +98,7 @@ class NetworkInterfaceInline(admin.TabularInline):
         'driver_module'
     )
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         """
         Network interfaces get added by machine scan.
         """
@@ -121,7 +121,7 @@ class AnnotationInline(admin.TabularInline):
         'created'
     )
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         """
         Annotations are added at machine detail view.
         """
@@ -669,7 +669,7 @@ class ServerConfigAdmin(admin.ModelAdmin):
         """
         urls = super(ServerConfigAdmin, self).get_urls()
         custom_urls = [
-            url(
+            re_path(
                 r'^(?P<serverconfig_id>.+)/switch/$',
                 self.admin_site.admin_view(self.process_boolean_switch),
                 name='boolean_switch'
@@ -776,7 +776,7 @@ class MachinesInline(admin.TabularInline):
     fields = ('fqdn',)
     readonly_fields = ('fqdn',)
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         return False
 
     def has_delete_permission(self, request, obj=None):

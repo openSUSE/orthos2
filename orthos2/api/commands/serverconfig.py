@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import re_path
 from django.contrib.auth.models import AnonymousUser, User
 from django.http import JsonResponse
 
@@ -29,7 +29,7 @@ Example:
     @staticmethod
     def get_urls():
         return [
-            url(r'^serverconfig$', ServerConfigCommand.as_view(), name='serverconfig'),
+            re_path(r'^serverconfig$', ServerConfigCommand.as_view(), name='serverconfig'),
         ]
 
     def get(self, request, *args, **kwargs):

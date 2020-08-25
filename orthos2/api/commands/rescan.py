@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import re_path
 from django.http import HttpResponseRedirect
 
 from api.commands import BaseAPIView, get_machine
@@ -39,7 +39,7 @@ Example:
     @staticmethod
     def get_urls():
         return [
-            url(r'^rescan$', RescanCommand.as_view(), name='rescan'),
+            re_path(r'^rescan$', RescanCommand.as_view(), name='rescan'),
         ]
 
     @staticmethod
