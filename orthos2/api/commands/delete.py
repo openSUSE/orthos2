@@ -1,7 +1,7 @@
 import json
 import logging
 
-from django.conf.urls import url
+from django.conf.urls import re_path
 from django.contrib.auth.models import AnonymousUser, User
 from django.http import JsonResponse
 from django.shortcuts import redirect, reverse
@@ -53,7 +53,7 @@ Example:
     @staticmethod
     def get_urls():
         return [
-            url(r'^delete$', DeleteCommand.as_view(), name='delete'),
+            re_path(r'^delete$', DeleteCommand.as_view(), name='delete'),
         ]
 
     @staticmethod
@@ -99,7 +99,7 @@ class DeleteMachineCommand(BaseAPIView):
     @staticmethod
     def get_urls():
         return [
-            url(r'^machine/delete', DeleteMachineCommand.as_view(), name='machine_delete'),
+            re_path(r'^machine/delete', DeleteMachineCommand.as_view(), name='machine_delete'),
         ]
 
     def get(self, request, *args, **kwargs):
@@ -177,7 +177,7 @@ class DeleteSerialConsoleCommand(BaseAPIView):
     @staticmethod
     def get_urls():
         return [
-            url(
+            re_path(
                 r'^serialconsole/delete',
                 DeleteSerialConsoleCommand.as_view(),
                 name='serialconsole_delete'
@@ -253,7 +253,7 @@ class DeleteRemotePowerCommand(BaseAPIView):
     @staticmethod
     def get_urls():
         return [
-            url(
+            re_path(
                 r'^remotepower/delete',
                 DeleteRemotePowerCommand.as_view(),
                 name='remotepower_delete'

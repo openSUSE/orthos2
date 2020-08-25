@@ -1,6 +1,6 @@
 import datetime
 
-from django.conf.urls import url
+from django.conf.urls import re_path
 from django.contrib import admin, messages
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -39,12 +39,12 @@ class DailyTaskAdmin(BaseTaskAdmin):
         """Add customn URLs to daily task admin view."""
         urls = super(DailyTaskAdmin, self).get_urls()
         custom_urls = [
-            url(
+            re_path(
                 r'^(?P<dailytask_id>.+)/execute/$',
                 self.admin_site.admin_view(self.process_execute),
                 name='dailytask_execute'
             ),
-            url(
+            re_path(
                 r'^(?P<dailytask_id>.+)/switch$',
                 self.admin_site.admin_view(self.process_task_switch),
                 name='dailytask_switch'

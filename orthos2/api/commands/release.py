@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import re_path
 from django.contrib.auth.models import AnonymousUser, User
 from django.http import HttpResponseRedirect
 
@@ -30,7 +30,7 @@ Example:
     @staticmethod
     def get_urls():
         return [
-            url(r'^release$', ReleaseCommand.as_view(), name='release'),
+            re_path(r'^release$', ReleaseCommand.as_view(), name='release'),
         ]
 
     def get(self, request, *args, **kwargs):

@@ -1,7 +1,7 @@
 import json
 import logging
 
-from django.conf.urls import url
+from django.conf.urls import re_path
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect, JsonResponse
@@ -66,7 +66,7 @@ Example:
     @staticmethod
     def get_urls():
         return [
-            url(r'^add$', AddCommand.as_view(), name='add'),
+            re_path(r'^add$', AddCommand.as_view(), name='add'),
         ]
 
     @staticmethod
@@ -124,8 +124,12 @@ class AddVMCommand(BaseAPIView):
     @staticmethod
     def get_urls():
         return [
-            url(r'^vm/add', AddVMCommand.as_view(), name='vm_add'),
-            url(r'^vm/(?P<architecture>[a-z0-9\.-_]+)/add$', AddVMCommand.as_view(), name='vm_add'),
+            re_path(r'^vm/add', AddVMCommand.as_view(), name='vm_add'),
+            re_path(
+                r'^vm/(?P<architecture>[a-z0-9\.-_]+)/add$',
+                AddVMCommand.as_view(),
+                name='vm_add'
+            ),
         ]
 
     def _get_available_architectures(self):
@@ -225,7 +229,7 @@ class AddMachineCommand(BaseAPIView):
     @staticmethod
     def get_urls():
         return [
-            url(r'^machine/add', AddMachineCommand.as_view(), name='machine_add'),
+            re_path(r'^machine/add', AddMachineCommand.as_view(), name='machine_add'),
         ]
 
     def get(self, request, *args, **kwargs):
@@ -279,8 +283,12 @@ class AddSerialConsoleCommand(BaseAPIView):
     @staticmethod
     def get_urls():
         return [
-            url(r'^serialconsole/add', AddSerialConsoleCommand.as_view(), name='serialconsole_add'),
-            url(
+            re_path(
+                r'^serialconsole/add',
+                AddSerialConsoleCommand.as_view(),
+                name='serialconsole_add'
+            ),
+            re_path(
                 r'^serialconsole/(?P<fqdn>[a-z0-9\.-]+)/add$',
                 AddSerialConsoleCommand.as_view(),
                 name='serialconsole_add'
@@ -367,8 +375,8 @@ class AddAnnotationCommand(BaseAPIView):
     @staticmethod
     def get_urls():
         return [
-            url(r'^annotation/add', AddAnnotationCommand.as_view(), name='annotation_add'),
-            url(
+            re_path(r'^annotation/add', AddAnnotationCommand.as_view(), name='annotation_add'),
+            re_path(
                 r'^annotation/(?P<fqdn>[a-z0-9\.-]+)/add$',
                 AddAnnotationCommand.as_view(),
                 name='annotation_add'
@@ -448,8 +456,8 @@ class AddRemotePowerCommand(BaseAPIView):
     @staticmethod
     def get_urls():
         return [
-            url(r'^remotepower/add', AddRemotePowerCommand.as_view(), name='remotepower_add'),
-            url(
+            re_path(r'^remotepower/add', AddRemotePowerCommand.as_view(), name='remotepower_add'),
+            re_path(
                 r'^remotepower/(?P<fqdn>[a-z0-9\.-]+)/add$',
                 AddRemotePowerCommand.as_view(),
                 name='remotepower_add'

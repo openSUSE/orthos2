@@ -1,7 +1,7 @@
 import re
 
 from django import template
-from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.templatetags.static import static
 from django.utils.html import escape, mark_safe
 
 from data.models import Machine

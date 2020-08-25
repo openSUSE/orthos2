@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import re_path
 from django.contrib.auth.models import AnonymousUser, User
 from django.http import HttpResponseRedirect, JsonResponse
 
@@ -31,7 +31,7 @@ Example:
     @staticmethod
     def get_urls():
         return [
-            url(r'^reservationhistory$', ReservationHistoryCommand.as_view(), name='history'),
+            re_path(r'^reservationhistory$', ReservationHistoryCommand.as_view(), name='history'),
         ]
 
     def get(self, request, *args, **kwargs):
