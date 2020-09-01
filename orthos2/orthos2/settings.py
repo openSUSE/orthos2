@@ -23,17 +23,23 @@ from django.contrib.messages import constants as messages
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
+# SECURITY Warning: You probably want to load this from a file / environment variable
 SECRET_KEY = '$@c7_nq(oi56nl3*-!_(=&-j_=n3=^2f5dydr4chxlwckg_947'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
+# Repalace with the domain / ip of your orthos server:
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', gethostname(), getfqdn()]
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', gethostname(), getfqdn(), '10.162.227.40']
-
+# recomended security settings:
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'DENY'
 # Application definition
 
 INSTALLED_APPS = [
