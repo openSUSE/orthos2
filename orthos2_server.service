@@ -1,0 +1,12 @@
+[Unit]
+Description=Orthos taskmanager
+Requires=nginx.service
+
+[Service]
+User=orthos
+Group=orthos
+ExecStart=/usr/sbin/uwsgi --ini /usr/lib/python3.6/site-packages/orthos2/orthos2_uwsgi.ini --plugin python3
+
+[Install]
+WantedBy=multi-user.target
+

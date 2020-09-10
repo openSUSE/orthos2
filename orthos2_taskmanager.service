@@ -1,0 +1,12 @@
+[Unit]
+Description=Orthos taskmanager
+Requires=nginx.service
+
+[Service]
+User=orthos
+Group=orthos
+ExecStart= /usr/bin/python3 /usr/lib/python3.6/site-packages/orthos2/manage.py taskmanager --start
+
+[Install]
+WantedBy=multi-user.target
+
