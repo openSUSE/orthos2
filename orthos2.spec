@@ -67,10 +67,12 @@ Orthos is the machine administration tool of the development network at SUSE. It
 
 #systemd
 mkdir -p %{buildroot}%{_unitdir}
-install orthos2_taskmanager.service %{buildroot}%{_unitdir}
-install orthos2_server.service %{buildroot}%{_unitdir}
-install orthos2_uwsgi.ini %{buildroot}%{python3_sitelib}/orthos
-install uwsgi_params %{buildroot}%{python3_sitelib}/orthos
+#install orthos2_taskmanager.service %{buildroot}%{_unitdir}
+#install orthos2_server.service %{buildroot}%{_unitdir}
+install orthos2_uwsgi.ini %{buildroot}%{python3_sitelib}/orthos2
+install orthos2/uwsgi_params %{buildroot}%{python3_sitelib}/orthos2
+mv static %{buildroot}%{python3_sitelib}/orthos2
+
 %pre
 getent group orthos >/dev/null || groupadd -r orthos
 getent passwd orthos >/dev/null || \
@@ -89,7 +91,7 @@ getent passwd orthos >/dev/null || \
 
 
 
-%files  
+%files
 %{python3_sitelib}/orthos2-*
 %attr(-,orthos, orthos) %{python3_sitelib}/orthos2/
 %attr(744, orthos, orthos)%{python3_sitelib}/orthos2/manage.py
