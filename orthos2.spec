@@ -53,6 +53,7 @@ Requires:  nginx
 Requires:  uwsgi
 Requires:  uwsgi-python3
 %endif
+Requires:  /sbin/service
 
 Provides: orthos2-%{version}-%{release}
 
@@ -80,8 +81,13 @@ Orthos is the machine administration tool of the development network at SUSE. It
 
 #systemd
 mkdir -p %{buildroot}%{_unitdir}
-#install orthos2_taskmanager.service %{buildroot}%{_unitdir}
-#install orthos2_server.service %{buildroot}%{_unitdir}
+install orthos2_taskmanager.service %{buildroot}%{_unitdir}
+install orthos2_server.service %{buildroot}%{_unitdir}
+%if 0%{?suse_version}
+mkdir -p %{buildroot}%{_sbindir}
+ln -sf service %{buildroot}%{_sbindir}/rcorthos2_taskmanager
+ln -sf service %{buildroot}%{_sbindir}/rcorthos2_server
+%endif
 install orthos2_uwsgi.ini %{buildroot}%{python3_sitelib}/orthos2
 install orthos2/uwsgi_params %{buildroot}%{python3_sitelib}/orthos2
 mv static %{buildroot}%{python3_sitelib}/orthos2
@@ -108,6 +114,12 @@ getent passwd orthos >/dev/null || \
 %{python3_sitelib}/orthos2-*
 %attr(-,orthos, orthos) %{python3_sitelib}/orthos2/
 %attr(744, orthos, orthos)%{python3_sitelib}/orthos2/manage.py
+%_unitdir/orthos2_taskmanager.service
+%_unitdir/orthos2_server.service
+%if 0%{?suse_version}
+%{_sbindir}/rcorthos2_taskmanager
+%{_sbindir}/rcorthos2_server
+%endif
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
 %dir %{_sysconfdir}/nginx
 %dir %{_sysconfdir}/nginx/conf.d
