@@ -251,7 +251,7 @@ BASE_URL = 'https://orthos.domain.tld'
 CONTACT = 'tbd@domain.tld'
 SUPPORT_CONTACT = 'tbd@domain.tld'
 VERSION = '2.0.0'
-SYSTEM_USER = 'orthos'
+RUN_AS_USER = 'orthos'
 
 
 # Check for alternative settings file. If this file exists, we use it and evaluate the code.
