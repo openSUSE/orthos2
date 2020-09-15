@@ -1,8 +1,29 @@
+#!/usr/bin/env python
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
+
+
+def requires(filename='requirements.txt'):
+    """Returns a list of all pip requirements
+
+    :param filename: the Pip requirement file
+    (usually 'requirements.txt')
+    :return: list of modules
+    :rtype: list
+    """
+    with open(filename, 'r+t') as pipreq:
+        for line in pipreq:
+            line = line.strip()
+            if not line or \
+               line.startswith('#') or \
+               line.startswith('-r'):
+                continue
+            yield line
+
+
 if __name__ == "__main__":
     setup(
- 
+
         name="orthos2",
         version='0.1',
         description="Machine administration server",
@@ -18,14 +39,7 @@ if __name__ == "__main__":
         license="GPLv2+",
         setup_requires=[
         ],
-        install_requires=[
-            "django",
-            "django-extensions",
-            "paramiko",
-            "djangorestframework",
-            "validators",
-            "netaddr"
-        ],
+        install_requires=list(requires()),
         packages=find_packages(exclude=["*tests*"]),
         data_files=[
             ("/etc/nginx/conf.d",  ["orthos2_nginx.conf"])
