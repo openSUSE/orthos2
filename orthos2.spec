@@ -88,9 +88,9 @@ mkdir -p %{buildroot}%{_sbindir}
 ln -sf service %{buildroot}%{_sbindir}/rcorthos2_taskmanager
 ln -sf service %{buildroot}%{_sbindir}/rcorthos2_server
 %endif
-install orthos2_uwsgi.ini %{buildroot}%{python3_sitelib}/orthos2
-install orthos2/uwsgi_params %{buildroot}%{python3_sitelib}/orthos2
-mv static %{buildroot}%{python3_sitelib}/orthos2
+# ToDo: Move this into setup.py?
+install -D orthos2_uwsgi.ini %{buildroot}/usr/share/orthos2/orthos2_uwsgi.ini
+mkdir -p %{buildroot}/var/log/orthos2
 
 %pre
 getent group orthos >/dev/null || groupadd -r orthos
@@ -114,6 +114,7 @@ getent passwd orthos >/dev/null || \
 %{python3_sitelib}/orthos2-*
 %attr(-,orthos, orthos) %{python3_sitelib}/orthos2/
 %attr(744, orthos, orthos)%{python3_sitelib}/orthos2/manage.py
+%attr(744, orthos, orthos) %dir /var/log/orthos2
 %_unitdir/orthos2_taskmanager.service
 %_unitdir/orthos2_server.service
 %if 0%{?suse_version}
@@ -125,3 +126,5 @@ getent passwd orthos >/dev/null || \
 %dir %{_sysconfdir}/nginx/conf.d
 %_unitdir/orthos2_taskmanager.service
 %_unitdir/orthos2_server.service
+%dir /usr/share/orthos2/
+/usr/share/orthos2/orthos2_uwsgi.ini
