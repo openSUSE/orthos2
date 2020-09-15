@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 if __name__ == "__main__":
     setup(
- 
+
         name="orthos2",
         version='0.1',
         description="Machine administration server",
@@ -28,6 +28,6 @@ if __name__ == "__main__":
         ],
         packages=find_packages(exclude=["*tests*"]),
         data_files=[
-            ("/etc/nginx/conf.d",  ["orthos2_nginx.conf"])
+#            ("/etc/nginx/conf.d",  ["orthos2_nginx.conf"])
         ]
     )

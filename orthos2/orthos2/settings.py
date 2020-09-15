@@ -22,9 +22,6 @@ from django.contrib.messages import constants as messages
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
-
-
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECURITY Warning: You probably want to load this from a file / environment variable
 SECRET_KEY = '$@c7_nq(oi56nl3*-!_(=&-j_=n3=^2f5dydr4chxlwckg_947'
