@@ -79,6 +79,7 @@ Orthos is the machine administration tool of the development network at SUSE. It
 %install
 %py3_install
 
+rm orthos2/__init__.py
 #systemd
 mkdir -p %{buildroot}%{_unitdir}
 install orthos2_taskmanager.service %{buildroot}%{_unitdir}
