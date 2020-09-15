@@ -114,9 +114,9 @@ getent passwd orthos >/dev/null || \
 %{python3_sitelib}/orthos2-*
 %attr(-,orthos, orthos) %{python3_sitelib}/orthos2/
 %attr(744, orthos, orthos)%{python3_sitelib}/orthos2/manage.py
-%attr(744, orthos, orthos) %dir /var/log/orthos2
-%_unitdir/orthos2_taskmanager.service
-%_unitdir/orthos2_server.service
+%attr(755, orthos, orthos) %dir /var/log/orthos2
+%attr(644, root, root) %_unitdir/orthos2_taskmanager.service
+%attr(644, root, root) %_unitdir/orthos2_server.service
 %if 0%{?suse_version}
 %{_sbindir}/rcorthos2_taskmanager
 %{_sbindir}/rcorthos2_server
@@ -124,7 +124,9 @@ getent passwd orthos >/dev/null || \
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
 %dir %{_sysconfdir}/nginx
 %dir %{_sysconfdir}/nginx/conf.d
-%_unitdir/orthos2_taskmanager.service
-%_unitdir/orthos2_server.service
 %dir /usr/share/orthos2/
-/usr/share/orthos2/orthos2_uwsgi.ini
+%attr(644, orthos, orthos) /usr/share/orthos2/orthos2_uwsgi.ini
+
+%changelog
+Tue Sep 15 00:26:20 UTC 2020 - Thomas Renninger <trenn@suse.de>
+- First submissions

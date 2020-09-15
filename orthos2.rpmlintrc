@@ -1,0 +1,6 @@
+# On Deb-based distros the deduplication would fail
+addFilter("orthos2.noarch: W: files-duplicate /usr/lib/python3.*/site-packages/orthos2")
+
+# Need until we may get an official orthos2 user/group
+addFilter("orthos2.noarch: W: non-standard-uid *")
+addFilter("orthos2.noarch: W: non-standard-gid *")
