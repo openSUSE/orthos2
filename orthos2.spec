@@ -21,7 +21,7 @@ Group:          Productivity/Networking/Boot/Servers
 %{?systemd_ordering}
 
 License:        GPL-2.0-or-later
-Source:         orthos2-%{version}.tar.gz
+Source:         orthos2-%{version}.tar.xz
 BuildArch:      noarch
 
 BuildRequires:  systemd-rpm-macros
@@ -79,17 +79,26 @@ Orthos is the machine administration tool of the development network at SUSE. It
 %install
 %py3_install
 
+
 #systemd
 mkdir -p %{buildroot}%{_unitdir}
 install orthos2_taskmanager.service %{buildroot}%{_unitdir}
-install orthos2_server.service %{buildroot}%{_unitdir}
+install orthos2.service %{buildroot}%{_unitdir}
+install orthos2.socket %{buildroot}%{_unitdir}
+
 %if 0%{?suse_version}
 mkdir -p %{buildroot}%{_sbindir}
 ln -sf service %{buildroot}%{_sbindir}/rcorthos2_taskmanager
-ln -sf service %{buildroot}%{_sbindir}/rcorthos2_server
+ln -sf service %{buildroot}%{_sbindir}/rcorthos2
 %endif
 # ToDo: Move this into setup.py?
 install -D orthos2_uwsgi.ini %{buildroot}/usr/share/orthos2/orthos2_uwsgi.ini
+install -D orthos2_nginx.conf %{buildroot}%{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
+mkdir -p /%{buildroot}/srv/www/orthos2/
+cp -r orthos2/static /%{buildroot}/srv/www/orthos2/
+cp -r orthos2/data/fixtures %{buildroot}%{python3_sitelib}/orthos2/data/
+cp -r orthos2/taskmanager/fixtures %{buildroot}%{python3_sitelib}/orthos2/taskmanager/
+cp -r orthos2/frontend/templates %{buildroot}%{python3_sitelib}/orthos2/frontend/
 mkdir -p %{buildroot}/var/log/orthos2
 
 %pre
@@ -97,16 +106,17 @@ getent group orthos >/dev/null || groupadd -r orthos
 getent passwd orthos >/dev/null || \
     useradd -r -g orthos -d /home/orthos -s /sbin/nologin \
     -c "Useful comment about the purpose of this account" orthos
-%service_add_pre orthos2_server.service orthos2_taskmanager.service
+%service_add_pre orthos2.service orthos2_taskmanager.service orthos2.socket
 
 %post
-%service_add_post orthos2_server.service orthos2_taskmanager.service
+%service_add_post orthos2.service orthos2_taskmanager.service orthos2.socket
+
 
 %preun
-%service_del_preun  orthos2_server.service orthos2_taskmanager.service
+%service_del_preun  orthos2.service orthos2_taskmanager.service orthos2.socket
 
 %postun
-%service_del_postun  orthos2_server.service orthos2_taskmanager.service
+%service_del_postun  orthos2.service orthos2_taskmanager.service orthos2.socket
 
 
 
@@ -116,17 +126,21 @@ getent passwd orthos >/dev/null || \
 %attr(744, orthos, orthos)%{python3_sitelib}/orthos2/manage.py
 %attr(755, orthos, orthos) %dir /var/log/orthos2
 %attr(644, root, root) %_unitdir/orthos2_taskmanager.service
-%attr(644, root, root) %_unitdir/orthos2_server.service
+%attr(644, root, root) %_unitdir/orthos2.service
+%attr(644, root, root) %_unitdir/orthos2.socket
 %if 0%{?suse_version}
 %{_sbindir}/rcorthos2_taskmanager
-%{_sbindir}/rcorthos2_server
+%{_sbindir}/rcorthos2
 %endif
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
 %dir %{_sysconfdir}/nginx
 %dir %{_sysconfdir}/nginx/conf.d
 %dir /usr/share/orthos2/
+%dir /srv/www/orthos2
+%dir /srv/www/orthos2/static
+/srv/www/orthos2/static/*
 %attr(644, orthos, orthos) /usr/share/orthos2/orthos2_uwsgi.ini
 
 %changelog
-Tue Sep 15 00:26:20 UTC 2020 - Thomas Renninger <trenn@suse.de>
+*Tue Sep 15 00:26:20 UTC 2020 - Thomas Renninger <trenn@suse.de>
 - First submissions
