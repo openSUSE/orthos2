@@ -68,6 +68,14 @@ Orthos is the machine administration tool of the development network at SUSE. It
     reboot the machines remotely
     managing remote (serial) consoles
 
+%package client
+Summary:        Command line client for orthos2
+Requires:       python3-base
+Requires:       python3-pytz
+
+%description client
+Command line client that provides a shell like command
+line interface based on readline.
 
 %prep
 %setup
@@ -141,6 +149,9 @@ getent passwd orthos >/dev/null || \
 /srv/www/orthos2/static/*
 %attr(644, orthos, orthos) /usr/share/orthos2/orthos2_uwsgi.ini
 
+%files client
+%attr(755, root, root) /usr/bin/orthos2
+
 %changelog
-*Tue Sep 15 00:26:20 UTC 2020 - Thomas Renninger <trenn@suse.de>
+* Tue Sep 15 00:26:20 UTC 2020 - Thomas Renninger <trenn@suse.de>
 - First submissions

@@ -41,7 +41,10 @@ if __name__ == "__main__":
         ],
         install_requires=list(requires()),
         packages=find_packages(exclude=["*tests*"]),
+        scripts=[
+            "cli/orthos2",
+        ],
         data_files=[
-            # ("/etc/nginx/conf.d",  ["orthos2_nginx.conf"])
+            ("/etc/nginx/conf.d",  ["orthos2_nginx.conf"])
         ]
     )
