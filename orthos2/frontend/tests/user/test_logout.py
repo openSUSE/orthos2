@@ -12,9 +12,7 @@ class Logout(WebTest):
     ]
 
     def test_successful_logout(self):
-        """
-        Tests if a user can log out successfully.
-        """
+        """Test if a user can log out successfully."""
         page = self.app.get(reverse('frontend:free_machines'), user='user')
 
         self.assertEqual(page.context['user'].username, 'user')

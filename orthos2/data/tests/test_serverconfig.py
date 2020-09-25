@@ -14,9 +14,7 @@ SMTP_RELAY = 'mail.smtprelay.fqdn'
 class GeneralManagerTest(TestCase):
 
     def test_get_ssh_keys(self):
-        """
-        Method should return SSH key paths as list, None otherwise.
-        """
+        """Method should return SSH key paths as list, None otherwise."""
         assert ServerConfig.ssh.get_keys() is None
 
         ServerConfig(key=SSH_KEYS).save()
@@ -31,9 +29,7 @@ class GeneralManagerTest(TestCase):
         ServerConfig.objects.filter(key=SSH_KEYS).delete()
 
     def test_get_ssh_timeout(self):
-        """
-        Method should return SSH timeout as integer, None otherwise.
-        """
+        """Method should return SSH timeout as integer, None otherwise."""
         assert ServerConfig.ssh.get_timeout() is None
 
         ServerConfig(key=SSH_TIMEOUT).save()
@@ -49,9 +45,7 @@ class GeneralManagerTest(TestCase):
         ServerConfig.objects.filter(key=SSH_TIMEOUT).delete()
 
     def test_get_remote_scripts_dir(self):
-        """
-        Method should return a path, None otherwise.
-        """
+        """Method should return a path, None otherwise."""
         assert ServerConfig.ssh.get_remote_scripts_directory() is None
 
         ServerConfig(key=SSH_REMOTE_DIR).save()
@@ -63,9 +57,7 @@ class GeneralManagerTest(TestCase):
         ServerConfig.objects.filter(key=SSH_REMOTE_DIR).delete()
 
     def test_get_local_scripts_dir(self):
-        """
-        Method should return a path, None otherwise.
-        """
+        """Method should return a path, None otherwise."""
         assert ServerConfig.ssh.get_local_scripts_directory() is None
 
         ServerConfig(key=SSH_LOCAL_DIR).save()
@@ -77,9 +69,7 @@ class GeneralManagerTest(TestCase):
         ServerConfig.objects.filter(key=SSH_LOCAL_DIR).delete()
 
     def test_get_valid_domain_endings(self):
-        """
-        Method should return valid domain endings as list, None otherwise.
-        """
+        """Method should return valid domain endings as list, None otherwise."""
         assert ServerConfig.objects.get_valid_domain_endings() is None
 
         ServerConfig(key=VALID_DOMAIN_ENDINGS).save()
@@ -94,9 +84,7 @@ class GeneralManagerTest(TestCase):
         ServerConfig.objects.filter(key=VALID_DOMAIN_ENDINGS).delete()
 
     def test_get_daily_execution_time(self):
-        """
-        Method should return a valid datetime.time object, None otherwise.
-        """
+        """Method should return a valid datetime.time object, None otherwise."""
         from datetime import datetime
 
         assert ServerConfig.objects.get_daily_execution_time() is None
@@ -115,9 +103,7 @@ class GeneralManagerTest(TestCase):
         ServerConfig.objects.filter(key=DAILY_EXECUTION_TIME).delete()
 
     def test_get_smtp_relay(self):
-        """
-        Method should return a FQDN to SMTP relay server, None otherwise.
-        """
+        """Method should return a FQDN to SMTP relay server, None otherwise."""
         assert ServerConfig.objects.get_smtp_relay() is None
 
         ServerConfig(key=SMTP_RELAY).save()
@@ -129,9 +115,7 @@ class GeneralManagerTest(TestCase):
         ServerConfig.objects.filter(key=SMTP_RELAY).delete()
 
     def test_bool_by_key(self):
-        """
-        Method should return `True` or `False`.
-        """
+        """Method should return `True` or `False`."""
         KEY = 'bool_test'
 
         config, _ = ServerConfig.objects.get_or_create(key=KEY, value='bool:true')

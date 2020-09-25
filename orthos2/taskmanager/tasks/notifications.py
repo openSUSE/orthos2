@@ -12,18 +12,14 @@ logger = logging.getLogger('tasks')
 
 
 class SendRestoredPassword(Task):
-    """
-    Generates the email with the restored password for a user and sends it.
-    """
+    """Generate the email with the restored password for a user and sends it."""
 
     def __init__(self, user_id, new_password):
         self.user_id = user_id
         self.new_password = new_password
 
     def execute(self):
-        """
-        Executes the task.
-        """
+        """Execute the task."""
         try:
             user = User.objects.get(pk=self.user_id)
 
@@ -51,18 +47,14 @@ Orthos""".format(
 
 
 class SendReservationInformation(Task):
-    """
-    Generates reservation information email for user and sends it.
-    """
+    """Generate reservation information email for user and sends it."""
 
     def __init__(self, user_id, fqdn):
         self.user_id = user_id
         self.fqdn = fqdn
 
     def execute(self):
-        """
-        Executes the task.
-        """
+        """Execute the task."""
         try:
             user = User.objects.get(pk=self.user_id)
             machine = Machine.objects.get(fqdn=self.fqdn)
@@ -128,18 +120,17 @@ Orthos""".format(
 
 class CheckReservationExpiration(Task):
     """
-    Task that checks for a expiring reservation for one machine. Emails get sent five, two and one
-    day(s) before plus the day of expiration. If the expiration date was yesterday, then we delete
-    the reservation (release).
+    Task that checks for a expiring reservation for one machine.
+
+    Emails get sent five, two and one day(s) before plus the day of expiration. If the expiration
+    date was yesterday, then we delete the reservation (release).
     """
 
     def __init__(self, fqdn):
         self.fqdn = fqdn
 
     def execute(self):
-        """
-        Executes the task.
-        """
+        """Execute the task."""
         today = datetime.date.today()
 
         try:
@@ -221,9 +212,7 @@ class CheckMultipleAccounts(Task):
         self.user_id = user_id
 
     def execute(self):
-        """
-        Executes the task.
-        """
+        """Execute the task."""
         try:
             user = User.objects.get(pk=self.user_id)
 

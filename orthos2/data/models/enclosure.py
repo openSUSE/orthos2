@@ -53,16 +53,14 @@ class Enclosure(models.Model):
         return self.machine_set.all()
 
     def get_virtual_machines(self):
-        """
-        Returns all virtual machines (systems) of the enclosure.
-        """
+        """Return all virtual machines (systems) of the enclosure."""
         return self.get_machines().filter(system__virtual=True)
 
     def get_non_virtual_machines(self):
         """
-        Returns all non virtual machines (systems) of the enclosure. The following systems are
-        excluded:
+        Return all non virtual machines (systems) of the enclosure.
 
+        The following systems are excluded:
             RemotePower,
             BMC
         """
@@ -72,15 +70,15 @@ class Enclosure(models.Model):
         return machines
 
     def get_bmc_list(self):
-        """
-        Returns all baseboard management controller (BMC) of the enclosure.
-        """
+        """Return all baseboard management controller (BMC) of the enclosure."""
         return self.get_machines().filter(system=System.Type.BMC)
 
     def fetch_location(self, pk=None):
         """
-        Fetch location from RackTables. If `pk` is set, use this ID to query API. Otherwise try
-        the first machine ID belonging to this enclosure.
+        Fetch location from RackTables.
+
+        If `pk` is set, use this ID to query API. Otherwise try the first machine ID belonging to
+        this enclosure.
         """
         try:
             if pk is None:

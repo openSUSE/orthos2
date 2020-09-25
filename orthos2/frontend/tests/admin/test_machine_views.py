@@ -38,31 +38,23 @@ class ChangeView(WebTest):
         m2.save()
 
     def test_visible_fieldsets_non_administrative_systems(self):
-        """
-        Test for fieldsets.
-        """
+        """Test for fieldsets."""
         page = self.app.get(reverse('admin:data_machine_change', args=['1']), user='superuser')
         self.assertContains(page, 'VIRTUALIZATION')
 
     def test_visible_inlines_non_administrative_systems(self):
-        """
-        Test for inlines.
-        """
+        """Test for inlines."""
         page = self.app.get(reverse('admin:data_machine_change', args=['1']), user='superuser')
         self.assertContains(page, 'Serial Console')
         self.assertContains(page, 'Remote Power')
 
     def test_visible_fieldsets_administrative_systems(self):
-        """
-        Test for fieldsets.
-        """
+        """Test for fieldsets."""
         page = self.app.get(reverse('admin:data_machine_change', args=['2']), user='superuser')
         self.assertNotContains(page, 'VIRTUALIZATION')
 
     def test_visible_inlines_administrative_systems(self):
-        """
-        Test for inlines.
-        """
+        """Test for inlines."""
         page = self.app.get(reverse('admin:data_machine_change', args=['2']), user='superuser')
         self.assertNotContains(page, 'Serial Console')
         self.assertNotContains(page, 'Remote Power')

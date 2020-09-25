@@ -12,9 +12,7 @@ class CreateAccount(WebTest):
     ]
 
     def test_successful_user_creation(self):
-        """
-        Tests if a new user can create an account.
-        """
+        """Test if a new user can create an account."""
         form = self.app.get(reverse('frontend:create_user')).form
         form['login'] = 'new-user'
         form['email'] = 'new-user@foo.bar'
@@ -27,9 +25,7 @@ class CreateAccount(WebTest):
         self.assertContains(page, 'My Machine')
 
     def test_password_too_short(self):
-        """
-        Check if password is too short (at least 8 characters).
-        """
+        """Check if password is too short (at least 8 characters)."""
         form = self.app.get(reverse('frontend:create_user')).form
         form['login'] = 'new-user'
         form['email'] = 'new-user@foo.bar'
@@ -42,9 +38,7 @@ class CreateAccount(WebTest):
         self.assertContains(page, 'Password is too short')
 
     def test_password_confirmation_not_match(self):
-        """
-        Check if passwords do match.
-        """
+        """Check if passwords do match."""
         form = self.app.get(reverse('frontend:create_user')).form
         form['login'] = 'new-user'
         form['email'] = 'new-user@foo.bar'
@@ -57,9 +51,7 @@ class CreateAccount(WebTest):
         self.assertContains(page, 'Password and confirmation password do not match')
 
     def test_user_already_exists(self):
-        """
-        Check if user does already exists.
-        """
+        """Check if user does already exists."""
         form = self.app.get(reverse('frontend:create_user')).form
         form['login'] = 'user'
         form['email'] = 'user@foo.bar'
@@ -72,9 +64,7 @@ class CreateAccount(WebTest):
         self.assertContains(page, 'does already exist')
 
     def test_email_does_already_exists(self):
-        """
-        Check if email does already exists.
-        """
+        """Check if email does already exists."""
         form = self.app.get(reverse('frontend:create_user')).form
         form['login'] = 'new-user'
         form['email'] = 'user@foo.bar'
@@ -87,9 +77,7 @@ class CreateAccount(WebTest):
         self.assertContains(page, 'is already in use')
 
     def test_invalid_email(self):
-        """
-        Check for valid email address.
-        """
+        """Check for valid email address."""
         form = self.app.get(reverse('frontend:create_user')).form
         form['login'] = 'new-user'
         form['email'] = 'new-user@invalid'

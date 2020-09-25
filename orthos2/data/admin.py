@@ -38,9 +38,7 @@ class SerialConsoleInline(admin.StackedInline):
     )
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        """
-        Do only show management BMC belonging to the machine itself.
-        """
+        """Do only show management BMC belonging to the machine itself."""
         if self.machine and db_field.name == 'management_bmc':
             kwargs['queryset'] = self.machine.enclosure.get_bmc_list()
         return super(SerialConsoleInline, self).formfield_for_foreignkey(
@@ -50,9 +48,7 @@ class SerialConsoleInline(admin.StackedInline):
         )
 
     def get_formset(self, request, obj=None, **kwargs):
-        """
-        Set machine object for `formfield_for_foreignkey` method.
-        """
+        """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
         return super(SerialConsoleInline, self).get_formset(request, obj, **kwargs)
 
@@ -65,9 +61,7 @@ class RemotePowerInline(admin.StackedInline):
     verbose_name_plural = 'Remote Power'
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        """
-        Do only show management BMC belonging to the machine itself.
-        """
+        """Do only show management BMC belonging to the machine itself."""
         if self.machine and db_field.name == 'management_bmc':
             kwargs['queryset'] = self.machine.enclosure.get_bmc_list()
         return super(RemotePowerInline, self).formfield_for_foreignkey(
@@ -77,9 +71,7 @@ class RemotePowerInline(admin.StackedInline):
         )
 
     def get_formset(self, request, obj=None, **kwargs):
-        """
-        Set machine object for `formfield_for_foreignkey` method.
-        """
+        """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
         return super(RemotePowerInline, self).get_formset(request, obj, **kwargs)
 
@@ -97,15 +89,11 @@ class NetworkInterfaceInline(admin.TabularInline):
     )
 
     def has_add_permission(self, request):
-        """
-        Network interfaces get added by machine scan.
-        """
+        """Network interfaces get added by machine scan."""
         return False
 
     def has_delete_permission(self, request, obj=None):
-        """
-        Network interfaces get deleted by machine scan.
-        """
+        """Network interfaces get deleted by machine scan."""
         return False
 
 
@@ -120,9 +108,7 @@ class AnnotationInline(admin.TabularInline):
     )
 
     def has_add_permission(self, request):
-        """
-        Annotations are added at machine detail view.
-        """
+        """Annotations are added at machine detail view."""
         return False
 
 
@@ -138,9 +124,7 @@ class MachineAdminForm(forms.ModelForm):
         fields = '__all__'
 
     def __init__(self, *args, **kwargs):
-        """
-        Set primary MAC address and virtualization API type in the form fields.
-        """
+        """Set primary MAC address and virtualization API type in the form fields."""
         instance = kwargs.get('instance', None)
 
         if instance:
@@ -163,9 +147,7 @@ class MachineAdminForm(forms.ModelForm):
         return machine
 
     def clean_mac_address(self):
-        """
-        Check if another machine has already this MAC address.
-        """
+        """Check if another machine has already this MAC address."""
         mac_address = self.cleaned_data['mac_address']
 
         if hasattr(self, 'machine'):
@@ -184,9 +166,7 @@ class MachineAdminForm(forms.ModelForm):
         return mac_address
 
     def clean_fqdn(self):
-        """
-        Check if another machine has already this FQDN (except self).
-        """
+        """Check if another machine has already this FQDN (except self)."""
         fqdn = self.cleaned_data['fqdn']
 
         if hasattr(self, 'machine'):
@@ -390,9 +370,10 @@ class MachineAdmin(admin.ModelAdmin):
 
     def write_dhcpv4(self, machine):
         """
-        Shows whether an DHCPv4 record is being written. The hierarchy is:
+        Show whether an DHCPv4 record is being written.
 
-        Machine > [Group >] Architecture
+        The hierarchy is:
+            Machine > [Group >] Architecture
 
         If a machine is in a machine group, the machine group setting decides whether to write a
         DHCP group file (e.g. 'group_foo.conf').
@@ -431,7 +412,7 @@ class MachineAdmin(admin.ModelAdmin):
 
     def write_dhcpv6(self, machine):
         """
-        Shows whether an DHCPv6 record is being written. The hierarchy is:
+        Show whether an DHCPv6 record is being written. The hierarchy is:
 
         Machine > [Group >] Architecture
 
@@ -472,7 +453,7 @@ class MachineAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         """
-        Filters machine list. A superuser is authorized to see/edit all machines. If a user is
+        Filter machine list. A superuser is authorized to see/edit all machines. If a user is
         authorized to change machine models and is privileged in any machine group, then all
         machines belonging to the respective machine group(s) get listed.
         """
@@ -500,16 +481,14 @@ class MachineAdmin(admin.ModelAdmin):
 
     def add_view(self, request, form_url='', extra_context=None):
         """
-        Returns view for 'Add machine' and do not show inlines. This is due the fact that these
+        Return view for 'Add machine' and do not show inlines. This is due the fact that these
         objects need a related machine object (which doesn't exist yet) for several checks.
         """
         self.inlines = ()
         return super(MachineAdmin, self).add_view(request, form_url, extra_context)
 
     def get_fieldsets(self, request, machine):
-        """
-        Do not show 'VIRTUALIZATION' fieldset for administrative systems.
-        """
+        """Do not show 'VIRTUALIZATION' fieldset for administrative systems."""
         fieldsets = super(MachineAdmin, self).get_fieldsets(request)
 
         if machine and machine.system.administrative:
@@ -524,9 +503,7 @@ class MachineAdmin(admin.ModelAdmin):
         return fieldsets
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
-        """
-        Return changes view with inlines for non-administrative systems.
-        """
+        """Return changes view with inlines for non-administrative systems."""
         machine = Machine.objects.get(pk=object_id)
 
         if not self.get_object(request, object_id):
@@ -570,9 +547,7 @@ class DomainAdmin(admin.ModelAdmin):
     )
 
     def setup_support(self, obj):
-        """
-        Returns list of setup supported architectures/machine groups as string.
-        """
+        """Return list of setup supported architectures/machine groups as string."""
         architectures = 'Architectures: '
         machinegroups = 'Machine Groups: '
         link_pattern = '<a href="{}" class="text-muted">{}</a>, '
@@ -600,9 +575,7 @@ class DomainAdmin(admin.ModelAdmin):
         return format_html('{}<br/>{}'.format(architectures, machinegroups))
 
     def cobbler_server_list(self, obj):
-        """
-        Returns DHCP server list as string.
-        """
+        """Return DHCP server list as string."""
         if obj.cobbler_server.all().count() == 0:
             return '-'
         return ', '.join([cobbler_server.fqdn for cobbler_server in obj.cobbler_server.all()])
@@ -632,24 +605,18 @@ class EnclosureAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
     def machine_count(self, obj):
-        """
-        Return machine counter of enclosure.
-        """
+        """Return machine counter of enclosure."""
         return obj.machine_set.count()
 
     def platform_name(self, obj):
-        """
-        Return name of enclosures platform.
-        """
+        """Return name of enclosures platform."""
         platform = obj.platform
         if platform:
             return platform.name
         return None
 
     def bmc_list(self, obj):
-        """
-        Return string with comma seperated list of all BMC FQDNs.
-        """
+        """Return string with comma seperated list of all BMC FQDNs."""
         return ', '.join([bmc.fqdn for bmc in obj.get_bmc_list()])
 
 
@@ -662,9 +629,7 @@ class ServerConfigAdmin(admin.ModelAdmin):
 
     # https://medium.com/@hakibenita/how-to-add-custom-action-buttons-to-django-admin-8d266f5b0d41
     def get_urls(self):
-        """
-        Add customn URLs to server configuration admin view.
-        """
+        """Add customn URLs to server configuration admin view."""
         urls = super(ServerConfigAdmin, self).get_urls()
         custom_urls = [
             url(
@@ -676,9 +641,7 @@ class ServerConfigAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def process_boolean_switch(self, request, serverconfig_id, *args, **kwargs):
-        """
-        Enable/disable value.
-        """
+        """Enable/disable value."""
         action = request.GET.get('action', None)
 
         if (action is not None) and (action in ['enable', 'disable']):
@@ -699,9 +662,7 @@ class ServerConfigAdmin(admin.ModelAdmin):
         return redirect('admin:data_serverconfig_changelist')
 
     def augmented_value(self, obj):
-        """
-        Add buttons for boolean values ('bool:true' or 'bool:false').
-        """
+        """Add buttons for boolean values ('bool:true' or 'bool:false')."""
         if obj.value.lower() == 'bool:false':
             button = _boolean_icon(False)
             button += ' <span class="help">(<a href="{}?action=enable">Enable</a>)</span>'

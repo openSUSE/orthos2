@@ -193,15 +193,11 @@ class SearchForm(forms.Form):
         return installations
 
     def get_systems():
-        """
-        Return system choices.
-        """
+        """Return system choices."""
         return Machine._meta.get_field('system').get_choices(blank_choice=[('', '--all--')])
 
     def get_architectures():
-        """
-        Return architecture choices.
-        """
+        """Return architecture choices."""
         return Machine._meta.get_field('architecture').get_choices(blank_choice=[('', '--all--')])
 
     enclosure__platform__vendor = forms.ChoiceField(
@@ -587,9 +583,7 @@ class VirtualMachineForm(forms.Form):
         self.fields['image'].choices = [('none', 'None')] + image_list
 
     def clean(self):
-        """
-        Set `image` to None; cast `decimal.Decimal()` to `int`.
-        """
+        """Set `image` to None; cast `decimal.Decimal()` to `int`."""
         cleaned_data = super(VirtualMachineForm, self).clean()
 
         if cleaned_data['image'] == 'none':

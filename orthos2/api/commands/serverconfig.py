@@ -32,9 +32,7 @@ Example:
         ]
 
     def get(self, request, *args, **kwargs):
-        """
-        Show server configuration.
-        """
+        """Show server configuration."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 

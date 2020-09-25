@@ -78,9 +78,7 @@ class BaseAPIForm:
         return field
 
     def as_dict(self):
-        """
-        Generates and returns form as dictionary.
-        """
+        """Generate and return form as dictionary."""
         result = {}
 
         for name, field in self.fields.items():
@@ -96,9 +94,7 @@ class BaseAPIForm:
 class ReserveMachineAPIForm(ReserveMachineForm, BaseAPIForm):
 
     def as_dict(self):
-        """
-        Generates and returns form as dictionary.
-        """
+        """Generate and return form as dictionary."""
         result = {}
 
         for name, field in self.fields.items():
@@ -120,18 +116,14 @@ class ReserveMachineAPIForm(ReserveMachineForm, BaseAPIForm):
         return result
 
     def get_order(self):
-        """
-        Returns input order.
-        """
+        """Return input order."""
         return ['username', 'reason', 'until']
 
 
 class VirtualMachineAPIForm(VirtualMachineForm, BaseAPIForm):
 
     def as_dict(self, host):
-        """
-        Generates and returns form as dictionary.
-        """
+        """Generate and return form as dictionary."""
         result = {}
 
         for name, field in self.fields.items():
@@ -151,9 +143,7 @@ class VirtualMachineAPIForm(VirtualMachineForm, BaseAPIForm):
         return result
 
     def get_order(self):
-        """
-        Returns input order.
-        """
+        """Return input order."""
         return [
             'host',
             'system',
@@ -171,45 +161,35 @@ class VirtualMachineAPIForm(VirtualMachineForm, BaseAPIForm):
 class MachineAPIForm(forms.Form, BaseAPIForm):
 
     def get_architectures():
-        """
-        Return architectures choice tuple.
-        """
+        """Return architectures choice tuple."""
         architectures = []
         for architecture in Architecture.objects.all().values('id', 'name'):
             architectures.append((architecture['id'], architecture['name']))
         return (architectures)
 
     def get_systems():
-        """
-        Return systems choice tuple.
-        """
+        """Return systems choice tuple."""
         systems = []
         for system in System.objects.all().values('id', 'name'):
             systems.append((system['id'], system['name']))
         return (systems)
 
     def get_machinegroups():
-        """
-        Return machine group choice tuple.
-        """
+        """Return machine group choice tuple."""
         groups = [('none', 'None')]
         for group in MachineGroup.objects.all().values('id', 'name'):
             groups.append((group['id'], group['name']))
         return (groups)
 
     def clean_fqdn(self):
-        """
-        Check whether `fqdn` already exists.
-        """
+        """Check whether `fqdn` already exists."""
         fqdn = self.cleaned_data['fqdn']
         if Machine.objects.filter(fqdn__iexact=fqdn).count() != 0:
             self.add_error('fqdn', "FQDN is already in use!")
         return fqdn
 
     def clean_mac_address(self):
-        """
-        Check whether `mac_address` already exists.
-        """
+        """Check whether `mac_address` already exists."""
         mac_address = self.cleaned_data['mac_address']
         if not is_unique_mac_address(mac_address):
             self.add_error(
@@ -222,18 +202,14 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         return mac_address
 
     def clean_enclosure(self):
-        """
-        Set the proper `enclosure` value.
-        """
+        """Set the proper `enclosure` value."""
         enclosure = self.cleaned_data['enclosure']
         if not enclosure:
             enclosure = None
         return enclosure
 
     def clean_group_id(self):
-        """
-        Set `group_id` to None if 'None' is selected.
-        """
+        """Set `group_id` to None if 'None' is selected."""
         group_id = self.cleaned_data['group_id']
         if group_id == 'none':
             group_id = None
@@ -242,6 +218,7 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
     def clean(self):
         """
         Get or create the enclosure.
+
         Only allow ABuild check and collect system information if connectivity is set to `Full`.
         """
         cleaned_data = super(MachineAPIForm, self).clean()
@@ -344,9 +321,7 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
     )
 
     def get_order(self):
-        """
-        Returns input order.
-        """
+        """Return input order."""
         return [
             'fqdn',
             'enclosure',
@@ -367,9 +342,7 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
 class DeleteMachineAPIForm(forms.Form, BaseAPIForm):
 
     def clean_fqdn(self):
-        """
-        Check whether `fqdn` already exists.
-        """
+        """Check whether `fqdn` already exists."""
         fqdn = self.cleaned_data['fqdn']
         if Machine.objects.filter(fqdn__iexact=fqdn).count() == 0:
             self.add_error('fqdn', "FQDN does not exist!")
@@ -381,9 +354,7 @@ class DeleteMachineAPIForm(forms.Form, BaseAPIForm):
     )
 
     def get_order(self):
-        """
-        Returns input order.
-        """
+        """Return input order."""
         return [
             'fqdn',
         ]
@@ -429,9 +400,7 @@ class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
         self.fields['console_server'].empty_label = 'None'
 
     def clean(self):
-        """
-        Add the machine to cleaned data for further processing.
-        """
+        """Add the machine to cleaned data for further processing."""
         cleaned_data = super(SerialConsoleAPIForm, self).clean()
         cleaned_data['machine'] = self.machine
         serialconsole = SerialConsole(**cleaned_data)
@@ -439,18 +408,14 @@ class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
         return cleaned_data
 
     def get_order(self):
-        """
-        Returns input order.
-        """
+        """Return input order."""
         return self._query_fields
 
 
 class DeleteSerialConsoleAPIForm(forms.Form, BaseAPIForm):
 
     def clean_fqdn(self):
-        """
-        Check whether `fqdn` already exists.
-        """
+        """Check whether `fqdn` already exists."""
         fqdn = self.cleaned_data['fqdn']
         if Machine.objects.filter(fqdn__iexact=fqdn).count() == 0:
             self.add_error('fqdn', "FQDN does not exist!")
@@ -462,9 +427,7 @@ class DeleteSerialConsoleAPIForm(forms.Form, BaseAPIForm):
     )
 
     def get_order(self):
-        """
-        Returns input order.
-        """
+        """Return input order."""
         return [
             'fqdn',
         ]
@@ -484,9 +447,7 @@ class AnnotationAPIForm(forms.Form, BaseAPIForm):
     )
 
     def get_order(self):
-        """
-        Returns input order.
-        """
+        """Return input order."""
         return [
             'text',
         ]
@@ -526,9 +487,7 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
         self.fields['remote_power_device'].empty_label = 'None'
 
     def clean(self):
-        """
-        Add the machine to cleaned data for further processing.
-        """
+        """Add the machine to cleaned data for further processing."""
         cleaned_data = super(RemotePowerAPIForm, self).clean()
         cleaned_data['machine'] = self.machine
         remotepower = RemotePower(**cleaned_data)
@@ -536,18 +495,14 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
         return cleaned_data
 
     def get_order(self):
-        """
-        Returns input order.
-        """
+        """Return input order."""
         return self._query_fields
 
 
 class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):
 
     def clean_fqdn(self):
-        """
-        Check whether `fqdn` already exists.
-        """
+        """Check whether `fqdn` already exists."""
         fqdn = self.cleaned_data['fqdn']
         if Machine.objects.filter(fqdn__iexact=fqdn).count() == 0:
             self.add_error('fqdn', "FQDN does not exist!")
@@ -559,9 +514,7 @@ class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):
     )
 
     def get_order(self):
-        """
-        Returns input order.
-        """
+        """Return input order."""
         return [
             'fqdn',
         ]

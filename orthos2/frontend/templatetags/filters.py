@@ -11,9 +11,7 @@ register = template.Library()
 
 @register.filter
 def divide(value, arg):
-    """
-    Divide ``value`` and return float value rounded to one decimal place.
-    """
+    """Divide ``value`` and return float value rounded to one decimal place."""
     try:
         return format(float(value) / arg, '.1f')
     except (ValueError, ZeroDivisionError):
@@ -22,9 +20,7 @@ def divide(value, arg):
 
 @register.filter
 def boolean_image(value, size=25):
-    """
-    Returns an HTML image tag with ``size`` (width in px) if ``value`` is true.
-    """
+    """Return an HTML image tag with ``size`` (width in px) if ``value`` is true."""
     if value:
         return '&#9989;'
     else:
@@ -33,9 +29,7 @@ def boolean_image(value, size=25):
 
 @register.filter
 def vendor_image(cpu_model, size=25):
-    """
-    Returns an HTML image tag with ``size`` (width in px) and the repective vendor logo.
-    """
+    """Return an HTML image tag with ``size`` (width in px) and the repective vendor logo."""
     cpu_model = cpu_model.lower()
 
     img = '<img src="{{}}" width="{}px"/>'.format(size)

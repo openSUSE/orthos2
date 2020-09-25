@@ -42,9 +42,7 @@ Example:
         return ['list']
 
     def _list(self, request, machine):
-        """
-        Return list of available distributions for `machine`.
-        """
+        """Return list of available distributions for `machine`."""
         machinegroup = None
         if not machine.has_setup_capability():
             return InfoMessage("Machine has no setup capability.").as_json
@@ -81,9 +79,7 @@ Example:
         return JsonResponse(response)
 
     def _setup(self, request, machine, distribution):
-        """
-        Trigger machine setup for `machine` with `distribution`.
-        """
+        """Trigger machine setup for `machine` with `distribution`."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
@@ -123,9 +119,7 @@ Example:
             return ErrorMessage(str(e)).as_json
 
     def get(self, request, *args, **kwargs):
-        """
-        Perform machine setup.
-        """
+        """Perform machine setup."""
         fqdn = request.GET.get('fqdn', None)
         option_or_choice = request.GET.get('option_or_choice', None)
         choice = None

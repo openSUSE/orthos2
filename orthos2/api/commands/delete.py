@@ -61,9 +61,7 @@ Example:
         return Delete.as_list
 
     def get(self, request, *args, **kwargs):
-        """
-        Dispatcher for the 'delete' command.
-        """
+        """Dispatcher for the 'delete' command."""
         arguments = request.GET.get('args', None)
 
         if arguments:
@@ -105,9 +103,7 @@ class DeleteMachineCommand(BaseAPIView):
         ]
 
     def get(self, request, *args, **kwargs):
-        """
-        Return form for deleting a machine.
-        """
+        """Return form for deleting a machine."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
@@ -124,9 +120,7 @@ class DeleteMachineCommand(BaseAPIView):
         return input.as_json
 
     def post(self, request, *args, **kwargs):
-        """
-        Delete machine.
-        """
+        """Delete machine."""
         if not request.user.is_superuser:
             return ErrorMessage("Only superusers are allowed to perform this action!").as_json
 
@@ -191,9 +185,7 @@ class DeleteSerialConsoleCommand(BaseAPIView):
         ]
 
     def get(self, request, *args, **kwargs):
-        """
-        Return form for deleting a serial console.
-        """
+        """Return form for deleting a serial console."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
@@ -210,9 +202,7 @@ class DeleteSerialConsoleCommand(BaseAPIView):
         return input.as_json
 
     def post(self, request, *args, **kwargs):
-        """
-        Delete serial console.
-        """
+        """Delete serial console."""
         if not request.user.is_superuser:
             return ErrorMessage("Only superusers are allowed to perform this action!").as_json
 
@@ -271,9 +261,7 @@ class DeleteRemotePowerCommand(BaseAPIView):
         ]
 
     def get(self, request, *args, **kwargs):
-        """
-        Return form for deleting a remote power.
-        """
+        """Return form for deleting a remote power."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
@@ -290,9 +278,7 @@ class DeleteRemotePowerCommand(BaseAPIView):
         return input.as_json
 
     def post(self, request, *args, **kwargs):
-        """
-        Delete remote power.
-        """
+        """Delete remote power."""
         if not request.user.is_superuser:
             return ErrorMessage("Only superusers are allowed to perform this action!").as_json
 

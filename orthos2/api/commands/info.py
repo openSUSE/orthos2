@@ -39,9 +39,7 @@ Example:
         return list(Machine.api.all().values_list('fqdn', flat=True))
 
     def get(self, request, *args, **kwargs):
-        """
-        Return machine information.
-        """
+        """Return machine information."""
         fqdn = request.GET.get('fqdn', None)
         response = {}
 

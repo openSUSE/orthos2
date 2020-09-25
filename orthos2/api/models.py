@@ -20,7 +20,9 @@ class HelperFunctions:
     @staticmethod
     def get_ipv4(machine_id):
         """
-        Returns the IPv4 address of a machine. This value gets set after initialising a machine.
+        Return the IPv4 address of a machine.
+
+        This value gets set after initialising a machine.
         """
         machine = Machine.objects.get(pk=machine_id)
         value = getattr(machine, 'ipv4', None)
@@ -29,7 +31,9 @@ class HelperFunctions:
     @staticmethod
     def get_ipv6(machine_id):
         """
-        Returns the IPv6 address of a machine. This value gets set after initialising a machine.
+        Return the IPv6 address of a machine.
+
+        This value gets set after initialising a machine.
         """
         machine = Machine.objects.get(pk=machine_id)
         value = getattr(machine, 'ipv6', None)
@@ -37,9 +41,7 @@ class HelperFunctions:
 
     @staticmethod
     def username_to_id(username):
-        """
-        Translate a string into a valid user ID if possible.
-        """
+        """Translate a string into a valid user ID if possible."""
         try:
             return User.objects.get(username__iexact=username).pk
         except MultipleObjectsReturned:
@@ -47,9 +49,7 @@ class HelperFunctions:
 
     @staticmethod
     def get_status_ping(machine_id):
-        """
-        Returns the ping status of a machine.
-        """
+        """Return the ping status of a machine."""
         machine = Machine.objects.get(pk=machine_id)
         value = getattr(machine, 'status_ping', None)
         return value
@@ -438,11 +438,12 @@ class QueryField:
 
     def __init__(self, token):
         """
-        Constructor for `QueryField`. This constructor tries to define a valid query field with
+        Constructor for `QueryField`.
+
+        This constructor tries to define a valid query field with
         all corresponding values for further processing in the context of DB querying.
 
         Example:
-
             QueryField('comment')                -> Machine.comment
             QueryField('comment_length')         -> Machine.comment (for querying the char length)
             QueryField('ipv4')                   -> Machine.ipv4 (dynamic field)
@@ -513,8 +514,10 @@ class QueryField:
     @classmethod
     def get_valid_field_names(cls):
         """
-        Returns a list of valid field names. These are all `Machine` field names, all `MAPPING`
-        field names and all dynamic field names in `DYNAMIC_FIELDS`.
+        Return a list of valid field names.
+
+        These are all `Machine` field names, all `MAPPING` field names and all dynamic field names
+        in `DYNAMIC_FIELDS`.
         """
         field_names = [field.name for field in Machine._meta.fields]
         field_names += list(cls.MAPPING.keys())
@@ -523,9 +526,7 @@ class QueryField:
 
     @property
     def db_field_name(self):
-        """
-        Returns a valid field name for querying the DB.
-        """
+        """Return a valid field name for querying the DB."""
         if not self._related_name:
             field_name = self._field.name
         else:
@@ -538,95 +539,73 @@ class QueryField:
 
     @property
     def related_name(self):
-        """
-        Returns the related name of a `QueryField` object.
-        """
+        """Return the related name of a `QueryField` object."""
         return self._related_name
 
     @property
     def verbose_name(self):
-        """
-        Returns the verbose name of a `QueryField` object.
-        """
+        """Return the verbose name of a `QueryField` object."""
         if self._verbose_name.islower():
             return self._verbose_name.capitalize()
         return self._verbose_name
 
     @property
     def null(self):
-        """
-        Returns if a `QueryField` object can be `NULL` in the DB.
-        """
+        """Return if a `QueryField` object can be `NULL` in the DB."""
         return self._field.null
 
     @property
     def is_dynamic(self):
-        """
-        Returns if a `QueryField` object is dynamic (non-database value) or not.
-        """
+        """Return if a `QueryField` object is dynamic (non-database value) or not."""
         return self._dynamic
 
     def is_BooleanField(self):
-        """
-        Checks if a `QueryField` object is a boolean field.
-        """
+        """Check if a `QueryField` object is a boolean field."""
         return 'BooleanField' in self._field.get_internal_type()
 
     def is_CharField(self):
-        """
-        Checks if a `QueryField` object is a character field.
-        """
+        """Check if a `QueryField` object is a character field."""
         return 'CharField' in self._field.get_internal_type()
 
     def is_TextField(self):
-        """
-        Checks if a `QueryField` object is a character field.
-        """
+        """Check if a `QueryField` object is a character field."""
         return 'TextField' in self._field.get_internal_type()
 
     def is_ForeignKey(self):
-        """
-        Checks if a `QueryField` object is a foreign key.
-        """
+        """Check if a `QueryField` object is a foreign key."""
         return 'ForeignKey' in self._field.get_internal_type()
 
     def is_DateField(self):
-        """
-        Checks if a `QueryField` object is a date field.
-        """
+        """Check if a `QueryField` object is a date field."""
         return 'DateField' in self._field.get_internal_type()
 
     def is_DateTimeField(self):
-        """
-        Checks if a `QueryField` object is a datetime field.
-        """
+        """Check if a `QueryField` object is a datetime field."""
         return 'DateTimeField' in self._field.get_internal_type()
 
     def get_db_function_length(self):
         """
-        Returns a tuple with a valid DB field name for querying string length and its corresponding
+        Return a tuple with a valid DB field name for querying string length and its corresponding
         DB function.
 
         Example:
-
-            ('comment_lenght', Length('comment'))
+            ('comment_length', Length('comment'))
         """
         field = QueryField(self.db_field_name + self.LENGTH_SUFFIX)
         return (field, {field.db_field_name: Length(self.db_field_name)})
 
     @property
     def type(self):
-        """
-        Returns fields type as string.
-        """
+        """Return fields type as string."""
         return self._field.get_internal_type()
 
     @property
     def dynamic_field_function(self):
         """
-        Returns a optional function for processing dynamic fields (non-database fields). If no
-        dynamic function is defined, a simple lambda function is returned which simply returns the
-        input value.
+        Return a optional function for processing dynamic fields (non-database fields).
+
+        If no dynamic function is defined, a simple lambda function is returned which simply
+        returns the input value.
         """
         if self._dynamic_field_function:
             return self._dynamic_field_function
@@ -635,8 +614,10 @@ class QueryField:
     @property
     def pre_function(self):
         """
-        Returns a optional pre-function. If no pre-function is defined, a simple lambda function is
-        returned which simply returns the input value.
+        Return a optional pre-function.
+
+        If no pre-function is defined, a simple lambda function is returned which simply returns
+        the input value.
         """
         if self._pre_function:
             return self._pre_function
@@ -645,8 +626,10 @@ class QueryField:
     @property
     def post_function(self):
         """
-        Returns a optional post-function. If no post-function is defined, a simple lambda function
-        is returned which simply returns the input value.
+        Return a optional post-function.
+
+        If no post-function is defined, a simple lambda function is returned which simply returns
+        the input value.
         """
         if self._post_function:
             return self._post_function
@@ -707,11 +690,10 @@ class APIQuery:
 
     def _prepare_query(self):
         """
-        Splits raw query string into field and condition section (if available) and preprocesses the
+        Split raw query string into field and condition section (if available) and preprocesses the
         data.
 
         Example:
-
             "<fields> where <condition> <conjunction> <condition> ..." ->
                 [<fields>],
                 [<conditions>],
@@ -734,9 +716,7 @@ class APIQuery:
             raise SyntaxError("Invalid syntax (multiple 'where' found)!")
 
     def _prepare_fields(self, fields_str):
-        """
-        Strip query string in query fields.
-        """
+        """Strip query string in query fields."""
         fields = []
 
         for token in fields_str.split(','):
@@ -747,11 +727,12 @@ class APIQuery:
 
     def _prepare_conditions(self, conditions_str):
         """
-        Assemble conditions. For single condition statements on character fields, annotations get
-        added for string length comparing.
+        Assemble conditions.
+
+        For single condition statements on character fields, annotations get added for string
+        length comparing.
 
         Return:
-
             (
                 ['(<field>', '__<op>', '<value>'), ...],
                 ['and', 'or', ...],
@@ -759,7 +740,6 @@ class APIQuery:
             )
 
         Examples:
-
             where foo ...           -> [('foo', '', 'True'), ...]
             where !foo ...          -> [('foo', '', 'False'), ...]
             where foo =~ bar ...    -> [('foo', '__istartswith', 'bar'), ...]
@@ -878,9 +858,7 @@ class APIQuery:
         return (conditions, conjunctions, annotations)
 
     def _get_query(self):
-        """
-        Returns valid django model queries which can be piped into `filter()` method.
-        """
+        """Return valid django model queries which can be piped into `filter()` method."""
         if not self.has_conditions:
             return Q()
 
@@ -917,8 +895,9 @@ class APIQuery:
 
     def execute(self, user=None):
         """
-        Executes requested query and stores the result. This method is responsible for preparing,
-        executing and revising data from the DB.
+        Execute requested query and stores the result.
+
+        This method is responsible for preparing, executing and revising data from the DB.
         """
         self._prepare_query()
         self._apply_pre_functions()
@@ -971,8 +950,10 @@ class APIQuery:
 
     def _apply_pre_functions(self):
         """
-        Applies pre-functions. Pre-functions are used for converting user input values. This can
-        be used for e.g. translating a search string into a foreign key integer.
+        Apply pre-functions.
+
+        Pre-functions are used for converting user input values. This can be used for e.g.
+        translating a search string into a foreign key integer.
         """
         for i, condition in enumerate(self._conditions):
             field = condition[0]
@@ -989,9 +970,7 @@ class APIQuery:
             )
 
     def _apply_post_functions(self, rows):
-        """
-        Applies post-functions on each result row.
-        """
+        """Apply post-functions on each result row."""
         for row in rows:
             for field, value in row.items():
                 if value is None:
@@ -1024,9 +1003,7 @@ class APIQuery:
 
     @staticmethod
     def get_tab_completion_options():
-        """
-        Return fields, operators, etc. for tab completion as list.
-        """
+        """Return fields, operators, etc. for tab completion as list."""
         options = QueryField.get_valid_field_names()
         options += list(APIQuery.OPERATORS.keys())
         options += [APIQuery.WHERE, APIQuery.AND, APIQuery.OR, 'infinite']

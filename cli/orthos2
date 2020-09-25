@@ -87,8 +87,7 @@ class HTTPStatus:
 
 
 def format_value(value):
-    """
-    Formats values human readable.
+    """Format values human readable.
 
     Examples:
 
@@ -195,7 +194,8 @@ class Command:
         return self._method
 
     def get_matching_argument_list(self, length):
-        """
+        """Return matching argument list.
+
         Return the respective argument list according to the number of given arguments, None
         otherwise. A trailing asterisk indicates a raw argument transfer.
         """
@@ -214,17 +214,16 @@ class Command:
         return self._command
 
     def send(self, orthos, raw_arguments=''):
-        """
-        Sends a requst according to the command's HTTP method (set by the server). For re-executing
-        a command with its arguments (e.g. after authorization was requested), all arguments get
-        saved in the command object here.
+        """Send a requst according to the command's HTTP method (set by the server).
+
+        For re-executing a command with its arguments (e.g. after authorization was requested), all
+        arguments get saved in the command object here.
 
         Example:
 
             'command foo bar baz'   -> http://.../command/foo?data=bar+baz
             'command foo'           -> http://.../command/foo
             'command'               -> http://.../command/
-
 
         For POST requests, the following arguments get forwarded as entered into the API's post
         method.
@@ -253,9 +252,7 @@ class Command:
             return orthos.API.request('GET', url)
 
     def as_input(self):
-        """
-        Returns the command with its arguments as a list.
-        """
+        """Return the command with its arguments as a list."""
         return [str(self)] + self._recent_arguments
 
 
@@ -298,8 +295,8 @@ class Input(APIResponse):
         self._target_url = self._header['target']
 
     def _clean_value(self, field, input_value, required, items=None):
-        """
-        Validates and casts input values. Value needs to be the required type and needs to be set
+        """Validate and cast input values.
+        Value needs to be the required type and needs to be set
         if value is required at all. For selections, either the number or the given is returned.
 
         Raises ValueError if value is corrupted.
@@ -365,9 +362,7 @@ class Input(APIResponse):
         return value
 
     def process(self):
-        """
-        Executing API result.
-        """
+        """Execute API result."""
         data = {}
         i = 0
 
@@ -436,9 +431,7 @@ class Input(APIResponse):
 class AuthRequired(APIResponse):
 
     def process(self):
-        """
-        Executing API result.
-        """
+        """Execute API result."""
         if not orthos.is_authenticated():
             orthos.authenticate()
 
@@ -448,9 +441,7 @@ class AuthRequired(APIResponse):
 class Select(APIResponse):
 
     def output(self):
-        """
-        Generates output.
-        """
+        """Generate output."""
         result = '{0}\n\n'.format(self._header['title'])
         i = 0
 
@@ -461,18 +452,14 @@ class Select(APIResponse):
         return result
 
     def process(self):
-        """
-        Executing API result.
-        """
+        """Execute API result."""
         orthos.Terminal.show(self.output())
 
 
 class Message(APIResponse):
 
     def output(self):
-        """
-        Generates output.
-        """
+        """Generate output."""
         if not self._data.get('type', None) or not self._data['type']:
             result = '{0}'.format(self._data['message'])
         else:
@@ -480,9 +467,7 @@ class Message(APIResponse):
         return result
 
     def process(self):
-        """
-        Executing API result.
-        """
+        """Execute API result."""
         if (orthos.config.is_quiet() and self._data['type'] == 'INFO'):
             return
         orthos.Terminal.show(self.output())
@@ -506,18 +491,14 @@ class Table(APIResponse):
                     self._widths[i] = len(str(row[field]))
 
     def _get_line(self):
-        """
-        Draw a horizontal line with a correlating width.
-        """
+        """Draw a horizontal line with a correlating width."""
         if not PLAIN_OUTPUT:
             return '-' * (sum(self._widths) + len(self._widths) * COLUMN_PADDING) + '\n'
 
         return ''
 
     def _get_theader(self):
-        """
-        Draw the table header.
-        """
+        """Draw the table header."""
         if not PLAIN_OUTPUT:
             theader = ''
 
@@ -529,9 +510,7 @@ class Table(APIResponse):
         return ''
 
     def output(self):
-        """
-        Generates output.
-        """
+        """Generate output."""
         result = self._get_line()
         result += self._get_theader()
         result += self._get_line()
@@ -555,9 +534,7 @@ class Table(APIResponse):
         return result
 
     def process(self):
-        """
-        Executing API result.
-        """
+        """Execute API result."""
         orthos.Terminal.show(self.output())
 
 
@@ -629,16 +606,12 @@ class Info(APIResponse):
         return result
 
     def process(self):
-        """
-        Executing API result.
-        """
+        """Execute API result."""
         orthos.Terminal.show(self.output())
 
 
 class Terminal:
-    """
-    Accesses properties of the terminal.
-    """
+    """Access properties of the terminal."""
 
     @property
     def width(self):
@@ -705,9 +678,7 @@ class TabCompleter:
         self._options = options
 
     def complete(self, text, state):
-        """
-        Return the completion.
-        """
+        """Return the completion."""
         response = None
 
         if state == 0:
@@ -1001,9 +972,7 @@ class Orthos:
     class API:
 
         def request_token(self, username, password):
-            """
-            Request token from API for user authentication.
-            """
+            """Request token from API for user authentication."""
             url = API_URL + '/login'
 
             data = {
@@ -1015,9 +984,7 @@ class Orthos:
             orthos.config.set_token(data.get('token', None))
 
         def get(self, url):
-            """
-            Send GET request to given URL.
-            """
+            """Send GET request to given URL."""
             response = None
 
             headers = {}
@@ -1035,9 +1002,7 @@ class Orthos:
             return response
 
         def post(self, url, data=None, login=False):
-            """
-            Send POST request to given URL.
-            """
+            """Send POST request to given URL."""
             response = None
 
             if login:
@@ -1097,17 +1062,13 @@ class Orthos:
             return orthos.config.get_token()
 
     def __init__(self):
-        """
-        Initialize orthos object.
-        """
+        """Initialize orthos object."""
         self.API = self.API()
         self.config = Config()
         self.Terminal = Terminal()
 
     def init(self):
-        """
-        Collect available commands from server and print welcome message.
-        """
+        """Collect available commands from server and print welcome message."""
         global API_URL
 
         API_URL = API_URL_FORMAT.format(
@@ -1177,9 +1138,7 @@ Example:
             self.Terminal.show(message)
 
     def _add_client_command(self, command, tabcompletion=[], help=None, docstring=None):
-        """
-        Add client command for tab completion.
-        """
+        """Add client command for tab completion."""
         attributes = {'tabcompletion': tabcompletion}
 
         if help:
@@ -1223,9 +1182,7 @@ Example:
         return result
 
     def get_password(self):
-        """
-        Prompts for password and returns it.
-        """
+        """Prompt for password and return it."""
         password = None
         try:
             password = getpass.getpass("Orthos password for {0}: ".format(self.username))
@@ -1235,9 +1192,7 @@ Example:
         return password
 
     def authenticate(self):
-        """
-        Authenticates the user.
-        """
+        """Authenticate the user."""
         password = orthos.config.get_password()
 
         if password is not None:
@@ -1268,15 +1223,11 @@ Example:
                 print("ERROR: Authorization error!")
 
     def is_authenticated(self):
-        """
-        Checks if the user is already authenticated (token set).
-        """
+        """Check if the user is already authenticated (token set)."""
         return True if self.API.get_token() else False
 
     def print_help(self, arguments=None):
-        """
-        Prints help.
-        """
+        """Print help."""
         arguments = arguments.strip()
         if arguments:
             argument = arguments.split()[0]
@@ -1385,9 +1336,7 @@ Example:
 
 
 def main():
-    """
-    Main function.
-    """
+    """Main function."""
     global orthos
     global PLAIN_OUTPUT
     global IFS

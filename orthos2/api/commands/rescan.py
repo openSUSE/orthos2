@@ -47,9 +47,7 @@ Example:
         return MachineCheck.Scan.Action.as_list
 
     def get(self, request, *args, **kwargs):
-        """
-        Return reservation history of machine.
-        """
+        """Return reservation history of machine."""
         fqdn = request.GET.get('fqdn', None)
         option = request.GET.get('option', None)
 

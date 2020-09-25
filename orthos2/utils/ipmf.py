@@ -33,9 +33,7 @@ class IPMatchFilter(object):
     or networks:
 
     Example:
-
         [(subnet, [range, ...]), ...)
-
     """
 
     def __init__(self, version=None):
@@ -51,21 +49,15 @@ class IPMatchFilter(object):
 
     @property
     def version(self):
-        """
-        The IP Protocol version used by this instance.
-        """
+        """The IP Protocol version used by this instance."""
         return self._ver
 
     def empty(self):
-        """
-        Returns true when the filter is empty, otherwise false.
-        """
+        """Return true when the filter is empty, otherwise false."""
         return len(self._ipf) == 0
 
     def add_subnet(self, subnet):
-        """
-        Adds an allowed subnet to the filter
-        """
+        """Add an allowed subnet to the filter."""
         sn = netaddr.ip.IPNetwork(subnet)
         if self.version is not None and sn.version != self.version:
             raise ValueError("IP Protocol version missmatch")
@@ -79,7 +71,7 @@ class IPMatchFilter(object):
 
     def add_range(self, beg, end=None):
         """
-        Adds a range to matching subnet giving either its begin and end or also as network in
+        Add a range to matching subnet giving either its begin and end or also as network in
         begin.
         """
         if end is None:
@@ -103,7 +95,7 @@ class IPMatchFilter(object):
 
     def match(self, ip):
         """
-        Tests if the IP address matches an allowed subnet but none of the disallowed ranges in it.
+        Test if the IP address matches an allowed subnet but none of the disallowed ranges in it.
         """
         a = netaddr.ip.IPAddress(ip)
         if a.version != self.version:

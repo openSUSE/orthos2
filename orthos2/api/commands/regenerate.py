@@ -62,9 +62,7 @@ Example:
         return Regenerate.as_list
 
     def get(self, request, *args, **kwargs):
-        """
-        Trigger regeneration of machine-related/service files.
-        """
+        """Trigger regeneration of machine-related/service files."""
         fqdn = request.GET.get('fqdn', None)
         option = request.GET.get('option', None)
         service = request.GET.get('service', None)
