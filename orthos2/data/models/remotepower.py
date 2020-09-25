@@ -205,7 +205,7 @@ class RemotePower(models.Model):
         self.clean()
 
         if self.remote_power_device:
-            if not self.remote_power_device.system_id == System.Type.REMOTEPOWER:
+            if self.remote_power_device.system_id != System.Type.REMOTEPOWER:
                 raise ValidationError(
                     (
                         "Remote power device '{}' must have system type 'REMOTEPOWER'!".format(

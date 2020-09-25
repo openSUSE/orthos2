@@ -54,7 +54,7 @@ class IPMatchFilter(object):
 
     def empty(self):
         """Return true when the filter is empty, otherwise false."""
-        return len(self._ipf) == 0
+        return not self._ipf
 
     def add_subnet(self, subnet):
         """Add an allowed subnet to the filter."""

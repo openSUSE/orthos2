@@ -91,7 +91,7 @@ Example:
             return redirect('{}?arch={}'.format(reverse('api:vm_add'), sub_arguments[0]))
 
         elif item == Add.MACHINE:
-            if len(sub_arguments) != 0:
+            if sub_arguments:
                 return ErrorMessage("Invalid number of arguments for 'machine'!").as_json
 
             return redirect(reverse('api:machine_add'))

@@ -50,8 +50,18 @@ def machine_post_save(sender, instance, *args, **kwargs):
 
     Systems with 'administrative' flag set do only get one single network interface.
     """
-    if not kwargs['created']:
+    if kwargs['created']:
+        instance.networkinterfaces.create(
+            machine=instance,
+            primary=True,
+            mac_address=instance.mac_address
+        )
 
+        # create Cobbler entry
+        signal_cobbler_regenerate.send(sender=None, domain_id=instance.fqdn_domain.pk)
+
+        instance.scan()
+    else:
         primary_networkinterface = NetworkInterface.objects.get(machine=instance, primary=True)
 
         if primary_networkinterface.mac_address.upper() != instance.mac_address.upper():
@@ -76,18 +86,6 @@ def machine_post_save(sender, instance, *args, **kwargs):
                 instance.scan('networkinterfaces')
                 # regenerate Cobbler entry
                 signal_cobbler_regenerate.send(sender=None, domain_id=instance.fqdn_domain.pk)
-
-    else:
-        instance.networkinterfaces.create(
-            machine=instance,
-            primary=True,
-            mac_address=instance.mac_address
-        )
-
-        # create Cobbler entry
-        signal_cobbler_regenerate.send(sender=None, domain_id=instance.fqdn_domain.pk)
-
-        instance.scan()
 
 
 @receiver(post_init, sender=Machine)

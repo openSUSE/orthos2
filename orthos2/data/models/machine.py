@@ -139,10 +139,10 @@ class SearchManager(ViewManager):
                     value = False
 
                 q = Q(**{'{}{}'.format(key, operator): value})
-                if not query:
-                    query = q
-                else:
+                if query:
                     query = query & q
+                else:
+                    query = q
 
         if query:
             queryset = queryset.filter(query).distinct()
@@ -565,10 +565,10 @@ class Machine(models.Model):
                 from data.signals import signal_cobbler_regenerate
 
                 # regenerate DHCP on all domains (deletion/registration) if domain changed
-                if self.fqdn_domain != self._original.fqdn_domain:
-                    domain_id = None
-                else:
+                if self.fqdn_domain == self._original.fqdn_domain:
                     domain_id = self.fqdn_domain.pk
+                else:
+                    domain_id = None
 
                 signal_cobbler_regenerate.send(sender=self.__class__, domain_id=domain_id)
 
@@ -674,13 +674,11 @@ class Machine(models.Model):
         add a line to the respective DHCP file. This applies to the options
         ``DHCPRecordOption.WRITE`` and ``DHCPRecordOption.IGNORE``.
         """
-        if ((self.dhcpv4_write == DHCPRecordOption.WRITE) or
-                (self.dhcpv4_write == DHCPRecordOption.IGNORE)) and \
+        if self.dhcpv4_write in {DHCPRecordOption.WRITE, DHCPRecordOption.IGNORE} and \
                 (self.group and self.group.dhcpv4_write):
             return True
 
-        elif ((self.dhcpv4_write == DHCPRecordOption.WRITE) or
-                (self.dhcpv4_write == DHCPRecordOption.IGNORE)) and \
+        elif self.dhcpv4_write in {DHCPRecordOption.WRITE, DHCPRecordOption.IGNORE} and \
                 (not self.group and self.architecture.dhcpv4_write):
             return True
 
@@ -693,13 +691,11 @@ class Machine(models.Model):
         The hierarchy is:
             Machine > [Group >] Architecture
         """
-        if ((self.dhcpv6_write == DHCPRecordOption.WRITE) or
-                (self.dhcpv6_write == DHCPRecordOption.IGNORE)) and\
+        if self.dhcpv6_write in {DHCPRecordOption.WRITE, DHCPRecordOption.IGNORE} and\
                 (self.group and self.group.dhcpv6_write):
             return True
 
-        elif ((self.dhcpv6_write == DHCPRecordOption.WRITE) or
-                (self.dhcpv6_write == DHCPRecordOption.IGNORE)) and\
+        elif self.dhcpv6_write in {DHCPRecordOption.WRITE, DHCPRecordOption.IGNORE} and\
                 (not self.group and self.architecture.dhcpv6_write):
             return True
 
@@ -711,7 +707,7 @@ class Machine(models.Model):
 
         Only non BMC sytems can have a primary BMC.
         """
-        if not self.system_id == System.Type.BMC:
+        if self.system_id != System.Type.BMC:
             bmc_list = self.enclosure.get_bmc_list()
             if bmc_list:
                 return bmc_list.first()
@@ -911,10 +907,10 @@ class Machine(models.Model):
         """Power off/reboot the machine using SSH."""
         from utils.ssh import SSH
 
-        if not reboot:
-            option = '--poweroff'
-        else:
+        if reboot:
             option = '--reboot'
+        else:
+            option = '--poweroff'
 
         machine = SSH(self.fqdn)
         machine.connect()

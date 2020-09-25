@@ -61,7 +61,7 @@ class BaseAPIForm:
         elif isinstance(form_field, BooleanField):
             field['type'] = 'BOOLEAN'
 
-        elif isinstance(form_field, DecimalField) or isinstance(form_field, IntegerField):
+        elif isinstance(form_field, (DecimalField, IntegerField)):
             field['type'] = 'INTEGER'
             field['max'] = form_field.max_value
             field['min'] = form_field.min_value

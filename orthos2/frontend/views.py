@@ -897,7 +897,7 @@ def login(request, template_name='registration/login.html',
 
     welcome_message = ServerConfig.objects.by_key('orthos.web.welcomemessage')
 
-    if welcome_message and len(welcome_message) > 0:
+    if welcome_message:
         messages.info(request, mark_safe(welcome_message))
 
     return TemplateResponse(request, template_name, context)

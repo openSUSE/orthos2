@@ -23,13 +23,12 @@ def get_machine(fqdn, redirect_to, data=None, redirect_key_replace='fqdn'):
     if len(machines) == 1:
         machine = machines[0]
 
-    elif len(machines) == 0:
-        raise Exception("Machine '{}' does not exist!".format(fqdn))
-
-    else:
+    elif machines:
         selection = SelectSerializer(machines, 'Please specify:')
         return selection
 
+    else:
+        raise Exception("Machine '{}' does not exist!".format(fqdn))
     if fqdn != machine.fqdn:
         response = redirect(redirect_to)
 

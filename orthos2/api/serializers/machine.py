@@ -39,10 +39,10 @@ class AnnotationListingField(AnnotationSerializer):
         for name, field in self.fields.items():
             value = getattr(annotation, str(name))
             if name == 'reporter':
-                if not value:
-                    value = 'unknown'
-                else:
+                if value:
                     value = value.username
+                else:
+                    value = 'unknown'
             result[name] = {'label': field.label, 'value': value}
 
         return result

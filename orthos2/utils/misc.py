@@ -100,7 +100,7 @@ def get_ip(fqdn, ip_version=4):
 def get_ipv4(fqdn):
     """Return (first) IPv4 address for FQDN."""
     ipv4 = get_ip(fqdn, ip_version=4)
-    if ipv4 and len(ipv4) > 0:
+    if ipv4:
         return ipv4[0]
     return None
 
@@ -108,7 +108,7 @@ def get_ipv4(fqdn):
 def get_ipv6(fqdn):
     """Return (first) IPv6 address for FQDN."""
     ipv6 = get_ip(fqdn, ip_version=6)
-    if ipv6 and len(ipv6) > 0:
+    if ipv6:
         return ipv6[0]
     return None
 
