@@ -78,7 +78,7 @@ def abuild_test(fqdn):
         pids, stderr, exitstatus = conn.execute(
             r"ps -e -o pid,cmd | awk '/.*\/usr\/sbin\/autobuild.*/{print $1}'"
         )
-        if len(pids) > 0:
+        if pids:
             return True
     except Exception as e:
         logger.warning("SSH login failed for '{}': {}".format(fqdn, e))
@@ -293,7 +293,7 @@ def get_networkinterfaces(fqdn):
         interface = None
 
         for line in stdout:
-            if len(line) > 0 and line[0] != ' ' and line[0] != '\t':
+            if line and line[0] != ' ' and line[0] != '\t':
                 if interface and interface.mac_address and\
                         interface.driver_module not in ('bridge', 'tun'):
 
@@ -558,11 +558,11 @@ def get_pci_devices(fqdn):
         chunk = ''
         stdout, stderr, exitstatus = conn.execute('lspci -mmvn')
         for line in stdout:
-            if len(line.strip()) == 0:
+            if line.strip():
+                chunk += line
+            else:
                 pci_devices.append(PCIDevice.from_lspci_mmnv(chunk))
                 chunk = ''
-            else:
-                chunk += line
 
         # drivers for PCI devices from hwinfo
         in_pci_device = False
@@ -573,7 +573,7 @@ def get_pci_devices(fqdn):
                 if re.match(r'^\d+: PCI', line):
                     in_pci_device = True
                     continue
-                if len(line.strip()) == 0:
+                if not line.strip():
                     in_pci_device = False
                     current_busid = None
                     continue

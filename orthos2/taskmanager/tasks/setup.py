@@ -14,10 +14,10 @@ class SetupMachine(Task):
 
     def __init__(self, fqdn, choice=None):
         self.fqdn = fqdn
-        if not choice:
-            self.choice = 'default'
-        else:
+        if choice:
             self.choice = choice
+        else:
+            self.choice = 'default'
 
     def execute(self):
         """Execute the task."""

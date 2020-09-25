@@ -469,10 +469,10 @@ class MachineAdmin(admin.ModelAdmin):
 
         for membership in user.memberships.all():
             if membership.is_privileged:
-                if not query:
-                    query = Q(group_id=membership.group_id)
-                else:
+                if query:
                     query = query | Q(group_id=membership.group_id)
+                else:
+                    query = Q(group_id=membership.group_id)
 
         if query:
             queryset = queryset.filter(query)
@@ -497,7 +497,7 @@ class MachineAdmin(admin.ModelAdmin):
             fieldsets_ = ()
 
             for fieldset in fieldsets:
-                if fieldset[0] not in ['VIRTUALIZATION']:
+                if fieldset[0] != 'VIRTUALIZATION':
                     fieldsets_ += (fieldset,)
 
             fieldsets = fieldsets_
@@ -516,16 +516,15 @@ class MachineAdmin(admin.ModelAdmin):
                 extra_tags='error'
             )
 
-        if not machine.system.administrative:
+        if machine.system.administrative:
+            self.inlines = (NetworkInterfaceInline,)
+        else:
             self.inlines = (
                 SerialConsoleInline,
                 RemotePowerInline,
                 NetworkInterfaceInline,
                 AnnotationInline
             )
-
-        else:
-            self.inlines = (NetworkInterfaceInline,)
 
         return super(MachineAdmin, self).change_view(request, object_id, form_url, extra_context)
 

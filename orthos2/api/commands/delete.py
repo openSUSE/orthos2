@@ -74,19 +74,19 @@ Example:
             return ErrorMessage("Item is missing!").as_json
 
         if item == Delete.MACHINE:
-            if len(sub_arguments) != 0:
+            if sub_arguments:
                 return ErrorMessage("Invalid number of arguments for 'machine'!").as_json
 
             return redirect(reverse('api:machine_delete'))
 
         elif item == Delete.SERIALCONSOLE:
-            if len(sub_arguments) != 0:
+            if sub_arguments:
                 return ErrorMessage("Invalid number of arguments for 'serialconsole'!").as_json
 
             return redirect(reverse('api:serialconsole_delete'))
 
         elif item == Delete.REMOTEPOWER:
-            if len(sub_arguments) != 0:
+            if sub_arguments:
                 return ErrorMessage("Invalid number of arguments for 'remotepower'!").as_json
 
             return redirect(reverse('api:remotepower_delete'))

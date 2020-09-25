@@ -23,10 +23,10 @@ class RegenerateCobbler(Task):
         Returns network domain(s) for which Cobbler entries should be regenerated. Return all if no
         domain ID is given.
         """
-        if not self._domain_id:
-            return Domain.objects.all()
-        else:
+        if self._domain_id:
             return Domain.objects.filter(pk=self._domain_id)
+        else:
+            return Domain.objects.all()
 
     def execute(self):
         """

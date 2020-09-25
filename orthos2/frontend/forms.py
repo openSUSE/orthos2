@@ -59,7 +59,7 @@ class NewUserForm(forms.Form):
                     None,
                     "Please contact support ({}).".format(settings.SUPPORT_CONTACT)
                 )
-            elif (len(valid_domains) > 0) and (email.split('@')[1] not in valid_domains):
+            elif valid_domains and (email.split('@')[1] not in valid_domains):
                 self.add_error(
                     'email',
                     "Please use a valid email domain: {}".format(', '.join(valid_domains))
@@ -554,7 +554,7 @@ class SetupMachineForm(forms.Form):
             for distribution, record_group in groups.items():
                 setup_records.append((distribution, record_group))
 
-        if len(setup_records) == 0:
+        if not setup_records:
             setup_records.append((None, 'no setup records available'))
 
         return setup_records

@@ -139,15 +139,12 @@ def format_value(value):
 
     if isinstance(value, bool):
         if PLAIN_OUTPUT:
-            if value is True:
-                return 'true'
-            else:
-                return 'false'
-        elif (value is True) and UTF8:
+            return str(value).lower()
+        elif value and UTF8:
             return '✓'
-        elif (value is True) and (not UTF8):
+        elif value and (not UTF8):
             return 'yes'
-        elif (value is False) and UTF8:
+        elif (not value) and UTF8:
             return 'x'
         else:
             return 'no'
@@ -310,8 +307,10 @@ class Input(APIResponse):
 
         if input_type == InputType.INTEGER:
 
-            if input_value.strip() != '':
+            if input_value.strip() == '':
+                value = None
 
+            else:
                 try:
                     value = int(input_value)
                 except ValueError:
@@ -326,8 +325,6 @@ class Input(APIResponse):
                 if (min_value is not None) and (value < min_value):
                     raise ValueError("Value must be equal greater than {0}.".format(min_value))
 
-            else:
-                value = None
 
         elif input_type == InputType.SELECTION:
             try:
@@ -522,10 +519,10 @@ class Table(APIResponse):
             for i, field in enumerate(self._fields):
                 value = format_value(item[field])
 
-                if not PLAIN_OUTPUT:
-                    row += ' {0:<{1}}'.format(value, self._widths[i] + COLUMN_PADDING - 1)
-                else:
+                if PLAIN_OUTPUT:
                     row += '{0}{1}'.format(value, IFS)
+                else:
+                    row += ' {0:<{1}}'.format(value, self._widths[i] + COLUMN_PADDING - 1)
 
             result += row + '\n'
 
@@ -765,12 +762,12 @@ class OrthosLineReader:
         if not prompt:
             prompt = self.prompt
         prompt += prompt_suffix
-        if len(prompt) > 0:
+        if prompt:
             prompt += ' '
 
         try:
             result = input(prompt)
-            if not history and len(result) > 0:
+            if not history and result:
                 if sys.stdin.isatty():
                     readline.remove_history_item(readline.get_current_history_length() - 1)
 
@@ -802,10 +799,10 @@ class Config:
         self.__timezone = None
         self.__token = None
 
-        if not sys.stdin.isatty():
-            self.__quiet = True
-        else:
+        if sys.stdin.isatty():
             self.__quiet = False
+        else:
+            self.__quiet = True
 
         for alias in ALIASES:
             self.__aliases[alias] = ALIASES[alias]
@@ -1152,7 +1149,7 @@ Example:
     def get_next_user_command(self, prompt=None):
         try:
             input = ''
-            while len(input) == 0:
+            while not input:
                 input = self.LineReader.readline(prompt=prompt)
         except KeyboardInterrupt:
             pass
@@ -1259,14 +1256,14 @@ Example:
         while True:
             try:
 
-                if not self.recent_command:
-                    input_ = self.get_next_user_command()
-                else:
+                if self.recent_command:
                     if type(self.recent_command) is list:
                         input_ = self.recent_command
                     else:
                         input_ = self.recent_command.as_input()
                     self.recent_command = None
+                else:
+                    input_ = self.get_next_user_command()
 
                 if '$USERNAME' in input_:
                     input_ = list(
@@ -1527,10 +1524,10 @@ def main():
     except Exception as e:
         print(e)
     finally:
-        if not orthos.config.is_quiet():
-            print("Good bye, have a lot of fun...")
-        else:
+        if orthos.config.is_quiet():
             print()
+        else:
+            print("Good bye, have a lot of fun...")
 
 
 if __name__ == '__main__':

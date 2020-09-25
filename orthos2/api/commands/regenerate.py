@@ -107,7 +107,7 @@ Example:
             except Exception as e:
                 return ErrorMessage(str(e)).as_json
 
-            if option.lower() not in [Regenerate.MOTD]:
+            if option.lower() != Regenerate.MOTD:
                 return ErrorMessage("Unknown option '{}'!".format(option)).as_json
 
             if isinstance(request.user, AnonymousUser) or not request.auth:

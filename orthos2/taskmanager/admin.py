@@ -56,15 +56,15 @@ class DailyTaskAdmin(BaseTaskAdmin):
         """Execute specific daily task."""
         try:
             task = DailyTask.objects.get(pk=dailytask_id)
-            if not task.enabled:
-                messages.warning(request, "Daily task '{}' is disabled.".format(task.name))
-            else:
-                if not task.running:
+            if task.enabled:
+                if task.running:
+                    messages.warning(request, "Task is already running!")
+                else:
                     task.executed_at = datetime.date.today() - datetime.timedelta(days=1)
                     task.save()
                     messages.info(request, "Executing daily task '{}'...".format(task.name))
-                else:
-                    messages.warning(request, "Task is already running!")
+            else:
+                messages.warning(request, "Daily task '{}' is disabled.".format(task.name))
         except Exception as e:
             messages.error(request, str(e), extra_tags='error')
 
@@ -96,10 +96,10 @@ class DailyTaskAdmin(BaseTaskAdmin):
 
     def task_actions(self, obj):
         """Add buttons for custom daily task actions."""
-        if not obj.enabled:
-            button = '<a class="button" href="{}?action=enable">Enable Task</a>'
-        else:
+        if obj.enabled:
             button = '<a class="button" href="{}?action=disable">Disable Task</a>'
+        else:
+            button = '<a class="button" href="{}?action=enable">Enable Task</a>'
 
         return format_html(
             '<a class="button" href="{}">Execute Now</a>&nbsp;' + button,

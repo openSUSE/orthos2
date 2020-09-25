@@ -289,7 +289,7 @@ class PCIDatabase(object):
                     linecount += 1
 
                     # skip comments
-                    if len(line) == 0 or line[0] == '#':
+                    if not line or line[0] == '#':
                         continue
 
                     # new vendors
