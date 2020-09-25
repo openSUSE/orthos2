@@ -5,20 +5,20 @@ import warnings
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate
 from django.contrib.auth import login as auth_login
-from django.contrib.auth import (REDIRECT_FIELD_NAME, authenticate,
-                                 update_session_auth_hash)
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.urls import resolve
 from django.db.models import Q
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render, resolve_url, reverse
 from django.template.response import TemplateResponse
+from django.urls import resolve
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.http import is_safe_url
@@ -29,17 +29,15 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import ListView
 
 from data.exceptions import ReleaseException, ReserveException
-from data.models import (Architecture, Domain, Machine, MachineGroup,
-                         RemotePower, ReservationHistory, SerialConsole,
-                         SerialConsoleType, ServerConfig)
+from data.models import (Architecture, Domain, Machine, MachineGroup, RemotePower,
+                         ReservationHistory, SerialConsole, SerialConsoleType, ServerConfig)
 from taskmanager import tasks
 from taskmanager.models import TaskManager
 from utils.misc import add_offset_to_date, get_random_mac_address
 
 from .decorators import check_permissions
-from .forms import (NewUserForm, PasswordRestoreForm, PreferencesForm,
-                    ReserveMachineForm, SearchForm, SetupMachineForm,
-                    VirtualMachineForm)
+from .forms import (NewUserForm, PasswordRestoreForm, PreferencesForm, ReserveMachineForm,
+                    SearchForm, SetupMachineForm, VirtualMachineForm)
 
 logger = logging.getLogger('views')
 

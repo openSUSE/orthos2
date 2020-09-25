@@ -8,13 +8,11 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, reverse
 
 from api.commands import BaseAPIView, get_machine
-from api.forms import (AnnotationAPIForm, MachineAPIForm, RemotePowerAPIForm,
-                       SerialConsoleAPIForm, VirtualMachineAPIForm)
-from api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
-                                  InfoMessage, InputSerializer, Message,
-                                  Serializer)
-from data.models import (Annotation, Enclosure, Machine, RemotePower,
-                         SerialConsole)
+from api.forms import (AnnotationAPIForm, MachineAPIForm, RemotePowerAPIForm, SerialConsoleAPIForm,
+                       VirtualMachineAPIForm)
+from api.serializers.misc import (AuthRequiredSerializer, ErrorMessage, InfoMessage,
+                                  InputSerializer, Message, Serializer)
+from data.models import Annotation, Enclosure, Machine, RemotePower, SerialConsole
 from utils.misc import add_offset_to_date, format_cli_form_errors
 
 logger = logging.getLogger('api')

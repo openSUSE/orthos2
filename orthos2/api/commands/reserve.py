@@ -7,8 +7,8 @@ from django.http import HttpResponseRedirect
 
 from api.commands import BaseAPIView, get_machine
 from api.forms import ReserveMachineAPIForm
-from api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
-                                  InputSerializer, Message, Serializer)
+from api.serializers.misc import (AuthRequiredSerializer, ErrorMessage, InputSerializer, Message,
+                                  Serializer)
 from data.models import Machine
 from utils.misc import add_offset_to_date, format_cli_form_errors
 

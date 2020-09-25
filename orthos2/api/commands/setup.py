@@ -3,8 +3,8 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.http import HttpResponseRedirect, JsonResponse
 
 from api.commands import BaseAPIView, get_machine
-from api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
-                                  InfoMessage, Message, Serializer)
+from api.serializers.misc import (AuthRequiredSerializer, ErrorMessage, InfoMessage, Message,
+                                  Serializer)
 
 
 class SetupCommand(BaseAPIView):

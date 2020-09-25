@@ -1,16 +1,14 @@
 import logging
 import re
 
-from django.core.exceptions import (FieldDoesNotExist, FieldError,
-                                    MultipleObjectsReturned)
+from django.core.exceptions import FieldDoesNotExist, FieldError, MultipleObjectsReturned
 from django.db.models import Field, Q
 from django.db.models.functions import Length
 
 from api.lookups import NotEqual
-from data.models import (Annotation, Architecture, Domain, Enclosure,
-                         Installation, Machine, MachineGroup, NetworkInterface,
-                         PCIDevice, Platform, RemotePower, SerialConsole,
-                         SerialConsoleType, System, User, Vendor)
+from data.models import (Annotation, Architecture, Domain, Enclosure, Installation, Machine,
+                         MachineGroup, NetworkInterface, PCIDevice, Platform, RemotePower,
+                         SerialConsole, SerialConsoleType, System, User, Vendor)
 
 logger = logging.getLogger('api')
 

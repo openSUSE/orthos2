@@ -3,6 +3,7 @@ from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 
 from . import ajax, views
+
 app_name = 'frontend'
 urlpatterns = [
     url(r'^$', RedirectView.as_view(pattern_name='frontend:free_machines'), name='root'),

@@ -7,18 +7,16 @@ from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.core import serializers
-from django.core.exceptions import (FieldError, MultipleObjectsReturned,
-                                    ObjectDoesNotExist, PermissionDenied,
-                                    ValidationError)
+from django.core.exceptions import (FieldError, MultipleObjectsReturned, ObjectDoesNotExist,
+                                    PermissionDenied, ValidationError)
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from data.exceptions import ReleaseException, ReserveException
-from utils.misc import (DHCPRecordOption, Serializer, get_domain, get_hostname,
-                        get_ipv4, get_ipv6, get_s390_hostname,
-                        is_dns_resolvable)
+from utils.misc import (DHCPRecordOption, Serializer, get_domain, get_hostname, get_ipv4, get_ipv6,
+                        get_s390_hostname, is_dns_resolvable)
 
 from .architecture import Architecture
 from .domain import Domain, validate_domain_ending

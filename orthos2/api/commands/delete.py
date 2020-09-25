@@ -7,10 +7,8 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, reverse
 
 from api.commands import BaseAPIView, get_machine
-from api.forms import (DeleteMachineAPIForm, DeleteRemotePowerAPIForm,
-                       DeleteSerialConsoleAPIForm)
-from api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
-                                  InputSerializer, Message)
+from api.forms import DeleteMachineAPIForm, DeleteRemotePowerAPIForm, DeleteSerialConsoleAPIForm
+from api.serializers.misc import AuthRequiredSerializer, ErrorMessage, InputSerializer, Message
 from data.models import Machine
 from utils.misc import format_cli_form_errors
 

@@ -1,5 +1,7 @@
 import logging
+
 from django.template import Context, Template
+
 from data.models import Machine, ServerConfig
 from utils.ssh import SSH
 

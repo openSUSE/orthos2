@@ -4,9 +4,8 @@ import mock
 from django.test import TestCase
 
 from utils.machinechecks import nmap_check, ping_check
-from utils.misc import (execute, get_domain, get_hostname,
-                        has_valid_domain_ending, is_dns_resolvable,
-                        is_valid_mac_address, normalize_ascii,
+from utils.misc import (execute, get_domain, get_hostname, has_valid_domain_ending,
+                        is_dns_resolvable, is_valid_mac_address, normalize_ascii,
                         str_time_to_datetime)
 
 logging.disable(logging.CRITICAL)

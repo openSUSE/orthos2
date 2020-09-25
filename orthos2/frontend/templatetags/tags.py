@@ -1,6 +1,5 @@
 from django import template
-from django.urls import resolve
-from django.urls import reverse
+from django.urls import resolve, reverse
 from django.utils.safestring import mark_safe
 
 from data.models import Machine, ServerConfig
