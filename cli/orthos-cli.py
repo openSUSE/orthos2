@@ -77,7 +77,7 @@ class InputType:
     INTEGER = 'INTEGER'
     STRING = 'STRING'
     BOOLEAN = 'BOOLEAN'
-    DATE = 'DATE',
+    DATE = 'DATE'
     SELECTION = 'SELECTION'
 
 
