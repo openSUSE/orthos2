@@ -23,7 +23,7 @@ from datetime import date, datetime
 import pytz
 
 if sys.version_info.major == 3:
-    from urllib import request as urllib_request
+    import urllib.request as urllib_request
     from urllib.parse import urlencode
     from configparser import RawConfigParser
     PYTHON_VERSION = 3
