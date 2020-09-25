@@ -239,7 +239,7 @@ def vm_record(request, vm):
     result += '  <td>{button}</td>'
     result += '</tr>'
     result = result.format(
-        url=reverse('frontend:detail', args=[vm.pk, ]),
+        url=reverse('frontend:detail', args=[vm.pk]),
         vm=vm,
         status=status_ipv4(vm) + status_ipv6(vm) + status_ssh(vm) + status_login(vm),
         button=button
