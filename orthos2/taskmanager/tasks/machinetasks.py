@@ -136,10 +136,7 @@ class MachineCheck(Task):
                             self.machine.check_connectivity == Machine.Connectivity.ALL:
                         self.machine.status_abuild = abuild_test(self.fqdn)
 
-        if self.machine.status_login:
-            self.online = True
-        else:
-            self.online = False
+        self.online = bool(self.machine.status_login)
 
         self.machine.save()
 
@@ -314,15 +311,15 @@ class RegenerateMOTD(Task):
                 print("This machine is an administrative machine. DON\'T TOUCH!", file=motd)
             if machine.reserved_by:
                 print(LINE, file=motd)
-                if machine.reserved_until != timezone.ZERO:
+                if machine.reserved_until == timezone.ZERO:
+                    print("This machine is RESERVED by {}.".format(machine.reserved_by), file=motd)
+                else:
                     print(
                         "This machine is RESERVED by {} until {}.".format(
                             machine.reserved_by,
                             machine.reserved_until
                         ), file=motd
                     )
-                else:
-                    print("This machine is RESERVED by {}.".format(machine.reserved_by), file=motd)
                 print('', file=motd)
                 print(wrap80(machine.reserved_reason), file=motd)
             print(END, file=motd)

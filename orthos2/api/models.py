@@ -111,7 +111,7 @@ class QueryField:
             'related_name': 'system',
             'verbose_name': 'System',
             'pre': lambda x:
-                x if type(x) is str else x,
+                x,
             'post': lambda x:
                 x
         },
@@ -529,10 +529,10 @@ class QueryField:
     @property
     def db_field_name(self):
         """Return a valid field name for querying the DB."""
-        if not self._related_name:
-            field_name = self._field.name
-        else:
+        if self._related_name:
             field_name = '{}__{}'.format(self._related_name, self._field.name)
+        else:
+            field_name = self._field.name
 
         if self._annotation is not None:
             field_name += self._annotation
@@ -774,8 +774,8 @@ class APIQuery:
                 state = 0
 
             elif state == -1 and\
-                    (not next_token or (next_token == self.AND or next_token == self.OR))\
-                    and token not in [self.AND, self.OR]:
+                    (not next_token or (next_token in {self.AND, self.OR}))\
+                    and token not in {self.AND, self.OR}:
                 # single field without condition
                 # where <field> and ...
                 if token[0] == '!':
@@ -861,10 +861,7 @@ class APIQuery:
 
     def _get_query(self):
         """Return valid django model queries which can be piped into `filter()` method."""
-        if not self.has_conditions:
-            return Q()
-
-        else:
+        if self.has_conditions:
             if not self._conditions:
                 raise Exception("Missing condition!")
 
@@ -894,6 +891,8 @@ class APIQuery:
                         query = left | right
 
             return query
+        else:
+            return Q()
 
     def execute(self, user=None):
         """
@@ -984,7 +983,7 @@ class APIQuery:
 
     @property
     def has_conditions(self):
-        return True if self._conditions else False
+        return bool(self._conditions)
 
     @property
     def data(self):

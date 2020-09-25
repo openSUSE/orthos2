@@ -254,7 +254,7 @@ class Libvirt(VirtualizationAPI):
         libvirt_list = self.get_list()
         for line in libvirt_list.split('\n')[2:]:
             columns = line.strip().split()
-            if len(columns) > 0:
+            if columns:
                 domain_name = columns[1]
                 occupied_hostnames.add(domain_name)
 
@@ -422,7 +422,7 @@ class Libvirt(VirtualizationAPI):
         if not self.check_network_bridge(bridge=bridge):
             raise Exception("Network bridge setup failed!")
 
-        if not kwargs['image'] is None:
+        if kwargs['image'] is not None:
             if not self.conn.check_path(image_directory, '-e'):
                 raise Exception("Image source directory missing on host system!")
 
