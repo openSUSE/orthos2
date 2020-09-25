@@ -10,10 +10,7 @@ class System(models.Model):
 
         @classmethod
         def prep(cls):
-            """
-            Preparation of const variables for fast and developer-friendly
-            handling.
-            """
+            """Preparation of const variables for fast and developer-friendly handling."""
             cls.BAREMETAL = safe_get_or_default(
                     System,
                     'name',

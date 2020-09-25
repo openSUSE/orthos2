@@ -7,17 +7,13 @@ logger = logging.getLogger('tasks')
 
 
 class DailyMachineChecks(Task):
-    """
-    Triggers full machine check/scan for all qualified machines.
-    """
+    """Trigger full machine check/scan for all qualified machines."""
 
     def __init__(self):
         pass
 
     def execute(self):
-        """
-        Executes the task.
-        """
+        """Execute the task."""
         for machine in Machine.objects.all():
 
             # only status check for administrative machines
@@ -28,17 +24,13 @@ class DailyMachineChecks(Task):
 
 
 class DailyCheckReservationExpirations(Task):
-    """
-    Checks for expiring reservations for reserved machines.
-    """
+    """Check for expiring reservations for reserved machines."""
 
     def __init__(self):
         pass
 
     def execute(self):
-        """
-        Executes the task.
-        """
+        """Execute the task."""
         from taskmanager import tasks
 
         for machine in Machine.objects.all():

@@ -14,9 +14,7 @@ logger = logging.getLogger('utils')
 
 
 def ping_check(fqdn, timeout=None, ip_version=4):
-    """
-    Checks if the server pings.
-    """
+    """Check if the server pings."""
     command = '/usr/bin/ping'
     if ip_version == 6:
         command = '/usr/bin/ping6'
@@ -38,9 +36,7 @@ def ping_check_ipv6(fqdn, timeout):
 
 
 def nmap_check(fqdn):
-    """
-    Checks if the SSH port is reachable without connectiong.
-    """
+    """Check if the SSH port is reachable without connectiong."""
     SSH_PORT = 22
     if not ping_check(fqdn):
         return False
@@ -58,9 +54,7 @@ def nmap_check(fqdn):
 
 
 def login_test(fqdn):
-    """
-    Checks if it's possible to login via SSH.
-    """
+    """Check if it's possible to login via SSH."""
     conn = None
     try:
         conn = SSH(fqdn)
@@ -76,9 +70,7 @@ def login_test(fqdn):
 
 
 def abuild_test(fqdn):
-    """
-    Checks if Autobuild is running.
-    """
+    """Check if Autobuild is running."""
     conn = None
     try:
         conn = SSH(fqdn)
@@ -99,9 +91,7 @@ def abuild_test(fqdn):
 
 
 def get_hardware_information(fqdn):
-    """
-    Retrieves information of the system.
-    """
+    """Retrieve information of the system."""
     try:
         machine = Machine.objects.get(fqdn=fqdn)
     except Machine.DoesNotExist:
@@ -281,9 +271,7 @@ def get_hardware_information(fqdn):
 
 
 def get_networkinterfaces(fqdn):
-    """
-    Retrieves information of the systems network interfaces.
-    """
+    """Retrieve information of the systems network interfaces."""
     try:
         machine = Machine.objects.get(fqdn=fqdn)
     except Machine.DoesNotExist:
@@ -368,9 +356,7 @@ def get_networkinterfaces(fqdn):
 
 
 def get_status_ip(fqdn):
-    """
-    Retrieves information of the systems IPv4/IPv6 status.
-    """
+    """Retrieve information of the systems IPv4/IPv6 status."""
     try:
         machine = Machine.objects.get(fqdn=fqdn)
     except Machine.DoesNotExist:
@@ -482,9 +468,7 @@ def get_status_ip(fqdn):
 
 
 def get_installations(fqdn):
-    """
-    Retrieves information of the installations.
-    """
+    """Retrieve information of the installations."""
     try:
         machine = Machine.objects.get(fqdn=fqdn)
     except Machine.DoesNotExist:
@@ -535,14 +519,10 @@ def get_installations(fqdn):
 
 
 def get_pci_devices(fqdn):
-    """
-    Retrieves all PCI devices.
-    """
+    """Retrieve all PCI devices."""
 
     def get_pci_device_by_slot(pci_devices, slot):
-        """
-        Returns the PCI device by slot.
-        """
+        """Return the PCI device by slot."""
         for dev in pci_devices:
             pci_slot = dev.slot
             if not pci_slot:

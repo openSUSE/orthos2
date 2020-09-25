@@ -12,7 +12,9 @@ register = template.Library()
 @register.simple_tag
 def url_replace(request, field, value, remove=False):
     """
-    Replace ``field`` by value in GET parameters. If ``remove`` is True, the field gets removed.
+    Replace ``field`` by value in GET parameters.
+
+    If ``remove`` is True, the field gets removed.
     If a filter option gets selected, the page for the paginator needs to be set to 1 due to a
     different (less) search result list.
     """
@@ -31,33 +33,25 @@ def url_replace(request, field, value, remove=False):
 
 @register.simple_tag
 def active(request, name):
-    """
-    Returns 'active' if ``name`` is in GET parameters.
-    """
+    """Return 'active' if ``name`` is in GET parameters."""
     return 'active' if name in list(request.GET.values()) else None
 
 
 @register.simple_tag
 def active_view(request, view):
-    """
-    Returns 'active' if ``view`` gets requested.
-    """
+    """Return 'active' if ``view`` gets requested."""
     return 'active' if view == resolve(request.path_info).url_name else None
 
 
 @register.simple_tag
 def disabled(request, name):
-    """
-    Returns 'disabled' if ``name`` is in GET parameters.
-    """
+    """Return 'disabled' if ``name`` is in GET parameters."""
     return 'disabled' if name in list(request.GET.values()) else None
 
 
 @register.simple_tag
 def get_bugreport_url():
-    """
-    Returns bugreport URL for templates.
-    """
+    """Return bugreport URL for templates."""
     url = ServerConfig.objects.by_key('orthos.bugreport.url')
     if not url:
         url = '#'
@@ -66,9 +60,7 @@ def get_bugreport_url():
 
 @register.simple_tag
 def get_documentation_url():
-    """
-    Returns documentation URL for templates.
-    """
+    """Return documentation URL for templates."""
     url = ServerConfig.objects.by_key('orthos.documentation.url')
     if not url:
         url = '#'
@@ -77,9 +69,7 @@ def get_documentation_url():
 
 @register.simple_tag
 def get_enhancement_url():
-    """
-    Returns enhancement URL for emplates.
-    """
+    """Return enhancement URL for emplates."""
     url = ServerConfig.objects.by_key('orthos.enhancement.url')
     if not url:
         url = '#'
@@ -88,9 +78,7 @@ def get_enhancement_url():
 
 @register.simple_tag
 def get_current_domain_filter(request):
-    """
-    Returns the current domain from GET (if available).
-    """
+    """Return the current domain from GET (if available)."""
     domain = request.GET.get('domain', None)
     if (not domain) or (domain == ''):
         domain = 'All Network Domains'
@@ -99,9 +87,7 @@ def get_current_domain_filter(request):
 
 @register.simple_tag
 def get_current_machinegroup_filter(request):
-    """
-    Returns the current machine group from GET (if available).
-    """
+    """Return the current machine group from GET (if available)."""
     group = request.GET.get('machinegroup', None)
     if (not group) or (group == ''):
         group = 'All Machine Groups'
@@ -110,9 +96,7 @@ def get_current_machinegroup_filter(request):
 
 @register.simple_tag
 def get_cli_url():
-    """
-    Returns the URL to the Orthos command line client (CLI).
-    """
+    """Return the URL to the Orthos command line client (CLI)."""
     url = ServerConfig.objects.by_key('orthos.cli.url')
     if not url:
         url = '#'
@@ -202,9 +186,7 @@ def status_abuild(machine):
 
 @register.simple_tag
 def order_list(request, field):
-    """
-    Returns ordering arrows.
-    """
+    """Return ordering arrows."""
     up = '<i class="fa fa-caret-down"></i>'
     down = '<i class="fa fa-caret-up"></i>'
 
@@ -220,9 +202,7 @@ def order_list(request, field):
 
 @register.simple_tag
 def vm_record(request, vm):
-    """
-    Returns HTML table row for a single virtual machine.
-    """
+    """Return HTML table row for a single virtual machine."""
     if request.user.is_superuser or\
             (request.user == vm.reserved_by and vm.hypervisor.vm_auto_delete):
         button = '<a class="btn btn-sm btn-danger" href="javascript:void(0);"'

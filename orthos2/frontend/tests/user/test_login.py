@@ -17,9 +17,7 @@ class Login(WebTest):
     ]
 
     def test_successful_user_login(self):
-        """
-        Tests if a user can log in successfully.
-        """
+        """Test if a user can log in successfully."""
         form = self.app.get(reverse('frontend:login')).form
         form['username'] = 'user'
         form['password'] = 'linux'
@@ -30,9 +28,7 @@ class Login(WebTest):
         self.assertNotContains(page, 'All Machines')
 
     def test_unsuccessful_user_login(self):
-        """
-        Tests an unsuccessful user login.
-        """
+        """Test an unsuccessful user login."""
         form = self.app.get(reverse('frontend:login')).form
         form['username'] = 'user'
         form['password'] = 'wrong'
@@ -43,9 +39,7 @@ class Login(WebTest):
         self.assertContains(page, 'Unknown login/password!')
 
     def test_successful_superuser_login(self):
-        """
-        Tests if a superuser can log in successfully.
-        """
+        """Test if a superuser can log in successfully."""
         form = self.app.get(reverse('frontend:login')).form
         form['username'] = 'superuser'
         form['password'] = 'linux'
@@ -56,9 +50,7 @@ class Login(WebTest):
         self.assertContains(page, 'All Machines')
 
     def test_welcome_message(self):
-        """
-        Test if a welcome message shows up on the login page (if given).
-        """
+        """Test if a welcome message shows up on the login page (if given)."""
         page = self.app.get(reverse('frontend:login'))
 
         welcome_message = ServerConfig.objects.by_key('orthos.web.welcomemessage')
@@ -73,9 +65,7 @@ class Login(WebTest):
         self.assertNotContains(page, welcome_message)
 
     def test_login_links(self):
-        """
-        Test all available links showing up on the login page.
-        """
+        """Test all available links showing up on the login page."""
         page = self.app.get(reverse('frontend:login'))
 
         bugreport = ServerConfig.objects.by_key('orthos.bugreport.url')

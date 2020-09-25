@@ -14,9 +14,7 @@ class VirtualizationAPI:
 
         @classmethod
         def to_str(cls, index):
-            """
-            Returns type as string (Virtualization API type name) by index.
-            """
+            """Return type as string (Virtualization API type name) by index."""
             for type_tuple in VirtualizationAPI.TYPE_CHOICES:
                 if int(index) == type_tuple[0]:
                     return type_tuple[1]
@@ -24,9 +22,7 @@ class VirtualizationAPI:
 
         @classmethod
         def to_int(cls, name):
-            """
-            Returns type as integer if name matches.
-            """
+            """Return type as integer if name matches."""
             for type_tuple in VirtualizationAPI.TYPE_CHOICES:
                 if name.lower() == type_tuple[1].lower():
                     return type_tuple[0]
@@ -38,8 +34,9 @@ class VirtualizationAPI:
 
     def __init__(self, type, host, *args, **kwargs):
         """
-        Cast plain `VirtualizationAPI` object to respective subclass. Subclasses getting collected
-        automatically by inheritance of `VirtualizationAPI` class.
+        Cast plain `VirtualizationAPI` object to respective subclass.
+
+        Subclasses getting collected automatically by inheritance of `VirtualizationAPI` class.
         """
         subclasses = dict([
             (sub.__name__.replace(self.__class__.__name__, '').lower(), sub)
@@ -60,15 +57,11 @@ class VirtualizationAPI:
         self.__init__(*args, **kwargs)
 
     def _set_virtualization_api(self, type):
-        """
-        Set virtualization API type.
-        """
+        """Set virtualization API type."""
         self.__class__ = self._virtualizationapis[type]['class']
 
     def __setattr__(self, attr, value):
-        """
-        If `type` attribute changes, set respective subclass.
-        """
+        """If `type` attribute changes, set respective subclass."""
         # check for `None` explicitly because type 0 results in false
         if attr == 'type' and value is not None:
             self._set_virtualization_api(value)
@@ -82,8 +75,10 @@ class VirtualizationAPI:
 
     def create(self, *args, **kwargs):
         """
-        Create a virtual machine. Method returns a new `Machine` object and calls the subclass to
-        actually create the virtual machine physically.
+        Create a virtual machine.
+
+        Method returns a new `Machine` object and calls the subclass to actually create the virtual
+        machine physically.
         """
         from data.models import Architecture, Machine, System
         from data.models import RemotePower, SerialConsole, SerialConsoleType
@@ -153,7 +148,7 @@ class Libvirt(VirtualizationAPI):
 
     def get_image_list(self):
         """
-        Returns the available architectures and the full image list (over all available
+        Return the available architectures and the full image list (over all available
         architectures).
 
         Return format:
@@ -192,9 +187,7 @@ class Libvirt(VirtualizationAPI):
         return (architectures, image_list)
 
     def connect(function):
-        """
-        Create SSH connection if needed.
-        """
+        """Create SSH connection if needed."""
         def decorator(self, *args, **kwargs):
             from utils.ssh import SSH
 
@@ -210,18 +203,14 @@ class Libvirt(VirtualizationAPI):
         return self.conn.execute(command)
 
     def check_connection(self):
-        """
-        Check libvirt connection (running libvirt).
-        """
+        """Check libvirt connection (running libvirt)."""
         stdout, stderr, exitstatus = self._execute('{} version'.format(self.VIRSH))
         if exitstatus == 0:
             return True
         return False
 
     def get_list(self, parameters='--all'):
-        """
-        Return `virsh list` output.
-        """
+        """Return `virsh list` output."""
         stdout, stderr, exitstatus = self._execute('{} list {}'.format(self.VIRSH, parameters))
 
         if exitstatus == 0:
@@ -234,6 +223,7 @@ class Libvirt(VirtualizationAPI):
     def check_network_bridge(self, bridge='br0'):
         """
         Execute `create_bridge.sh` script remotely and try to set up bridge if it doesn't exist.
+
         Returns true if the bridge is available, false otherwise.
         """
         stdout, stderr, exitstatus = self.conn.execute_script_remote('create_bridge.sh')
@@ -254,8 +244,9 @@ class Libvirt(VirtualizationAPI):
 
     def generate_hostname(self):
         """
-        Generate domain name (hostname). Check hostnames against Orthos machines and libvirt
-        `virsh list`.
+        Generate domain name (hostname).
+
+        Check hostnames against Orthos machines and libvirt `virsh list`.
         """
         hostname = None
         occupied_hostnames = set(vm.hostname for vm in self.host.get_virtual_machines())
@@ -279,9 +270,7 @@ class Libvirt(VirtualizationAPI):
         return hostname
 
     def generate_networkinterfaces(self, amount=1, bridge='br0', model='virtio'):
-        """
-        Generate networkinterfaces.
-        """
+        """Generate networkinterfaces."""
         from data.models import NetworkInterface
 
         networkinterfaces = []
@@ -299,9 +288,7 @@ class Libvirt(VirtualizationAPI):
         return networkinterfaces
 
     def copy_image(self, image, disk_image):
-        """
-        Copy and allocate disk image.
-        """
+        """Copy and allocate disk image."""
         stdout, stderr, exitstatus = self.conn.execute('cp {} {}.tmp'.format(image, disk_image))
 
         if exitstatus != 0:
@@ -320,9 +307,7 @@ class Libvirt(VirtualizationAPI):
         return True
 
     def delete_disk_image(self, disk_image):
-        """
-        Delete the old disk image.
-        """
+        """Delete the old disk image."""
         stdout, stderr, exitstatus = self.conn.execute('rm -rf {}'.format(disk_image))
 
         if exitstatus != 0:
@@ -331,9 +316,7 @@ class Libvirt(VirtualizationAPI):
         return True
 
     def calculate_vcpu(self):
-        """
-        Return virtual CPU amount.
-        """
+        """Return virtual CPU amount."""
         vcpu = 1
 
         host_cpu_cores = self.host.cpu_cores
@@ -346,7 +329,9 @@ class Libvirt(VirtualizationAPI):
 
     def check_memory(self, memory_amount):
         """
-        Check if memory amount for VM is available on host. Reserve 2GB of memory for host system.
+        Check if memory amount for VM is available on host.
+
+        Reserve 2GB of memory for host system.
         """
         host_ram_amount = self.host.ram_amount
         host_reserved_ram_amount = 2048
@@ -360,9 +345,7 @@ class Libvirt(VirtualizationAPI):
         return True
 
     def execute_virt_install(self, *args, dry_run=True, **kwargs):
-        """
-        Run `virt-install` command.
-        """
+        """Run `virt-install` command."""
         command = '/usr/bin/virt-install '
         command += '--name {hostname} '
         command += '--vcpus {vcpu} '
@@ -518,9 +501,7 @@ class Libvirt(VirtualizationAPI):
         return True
 
     def _remove(self, vm):
-        """
-        Wrapper function for removing a VM (destroy domain > undefine domain).
-        """
+        """Wrapper function for removing a VM (destroy domain > undefine domain)."""
         if not self.check_connection():
             raise Exception("Host system not reachable!")
 
@@ -529,9 +510,7 @@ class Libvirt(VirtualizationAPI):
         return True
 
     def destroy(self, vm):
-        """
-        Destroy VM on host system. Ignore `domain is not running` error and proceed.
-        """
+        """Destroy VM on host system. Ignore `domain is not running` error and proceed."""
         stdout, stderr, exitstatus = self._execute('{} destroy {}'.format(self.VIRSH, vm.hostname))
         if exitstatus != 0:
             stderr = ''.join(stderr)
@@ -542,9 +521,7 @@ class Libvirt(VirtualizationAPI):
         return True
 
     def undefine(self, vm):
-        """
-        Undefine VM on host system.
-        """
+        """Undefine VM on host system."""
         stdout, stderr, exitstatus = self._execute('{} undefine {}'.format(self.VIRSH, vm.hostname))
         if exitstatus != 0:
             stderr = ''.join(stderr)

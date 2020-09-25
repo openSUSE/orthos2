@@ -10,9 +10,7 @@ logger = logging.getLogger('tasks')
 
 
 class SetupMachine(Task):
-    """
-    Setup machine.
-    """
+    """Setup machine."""
 
     def __init__(self, fqdn, choice=None):
         self.fqdn = fqdn
@@ -22,9 +20,7 @@ class SetupMachine(Task):
             self.choice = choice
 
     def execute(self):
-        """
-        Executes the task.
-        """
+        """Execute the task."""
         if not ServerConfig.objects.bool_by_key('orthos.debug.setup.execute'):
             logger.warning("Disabled: set 'orthos.debug.setup.execute' to 'true'")
             return

@@ -8,9 +8,7 @@ from data.models import ServerConfig
 
 @api_view(["GET"])
 def root(request):
-    """
-    API root.
-    """
+    """API root."""
     import api.commands as commands
 
     data = {

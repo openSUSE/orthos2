@@ -16,8 +16,8 @@ class CobblerMethodTests(TestCase):
 
     def test_get_default_profile(self):
         """
-            get_default_profile shoud return a default profile attached to an
-            architecture, or raise value error if there is none.
+        get_default_profile should return a default profile attached to an architecture, or raise
+        value error if there is none.
         """
         machine = NonCallableMagicMock(spec_set=Machine)
         architecture = NonCallableMagicMock(spec_set=Architecture)
@@ -30,6 +30,7 @@ class CobblerMethodTests(TestCase):
     def test_get_filename(self):
         """
         get_filename should return the right filename attribute.
+
         Machine > Group > Architecture > None
         """
         machine = NonCallableMagicMock(spec_set=Machine)

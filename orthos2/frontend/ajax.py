@@ -33,9 +33,7 @@ def annotation(request, machine_id):
 @login_required
 @check_permissions(key='machine_id')
 def powercycle(request, machine_id):
-    """
-    Power cycle machine and return result as JSON.
-    """
+    """Power cycle machine and return result as JSON."""
     action = request.GET.get('action', None)
 
     try:
@@ -80,9 +78,7 @@ def powercycle(request, machine_id):
 
 @login_required
 def virtualization_list(request, host_id):
-    """
-    Return VM list (libvirt).
-    """
+    """Return VM list (libvirt)."""
     try:
         host = Machine.objects.get(pk=host_id)
         output = host.virtualization_api.get_list()
@@ -103,9 +99,7 @@ def virtualization_list(request, host_id):
 @login_required
 @check_permissions(key='host_id')
 def virtualization_delete(request, host_id):
-    """
-    Delete a VM.
-    """
+    """Delete a VM."""
     vm_id = request.GET.get('vm', None)
 
     if vm_id is None:

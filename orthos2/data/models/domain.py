@@ -98,6 +98,7 @@ class Domain(models.Model):
     def get_setup_records(self, architecture, machinegroup=None, grouped=True, delimiter=':'):
         """
         Collect domain and architecture or machine group specific setup records.
+
         Each domain has one optional TFTP server providing available records for machine setup.
 
         If `grouped` is False, a list of all records gets returned (no grouping).
@@ -153,9 +154,7 @@ class Domain(models.Model):
         from utils.ssh import SSH
 
         def grouping(records):
-            """
-            Group records for HTML form.
-            """
+            """Group records for HTML form."""
             groups = {}
 
             for record in records:
@@ -215,9 +214,7 @@ class Domain(models.Model):
         return records
 
     def is_valid_setup_choice(self, choice, architecture, machinegroup=None):
-        """
-        Check if `choice` is a valid setup record.
-        """
+        """Check if `choice` is a valid setup record."""
         choices = self.get_setup_records(
             architecture,
             machinegroup=machinegroup,

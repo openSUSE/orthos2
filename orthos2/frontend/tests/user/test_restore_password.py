@@ -15,9 +15,7 @@ class CreateAccount(WebTest):
     ]
 
     def test_successful_restore_password(self):
-        """
-        Tests restore password functionality.
-        """
+        """Test restore password functionality."""
         form = self.app.get(reverse('frontend:password_restore')).form
         form['login'] = 'user'
         form['email'] = 'user@foo.bar'
@@ -41,9 +39,7 @@ class CreateAccount(WebTest):
         self.assertIn(str(user.pk), task_check_multiple_accounts.arguments)
 
     def test_unknown_login(self):
-        """
-        Check if login exists.
-        """
+        """Check if login exists."""
         form = self.app.get(reverse('frontend:password_restore')).form
         form['login'] = 'unknown'
         form['email'] = 'user@foo.bar'
@@ -54,9 +50,7 @@ class CreateAccount(WebTest):
         self.assertContains(page, 'E-Mail/login does not exist')
 
     def test_unknown_email(self):
-        """
-        Check if email address exists.
-        """
+        """Check if email address exists."""
         form = self.app.get(reverse('frontend:password_restore')).form
         form['login'] = 'user'
         form['email'] = 'unknown@unknown.foo'
@@ -67,9 +61,7 @@ class CreateAccount(WebTest):
         self.assertContains(page, 'E-Mail/login does not exist')
 
     def test_invalid_email(self):
-        """
-        Check for valid email address.
-        """
+        """Check for valid email address."""
         form = self.app.get(reverse('frontend:password_restore')).form
         form['login'] = 'user'
         form['email'] = 'user@invalid'

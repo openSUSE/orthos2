@@ -35,9 +35,7 @@ Example:
         ]
 
     def get(self, request, *args, **kwargs):
-        """
-        Return reservation history of machine.
-        """
+        """Return reservation history of machine."""
         fqdn = request.GET.get('fqdn', None)
 
         try:

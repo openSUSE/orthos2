@@ -78,10 +78,7 @@ class PCIDevice(Component):
 
     @staticmethod
     def from_lspci_mmnv(text):
-        """
-        Creates a new `PCIDevice` object from the `lspci -mmnv` output.
-        """
-
+        """Create a new `PCIDevice` object from the `lspci -mmnv` output."""
         if type(text) is not list:
             text = text.splitlines()
 
@@ -123,9 +120,7 @@ class PCIDevice(Component):
         return dev
 
     def lookup_missing_names(self):
-        """
-        Lookup of missing names in the PCI database of the system.
-        """
+        """Lookup of missing names in the PCI database of the system."""
         if not self.vendor and self.vendor_id:
             self.vendor = PCIDatabase().get_vendor_from_id(
                 self.vendor_id
@@ -157,7 +152,9 @@ class PCIDevice(Component):
 
     def output(self):
         """
-        Converts the PCI device to a long string (more than one line). This is for debugging.
+        Convert the PCI device to a long string (more than one line).
+
+        This is for debugging.
         """
         output = ''
         output += '{:<10}: {}\n'.format('Slot', self.slot)
@@ -196,8 +193,9 @@ class PCIDevice(Component):
 
     def __eq__(self, obj):
         """
-        Compares two PCI devices. Two PCI devices are equal if the IDs of the PCI devices
-        are the same. See also `neq()`.
+        Compare two PCI devices.
+
+        Two PCI devices are equal if the IDs of the PCI devices are the same. See also `neq()`.
         """
         return type(self) is type(obj) and\
             self.device_id == obj.device_id and \
@@ -207,29 +205,28 @@ class PCIDevice(Component):
 
     def __neq__(self, obj):
         """
-        Compares two PCI devices. Two PCI devices are not equal if one of the IDs of the
-        PCI devices are not the same. See also `eq()`.
+        Compare two PCI devices.
+
+        Two PCI devices are not equal if one of the IDs of the PCI devices are not the same.
+        See also `eq()`.
         """
         return not self.__eq__(obj)
 
 
 class PCIDatabase(object):
     """
-    Python singleton for the PCI database. The database is read on the first access of
-    `PCIDatabase`.
+    Python singleton for the PCI database.
+
+    The database is read on the first access of `PCIDatabase`.
     """
 
     PCIIDS_FILE = '/usr/share/pci.ids'
 
     class PCIDatabaseImpl:
-        """
-        Singleton implementation that represents the PCI database.
-        """
+        """Singleton implementation that represents the PCI database."""
 
         def __init__(self):
-            """
-            Initialises the PCIDatabase
-            """
+            """Initialise the PCIDatabase."""
             self._vendors = {}  # key: vendorid
             self._devices = {}  # key: vendorid:deviceid
             self.sdevices = {}  # key: vendorid:deviceid:svendorid:sdeviceid
@@ -237,9 +234,7 @@ class PCIDatabase(object):
             self.parse_pci_ids(PCIDatabase.PCIIDS_FILE)
 
         def get_vendor_from_id(self, vendorid):
-            """
-            Returns the vendor for a given ID.
-            """
+            """Return the vendor for a given ID."""
             vendorid = vendorid.lower()
             if vendorid in self._vendors.keys():
                 return self._vendors[vendorid]
@@ -247,9 +242,7 @@ class PCIDatabase(object):
                 return None
 
         def get_device_from_id(self, vendorid, deviceid):
-            """
-            Returns the device for given IDs `vendorid` and `deviceid`.
-            """
+            """Return the device for given IDs `vendorid` and `deviceid`."""
             vendordeviceid = (vendorid + ':' + deviceid).lower()
             if vendordeviceid in self._devices.keys():
                 return self._devices[vendordeviceid]
@@ -257,9 +250,7 @@ class PCIDatabase(object):
                 return None
 
         def get_class_from_id(self, classid):
-            """
-            Returns the class for a given ID.
-            """
+            """Return the class for a given ID."""
             classid = classid.lower()
             if classid in self.classes.keys():
                 return self.classes[classid]
@@ -267,9 +258,7 @@ class PCIDatabase(object):
                 return None
 
         def get_sdevice_from_id(self, vendorid, deviceid, svendorid, sdeviceid):
-            """
-            Returns the subdevice name for a given ID.
-            """
+            """Return the subdevice name for a given ID."""
             key = '{}:{}:{}:{}'.format(
                 vendorid.lower(),
                 deviceid.lower(),
@@ -283,10 +272,11 @@ class PCIDatabase(object):
 
         def parse_pci_ids(self, filename):
             """
-            Parses the `PCIIDS_FILE` file. When an error occurs, the function doesn't throw that
-            error but it silently ignores it. Of course the error gets logged.
-            """
+            Parse the `PCIIDS_FILE` file.
 
+            When an error occurs, the function doesn't throw that error but it silently ignores it.
+            Of course the error gets logged.
+            """
             try:
                 f = open(filename, 'r')
 
@@ -380,22 +370,16 @@ class PCIDatabase(object):
     __instance = None
 
     def __init__(self):
-        """
-        Create singleton instance.
-        """
+        """Create singleton instance."""
         if PCIDatabase.__instance is None:
             PCIDatabase.__instance = PCIDatabase.PCIDatabaseImpl()
 
         self.__dict__['_Singleton__instance'] = PCIDatabase.__instance
 
     def __getattr__(self, attr):
-        """
-        Delegate access to implementation.
-        """
+        """Delegate access to implementation."""
         return getattr(self.__instance, attr)
 
     def __setattr__(self, attr, value):
-        """
-        Delegate access to implementation.
-        """
+        """Delegate access to implementation."""
         return setattr(self.__instance, attr, value)

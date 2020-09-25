@@ -43,9 +43,7 @@ Example:
         ]
 
     def get(self, request, *args, **kwargs):
-        """
-        Return reservation form for valid machine.
-        """
+        """Return reservation form for valid machine."""
         fqdn = request.GET.get('fqdn', None)
 
         try:
@@ -78,9 +76,7 @@ Example:
         return input.as_json
 
     def post(self, request, id, *args, **kwargs):
-        """
-        Process reservation.
-        """
+        """Process reservation."""
         try:
             machine = Machine.objects.get(pk=id)
         except Machine.DoesNotExist:

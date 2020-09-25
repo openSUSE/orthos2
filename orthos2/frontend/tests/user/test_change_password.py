@@ -13,9 +13,7 @@ class ChangePassword(WebTest):
     ]
 
     def test_successful_change_password(self):
-        """
-        Tests if a new user can create an account.
-        """
+        """Test if a new user can create an account."""
         form = self.app.get(reverse('frontend:preferences_user'), user='user').form
         form['old_password'] = 'linux'
         form['new_password'] = 'linux1234'
@@ -30,9 +28,7 @@ class ChangePassword(WebTest):
         self.assertTrue(user.check_password('linux1234'))
 
     def test_wrong_current_password(self):
-        """
-        Check current (old) password.
-        """
+        """Check current (old) password."""
         form = self.app.get(reverse('frontend:preferences_user'), user='user').form
         form['old_password'] = 'wrongpassword'
         form['new_password'] = 'linux1234'
@@ -44,9 +40,7 @@ class ChangePassword(WebTest):
         self.assertContains(page, 'Current password is wrong')
 
     def test_password_too_short(self):
-        """
-        Check if password is too short (at least 8 characters).
-        """
+        """Check if password is too short (at least 8 characters)."""
         form = self.app.get(reverse('frontend:preferences_user'), user='user').form
         form['old_password'] = 'linux'
         form['new_password'] = '1234'
@@ -58,9 +52,7 @@ class ChangePassword(WebTest):
         self.assertContains(page, 'Password is too short')
 
     def test_password_confirmation_not_match(self):
-        """
-        Check if passwords do match.
-        """
+        """Check if passwords do match."""
         form = self.app.get(reverse('frontend:preferences_user'), user='user').form
         form['old_password'] = 'wrongpassword'
         form['new_password'] = 'linux1234'

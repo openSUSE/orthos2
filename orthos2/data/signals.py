@@ -27,9 +27,7 @@ signal_motd_regenerate = Signal(providing_args=['fqdn'])
 
 @receiver(pre_save, sender=Machine)
 def machine_pre_save(sender, instance, *args, **kwargs):
-    """
-    Prevent saving machine object if MAC address is already in use (exclude own interfaces).
-    """
+    """Prevent saving machine object if MAC address is already in use (exclude own interfaces)."""
     if hasattr(instance, 'networkinterfaces'):
         exclude = instance.networkinterfaces.all().values_list('mac_address', flat=True)
     else:
@@ -47,13 +45,14 @@ def machine_pre_save(sender, instance, *args, **kwargs):
 @receiver(post_save, sender=Machine)
 def machine_post_save(sender, instance, *args, **kwargs):
     """
-    Post action after machine is saved. When a machine gets added, the primary (initial) network
-    interface gets added. If the MAC address changed for primary network interface, a new primary
-    network interface gets added whereas the other network interfaces remain.
+    Post action after machine is saved.
+
+    When a machine gets added, the primary (initial) network interface gets added. If the MAC
+    address changed for primary network interface, a new primary network interface gets added
+    whereas the other network interfaces remain.
 
     Systems with 'administrative' flag set do only get one single network interface.
     """
-
     if not kwargs['created']:
 
         primary_networkinterface = NetworkInterface.objects.get(machine=instance, primary=True)
@@ -96,9 +95,7 @@ def machine_post_save(sender, instance, *args, **kwargs):
 
 @receiver(post_init, sender=Machine)
 def machine_post_init(sender, instance, *args, **kwargs):
-    """
-    Post init action for machine. Set non-database saved values here.
-    """
+    """Post init action for machine. Set non-database saved values here."""
     if instance.pk:
         try:
             instance.hostname = get_hostname(instance.fqdn)
@@ -111,9 +108,7 @@ def machine_post_init(sender, instance, *args, **kwargs):
 
 @receiver(pre_delete, sender=Machine)
 def machine_pre_delete(sender, instance, *args, **kwargs):
-    """
-    Pre delete action for machine. Save deleted machine object as file for archiving.
-    """
+    """Pre delete action for machine. Save deleted machine object as file for archiving."""
     if not ServerConfig.objects.bool_by_key('serialization.execute'):
         return
 
@@ -169,8 +164,9 @@ def serialconsole_post_delete(sender, instance, *args, **kwargs):
 @receiver(signal_serialconsole_regenerate)
 def regenerate_serialconsole(sender, cscreen_server_fqdn, *args, **kwargs):
     """
-    Creates `RegenerateSerialConsole()` task here. This should be the one and only place for
-    creating this task.
+    Create `RegenerateSerialConsole()` task here.
+
+    This should be the one and only place for creating this task.
     """
     if cscreen_server_fqdn is not None:
         task = tasks.RegenerateSerialConsole(cscreen_server_fqdn)
@@ -180,8 +176,9 @@ def regenerate_serialconsole(sender, cscreen_server_fqdn, *args, **kwargs):
 @receiver(signal_cobbler_regenerate)
 def regenerate_cobbler(sender, domain_id, *args, **kwargs):
     """
-    Creates `RegenerateCobbler()` task here. This should be the one and only place for creating this
-    task.
+    Create `RegenerateCobbler()` task here.
+
+    This should be the one and only place for creating this task.
     """
     if domain_id is None:
         task = tasks.RegenerateCobbler()
@@ -194,8 +191,9 @@ def regenerate_cobbler(sender, domain_id, *args, **kwargs):
 @receiver(signal_motd_regenerate)
 def regenerate_motd(sender, fqdn, *args, **kwargs):
     """
-    Creates `RegenerateMOTD()` task here. This should be the one and only place for creating this
-    task.
+    Create `RegenerateMOTD()` task here.
+
+    This should be the one and only place for creating this task.
     """
     task = tasks.RegenerateMOTD(fqdn)
     TaskManager.add(task)

@@ -76,9 +76,7 @@ Example:
         return Add.as_list
 
     def get(self, request, *args, **kwargs):
-        """
-        Dispatcher for the 'add' command.
-        """
+        """Dispatcher for the 'add' command."""
         arguments = request.GET.get('args', None)
 
         if arguments:
@@ -137,9 +135,7 @@ class AddVMCommand(BaseAPIView):
         ]
 
     def _get_available_architectures(self):
-        """
-        Return list of available architectures for virtual machines.
-        """
+        """Return list of available architectures for virtual machines."""
         architectures = list(Machine.api.filter(vm_dedicated_host=True).order_by().values_list(
             'architecture__name',
             flat=True
@@ -147,9 +143,7 @@ class AddVMCommand(BaseAPIView):
         return architectures
 
     def get(self, request, *args, **kwargs):
-        """
-        Return form for adding a virtual machine.
-        """
+        """Return form for adding a virtual machine."""
         architectures = self._get_available_architectures()
         architecture = request.GET.get('arch', None)
 
@@ -180,9 +174,7 @@ class AddVMCommand(BaseAPIView):
         return input.as_json
 
     def post(self, request, architecture, *args, **kwargs):
-        """
-        Add virtual machine for specific `architecture`.
-        """
+        """Add virtual machine for specific `architecture`."""
         data = json.loads(request.body.decode('utf-8'))['form']
 
         try:
@@ -243,9 +235,7 @@ class AddMachineCommand(BaseAPIView):
         ]
 
     def get(self, request, *args, **kwargs):
-        """
-        Return form for adding a machine.
-        """
+        """Return form for adding a machine."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
@@ -262,9 +252,7 @@ class AddMachineCommand(BaseAPIView):
         return input.as_json
 
     def post(self, request, *args, **kwargs):
-        """
-        Add machine.
-        """
+        """Add machine."""
         if not request.user.is_superuser:
             return ErrorMessage("Only superusers are allowed to perform this action!").as_json
 
@@ -310,9 +298,7 @@ class AddSerialConsoleCommand(BaseAPIView):
         ]
 
     def get(self, request, *args, **kwargs):
-        """
-        Return form for adding a machine.
-        """
+        """Return form for adding a machine."""
         fqdn = request.GET.get('fqdn', None)
         try:
             result = get_machine(
@@ -347,9 +333,7 @@ class AddSerialConsoleCommand(BaseAPIView):
         return input.as_json
 
     def post(self, request, fqdn, *args, **kwargs):
-        """
-        Add serial console to machine.
-        """
+        """Add serial console to machine."""
         if not request.user.is_superuser:
             return ErrorMessage("Only superusers are allowed to perform this action!").as_json
 
@@ -402,9 +386,7 @@ class AddAnnotationCommand(BaseAPIView):
         ]
 
     def get(self, request, *args, **kwargs):
-        """
-        Return form for adding an annotation.
-        """
+        """Return form for adding an annotation."""
         fqdn = request.GET.get('fqdn', None)
         try:
             result = get_machine(
@@ -433,9 +415,7 @@ class AddAnnotationCommand(BaseAPIView):
         return input.as_json
 
     def post(self, request, fqdn, *args, **kwargs):
-        """
-        Add annotation to machine.
-        """
+        """Add annotation to machine."""
         try:
             result = get_machine(
                 fqdn,
@@ -487,9 +467,7 @@ class AddRemotePowerCommand(BaseAPIView):
         ]
 
     def get(self, request, *args, **kwargs):
-        """
-        Return form for adding a remotepower.
-        """
+        """Return form for adding a remotepower."""
         fqdn = request.GET.get('fqdn', None)
         try:
             result = get_machine(
@@ -524,9 +502,7 @@ class AddRemotePowerCommand(BaseAPIView):
         return input.as_json
 
     def post(self, request, fqdn, *args, **kwargs):
-        """
-        Add remote power to machine.
-        """
+        """Add remote power to machine."""
         if not request.user.is_superuser:
             return ErrorMessage("Only superusers are allowed to perform this action!").as_json
 
