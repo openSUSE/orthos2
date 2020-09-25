@@ -11,10 +11,7 @@ class Architecture(models.Model):
 
         @classmethod
         def prep(cls):
-            """
-            Preparation of const variables for fast and developer-friendly
-            handling.
-            """
+            """Prepare const variables for fast and developer-friendly handling."""
             cls.X86_64 = safe_get_or_default(
                     Architecture,
                     'name',
@@ -74,9 +71,7 @@ class Architecture(models.Model):
     )
 
     def __init__(self, *args, **kwargs):
-        """
-        Deep copy object for comparison in `save()`.
-        """
+        """Deep copy object for comparison in `save()`."""
         super(Architecture, self).__init__(*args, **kwargs)
 
         if self.pk is not None:
@@ -88,9 +83,7 @@ class Architecture(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        """
-        Save architecture object.
-        """
+        """Save architecture object."""
         super(Architecture, self).save(*args, **kwargs)
 
         # check if DHCP needs to be regenerated
@@ -109,9 +102,7 @@ class Architecture(models.Model):
     get_machine_count.short_description = 'Machines'
 
     def get_support_contact(self):
-        """
-        Returns email address for responsible support contact.
-        """
+        """Return email address for responsible support contact."""
         if self.contact_email:
             return self.contact_email
 

@@ -8,8 +8,10 @@ def check_permissions(key='id'):
     def decorator(function):
         def wrapper(request, *args, **kwargs):
             """
-            Check access permission for machine. Only superusers can access administrative machines
-            and/or systems. Raises `PermissionDenied` exception if a user is not authorized.
+            Check access permission for machine.
+
+            Only superusers can access administrative machines and/or systems.
+            Raises `PermissionDenied` exception if a user is not authorized.
             """
             machine_id = kwargs.get(key, None)
 

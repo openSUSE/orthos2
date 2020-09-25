@@ -11,19 +11,18 @@ logger = logging.getLogger('utils')
 
 
 class SSH(object):
-    """
-    Wrapper around internal SSH objects.
-    """
+    """Wrapper around internal SSH objects."""
 
     class Exception(Exception):
-        """
-        Exception for SSH.
-        """
+        """Exception for SSH."""
+
         pass
 
     def __init__(self, fqdn):
         """
-        Creates a new SSH object. The connection is not established.
+        Create a new SSH object.
+
+        The connection is not established.
         """
         self._fqdn = fqdn
         if self._fqdn in [socket.getfqdn(), settings.SERVER_FQDN]:
@@ -39,9 +38,7 @@ class SSH(object):
             self._machine = None
 
     def get_system_user_configuration(self):
-        """
-        Returns SSH configuration of system user as Paramiko dict for `connect()`.
-        """
+        """Return SSH configuration of system user as Paramiko dict for `connect()`."""
         ssh_configuration = paramiko.SSHConfig()
         user_configuration_file = '{}/.ssh/config'.format(os.getenv('HOME'))
 
@@ -72,18 +69,14 @@ class SSH(object):
         return configuration
 
     def close(self):
-        """
-        Closes the SSH connection and all open SFTP connections.
-        """
+        """Close the SSH connection and all open SFTP connections."""
         if self._sftp:
             self._sftp.close()
         self._client.close()
         self._open = False
 
     def connect(self, user='root', timeout=None):
-        """
-        Connects to the specified server (in SSH.__init__()).
-        """
+        """Connect to the specified server (in SSH.__init__())."""
         last_exception = None
 
         if not timeout:
@@ -124,8 +117,9 @@ class SSH(object):
 
     def execute(self, command, retry=True, timeout=None):
         """
-        Executes the given command. Returns a tuple containing stdout (list), stderr (list) and
-        exit status (int).
+        Execute the given command.
+
+        Return a tuple containing stdout (list), stderr (list) and exit status (int).
         """
         try:
             stdin, stdout, stderr = self._client.exec_command(command)
@@ -154,9 +148,7 @@ class SSH(object):
             raise SSH.Exception("Unknown SSH exception")
 
     def read_file(self, filename):
-        """
-        Reads the given file contents.
-        """
+        """Read the given file contents."""
         if not self._sftp:
             self._sftp = self._client.open_sftp()
         f = self._sftp.file(filename, 'r')
@@ -165,9 +157,7 @@ class SSH(object):
         return retval
 
     def get_file(self, filename, mode):
-        """
-        Returns a file-like object for filename with mode `mode`.
-        """
+        """Return a file-like object for filename with mode `mode`."""
         if not self._sftp:
             self._sftp = self._client.open_sftp()
         f = self._sftp.file(filename=filename, mode=mode)
@@ -175,8 +165,9 @@ class SSH(object):
 
     def execute_script_remote(self, script, arguments=''):
         """
-        Executes the given script on the remote side. Returns a tuple containing stdout (list),
-        stderr (list) and exit status (int).
+        Execute the given script on the remote side.
+
+        Return a tuple containing stdout (list), stderr (list) and exit status (int).
         """
         retval = ('', '', 1)
 
@@ -236,8 +227,9 @@ class SSH(object):
 
     def copy_file(self, localfile, remotefile, parents=False):
         """
-        Copies a local file to the remote side. If `parents` is true, create target directory
-        recursively.
+        Copy a local file to the remote side.
+
+        If `parents` is true, create target directory recursively.
         """
         if not self._sftp:
             self._sftp = self._client.open_sftp()
@@ -261,18 +253,14 @@ class SSH(object):
         self._sftp.put(localfile, remotefile)
 
     def remove_file(self, remotefile):
-        """
-        Deletes a file on the remote side.
-        """
+        """Delete a file on the remote side."""
         if not self._sftp:
             self._sftp = self._client.open_sftp()
 
         self._sftp.remove(remotefile)
 
     def check_path(self, path, test):
-        """
-        Checks if the file/directory exists remotely.
-        """
+        """Check if the file/directory exists remotely."""
         stdout, stderr, exitstatus = self.execute('test {} "{}"'.format(test, path))
 
         if exitstatus != 0:

@@ -46,16 +46,15 @@ class TermSocketHandler(TermSocket):
         self._logger.info("TermSocket.open: Opened %s", self.term_name)
 
     def check_origin(self, origin):
-        """
-        Disable origin check due to different websocket server.
-        """
+        """Disable origin check due to different websocket server."""
         return True
 
 
 class SerialConsoleTermManager(UniqueTermManager):
 
     def new_terminal(self, **kwargs):
-        """Make a new terminal, return a :class:`PtyWithClients` instance.
+        """
+        Make a new terminal, return a :class: `PtyWithClients` instance.
 
         Add `hostname` to shell commando.
         """
@@ -70,9 +69,7 @@ class SerialConsoleTermManager(UniqueTermManager):
         return PtyWithClients(pty)
 
     def get_terminal(self, url_component=None, hostname=None):
-        """
-        Call `new_terminal()` with `hostname` argument.
-        """
+        """Call `new_terminal()` with `hostname` argument."""
         if self.max_terminals and len(self.ptys_by_fd) >= self.max_terminals:
             raise MaxTerminalsReached(self.max_terminals)
 

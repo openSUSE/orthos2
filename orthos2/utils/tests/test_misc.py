@@ -15,9 +15,7 @@ logging.disable(logging.CRITICAL)
 class MiscMethodTests(TestCase):
 
     def test_get_domain(self):
-        """
-        get_domain() should return the domain for a given FQDN.
-        """
+        """get_domain() should return the domain for a given FQDN."""
         fqdn = 'foo.bar'
         assert get_domain(fqdn) == 'bar'
 
@@ -28,9 +26,7 @@ class MiscMethodTests(TestCase):
         assert get_domain(fqdn) == 'bar.foobar.suse.de'
 
     def test_get_hostname(self):
-        """
-        get_hostname() should return the hostname for a given FQDN.
-        """
+        """get_hostname() should return the hostname for a given FQDN."""
         fqdn = 'foo.bar'
         assert get_hostname(fqdn) == 'foo'
 
@@ -42,9 +38,7 @@ class MiscMethodTests(TestCase):
 
     @mock.patch('utils.misc.socket.gethostbyname')
     def test_is_dns_resolvable(self, mocked_gethostbyname):
-        """
-        is_dns_resolvable() should return True if a FQDN is resolvable, False otherwise.
-        """
+        """is_dns_resolvable() should return True if a FQDN is resolvable, False otherwise."""
         import socket
 
         fqdn = 'foo.bar.suse.de'
@@ -92,9 +86,7 @@ class ChecksMethodTests(TestCase):
 
     @mock.patch('utils.misc.subprocess.Popen')
     def test_ping_check(self, mocked_popen):
-        """
-        ping_check() should return True if a FQDN is pingable, False otherwise.
-        """
+        """ping_check() should return True if a FQDN is pingable, False otherwise."""
         fqdn = 'foo.bar.suse.de'
         mocked_popen.return_value.returncode = 0
         assert ping_check(fqdn) is True
@@ -105,9 +97,7 @@ class ChecksMethodTests(TestCase):
     @mock.patch('utils.machinechecks.socket.socket.connect')
     @mock.patch('utils.machinechecks.ping_check')
     def test_nmap_check(self, mocked_ping_check, mocked_connect):
-        """
-        nmap_check() should return True if a host runs SSH, False otherwise.
-        """
+        """nmap_check() should return True if a host runs SSH, False otherwise."""
         import socket
 
         fqdn = 'foo.bar.suse.de'
@@ -124,9 +114,7 @@ class ChecksMethodTests(TestCase):
 #         assert nmap_check(fqdn) == True
 
     def test_execute(self):
-        """
-        execute() should return a tuple with the output and the exit status code.
-        """
+        """execute() should return a tuple with the output and the exit status code."""
         result = execute('foobar -baz')
         assert result[0] == ''
         assert result[2] == 127

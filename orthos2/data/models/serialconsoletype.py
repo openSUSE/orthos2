@@ -10,9 +10,7 @@ class SerialConsoleType(models.Model):
 
         @classmethod
         def to_str(cls, index):
-            """
-            Returns type as string (serial console type name) by index.
-            """
+            """Return type as string (serial console type name) by index."""
             for type_tuple in SerialConsoleType.objects.all().values_list('id', 'name'):
                 if int(index) == type_tuple[0]:
                     return type_tuple[1]
@@ -20,9 +18,7 @@ class SerialConsoleType(models.Model):
 
         @classmethod
         def to_int(cls, name):
-            """
-            Returns type as integer if name matches.
-            """
+            """Return type as integer if name matches."""
             for type_tuple in SerialConsoleType.objects.all().values_list('id', 'name'):
                 if name.lower() == type_tuple[1].lower():
                     return type_tuple[0]

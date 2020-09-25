@@ -36,9 +36,7 @@ class DailyTaskAdmin(BaseTaskAdmin):
 
     # https://medium.com/@hakibenita/how-to-add-custom-action-buttons-to-django-admin-8d266f5b0d41
     def get_urls(self):
-        """
-        Add customn URLs to daily task admin view.
-        """
+        """Add customn URLs to daily task admin view."""
         urls = super(DailyTaskAdmin, self).get_urls()
         custom_urls = [
             re_path(
@@ -55,9 +53,7 @@ class DailyTaskAdmin(BaseTaskAdmin):
         return custom_urls + urls
 
     def process_execute(self, request, dailytask_id, *args, **kwargs):
-        """
-        Execute specific daily task.
-        """
+        """Execute specific daily task."""
         try:
             task = DailyTask.objects.get(pk=dailytask_id)
             if not task.enabled:
@@ -75,9 +71,7 @@ class DailyTaskAdmin(BaseTaskAdmin):
         return redirect('admin:taskmanager_dailytask_changelist')
 
     def process_task_switch(self, request, dailytask_id, *args, **kwargs):
-        """
-        Enable/disable task.
-        """
+        """Enable/disable task."""
         action = request.GET.get('action', None)
 
         if (action is not None) and (action in ['enable', 'disable']):
@@ -101,9 +95,7 @@ class DailyTaskAdmin(BaseTaskAdmin):
         return redirect('admin:taskmanager_dailytask_changelist')
 
     def task_actions(self, obj):
-        """
-        Add buttons for custom daily task actions.
-        """
+        """Add buttons for custom daily task actions."""
         if not obj.enabled:
             button = '<a class="button" href="{}?action=enable">Enable Task</a>'
         else:

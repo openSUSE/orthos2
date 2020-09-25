@@ -35,9 +35,7 @@ Example:
         ]
 
     def get(self, request, *args, **kwargs):
-        """
-        Release a machine.
-        """
+        """Release a machine."""
         fqdn = request.GET.get('fqdn', None)
 
         try:

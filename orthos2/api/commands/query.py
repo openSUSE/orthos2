@@ -51,9 +51,7 @@ OR                  logical disjunction
         return APIQuery.get_tab_completion_options()
 
     def post(self, request, *args, **kwargs):
-        """
-        Return query result.
-        """
+        """Return query result."""
         response = {}
 
         try:

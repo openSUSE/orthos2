@@ -21,9 +21,7 @@ PRIORITIES = [Priority.HIGH, Priority.NORMAL]
 
 
 class TaskExecuter(Thread):
-    """
-    TaskExecuter pulls tasks from the database and executes them asynchrously.
-    """
+    """TaskExecuter pulls tasks from the database and executes them asynchrously."""
 
     def __init__(self):
         Thread.__init__(self)
@@ -36,9 +34,7 @@ class TaskExecuter(Thread):
         }
 
     def get_daily_tasks(self):
-        """
-        Check for daily tasks and store them in the queue for processing.
-        """
+        """Check for daily tasks and store them in the queue for processing."""
         now = datetime.now()
         today = date.today()
 
@@ -53,9 +49,7 @@ class TaskExecuter(Thread):
                     self.queue[dailytask.priority].put(dailytask)
 
     def get_single_tasks(self):
-        """
-        Get all single tasks from database and store them in the queue for processing.
-        """
+        """Get all single tasks from database and store them in the queue for processing."""
         singletasks = SingleTask.objects.filter(running=False).order_by('priority')
         for singletask in singletasks:
             singletask.running = True
@@ -63,9 +57,7 @@ class TaskExecuter(Thread):
             self.queue[singletask.priority].put(singletask)
 
     def reset_daily_task(self, hash):
-        """
-        Reset daily task and unset 'running' field.
-        """
+        """Reset daily task and unset 'running' field."""
         try:
             dailytask = DailyTask.objects.get(hash=hash)
             dailytask.running = False
@@ -74,19 +66,14 @@ class TaskExecuter(Thread):
             logger.warning("Daily task not found!")
 
     def remove_single_task(self, hash):
-        """
-        Remove task from database.
-        """
+        """Remove task from database."""
         try:
             SingleTask.objects.get(hash=hash).delete()
         except SingleTask.DoesNotExist:
             logger.warning("Single task not found!")
 
     def run(self):
-        """
-        Main thread function.
-        """
-
+        """Main thread function."""
         running_threads = {}
 
         while not self._stop_execution:

@@ -50,9 +50,7 @@ Example:
         return RemotePower.Action.as_list
 
     def get(self, request, *args, **kwargs):
-        """
-        Perform machine power cycle.
-        """
+        """Perform machine power cycle."""
         fqdn = request.GET.get('fqdn', None)
         action = request.GET.get('action', None)
 

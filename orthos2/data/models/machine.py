@@ -38,13 +38,11 @@ def validate_dns(value):
 
 
 def check_permission(function):
-    """
-    Returns decorator for checking machine specific methods.
-    """
+    """Return decorator for checking machine specific methods."""
 
     def decorator(machine, *args, **kwargs):
         """
-        Checks permission:
+        Check permission:
 
         - no `user` keyword                                         -> allow
         - is superuser                                              -> allow
@@ -106,9 +104,7 @@ def check_permission(function):
 class RootManager(models.Manager):
 
     def get_queryset(self):
-        """
-        Exclude all inactive machines.
-        """
+        """Exclude all inactive machines."""
         queryset = super(RootManager, self).get_queryset()
 
         return queryset.exclude(active=False)
@@ -117,9 +113,7 @@ class RootManager(models.Manager):
 class ViewManager(RootManager):
 
     def get_queryset(self, user=None):
-        """
-        Exclude administrative machines/systems from all view requested by non-superusers.
-        """
+        """Exclude administrative machines/systems from all view requested by non-superusers."""
         queryset = super(ViewManager, self).get_queryset()
 
         if (not user) or (not user.is_superuser):
@@ -132,9 +126,7 @@ class ViewManager(RootManager):
 class SearchManager(ViewManager):
 
     def form(self, parameters, user=None):
-        """
-        Filter machine queryset by advanced search parameters.
-        """
+        """Filter machine queryset by advanced search parameters."""
         parameters = {key: value for key, value in parameters.items() if value}
 
         queryset = super(SearchManager, self).get_queryset(user=user)
@@ -515,9 +507,7 @@ class Machine(models.Model):
     view = ViewManager()
 
     def __init__(self, *args, **kwargs):
-        """
-        Deep copy object for comparison in `save()`.
-        """
+        """Deep copy object for comparison in `save()`."""
         super(Machine, self).__init__(*args, **kwargs)
 
         if self.pk is not None:
@@ -533,7 +523,9 @@ class Machine(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Save machine object. Set FQDN to lower case, check if FQDN is resolvable by DNS and set
+        Save machine object.
+
+        Set FQDN to lower case, check if FQDN is resolvable by DNS and set
         domain and enclosure correctly (create if necessary).
         """
         self.fqdn = self.fqdn.lower()
@@ -618,15 +610,11 @@ class Machine(models.Model):
     is_cobbler_server.boolean = True
 
     def is_virtual_machine(self):
-        """
-        Returns `True` if machine is a virtual machine (system), `False` otherwise.
-        """
+        """Return `True` if machine is a virtual machine (system), `False` otherwise."""
         return self.system.virtual
 
     def is_bmc(self):
-        """
-        Returns `True` if machine is BMC, `False` otherwise.
-        """
+        """Return `True` if machine is BMC, `False` otherwise."""
         return self.system_id == System.Type.BMC
 
     def get_cobbler_domains(self):
@@ -646,9 +634,7 @@ class Machine(models.Model):
         return None
 
     def get_kernel_options(self):
-        """
-        Returns kernel options as dict.
-        """
+        """Return kernel options as dict."""
         kernel_options = {}
 
         if not self.kernel_options.strip().startswith('+'):
@@ -661,9 +647,7 @@ class Machine(models.Model):
         return kernel_options
 
     def get_kernel_options_append(self):
-        """
-        Returns kernel options append as dict.
-        """
+        """Return kernel options append as dict."""
         kernel_options = {}
 
         if self.kernel_options.strip().startswith('+'):
@@ -677,9 +661,10 @@ class Machine(models.Model):
 
     def write_dhcpv4_record(self):
         """
-        Decides whether an DHCPv4 record is being written. The hierarchy is:
+        Decide whether an DHCPv4 record is being written.
 
-        Machine > [Group >] Architecture
+        The hierarchy is:
+            Machine > [Group >] Architecture
 
         If a machine is in a machine group, the machine group setting decides whether to write a
         DHCP group file (e.g. 'group_foo.conf').
@@ -705,9 +690,10 @@ class Machine(models.Model):
 
     def write_dhcpv6_record(self):
         """
-        Decides whether an DHCPv6 record is being written. The hierarchy is:
+        Decide whether an DHCPv6 record is being written.
 
-        Machine > [Group >] Architecture
+        The hierarchy is:
+            Machine > [Group >] Architecture
         """
         if ((self.dhcpv6_write == DHCPRecordOption.WRITE) or
                 (self.dhcpv6_write == DHCPRecordOption.IGNORE)) and\
@@ -723,8 +709,9 @@ class Machine(models.Model):
 
     def get_primary_bmc(self):
         """
-        Return primary BMC for machine (simply the first), `None` if no BMC exists. Only non BMC
-        sytems can have a primary BMC.
+        Return primary BMC for machine (simply the first), `None` if no BMC exists.
+
+        Only non BMC sytems can have a primary BMC.
         """
         if not self.system_id == System.Type.BMC:
             bmc_list = self.enclosure.get_bmc_list()
@@ -751,21 +738,15 @@ class Machine(models.Model):
         return None
 
     def has_remotepower(self):
-        """
-        Checks for available remote power.
-        """
+        """Check for available remote power."""
         return hasattr(self, 'remotepower')
 
     def has_serialconsole(self):
-        """
-        Checks for available serial console.
-        """
+        """Check for available serial console."""
         return hasattr(self, 'serialconsole')
 
     def is_reserved_infinite(self):
-        """
-        Returns true if machine is reserved infinite `datetime.date(9999, 12, 31)`.
-        """
+        """Return true if machine is reserved infinite `datetime.date(9999, 12, 31)`."""
         if self.reserved_by and self.reserved_until.date() == datetime.date.max:
             return True
         return False
@@ -782,9 +763,7 @@ class Machine(models.Model):
 
     @check_permission
     def reserve(self, reason, until, user=None, reserve_for_user=None):
-        """
-        Reserve machine.
-        """
+        """Reserve machine."""
         from taskmanager.models import TaskManager
         from taskmanager import tasks
         from .reservationhistory import ReservationHistory
@@ -848,9 +827,7 @@ class Machine(models.Model):
 
     @check_permission
     def release(self, user=None):
-        """
-        Release machine.
-        """
+        """Release machine."""
         from taskmanager.models import TaskManager
         from taskmanager import tasks
         from .reservationhistory import ReservationHistory
@@ -896,9 +873,7 @@ class Machine(models.Model):
 
     @check_permission
     def powercycle(self, action, user=None):
-        """
-        Acts as proxy for all power cycle actions.
-        """
+        """Act as proxy for all power cycle actions."""
         from .remotepower import RemotePower
 
         if (action is None) or (action not in RemotePower.Action.as_list):
@@ -935,9 +910,7 @@ class Machine(models.Model):
 
     @check_permission
     def ssh_shutdown(self, user=None, reboot=False):
-        """
-        Powers off/reboots the machine using SSH.
-        """
+        """Power off/reboot the machine using SSH."""
         from utils.ssh import SSH
 
         if not reboot:
@@ -958,9 +931,7 @@ class Machine(models.Model):
 
     @check_permission
     def setup(self, setup_label, user=None):
-        """
-        Setup machine (re-install distribution).
-        """
+        """Setup machine (re-install distribution)."""
         from taskmanager.models import TaskManager
         from taskmanager import tasks
 
@@ -973,17 +944,17 @@ class Machine(models.Model):
 
     @check_permission
     def power_on(self, user=None):
-        """
-        Powers on the machine.
-        """
+        """Power on the machine."""
         self.remotepower.power_on()
         return True
 
     @check_permission
     def power_off(self, user=None):
         """
-        Powers off the machine. Try power off via SSH first. If SSH didn't succeed, trigger power
-        off via remote power if available.
+        Power off the machine.
+
+        Try power off via SSH first. If SSH didn't succeed, trigger power off via remote power if
+        available.
         """
         from utils.ssh import SSH
 
@@ -1001,24 +972,22 @@ class Machine(models.Model):
 
     @check_permission
     def power_off_ssh(self, user=None):
-        """
-        Powers off the machine using SSH. Wrapper for `ssh_shutdown()`.
-        """
+        """Power off the machine using SSH. Wrapper for `ssh_shutdown()`."""
         return self.ssh_shutdown()
 
     @check_permission
     def power_off_remotepower(self, user=None):
-        """
-        Powers off the machine via remote power.
-        """
+        """Power off the machine via remote power."""
         self.remotepower.power_off()
         return True
 
     @check_permission
     def reboot(self, user=None):
         """
-        Powers off the machine. Try power off via SSH first. If SSH didn't succeed, trigger power
-        off via remote power if available.
+        Power off the machine.
+
+        Try power off via SSH first. If SSH didn't succeed, trigger power off via remote power if
+        available.
         """
         from utils.ssh import SSH
 
@@ -1036,23 +1005,17 @@ class Machine(models.Model):
 
     @check_permission
     def reboot_ssh(self, user=None):
-        """
-        Reboots the machine using SSH. Wrapper for `ssh_shutdown(reboot=True)`.
-        """
+        """Reboot the machine using SSH. Wrapper for `ssh_shutdown(reboot=True)`."""
         return self.ssh_shutdown(reboot=True)
 
     @check_permission
     def reboot_remotepower(self, user=None):
-        """
-        Reboots the machine via remote power.
-        """
+        """Reboot the machine via remote power."""
         self.remotepower.reboot()
         return True
 
     def get_power_status(self, to_str=True):
-        """
-        Returns the current power status.
-        """
+        """Return the current power status."""
         from .remotepower import RemotePower
 
         status = self.remotepower.get_status()
@@ -1061,9 +1024,7 @@ class Machine(models.Model):
         return status
 
     def scan(self, action='all', user=None):
-        """
-        Start scanning/checking the machine by creating a task.
-        """
+        """Start scanning/checking the machine by creating a task."""
         from taskmanager.models import TaskManager
         from taskmanager import tasks
 
@@ -1075,18 +1036,14 @@ class Machine(models.Model):
 
     @check_permission
     def update_motd(self, user=None):
-        """
-        Call respective signal.
-        """
+        """Call respective signal."""
         from data.signals import signal_motd_regenerate
 
         signal_motd_regenerate.send(sender=self.__class__, fqdn=self.fqdn)
 
     @check_permission
     def regenerate_serialconsole_record(self, user=None):
-        """
-        Call respective signal.
-        """
+        """Call respective signal."""
         from data.signals import signal_serialconsole_regenerate
 
         if self.has_serialconsole():
@@ -1097,16 +1054,14 @@ class Machine(models.Model):
 
     @check_permission
     def regenerate_dhcp_record(self, user=None):
-        """
-        Call respective signal.
-        """
+        """Call respective signal."""
         from data.signals import signal_cobbler_regenerate
 
         signal_cobbler_regenerate.send(sender=self.__class__, domain_id=self.fqdn_domain.pk)
 
     def get_support_contact(self):
         """
-        Returns email address for responsible support contact (default: SUPPORT_CONTACT).
+        Return email address for responsible support contact (default: SUPPORT_CONTACT).
 
         Machine > [Group >] Architecture > SUPPORT_CONTACT
         """
@@ -1125,7 +1080,9 @@ class Machine(models.Model):
 
     def serialize(self, output_format):
         """
-        Serialize machine with its relations. Valid output formats are JSON and Yaml.
+        Serialize machine with its relations.
+
+        Valid output formats are JSON and Yaml.
         """
         output_format = output_format.lower()
 

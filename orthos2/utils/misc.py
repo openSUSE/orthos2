@@ -35,36 +35,30 @@ class Serializer:
 
         @classmethod
         def is_valid(cls, output_format):
-            """
-            Check if `output_format` is valid.
-            """
+            """Check if `output_format` is valid."""
             return output_format.lower() in [cls.JSON, cls.YAML]
 
 
 def get_domain(fqdn):
-    """
-    Returns domain of FQDN.
-    """
+    """Return domain of FQDN."""
     return '.'.join(fqdn.split('.')[1:])
 
 
 def get_hostname(fqdn):
-    """
-    Returns hostname of FQDN.
-    """
+    """Return hostname of FQDN."""
     return fqdn.split('.')[0]
 
 
 def get_ip(fqdn, ip_version=4):
     """
-    Returns all IP addresses for FQDN. Uses `ip_version` to specify which IP version gets returned.
+    Return all IP addresses for FQDN.
+
+    Use `ip_version` to specify which IP version gets returned.
 
     IP versions (`ip_version`):
-
         4  - ['192.168.0.1', ...]
         6  - ['0:0:0:0:0:ffff:c0a8:1', ...]
         10 - (['192.168.0.1', ...], [0:0:0:0:0:ffff:c0a8:1, ...])
-
     """
     ipv4 = []
     ipv6 = []
@@ -104,9 +98,7 @@ def get_ip(fqdn, ip_version=4):
 
 
 def get_ipv4(fqdn):
-    """
-    Return (first) IPv4 address for FQDN.
-    """
+    """Return (first) IPv4 address for FQDN."""
     ipv4 = get_ip(fqdn, ip_version=4)
     if ipv4 and len(ipv4) > 0:
         return ipv4[0]
@@ -114,9 +106,7 @@ def get_ipv4(fqdn):
 
 
 def get_ipv6(fqdn):
-    """
-    Return (first) IPv6 address for FQDN.
-    """
+    """Return (first) IPv6 address for FQDN."""
     ipv6 = get_ip(fqdn, ip_version=6)
     if ipv6 and len(ipv6) > 0:
         return ipv6[0]
@@ -124,9 +114,7 @@ def get_ipv6(fqdn):
 
 
 def is_dns_resolvable(fqdn):
-    """
-    Checks if FQDN can be resolved by DNS server.
-    """
+    """Check if FQDN can be resolved by DNS server."""
     if not fqdn:
         return False
 
@@ -139,10 +127,9 @@ def is_dns_resolvable(fqdn):
 
 def has_valid_domain_ending(fqdn, valid_endings):
     """
-    Checks if FQDN has valid domain ending.
+    Check if FQDN has valid domain ending.
 
     Example:
-
         example.de
         example.com
     """
@@ -156,18 +143,15 @@ def has_valid_domain_ending(fqdn, valid_endings):
 
 
 def wrap80(text):
-    """
-    Wraps the text at the given column.
-    """
+    """Wrap the text at the given column."""
     return "\n".join(textwrap.wrap(text, width=80))
 
 
 def is_valid_mac_address(mac_address):
     """
-    Checks if MAC address is valid.
+    Check if MAC address is valid.
 
     Example:
-
         00:11:22:33:44:55
     """
     if validators.mac_address(mac_address):
@@ -178,10 +162,9 @@ def is_valid_mac_address(mac_address):
 
 def str_time_to_datetime(time):
     """
-    Converts string time (24-hour) to datetime object.
+    Convert string time (24-hour) to datetime object.
 
     Example:
-
         '12:34'
     """
     try:
@@ -192,9 +175,7 @@ def str_time_to_datetime(time):
 
 
 def send_email(to_addr, subject, message, from_addr=None):
-    """
-    Sends an email.
-    """
+    """Send an email."""
     from data.models import ServerConfig
 
     if not ServerConfig.objects.bool_by_key('orthos.debug.mail.send'):
@@ -225,10 +206,10 @@ def send_email(to_addr, subject, message, from_addr=None):
 
 def execute(command):
     """
-    Executes a (local) command and returns stdout, stderr and exit status.
+    Execute a (local) command and returns stdout, stderr and exit status.
 
-    With `shell=True` the command needs to be a string. Otherwise the first element is set as
-    shell which leads to issues.
+    With `shell=True` the command needs to be a string. Otherwise the first element is set as shell
+    which leads to issues.
     """
     result = ('', '', 1)
 
@@ -252,9 +233,7 @@ def execute(command):
 
 
 def get_s390_hostname(hostname, use_uppercase=True):
-    """
-    Returns the 'linux...' name of the s390 machine.
-    """
+    """Return the 'linux...' name of the s390 machine."""
     if use_uppercase:
         linux = 'LINUX'
     else:
@@ -270,9 +249,7 @@ def get_s390_hostname(hostname, use_uppercase=True):
 
 
 def sync(original, temp):
-    """
-    Synchronize attributes between two model objects.
-    """
+    """Synchronize attributes between two model objects."""
     if type(original) is not type(temp):
         return
 
@@ -294,11 +271,11 @@ def sync(original, temp):
 
 def add_offset_to_date(offset, begin=date.today(), as_string=False):
     """
-    Adds the day offset to begin date (default: today) and returns either a datetime.date
-    object or a valid date string.
+    Add the day offset to begin date (default: today).
+
+    Returns either a datetime.date object or a valid date string.
 
     Example:
-
         25      datetime.date(2017, 12, 24)     -> datetime.date(2018, 1, 18)
         ^       ^                               -> '2018-01-18'
         offset  begin
@@ -314,9 +291,7 @@ def add_offset_to_date(offset, begin=date.today(), as_string=False):
 
 
 def get_random_mac_address():
-    """
-    Returns a random MAC Address (local unicast)
-    """
+    """Return a random MAC Address (local unicast)."""
     # TODO: This comment is wrong.
     # Xen Vendor OUI is 00:16:3e
     # KVM Vendor OUI is 52:54:00
@@ -333,7 +308,9 @@ def get_random_mac_address():
 
 def normalize_ascii(string):
     """
-    Removes non-ascii characters of an string. In that case, the character is set to ` ` (space).
+    Remove non-ascii characters of an string.
+
+    In that case, the character is set to ` ` (space).
     """
     result = ''
     for char in string:
@@ -342,9 +319,7 @@ def normalize_ascii(string):
 
 
 def format_cli_form_errors(form):
-    """
-    Format form errors for CLI.
-    """
+    """Format form errors for CLI."""
     output = ''
     for field_name, errors in form.errors.items():
         if field_name in form.fields:
@@ -361,8 +336,9 @@ def format_cli_form_errors(form):
 
 def safe_get_or_default(model, key, value, field, default=None):
     """
-    Allows access to a `field` of a specified `model`. `key` and `value` is
-    needed for filtering down to the expected object. If there is no object,
+    Allow access to a `field` of a specified `model`.
+
+    `key` and `value` is needed for filtering down to the expected object. If there is no object,
     multiple objects or any other exception, `default` gets returned.
     """
     try:

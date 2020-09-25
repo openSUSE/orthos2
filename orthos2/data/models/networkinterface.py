@@ -6,16 +6,16 @@ from utils.misc import is_valid_mac_address
 
 
 def validate_mac_address(mac_address):
-    """
-    Validates MAC address format.
-    """
+    """Validate MAC address format."""
     if not is_valid_mac_address(mac_address):
         raise ValidationError("'{}' is not a valid MAC address!".format(mac_address))
 
 
 def is_unique_mac_address(mac_address, exclude=[]):
     """
-    Check if `mac_address` does already exists. Exlcude all MAC addresses in `exclude`.
+    Check if `mac_address` does already exists.
+
+    Exlcude all MAC addresses in `exclude`.
     """
     mac_addresses = NetworkInterface.objects.filter(
         mac_address=mac_address
@@ -91,9 +91,7 @@ class NetworkInterface(models.Model):
         return super(NetworkInterface, self).save(*args, **kwargs)
 
     def clean(self):
-        """
-        Validate, convert to upper case and check if MAC address already exists.
-        """
+        """Validate, convert to upper case and check if MAC address already exists."""
         self.mac_address = self.mac_address.upper()
         validate_mac_address(self.mac_address)
 

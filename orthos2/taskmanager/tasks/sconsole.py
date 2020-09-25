@@ -9,17 +9,13 @@ logger = logging.getLogger('tasks')
 
 
 class RegenerateSerialConsole(Task):
-    """
-    Regenerates the cscreen configuration for a specific serial console server.
-    """
+    """Regenerate the cscreen configuration for a specific serial console server."""
 
     def __init__(self, fqdn):
         self.fqdn = fqdn
 
     def execute(self):
-        """
-        Executes the task.
-        """
+        """Execute the task."""
         from data.models import Machine, SerialConsole
 
         if not ServerConfig.objects.bool_by_key('orthos.debug.serialconsole.write'):

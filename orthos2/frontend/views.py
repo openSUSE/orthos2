@@ -56,8 +56,9 @@ class MachineListView(ListView):
 
     def get_queryset(self):
         """
-        Returns pre-filtered query set for every machine list. Adminsitrative machines and
-        administrative systems are excluded.
+        Return pre-filtered query set for every machine list.
+
+        Adminsitrative machines and administrative systems are excluded.
         """
         filters = []
 
@@ -124,14 +125,10 @@ class MachineListView(ListView):
 
 
 class AllMachineListView(MachineListView):
-    """
-    `All Machines` list view.
-    """
+    """`All Machines` list view."""
 
     def get(self, request, *args, **kwargs):
-        """
-        Redirect to `Free Machines` if a non-superuser tries to request `All Machines`.
-        """
+        """Redirect to `Free Machines` if a non-superuser tries to request `All Machines`."""
         if not request.user.is_superuser:
             return redirect('frontend:free_machines')
 
@@ -143,14 +140,10 @@ class AllMachineListView(MachineListView):
 
 
 class MyMachineListView(MachineListView):
-    """
-    `My Machines` list view.
-    """
+    """`My Machines` list view."""
 
     def get_queryset(self):
-        """
-        Filter machines which are reserved by requesting user.
-        """
+        """Filter machines which are reserved by requesting user."""
         machines = super(MyMachineListView, self).get_queryset()
         return machines.filter(reserved_by=self.request.user)
 
@@ -161,14 +154,10 @@ class MyMachineListView(MachineListView):
 
 
 class FreeMachineListView(MachineListView):
-    """
-    `Free Machines` list view.
-    """
+    """`Free Machines` list view."""
 
     def get_queryset(self):
-        """
-        Filter machines which are NOT reserved and NO dedicated VM hosts.
-        """
+        """Filter machines which are NOT reserved and NO dedicated VM hosts."""
         machines = super(FreeMachineListView, self).get_queryset()
         return machines.filter(
             reserved_by=None,
@@ -182,14 +171,10 @@ class FreeMachineListView(MachineListView):
 
 
 class VirtualMachineListView(MachineListView):
-    """
-    `Virtual Machines` list view.
-    """
+    """`Virtual Machines` list view."""
 
     def get_queryset(self):
-        """
-        Filter machines which are capable to run VMs and which are dedicated VM hosts.
-        """
+        """Filter machines which are capable to run VMs and which are dedicated VM hosts."""
         machines = super(VirtualMachineListView, self).get_queryset()
         return machines.filter(
             vm_capable=True,
@@ -197,9 +182,7 @@ class VirtualMachineListView(MachineListView):
         )
 
     def render_to_response(self, context, **response_kwargs):
-        """
-        Add VMs running already.
-        """
+        """Add VMs running already."""
         context['title'] = 'Virtual Machines'
         context['view'] = 'virtual'
 
@@ -840,9 +823,7 @@ def statistics(request):
 
 
 def deprecate_current_app(func):
-    """
-    Handle deprecation of the current_app parameter of the views.
-    """
+    """Handle deprecation of the current_app parameter of the views."""
     @functools.wraps(func)
     def inner(*args, **kwargs):
         if 'current_app' in kwargs:
@@ -874,9 +855,7 @@ def login(request, template_name='registration/login.html',
           redirect_field_name=REDIRECT_FIELD_NAME,
           authentication_form=AuthenticationForm,
           extra_context=None, redirect_authenticated_user=False):
-    """
-    Displays the login form and handles the login action.
-    """
+    """Display the login form and handles the login action."""
     redirect_to = request.POST.get(redirect_field_name, request.GET.get(redirect_field_name, ''))
 
     if redirect_authenticated_user and request.user.is_authenticated:

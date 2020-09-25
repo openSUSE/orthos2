@@ -56,9 +56,7 @@ class RemotePower(models.Model):
 
         @classmethod
         def to_str(cls, index):
-            """
-            Returns type as string (remote power type name) by index.
-            """
+            """Return type as string (remote power type name) by index."""
             for type_tuple in RemotePower.TYPE_CHOICES:
                 if int(index) == type_tuple[0]:
                     return type_tuple[1]
@@ -66,9 +64,7 @@ class RemotePower(models.Model):
 
         @classmethod
         def to_int(cls, name):
-            """
-            Returns type as integer if name matches.
-            """
+            """Return type as integer if name matches."""
             for type_tuple in RemotePower.TYPE_CHOICES:
                 if name.lower() == type_tuple[1].lower():
                     return type_tuple[0]
@@ -107,8 +103,9 @@ class RemotePower(models.Model):
 
     def limit_remote_power_device_choices():
         """
-        Allow only devices of type remote power. This needs to be in callable
-        form because of later assignment of the type variable.
+        Allow only devices of type remote power.
+
+        This needs to be in callable form because of later assignment of the type variable.
         """
         return {'system': System.Type.REMOTEPOWER}
 
@@ -170,8 +167,9 @@ class RemotePower(models.Model):
 
     def __init__(self, *args, **kwargs):
         """
-        Cast plain `RemotePower` object to respective subclass. Subclasses getting collected
-        automatically by inheritance of `RemotePower` class.
+        Cast plain `RemotePower` object to respective subclass.
+
+        Subclasses getting collected automatically by inheritance of `RemotePower` class.
         """
         subclasses = dict([
             (sub.__name__.replace(self.__class__.__name__, '').lower(), sub)
@@ -187,15 +185,11 @@ class RemotePower(models.Model):
         super(RemotePower, self).__init__(*args, **kwargs)
 
     def _set_remotepowertype(self, type):
-        """
-        Set remote power type.
-        """
+        """Set remote power type."""
         self.__class__ = self._remotepowertypes[type]['class']
 
     def __setattr__(self, attr, value):
-        """
-        If `type` attribute changes, set respective subclass.
-        """
+        """If `type` attribute changes, set respective subclass."""
         # check for `None` explicitly because type 0 results in false
         if attr == 'type' and value is not None:
             self._set_remotepowertype(value)
@@ -207,9 +201,7 @@ class RemotePower(models.Model):
         return '{}@{}'.format(self.name, self.machine.fqdn)
 
     def save(self, *args, **kwargs):
-        """
-        Checks values before saving the remote power object. Do only save if type is set.
-        """
+        """Check values before saving the remote power object. Do only save if type is set."""
         self.clean()
 
         if self.remote_power_device:
@@ -230,7 +222,7 @@ class RemotePower(models.Model):
 
     def clean(self):
         """
-        Checks for every remote power type if all required fields are set and deletes unutilized
+        Check for every remote power type if all required fields are set and deletes unutilized
         values.
         """
         errors = []
@@ -301,27 +293,19 @@ class RemotePower(models.Model):
         return self.Type.to_str(self.type)
 
     def power_on(self):
-        """
-        Powers on the machine.
-        """
+        """Power on the machine."""
         self._perform('on')
 
     def power_off(self):
-        """
-        Powers off the machine.
-        """
+        """Power off the machine."""
         self._perform('off')
 
     def reboot(self):
-        """
-        Reboots the machine.
-        """
+        """Reboot the machine."""
         logger.warning("Not implemented: {}".format(self))
 
     def get_status(self):
-        """
-        Returns the current power status.
-        """
+        """Return the current power status."""
         status = self.Status.UNKNOWN
         result = self._perform('status')
 
@@ -336,10 +320,10 @@ class RemotePower(models.Model):
 
     def get_credentials(self, remotepower_type=None, password_only=False):
         """
-        Returns username and password for remotepower login. Check for specific remotepower
-        type if given, use default password/username if no DB entry exists.
+        Return username and password for remotepower login.
 
-        If no password/username can be found, an exception gets raised.
+        Check for specific remotepower type if given, use default password/username if no DB entry
+        exists. If no password/username can be found, an exception gets raised.
 
         The return type is a tuple: (<password>, <username>)
         """
@@ -383,9 +367,7 @@ class Telnet(RemotePower):
         verbose_name = 'Remote Power'
 
     def _perform(self, action):
-        """
-        Common implementation for on, off and reset.
-        """
+        """Common implementation for on, off and reset."""
         result = False
 
         password, username = self.get_credentials('telnet', password_only=True)
@@ -415,9 +397,7 @@ class Telnet(RemotePower):
         return result
 
     def reboot(self):
-        """
-        Reboots the machine.
-        """
+        """Reboot the machine."""
         self._perform('Boot')
 
 
@@ -428,9 +408,7 @@ class Sentry(RemotePower):
         verbose_name = 'Remote Power'
 
     def _perform(self, action):
-        """
-        Common implementation for on, off and reset.
-        """
+        """Common implementation for on, off and reset."""
         result = False
 
         password, username = self.get_credentials('sentry')
@@ -491,9 +469,7 @@ class Sentry(RemotePower):
         return result
 
     def reboot(self):
-        """
-        Reboots the machine.
-        """
+        """Reboot the machine."""
         self._perform('Boot')
 
 
@@ -504,9 +480,7 @@ class ILO(RemotePower):
         verbose_name = 'Remote Power'
 
     def _perform(self, action):
-        """
-        Common implementation for on, off and reset.
-        """
+        """Common implementation for on, off and reset."""
         result = False
 
         password, username = self.get_credentials('ilo')
@@ -538,21 +512,15 @@ class ILO(RemotePower):
         return result
 
     def power_on(self):
-        """
-        Powers on the machine.
-        """
+        """Power on the machine."""
         self._perform('start')
 
     def power_off(self):
-        """
-        Powers off the machine.
-        """
+        """Power off the machine."""
         self._perform('stop')
 
     def reboot(self):
-        """
-        Reboots the machine.
-        """
+        """Reboot the machine."""
         self._perform('reset')
 
 
@@ -563,9 +531,7 @@ class IPMI(RemotePower):
         verbose_name = 'Remote Power'
 
     def _perform(self, action):
-        """
-        Common implementation for on, off and reset.
-        """
+        """Common implementation for on, off and reset."""
         result = False
 
         password, username = self.get_credentials('ipmi')
@@ -598,9 +564,7 @@ class IPMI(RemotePower):
         return result
 
     def reboot(self):
-        """
-        Reboots the machine.
-        """
+        """Reboot the machine."""
         status = self._perform('status')
 
         if 'off' in status.lower():
@@ -618,9 +582,7 @@ class DominionPX(RemotePower):
         verbose_name = 'Remote Power'
 
     def _perform(self, action):
-        """
-        Common implementation for on, off and reset.
-        """
+        """Common implementation for on, off and reset."""
         result = False
 
         password, username = self.get_credentials('dominionpx')
@@ -652,9 +614,7 @@ class DominionPX(RemotePower):
         return result
 
     def reboot(self):
-        """
-        Reboots the machine.
-        """
+        """Reboot the machine."""
         self._perform('off')
         time.sleep(8)
         self._perform('on')
@@ -667,9 +627,7 @@ class LibvirtQEMU(RemotePower):
         verbose_name = 'Remote Power'
 
     def _perform(self, action):
-        """
-        Common implementation for on, off and reset.
-        """
+        """Common implementation for on, off and reset."""
         name = self.machine.hostname
         virsh = 'virsh -c qemu:///system'
         conn = None
@@ -732,9 +690,7 @@ class LibvirtQEMU(RemotePower):
         return result
 
     def reboot(self):
-        """
-        Reboots the machine.
-        """
+        """Reboots the machine."""
         self._perform('off')
         time.sleep(5)
         self._perform('on')
@@ -747,9 +703,7 @@ class LibvirtLXC(RemotePower):
         verbose_name = 'Remote Power'
 
     def _perform(self, action):
-        """
-        Common implementation for on, off and reset.
-        """
+        """Common implementation for on, off and reset."""
         name = self.machine.hostname
         virsh = 'virsh -c lxc:///'
         conn = None
@@ -812,9 +766,7 @@ class LibvirtLXC(RemotePower):
         return result
 
     def reboot(self):
-        """
-        Reboots the machine.
-        """
+        """Reboot the machine."""
         self._perform('off')
         time.sleep(5)
         self._perform('on')
@@ -827,9 +779,7 @@ class S390(RemotePower):
         verbose_name = 'Remote Power'
 
     def _perform(self, action):
-        """
-        Common implementation for on, off and reset.
-        """
+        """Common implementation for on, off and reset."""
         base_url = 'http://zrouter61.suse.de/cgi-bin/'
         orthos = '+ORTHOS'
         name = get_s390_hostname(self.machine.fqdn)
@@ -874,9 +824,7 @@ class S390(RemotePower):
         return result
 
     def reboot(self):
-        """
-        Reboots the machine.
-        """
+        """Reboot the machine."""
         self._perform('off')
         time.sleep(5)
         self._perform('on')
@@ -889,9 +837,7 @@ class WEBCurl(RemotePower):
         verbose_name = 'Remote Power'
 
     def _perform(self, action):
-        """
-        Common implementation for on, off and reset.
-        """
+        """Common implementation for on, off and reset."""
         result = False
 
         password, username = self.get_credentials('webcurl')
@@ -921,21 +867,15 @@ class WEBCurl(RemotePower):
         return result
 
     def power_on(self):
-        """
-        Powers on the machine.
-        """
+        """Power on the machine."""
         self._perform(1)
 
     def power_off(self):
-        """
-        Powers off the machine.
-        """
+        """Power off the machine."""
         self._perform(0)
 
     def reboot(self):
-        """
-        Reboots the machine.
-        """
+        """Reboot the machine."""
         self._perform(0)
         time.sleep(8)
         self._perform(1)

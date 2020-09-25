@@ -45,7 +45,8 @@ def get_cobbler_update_command(machine, cobber_path):
 
 def get_filename(machine):
     """
-    Returns the corresponding filename attribute for the DHCP record.
+    Return the corresponding filename attribute for the DHCP record.
+
     Machine > Group > Architecture > None
     """
     context = Context({'machine': machine})
@@ -71,17 +72,13 @@ class CobblerServer:
         self._cobbler_path = ServerConfig.objects.by_key("cobbler.command")
 
     def connect(self):
-        """
-        Connect to DHCP server via SSH.
-        """
+        """Connect to DHCP server via SSH."""
         if not self._conn:
             self._conn = SSH(self._fqdn)
             self._conn.connect()
 
     def close(self):
-        """
-        Close connection to DHCP server.
-        """
+        """Close connection to DHCP server."""
         if self._conn:
             self._conn.close()
 
@@ -108,18 +105,13 @@ class CobblerServer:
         self.close()
 
     def is_installed(self):
-        """
-        Check if Cobbler server is available.
-        """
+        """Check if Cobbler server is available."""
         if self._conn.check_path(self._cobbler_path, '-x'):
             return True
         return False
 
     def is_running(self):
-        """
-        Check if the Cobbler daemon is running via the cobbler version command
-        """
-
+        """Check if the Cobbler daemon is running via the cobbler version command."""
         command = f"{self._cobbler_path} version"
         _, _, exitstatus = self._conn.execute(command)
         if exitstatus == 0:

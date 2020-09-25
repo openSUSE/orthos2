@@ -10,9 +10,7 @@ logger = logging.getLogger('models')
 class BaseManager(models.Manager):
 
     def by_key(self, key):
-        """
-        Returns the value by key.
-        """
+        """Return the value by key."""
         try:
             obj = ServerConfig.objects.get(key=key)
             return obj.value
@@ -22,10 +20,10 @@ class BaseManager(models.Manager):
 
     def bool_by_key(self, key):
         """
-        Returns a boolean value by key. Valid DB values are 'bool:true' (string) and 'bool:false'
-        (string).
+        Return a boolean value by key.
 
-        If the value is not valid, `False` gets returned.
+        Valid DB values are 'bool:true' (string) and 'bool:false'
+        (string). If the value is not valid, `False` gets returned.
         """
         try:
             obj = ServerConfig.objects.get(key=key)
@@ -37,9 +35,7 @@ class BaseManager(models.Manager):
         return False
 
     def list_by_key(self, key, delimiter=','):
-        """
-        Returns a list of strings seperated by `delimiter`.
-        """
+        """Return a list of strings seperated by `delimiter`."""
         try:
             obj = ServerConfig.objects.get(key=key)
 
@@ -52,9 +48,7 @@ class BaseManager(models.Manager):
         return None
 
     def get_smtp_relay(self):
-        """
-        Returns the FQDN of the SMTP relay server.
-        """
+        """Return the FQDN of the SMTP relay server."""
         try:
             obj = ServerConfig.objects.get(key='mail.smtprelay.fqdn')
 
@@ -67,9 +61,7 @@ class BaseManager(models.Manager):
         return None
 
     def get_valid_domain_endings(self):
-        """
-        Returns a list of valid domain endings.
-        """
+        """Return a list of valid domain endings."""
         try:
             obj = ServerConfig.objects.get(key='domain.validendings')
 
@@ -83,7 +75,8 @@ class BaseManager(models.Manager):
 
     def get_daily_execution_time(self):
         """
-        Returns the execution time when daily tasks should be executed as datetime.time object.
+        Return the execution time when daily tasks should be executed as datetime.time
+        object.
         """
         try:
             obj = ServerConfig.objects.get(key='tasks.daily.executiontime')
@@ -104,9 +97,7 @@ class BaseManager(models.Manager):
 class SSHManager(BaseManager):
 
     def get_keys(self):
-        """
-        Returns a list of file paths to SSH master keys for SSH authentication.
-        """
+        """Return a list of file paths to SSH master keys for SSH authentication."""
         try:
             obj = ServerConfig.objects.get(key='ssh.keys.paths')
 
@@ -119,9 +110,7 @@ class SSHManager(BaseManager):
         return None
 
     def get_timeout(self):
-        """
-        Returns the timeout in seconds for SSH connection attempts as integer.
-        """
+        """Return the timeout in seconds for SSH connection attempts as integer."""
         try:
             obj = ServerConfig.objects.get(key='ssh.timeout.seconds')
 
@@ -136,9 +125,7 @@ class SSHManager(BaseManager):
         return None
 
     def get_remote_scripts_directory(self):
-        """
-        Returns a path where remote executed scripts (host side) should be placed.
-        """
+        """Return a path where remote executed scripts (host side) should be placed."""
         try:
             obj = ServerConfig.objects.get(key='ssh.scripts.remote.directory')
 
@@ -151,9 +138,7 @@ class SSHManager(BaseManager):
         return None
 
     def get_local_scripts_directory(self):
-        """
-        Returns a path to the local scripts directory (server side).
-        """
+        """Return a path to the local scripts directory (server side)."""
         try:
             obj = ServerConfig.objects.get(key='ssh.scripts.local.directory')
 

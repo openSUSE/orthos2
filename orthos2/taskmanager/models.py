@@ -68,9 +68,7 @@ class BaseTask(models.Model):
     )
 
     def generate_hash(self):
-        """
-        Generate hash from name, module and arguments.
-        """
+        """Generate hash from name, module and arguments."""
         hash = sha1('{}{}{}'.format(
             self.name,
             self.module,
@@ -80,9 +78,7 @@ class BaseTask(models.Model):
         return hash
 
     def save(self, *args, **kwargs):
-        """
-        Save task in database and sets hash before.
-        """
+        """Save task in database and sets hash before."""
         self.hash = self.generate_hash()
         super(BaseTask, self).save(*args, **kwargs)
 
@@ -118,9 +114,7 @@ class SingleTask(BaseTask):
 class Task:
 
     def __new__(cls, *args, **kwargs):
-        """
-        Store arguments in attribtute for database store.
-        """
+        """Store arguments in attribtute for database store."""
         instance = super(Task, cls).__new__(cls)
         instance.__arguments = (args, kwargs)
         instance.basetask_type = None
@@ -128,8 +122,10 @@ class Task:
 
     def execute(self):
         """
-        Executes the task. This wrapper is intented to catch unpredictable exceptions in order
-        to log them in the log file (otherwise, exceptions only occure in terminal).
+        Execute the task.
+
+        This wrapper is intented to catch unpredictable exceptions in order to log them in the
+        log file (otherwise, exceptions only occure in terminal).
         """
         try:
             self.execute()
@@ -141,9 +137,7 @@ class TaskManager:
 
     @staticmethod
     def add(task):
-        """
-        Adds tasks to database for execution.
-        """
+        """Add tasks to database for execution."""
         try:
             arguments = json.dumps(task._Task__arguments)
         except TypeError:

@@ -63,9 +63,7 @@ class MachineGroup(models.Model):
     )
 
     def __init__(self, *args, **kwargs):
-        """
-        Deep copy object for comparison in `save()`.
-        """
+        """Deep copy object for comparison in `save()`."""
         super(MachineGroup, self).__init__(*args, **kwargs)
 
         if self.pk is not None:
@@ -77,9 +75,7 @@ class MachineGroup(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        """
-        Save machine group object.
-        """
+        """Save machine group object."""
         super(MachineGroup, self).save(*args, **kwargs)
 
         # check if DHCP needs to be regenerated
@@ -95,8 +91,10 @@ class MachineGroup(models.Model):
 
     def clean(self):
         """
-        Camel case machine group name (eliminate spaces for further string processing like setup)
-        during first creation - remove whitespaces during edit.
+        Camel case machine group name.
+
+        Eliminate spaces for further string processing like setup during first creation;
+        remove whitespaces during edit.
         """
         if self.pk is None:
             self.name = ''.join(char for char in self.name.title() if not char.isspace())
@@ -104,9 +102,7 @@ class MachineGroup(models.Model):
             self.name = self.name.replace(' ', '')
 
     def get_support_contact(self):
-        """
-        Returns email address for responsible support contact.
-        """
+        """Return email address for responsible support contact."""
         if self.contact_email:
             return self.contact_email
 

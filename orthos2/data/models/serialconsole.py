@@ -228,9 +228,7 @@ class SerialConsole(models.Model):
             raise ValidationError(errors)
 
     def get_command_record(self):
-        """
-        Returns cscreen record for serial console.
-        """
+        """Return cscreen record for serial console."""
         prefix = 'screen -t {{ machine.hostname|ljust:"20" }} -L '
         template = self.type.command
 
@@ -255,9 +253,7 @@ class SerialConsole(models.Model):
         return Template(prefix + template).render(context)
 
     def get_comment_record(self):
-        """
-        Returns cscreen comment for serial console.
-        """
+        """Return cscreen comment for serial console."""
         comment = 'defhstatus "{{ comment }}"'
         context = Context({
             'comment': self.comment if self.comment else self.type.comment,
