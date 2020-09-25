@@ -789,7 +789,7 @@ class MachineGroupAdmin(admin.ModelAdmin):
         'dhcpv6_write',
         'dhcp_filename'
     )
-    inlines = (MachinesInline, MachineGroupMembershipInline,)
+    inlines = (MachinesInline, MachineGroupMembershipInline)
 
     def machines(self, obj):
         machines = Machine.objects.filter(group=obj)
