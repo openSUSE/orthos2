@@ -67,7 +67,7 @@ Example:
         option = request.GET.get('option', None)
         service = request.GET.get('service', None)
 
-        if service and (service.lower() in [Regenerate.COBBLER, Regenerate.SERIALCONSOLE]):
+        if service and (service.lower() in {Regenerate.COBBLER, Regenerate.SERIALCONSOLE}):
             if isinstance(request.user, AnonymousUser) or not request.auth:
                 return AuthRequiredSerializer().as_json
 

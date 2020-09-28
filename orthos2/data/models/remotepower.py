@@ -227,7 +227,7 @@ class RemotePower(models.Model):
         """
         errors = []
 
-        if self.type in (self.Type.TELNET, self.Type.DOMINIONPX):
+        if self.type in {self.Type.TELNET, self.Type.DOMINIONPX}:
             if not self.remote_power_device:
                 errors.append(ValidationError("Please provide a remote power device!"))
 
@@ -238,7 +238,7 @@ class RemotePower(models.Model):
             self.device = None
             self.management_bmc = None
 
-        elif self.type in (self.Type.SENTRY, self.Type.S390):
+        elif self.type in {self.Type.SENTRY, self.Type.S390}:
             if not self.remote_power_device:
                 errors.append(ValidationError("Please provide a remote power device!"))
 
@@ -247,7 +247,7 @@ class RemotePower(models.Model):
             self.management_bmc = None
             self.port = None
 
-        elif self.type in (self.Type.ILO, self.Type.IPMI, self.Type.WEBCURL):
+        elif self.type in {self.Type.ILO, self.Type.IPMI, self.Type.WEBCURL}:
             if not self.machine.bmc:
                 errors.append(ValidationError("Please add at least one BMC to the enclosure!"))
 
@@ -259,7 +259,7 @@ class RemotePower(models.Model):
             self.port = None
             self.remote_power_device = None
 
-        elif self.type in (self.Type.LIBVIRTQEMU, self.Type.LIBVIRTLXC):
+        elif self.type in {self.Type.LIBVIRTQEMU, self.Type.LIBVIRTLXC}:
             if not self.machine.hypervisor:
                 errors.append(ValidationError("No hypervisor found!"))
 

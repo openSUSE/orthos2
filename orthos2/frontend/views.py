@@ -93,7 +93,7 @@ class MachineListView(ListView):
 
         order_by = self.request.GET.get('order_by', None)
         order_direction = self.request.GET.get('order_direction', None)
-        if order_by and order_direction in ['asc', 'desc']:
+        if order_by and order_direction in {'asc', 'desc'}:
             context['machine_list'] = self.object_list.order_by(
                 '{}'.format(order_by) if order_direction == 'asc' else '-{}'.format(order_by)
             )
