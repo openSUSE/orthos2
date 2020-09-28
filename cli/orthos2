@@ -324,7 +324,6 @@ class Input(APIResponse):
                 if (min_value is not None) and (value < min_value):
                     raise ValueError("Value must be equal greater than {0}.".format(min_value))
 
-
         elif input_type == InputType.SELECTION:
             try:
                 value = int(input_value)
