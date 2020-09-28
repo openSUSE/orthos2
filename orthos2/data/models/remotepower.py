@@ -309,7 +309,7 @@ class RemotePower(models.Model):
         status = self.Status.UNKNOWN
         result = self._perform('status')
 
-        if result and type(result) is int:
+        if result and isinstance(result, int):
             status = result
         elif result and result.lower().find('off') > -1:
             status = self.Status.OFF

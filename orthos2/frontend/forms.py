@@ -535,11 +535,11 @@ class SetupMachineForm(forms.Form):
         setup_records = []
         groups = collections.OrderedDict()
 
-        if type(records) is list:
+        if isinstance(records, list):
             for record in records:
                 setup_records.append((record, record))
 
-        elif type(records) is collections.OrderedDict:
+        elif isinstance(records, collections.OrderedDict):
             for distribution, record_group in records.items():
 
                 for record in record_group:

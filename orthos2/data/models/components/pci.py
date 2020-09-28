@@ -79,7 +79,7 @@ class PCIDevice(Component):
     @staticmethod
     def from_lspci_mmnv(text):
         """Create a new `PCIDevice` object from the `lspci -mmnv` output."""
-        if type(text) is not list:
+        if not isinstance(text, list):
             text = text.splitlines()
 
         dev = PCIDevice()

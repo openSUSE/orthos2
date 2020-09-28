@@ -64,7 +64,7 @@ class RegenerateCobbler(Task):
                         logger.info("* Cobbler deployment finished successfully")
                     except Exception as e:
                         message = "* Cobbler deployment failed; {}".format(e)
-                        if type(e) in (SystemError, SyntaxError):
+                        if isinstance(e, (SystemError, SyntaxError)):
                             logger.error(message)
                         else:
                             logger.exception(message)
