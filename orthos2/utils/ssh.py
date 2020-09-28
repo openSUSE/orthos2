@@ -25,7 +25,7 @@ class SSH(object):
         The connection is not established.
         """
         self._fqdn = fqdn
-        if self._fqdn in [socket.getfqdn(), settings.SERVER_FQDN]:
+        if self._fqdn in {socket.getfqdn(), settings.SERVER_FQDN}:
             self._fqdn = 'localhost'
         self._client = paramiko.SSHClient()
         self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())

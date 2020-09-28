@@ -200,7 +200,7 @@ class SerialConsole(models.Model):
             self.port = None
             self.management_bmc = None
 
-        elif self.type.name in ('IPMI', 'ILO', 'ILO2'):
+        elif self.type.name in {'IPMI', 'ILO', 'ILO2'}:
             if not self.machine.bmc:
                 errors.append(ValidationError("Please add at least one BMC to the enclosure!"))
 
@@ -213,7 +213,7 @@ class SerialConsole(models.Model):
             self.console_server = None
             self.port = None
 
-        elif self.type.name in ('libvirt/qemu', 'libvirt/lxc'):
+        elif self.type.name in {'libvirt/qemu', 'libvirt/lxc'}:
             if not self.machine.hypervisor:
                 errors.append(ValidationError("No hypervisor found!"))
 

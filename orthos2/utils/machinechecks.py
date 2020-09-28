@@ -295,7 +295,7 @@ def get_networkinterfaces(fqdn):
         for line in stdout:
             if line and line[0] != ' ' and line[0] != '\t':
                 if interface and interface.mac_address and\
-                        interface.driver_module not in ('bridge', 'tun'):
+                        interface.driver_module not in {'bridge', 'tun'}:
 
                     interfaces.append(interface)
                 interface = NetworkInterface()
@@ -321,7 +321,7 @@ def get_networkinterfaces(fqdn):
                     continue
 
         if interface and interface.mac_address and\
-                interface.driver_module not in ('bridge', 'tun'):
+                interface.driver_module not in {'bridge', 'tun'}:
 
             interfaces.append(interface)
 

@@ -36,7 +36,7 @@ class Serializer:
         @classmethod
         def is_valid(cls, output_format):
             """Check if `output_format` is valid."""
-            return output_format.lower() in [cls.JSON, cls.YAML]
+            return output_format.lower() in {cls.JSON, cls.YAML}
 
 
 def get_domain(fqdn):

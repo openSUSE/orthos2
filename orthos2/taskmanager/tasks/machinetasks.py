@@ -185,7 +185,7 @@ class MachineCheck(Task):
 
         for networkinterface in self.machine.networkinterfaces.all():
             if networkinterface.mac_address not in\
-                    [item.mac_address for item in networkinterfaces_]:
+                    {item.mac_address for item in networkinterfaces_}:
 
                 if not networkinterface.primary:
                     networkinterface.delete()
