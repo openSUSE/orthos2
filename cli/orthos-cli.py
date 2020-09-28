@@ -544,15 +544,15 @@ class Info(APIResponse):
     def format_line(self, item, data=None):
         result = ''
 
-        if type(data) is dict:
+        if isinstance(data, dict):
             value = format_value(data[item]['value'])
 
-            if type(value) is str:
+            if isinstance(value, str):
                 value = value.replace('\n', ' ')
 
             result = "{0:<{1}}: {2}\n".format(data[item]['label'], LEFT_MARGIN, value)
 
-        elif type(data) is list:
+        elif isinstance(data, list):
             i = 0
             for element in data:
                 j = 0
@@ -590,7 +590,7 @@ class Info(APIResponse):
             if item is None:
                 result += '-' * Terminal().width + '\n'
             else:
-                if type(item) is list:
+                if isinstance(item, list):
                     result += '{0:-^{1}}\n'.format(
                         ' ' + data[item[0]]['label'] + ' ',
                         Terminal().width
@@ -1254,7 +1254,7 @@ Example:
             try:
 
                 if self.recent_command:
-                    if type(self.recent_command) is list:
+                    if isinstance(self.recent_command, list):
                         input_ = self.recent_command
                     else:
                         input_ = self.recent_command.as_input()
