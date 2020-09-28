@@ -142,7 +142,7 @@ class CheckReservationExpiration(Task):
             user = machine.reserved_by
             delta = machine.reserved_until.date() - today
 
-            if delta.days > 5 or delta.days in [4, 3]:
+            if delta.days > 5 or delta.days in {4, 3}:
                 logger.debug("{}d left for {}@{}".format(
                     delta.days,
                     user.username,

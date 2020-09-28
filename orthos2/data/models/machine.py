@@ -588,8 +588,8 @@ class Machine(models.Model):
 
     @property
     def status_ping(self):
-        return self.status_ipv4 in [Machine.StatusIP.REACHABLE, Machine.StatusIP.CONFIRMED] or\
-            self.status_ipv6 in [Machine.StatusIP.REACHABLE, Machine.StatusIP.CONFIRMED]
+        return self.status_ipv4 in {Machine.StatusIP.REACHABLE, Machine.StatusIP.CONFIRMED} or\
+            self.status_ipv6 in {Machine.StatusIP.REACHABLE, Machine.StatusIP.CONFIRMED}
 
     def is_remotepower(self):
         return self.system_id == System.Type.REMOTEPOWER
@@ -729,7 +729,7 @@ class Machine(models.Model):
         return self.get_hypervisor()
 
     def get_s390_hostname(self, use_uppercase=False):
-        if self.system_id in [System.Type.ZVM_VM, System.Type.ZVM_KVM]:
+        if self.system_id in {System.Type.ZVM_VM, System.Type.ZVM_KVM}:
             return get_s390_hostname(self.hostname, use_uppercase=use_uppercase)
         return None
 
@@ -776,7 +776,7 @@ class Machine(models.Model):
             raise ReserveException("Infinite reservation is not allowed.")
 
         # add to history if a superuser takes over the reservation
-        if self.reserved_by and (self.reserved_by not in [user, reserve_for_user]):
+        if self.reserved_by and (self.reserved_by not in {user, reserve_for_user}):
             reservationhistory = ReservationHistory(
                 machine=self,
                 reserved_by=self.reserved_by,

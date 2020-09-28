@@ -74,7 +74,7 @@ class DailyTaskAdmin(BaseTaskAdmin):
         """Enable/disable task."""
         action = request.GET.get('action', None)
 
-        if (action is not None) and (action in ['enable', 'disable']):
+        if (action is not None) and (action in {'enable', 'disable'}):
             try:
                 task = DailyTask.objects.get(pk=dailytask_id)
 

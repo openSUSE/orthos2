@@ -350,9 +350,9 @@ class Input(APIResponse):
             value = input_value
 
         elif input_type == InputType.BOOLEAN:
-            if input_value.lower() in ['1', 'y', 'yes', 'true']:
+            if input_value.lower() in {'1', 'y', 'yes', 'true'}:
                 value = True
-            elif input_value.lower() in ['0', 'n', 'no', 'false']:
+            elif input_value.lower() in {'0', 'n', 'no', 'false'}:
                 value = False
             else:
                 raise ValueError("Value is not a boolean; use 'y' or 'n'!".format(str(input_value)))
@@ -686,9 +686,7 @@ class TabCompleter:
             being_completed = line[begin:end]
             words = line.split()
 
-            if not words:
-                self._current_options = sorted(self._options.keys())
-            else:
+            if words:
                 try:
                     if begin == 0:
                         options = self._options.keys()
@@ -705,6 +703,8 @@ class TabCompleter:
 
                 except (KeyError, IndexError):
                     self._current_options = []
+            else:
+                self._current_options = sorted(self._options.keys())
 
         try:
             response = self._current_options[state]
@@ -799,10 +799,7 @@ class Config:
         self.__timezone = None
         self.__token = None
 
-        if sys.stdin.isatty():
-            self.__quiet = False
-        else:
-            self.__quiet = True
+        self.__quiet = not sys.stdin.isatty()
 
         for alias in ALIASES:
             self.__aliases[alias] = ALIASES[alias]
@@ -1284,7 +1281,7 @@ Example:
                     self.print_help(raw_arguments)
                     continue
 
-                elif command in ('QUIT', 'EXIT'):
+                elif command in {'QUIT', 'EXIT'}:
                     return
 
                 elif command == 'ALIAS':
