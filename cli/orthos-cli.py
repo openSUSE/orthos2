@@ -957,9 +957,8 @@ class Config:
         return None
 
     def write_config(self):
-        f = open(os.path.expanduser(USER_CONFIGFILE), 'w')
-        self.__cp.write(f)
-        f.close()
+        with open(os.path.expanduser(USER_CONFIGFILE), 'w') as f:
+            self.__cp.write(f)
 
 
 class Orthos:
