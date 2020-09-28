@@ -239,7 +239,7 @@ def get_s390_hostname(hostname, use_uppercase=True):
     else:
         linux = 'linux'
 
-    if (type(hostname) is not str or len(hostname) < 10):
+    if (not isinstance(hostname, str) or len(hostname) < 10):
         logger.error("Invalid s390 name: {}".format(hostname))
         return None
     else:

@@ -95,14 +95,14 @@ class QueryField:
         'enclosure': {
             'field': Machine._meta.get_field('enclosure'),
             'pre': lambda x:
-                Enclosure.objects.get(name__iexact=x) if type(x) is str else x,
+                Enclosure.objects.get(name__iexact=x) if isinstance(x, str) else x,
             'post': lambda x:
                 Enclosure.objects.get(pk=x).name
         },
         'group': {
             'field': Machine._meta.get_field('group'),
             'pre': lambda x:
-                MachineGroup.objects.get(name__iexact=x) if type(x) is str else x,
+                MachineGroup.objects.get(name__iexact=x) if isinstance(x, str) else x,
             'post': lambda x:
                 MachineGroup.objects.get(pk=x).name
         },
@@ -121,14 +121,14 @@ class QueryField:
         'reserved_by': {
             'field': Machine._meta.get_field('reserved_by'),
             'pre': lambda x:
-                HelperFunctions.username_to_id(x) if type(x) is str else x,
+                HelperFunctions.username_to_id(x) if isinstance(x, str) else x,
             'post': lambda x:
                 User.objects.get(pk=x).username
         },
         'res_by': {
             'field': Machine._meta.get_field('reserved_by'),
             'pre': lambda x:
-                HelperFunctions.username_to_id(x) if type(x) is str else x,
+                HelperFunctions.username_to_id(x) if isinstance(x, str) else x,
             'post': lambda x:
                 User.objects.get(pk=x).username
         },
@@ -142,7 +142,7 @@ class QueryField:
             'pre': lambda x:
                 dict({
                     value: key for key, value in dict(Machine.StatusIP.CHOICE).items()
-                }).get(x) if type(x) is str else x,
+                }).get(x) if isinstance(x, str) else x,
             'post': lambda x:
                 dict(Machine.StatusIP.CHOICE).get(x)
         },
@@ -151,7 +151,7 @@ class QueryField:
             'pre': lambda x:
                 dict({
                     value: key for key, value in dict(Machine.StatusIP.CHOICE).items()
-                }).get(x) if type(x) is str else x,
+                }).get(x) if isinstance(x, str) else x,
             'post': lambda x:
                 dict(Machine.StatusIP.CHOICE).get(x)
         },
@@ -162,7 +162,7 @@ class QueryField:
             'related_name': 'serialconsole',
             'verbose_name': 'Console server',
             'pre': lambda x:
-                Machine.objects.get(fqdn__iexact=x) if type(x) is str else x,
+                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x,
             'post': lambda x:
                 Machine.objects.get(pk=x).fqdn
         },
@@ -171,7 +171,7 @@ class QueryField:
             'related_name': 'serialconsole',
             'verbose_name': 'CScreen server',
             'pre': lambda x:
-                Machine.objects.get(fqdn__iexact=x) if type(x) is str else x,
+                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x,
             'post': lambda x:
                 Machine.objects.get(pk=x).fqdn
         },
@@ -180,7 +180,7 @@ class QueryField:
             'related_name': 'serialconsole',
             'verbose_name': 'Management BMC',
             'pre': lambda x:
-                Machine.objects.get(fqdn__iexact=x) if type(x) is str else x,
+                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x,
             'post': lambda x:
                 Machine.objects.get(pk=x).fqdn
         },
@@ -189,7 +189,7 @@ class QueryField:
             'related_name': 'serialconsole',
             'verbose_name': 'Serial console',
             'pre': lambda x:
-                SerialConsoleType.Type.to_int(x) if type(x) is str else x,
+                SerialConsoleType.Type.to_int(x) if isinstance(x, str) else x,
             'post': lambda x:
                 SerialConsoleType.Type.to_str(x)
         },
@@ -198,7 +198,7 @@ class QueryField:
             'related_name': 'serialconsole',
             'verbose_name': 'Serial console',
             'pre': lambda x:
-                SerialConsoleType.Type.to_int(x) if type(x) is str else x,
+                SerialConsoleType.Type.to_int(x) if isinstance(x, str) else x,
             'post': lambda x:
                 SerialConsoleType.Type.to_str(x)
         },
@@ -239,7 +239,7 @@ class QueryField:
             'related_name': 'remotepower',
             'verbose_name': 'Management BMC',
             'pre': lambda x:
-                Machine.objects.get(fqdn__iexact=x) if type(x) is str else x,
+                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x,
             'post': lambda x:
                 Machine.objects.get(pk=x).fqdn
         },
@@ -248,7 +248,7 @@ class QueryField:
             'related_name': 'remotepower',
             'verbose_name': 'Remote power device',
             'pre': lambda x:
-                Machine.objects.get(fqdn__iexact=x) if type(x) is str else x,
+                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x,
             'post': lambda x:
                 Machine.objects.get(pk=x).fqdn
         },
@@ -267,7 +267,7 @@ class QueryField:
             'related_name': 'remotepower',
             'verbose_name': 'Remotepower',
             'pre': lambda x:
-                RemotePower.Type.to_int(x) if type(x) is str else x,
+                RemotePower.Type.to_int(x) if isinstance(x, str) else x,
             'post': lambda x:
                 RemotePower.Type.to_str(x)
         },
@@ -276,7 +276,7 @@ class QueryField:
             'related_name': 'remotepower',
             'verbose_name': 'Remotepower',
             'pre': lambda x:
-                RemotePower.Type.to_int(x) if type(x) is str else x,
+                RemotePower.Type.to_int(x) if isinstance(x, str) else x,
             'post': lambda x:
                 RemotePower.Type.to_str(x)
         },
@@ -427,7 +427,7 @@ class QueryField:
             'related_name': 'annotations',
             'verbose_name': 'Reporter',
             'pre': lambda x:
-                HelperFunctions.username_to_id(x) if type(x) is str else x,
+                HelperFunctions.username_to_id(x) if isinstance(x, str) else x,
             'post': lambda x:
                 User.objects.get(pk=x).username
         },
