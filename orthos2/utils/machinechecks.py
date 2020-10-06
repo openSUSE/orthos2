@@ -335,7 +335,7 @@ def get_networkinterfaces(fqdn):
             if arp_type == ARPHRD_IEEE80211:
                 continue
 
-            stdout, stderr, exitstatus = conn.execute('ethtool %s' % (interface.name))
+            stdout, stderr, exitstatus = conn.execute('ethtool {}'.format(interface.name))
             for line in stdout:
                 match = re.match(r'\s+Port: (.+)', line)
                 if match:
