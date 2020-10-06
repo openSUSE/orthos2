@@ -87,8 +87,8 @@ class ReserveMachineForm(forms.Form):
 
     until = forms.DateField(
         widget=forms.TextInput(attrs={'id': 'datepicker', 'size': '10', 'class': 'form-control'}),
-        help_text='Format: YYYY-MM-DD (TZ: ' + timezone.get_default_timezone_name() +
-                  '). Type \'9999-12-31\' for infinite reservation (superusers only).'
+        help_text="Format: YYYY-MM-DD (TZ: " + timezone.get_default_timezone_name() +
+                  "). Type '9999-12-31' for infinite reservation (superusers only)."
     )
 
     username = forms.CharField(
@@ -627,7 +627,7 @@ class VirtualMachineForm(forms.Form):
 
     parameters = forms.CharField(
         required=False,
-        help_text='e.g. \'--cdrom /dev/cdrom\'',
+        help_text="e.g. '--cdrom /dev/cdrom'",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
 

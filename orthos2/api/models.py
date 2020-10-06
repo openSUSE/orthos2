@@ -753,7 +753,7 @@ class APIQuery:
 
         tokens = []
         for token in re.split(''' (?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', conditions_str.strip()):
-            tokens.append(token.strip('"').strip('\''))
+            tokens.append(token.strip('"').strip("'"))
 
         for i, token in enumerate(tokens):
             token = token.strip()
