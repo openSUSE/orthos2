@@ -302,7 +302,7 @@ def get_random_mac_address():
     #
     # This way we avoid running into conflicts with non-Orthos-created KVM machines.
     mac = [0x52, 0x54, 0x00, 0x42, random.randint(0x00, 0xff), random.randint(0x00, 0xff)]
-    mac = ':'.join(map(lambda x: "%02x" % x, mac))
+    mac = ':'.join(map(lambda x: "{:02x}".format(x), mac))
     return mac.upper()
 
 
