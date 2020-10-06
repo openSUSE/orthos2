@@ -112,7 +112,7 @@ class CobblerServer:
 
     def is_running(self):
         """Check if the Cobbler daemon is running via the cobbler version command."""
-        command = f"{self._cobbler_path} version"
+        command = "{} version".format(self._cobbler_path)
         _, _, exitstatus = self._conn.execute(command)
         if exitstatus == 0:
             return True
