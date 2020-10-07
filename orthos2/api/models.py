@@ -940,7 +940,7 @@ class APIQuery:
                 if field.db_field_name in self._fields:
                     machine[field.db_field_name] = field.dynamic_field_function(machine['pk'])
 
-        # removel needs to be done here due to multiple pk lookups above
+        # removal needs to be done here due to multiple pk lookups above
         for machine in rows:
             if 'pk' not in self._fields:
                 machine.pop('pk', None)
