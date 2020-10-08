@@ -39,9 +39,9 @@ class VirtualizationAPI:
         Subclasses getting collected automatically by inheritance of `VirtualizationAPI` class.
         """
         subclasses = {
-                sub.__name__.replace(self.__class__.__name__, '').lower(): sub
-                for sub in self.__class__.__subclasses__()
-            }
+            sub.__name__.replace(self.__class__.__name__, '').lower(): sub
+            for sub in self.__class__.__subclasses__()
+        }
         self._virtualizationapis = dict(
             map(lambda x: (
                 x[0], {

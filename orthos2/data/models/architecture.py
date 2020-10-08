@@ -13,18 +13,18 @@ class Architecture(models.Model):
         def prep(cls):
             """Prepare const variables for fast and developer-friendly handling."""
             cls.X86_64 = safe_get_or_default(
-                    Architecture,
-                    'name',
-                    'x86_64',
-                    'pk',
-                    -1
+                Architecture,
+                'name',
+                'x86_64',
+                'pk',
+                -1
             )
             cls.PPC64LE = safe_get_or_default(
-                    Architecture,
-                    'name',
-                    'ppc64le',
-                    'pk',
-                    -1
+                Architecture,
+                'name',
+                'ppc64le',
+                'pk',
+                -1
             )
 
     name = models.CharField(
