@@ -12,25 +12,25 @@ class System(models.Model):
         def prep(cls):
             """Preparation of const variables for fast and developer-friendly handling."""
             cls.BAREMETAL = safe_get_or_default(
-                    System,
-                    'name',
-                    'BareMetal',
-                    'pk',
-                    -1
+                System,
+                'name',
+                'BareMetal',
+                'pk',
+                -1
             )
             cls.REMOTEPOWER = safe_get_or_default(
-                    System,
-                    'name',
-                    'RemotePower',
-                    'pk',
-                    -1
+                System,
+                'name',
+                'RemotePower',
+                'pk',
+                -1
             )
             cls.BMC = safe_get_or_default(
-                    System,
-                    'name',
-                    'BMC',
-                    'pk',
-                    -1
+                System,
+                'name',
+                'BMC',
+                'pk',
+                -1
             )
 
     name = models.CharField(
