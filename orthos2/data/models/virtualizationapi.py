@@ -38,10 +38,10 @@ class VirtualizationAPI:
 
         Subclasses getting collected automatically by inheritance of `VirtualizationAPI` class.
         """
-        subclasses = dict([
-            (sub.__name__.replace(self.__class__.__name__, '').lower(), sub)
-            for sub in self.__class__.__subclasses__()
-        ])
+        subclasses = {
+                sub.__name__.replace(self.__class__.__name__, '').lower(): sub
+                for sub in self.__class__.__subclasses__()
+            }
         self._virtualizationapis = dict(
             map(lambda x: (
                 x[0], {
@@ -249,7 +249,7 @@ class Libvirt(VirtualizationAPI):
         Check hostnames against Orthos machines and libvirt `virsh list`.
         """
         hostname = None
-        occupied_hostnames = set(vm.hostname for vm in self.host.get_virtual_machines())
+        occupied_hostnames = {vm.hostname for vm in self.host.get_virtual_machines()}
 
         libvirt_list = self.get_list()
         for line in libvirt_list.split('\n')[2:]:

@@ -171,10 +171,10 @@ class RemotePower(models.Model):
 
         Subclasses getting collected automatically by inheritance of `RemotePower` class.
         """
-        subclasses = dict([
-            (sub.__name__.replace(self.__class__.__name__, '').lower(), sub)
+        subclasses = {
+            sub.__name__.replace(self.__class__.__name__, '').lower(): sub
             for sub in self.__class__.__subclasses__()
-        ])
+        }
         self._remotepowertypes = dict(
             map(lambda x: (
                 x[0], {
