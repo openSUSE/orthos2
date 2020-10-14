@@ -1,13 +1,12 @@
-from django.conf.urls import re_path
-from django.contrib.auth.models import AnonymousUser, User
-from django.http import HttpResponseRedirect
-
 from api.commands import BaseAPIView, get_machine
 from api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                   Message, Serializer)
 from data.models import SerialConsole
 from data.signals import (signal_cobbler_regenerate,
                           signal_serialconsole_regenerate)
+from django.conf.urls import re_path
+from django.contrib.auth.models import AnonymousUser, User
+from django.http import HttpResponseRedirect
 
 
 class Regenerate:

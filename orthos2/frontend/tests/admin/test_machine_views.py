@@ -1,8 +1,7 @@
 import mock
+from data.models import Architecture, Machine, ServerConfig, System
 from django.urls import reverse
 from django_webtest import WebTest
-
-from data.models import Architecture, Machine, ServerConfig, System
 
 
 class ChangeView(WebTest):

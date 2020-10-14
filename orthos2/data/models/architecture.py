@@ -1,7 +1,6 @@
 from copy import deepcopy
 
 from django.db import models
-
 from utils.misc import safe_get_or_default
 
 

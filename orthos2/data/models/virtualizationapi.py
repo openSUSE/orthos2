@@ -80,8 +80,8 @@ class VirtualizationAPI:
         Method returns a new `Machine` object and calls the subclass to actually create the virtual
         machine physically.
         """
-        from data.models import Architecture, Machine, System
-        from data.models import RemotePower, SerialConsole, SerialConsoleType
+        from data.models import (Architecture, Machine, RemotePower,
+                                 SerialConsole, SerialConsoleType, System)
         from django.contrib.auth.models import User
 
         vm = Machine()
@@ -399,8 +399,7 @@ class Libvirt(VirtualizationAPI):
             - copy image to disk image (if needed)
             - run `virt-install`
         """
-        from data.models import ServerConfig
-        from data.models import NetworkInterface
+        from data.models import NetworkInterface, ServerConfig
 
         bridge = ServerConfig.objects.by_key('virtualization.libvirt.bridge')
         image_directory = ServerConfig.objects.by_key('virtualization.libvirt.images.directory')

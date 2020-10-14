@@ -3,12 +3,12 @@
 import logging
 
 import mock
-from django.test import TestCase
-from mock import NonCallableMagicMock, MagicMock
-
 import utils.cobbler as cobbler
-from data.models import Domain, Machine, Architecture, MachineGroup
+from data.models import Architecture, Domain, Machine, MachineGroup
+from django.test import TestCase
+from mock import MagicMock, NonCallableMagicMock
 from utils.cobbler import CobblerException
+
 logging.disable(logging.CRITICAL)
 
 

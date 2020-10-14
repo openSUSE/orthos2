@@ -1,6 +1,5 @@
-from rest_framework import serializers
-
 from data.models import Machine, RemotePower
+from rest_framework import serializers
 
 from .annotation import AnnotationSerializer
 from .installation import InstallationSerializer

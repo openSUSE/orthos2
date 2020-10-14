@@ -7,10 +7,9 @@ import time
 from hashlib import sha1
 from queue import Queue
 
+from data.models import ServerConfig
 from django.db import IntegrityError, models
 from django.utils import timezone
-
-from data.models import ServerConfig
 from utils.misc import str_time_to_datetime
 
 from . import Priority, TaskType

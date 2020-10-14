@@ -3,11 +3,13 @@
 #
 # Author Jan Löser <jloeser@suse.de>
 # Published under the GNU Public Licence 2
-import sys
-import os
-import json
-import orthos2.wsgi
 import configparser
+import json
+import os
+import sys
+
+import orthos2.wsgi
+
 proj_path = os.path.dirname(os.path.abspath(__file__)) + '/../'
 sys.path.append(proj_path)
 

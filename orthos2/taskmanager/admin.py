@@ -2,8 +2,8 @@ import datetime
 
 from django.conf.urls import re_path
 from django.contrib import admin, messages
-from django.urls import reverse
 from django.shortcuts import redirect
+from django.urls import reverse
 from django.utils.html import format_html
 
 from . import Priority

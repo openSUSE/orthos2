@@ -1,8 +1,7 @@
 import logging
 
-from django.utils import timezone
-
 from data.models import Machine, NetworkInterface, ServerConfig
+from django.utils import timezone
 from taskmanager.models import Task
 from utils.machinechecks import (abuild_test, get_hardware_information,
                                  get_installations, get_networkinterfaces,

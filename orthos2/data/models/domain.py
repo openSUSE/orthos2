@@ -7,7 +7,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.template import Context, Template
 from django.utils.translation import ugettext_lazy as _
-
 from utils.misc import has_valid_domain_ending
 
 from .architecture import Architecture

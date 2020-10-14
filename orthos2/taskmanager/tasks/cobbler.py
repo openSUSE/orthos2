@@ -1,8 +1,9 @@
 import collections
 import logging
 import os
-from django.conf import settings
+
 from data.models import Domain, Machine, ServerConfig
+from django.conf import settings
 from taskmanager.models import Task
 from utils.cobbler import CobblerServer
 from utils.ssh import SSH

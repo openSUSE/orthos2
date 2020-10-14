@@ -1,6 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-
 from utils.misc import safe_get_or_default
 
 

@@ -2,7 +2,6 @@ import logging
 
 import mock
 from django.test import TestCase
-
 from utils.machinechecks import nmap_check, ping_check
 from utils.misc import (execute, get_domain, get_hostname,
                         has_valid_domain_ending, is_dns_resolvable,

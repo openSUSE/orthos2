@@ -1,8 +1,7 @@
-from django.conf.urls import re_path
-from django.http import HttpResponseRedirect
-
 from api.commands import BaseAPIView, get_machine
 from api.serializers.misc import ErrorMessage, InfoMessage, Message, Serializer
+from django.conf.urls import re_path
+from django.http import HttpResponseRedirect
 from taskmanager.tasks.machinetasks import MachineCheck
 
 

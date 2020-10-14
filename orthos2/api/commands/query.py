@@ -1,11 +1,10 @@
 import json
 
-from django.conf.urls import re_path
-from django.http import JsonResponse
-
 from api.commands import BaseAPIView, get_machine
 from api.models import APIQuery
 from api.serializers.misc import ErrorMessage, InfoMessage
+from django.conf.urls import re_path
+from django.http import JsonResponse
 
 
 class QueryCommand(BaseAPIView):

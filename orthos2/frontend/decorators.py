@@ -1,7 +1,6 @@
+from data.models import Machine
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
-
-from data.models import Machine
 
 
 def check_permissions(key='id'):

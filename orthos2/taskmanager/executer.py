@@ -8,9 +8,8 @@ from queue import Empty as queueEmpty
 from queue import Queue
 from threading import Thread
 
-from django.utils import timezone
-
 from data.models import ServerConfig
+from django.utils import timezone
 
 from . import Priority
 from .models import BaseTask, DailyTask, SingleTask, Task

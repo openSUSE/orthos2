@@ -1,8 +1,7 @@
 import logging
 
-from django.template import Context, Template
-
 from data.models import Machine, ServerConfig
+from django.template import Context, Template
 from taskmanager.models import Task
 from utils.ssh import SSH
 
