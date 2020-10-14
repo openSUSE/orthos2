@@ -1,6 +1,7 @@
 import logging
-from django.template import Context, Template
+
 from data.models import Machine, ServerConfig
+from django.template import Context, Template
 from utils.ssh import SSH
 
 logger = logging.getLogger('utils')

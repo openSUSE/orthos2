@@ -3,13 +3,12 @@ from django.conf.urls import re_path
 from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_list import _boolean_icon
 from django.core.exceptions import ValidationError
-from django.urls import reverse
 from django.db import models
 from django.db.models import Q
 from django.shortcuts import redirect
+from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
-
 from utils.misc import DHCPRecordOption
 
 from .models import (Annotation, Architecture, Domain, Enclosure, Installation,

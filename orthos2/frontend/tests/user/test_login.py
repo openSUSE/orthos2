@@ -1,9 +1,8 @@
+from data.models import ServerConfig
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 from django_webtest import WebTest
-
-from data.models import ServerConfig
 from taskmanager.models import SingleTask
 
 

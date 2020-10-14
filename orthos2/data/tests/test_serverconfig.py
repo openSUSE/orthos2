@@ -1,6 +1,5 @@
-from django.test import TestCase
-
 from data.models import ServerConfig
+from django.test import TestCase
 
 SSH_KEYS = 'ssh.keys.paths'
 SSH_TIMEOUT = 'ssh.timeout.seconds'

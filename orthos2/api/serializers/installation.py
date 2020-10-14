@@ -1,6 +1,5 @@
-from rest_framework import serializers
-
 from data.models import Installation
+from rest_framework import serializers
 
 
 class InstallationSerializer(serializers.ModelSerializer):

@@ -1,15 +1,14 @@
 import datetime
 import json
 
-from django.conf.urls import re_path
-from django.contrib.auth.models import AnonymousUser, User
-from django.http import HttpResponseRedirect
-
 from api.commands import BaseAPIView, get_machine
 from api.forms import ReserveMachineAPIForm
 from api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                   InputSerializer, Message, Serializer)
 from data.models import Machine
+from django.conf.urls import re_path
+from django.contrib.auth.models import AnonymousUser, User
+from django.http import HttpResponseRedirect
 from utils.misc import add_offset_to_date, format_cli_form_errors
 
 

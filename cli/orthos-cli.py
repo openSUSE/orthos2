@@ -17,16 +17,15 @@ import readline
 import struct
 import subprocess
 import sys
+import termios
 from datetime import date, datetime
 
 import pytz
 
-import termios
-
 if sys.version_info.major == 3:
     import urllib.request as urllib_request
-    from urllib.parse import urlencode
     from configparser import RawConfigParser
+    from urllib.parse import urlencode
     PYTHON_VERSION = 3
 else:
     print("Python version not supported!")

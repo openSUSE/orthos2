@@ -2,9 +2,8 @@ import os
 import sys
 from urllib.parse import urlparse
 
-from django.core.management.base import BaseCommand, CommandError
-
 from data.models import ServerConfig
+from django.core.management.base import BaseCommand, CommandError
 
 try:
     from ptyprocess import PtyProcessUnicode

@@ -1,11 +1,10 @@
-from django.conf.urls import re_path
-from django.contrib.auth.models import AnonymousUser, User
-from django.http import JsonResponse
-
 from api.commands import BaseAPIView, get_machine
 from api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                   InfoMessage)
 from data.models import ServerConfig
+from django.conf.urls import re_path
+from django.contrib.auth.models import AnonymousUser, User
+from django.http import JsonResponse
 
 
 class ServerConfigCommand(BaseAPIView):

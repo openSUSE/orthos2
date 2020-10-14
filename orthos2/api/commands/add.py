@@ -1,12 +1,6 @@
 import json
 import logging
 
-from django.conf.urls import re_path
-from django.contrib.auth.models import AnonymousUser, User
-from django.core.exceptions import ValidationError
-from django.http import HttpResponseRedirect, JsonResponse
-from django.shortcuts import redirect, reverse
-
 from api.commands import BaseAPIView, get_machine
 from api.forms import (AnnotationAPIForm, MachineAPIForm, RemotePowerAPIForm,
                        SerialConsoleAPIForm, VirtualMachineAPIForm)
@@ -15,6 +9,11 @@ from api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                   Serializer)
 from data.models import (Annotation, Enclosure, Machine, RemotePower,
                          SerialConsole)
+from django.conf.urls import re_path
+from django.contrib.auth.models import AnonymousUser, User
+from django.core.exceptions import ValidationError
+from django.http import HttpResponseRedirect, JsonResponse
+from django.shortcuts import redirect, reverse
 from utils.misc import add_offset_to_date, format_cli_form_errors
 
 logger = logging.getLogger('api')

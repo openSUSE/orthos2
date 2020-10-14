@@ -11,7 +11,6 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.template import Context, Template
-
 from utils.misc import execute, get_s390_hostname
 from utils.ssh import SSH
 

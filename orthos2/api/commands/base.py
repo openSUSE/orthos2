@@ -1,8 +1,7 @@
-from django.shortcuts import redirect
-from rest_framework.views import APIView
-
 from api.serializers.misc import SelectSerializer
 from data.models import Machine
+from django.shortcuts import redirect
+from rest_framework.views import APIView
 
 
 def get_machine(fqdn, redirect_to, data=None, redirect_key_replace='fqdn'):

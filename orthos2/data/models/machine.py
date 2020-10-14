@@ -3,6 +3,7 @@ import logging
 import re
 from copy import deepcopy
 
+from data.exceptions import ReleaseException, ReserveException
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
@@ -14,8 +15,6 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-
-from data.exceptions import ReleaseException, ReserveException
 from utils.misc import (DHCPRecordOption, Serializer, get_domain, get_hostname,
                         get_ipv4, get_ipv6, get_s390_hostname,
                         is_dns_resolvable)
@@ -760,8 +759,9 @@ class Machine(models.Model):
     @check_permission
     def reserve(self, reason, until, user=None, reserve_for_user=None):
         """Reserve machine."""
-        from taskmanager.models import TaskManager
         from taskmanager import tasks
+        from taskmanager.models import TaskManager
+
         from .reservationhistory import ReservationHistory
 
         if not reserve_for_user:
@@ -824,8 +824,9 @@ class Machine(models.Model):
     @check_permission
     def release(self, user=None):
         """Release machine."""
-        from taskmanager.models import TaskManager
         from taskmanager import tasks
+        from taskmanager.models import TaskManager
+
         from .reservationhistory import ReservationHistory
 
         if not self.is_reserved():
@@ -928,8 +929,8 @@ class Machine(models.Model):
     @check_permission
     def setup(self, setup_label, user=None):
         """Setup machine (re-install distribution)."""
-        from taskmanager.models import TaskManager
         from taskmanager import tasks
+        from taskmanager.models import TaskManager
 
         if self.has_setup_capability():
             task = tasks.SetupMachine(self.fqdn, setup_label)
@@ -1021,8 +1022,8 @@ class Machine(models.Model):
 
     def scan(self, action='all', user=None):
         """Start scanning/checking the machine by creating a task."""
-        from taskmanager.models import TaskManager
         from taskmanager import tasks
+        from taskmanager.models import TaskManager
 
         if action.lower() not in tasks.MachineCheck.Scan.Action.as_list:
             raise Exception("Unknown scan option '{}'!".format(action))

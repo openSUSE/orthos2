@@ -6,7 +6,6 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models.signals import (post_delete, post_init, post_save,
                                       pre_delete, pre_save)
 from django.dispatch import Signal, receiver
-
 from taskmanager import tasks
 from taskmanager.models import TaskManager
 from utils.misc import (Serializer, get_hostname, is_dns_resolvable,

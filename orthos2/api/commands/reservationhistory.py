@@ -1,10 +1,9 @@
-from django.conf.urls import re_path
-from django.contrib.auth.models import AnonymousUser, User
-from django.http import HttpResponseRedirect, JsonResponse
-
 from api.commands import BaseAPIView, get_machine
 from api.serializers.misc import ErrorMessage, InfoMessage, Serializer
 from data.models import ReservationHistory
+from django.conf.urls import re_path
+from django.contrib.auth.models import AnonymousUser, User
+from django.http import HttpResponseRedirect, JsonResponse
 
 
 class ReservationHistoryCommand(BaseAPIView):

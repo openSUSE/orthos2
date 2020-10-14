@@ -3,9 +3,8 @@ import os
 import socket
 
 import paramiko
-from django.conf import settings
-
 from data.models import Machine, ServerConfig
+from django.conf import settings
 
 logger = logging.getLogger('utils')
 

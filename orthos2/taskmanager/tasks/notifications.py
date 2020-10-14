@@ -1,10 +1,9 @@
 import datetime
 import logging
 
+from data.models import Machine
 from django.conf import settings
 from django.contrib.auth.models import User
-
-from data.models import Machine
 from taskmanager.models import Task
 from utils.misc import send_email
 

@@ -1,9 +1,8 @@
+from api.serializers.misc import RootSerializer
+from data.models import ServerConfig
 from django.conf import settings
 from django.urls import reverse
 from rest_framework.decorators import api_view
-
-from api.serializers.misc import RootSerializer
-from data.models import ServerConfig
 
 
 @api_view(["GET"])
