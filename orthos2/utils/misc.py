@@ -176,7 +176,7 @@ def str_time_to_datetime(time):
 
 def send_email(to_addr, subject, message, from_addr=None):
     """Send an email."""
-    from data.models import ServerConfig
+    from orthos2.data.models import ServerConfig
 
     if not ServerConfig.objects.bool_by_key('orthos.debug.mail.send'):
         logger.warning("Disabled: set 'orthos.debug.mail.send' to 'true'")

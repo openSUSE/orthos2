@@ -8,7 +8,7 @@ from queue import Empty as queueEmpty
 from queue import Queue
 from threading import Thread
 
-from data.models import ServerConfig
+from orthos2.data.models import ServerConfig
 from django.utils import timezone
 
 from . import Priority

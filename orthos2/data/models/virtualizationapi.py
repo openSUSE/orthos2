@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import date
 
-from utils.misc import get_random_mac_address
+from orthos2.utils.misc import get_random_mac_address
 
 logger = logging.getLogger('models')
 
@@ -80,8 +80,8 @@ class VirtualizationAPI:
         Method returns a new `Machine` object and calls the subclass to actually create the virtual
         machine physically.
         """
-        from data.models import (Architecture, Machine, RemotePower,
-                                 SerialConsole, SerialConsoleType, System)
+        from orthos2.data.models import (Architecture, Machine, RemotePower,
+                                         SerialConsole, SerialConsoleType, System)
         from django.contrib.auth.models import User
 
         vm = Machine()
@@ -156,7 +156,7 @@ class Libvirt(VirtualizationAPI):
                 ['<arch1>', '<arch2>', ...], [('<value>', '<option>'), ...]
             )
         """
-        from data.models import ServerConfig
+        from orthos2.data.models import ServerConfig
 
         architectures = [self.host.architecture.name]
         image_directory = ServerConfig.objects.by_key('virtualization.libvirt.images.directory')
@@ -189,7 +189,7 @@ class Libvirt(VirtualizationAPI):
     def connect(function):
         """Create SSH connection if needed."""
         def decorator(self, *args, **kwargs):
-            from utils.ssh import SSH
+            from orthos2.utils.ssh import SSH
 
             if not self.conn:
                 self.conn = SSH(self.host.fqdn)
@@ -271,7 +271,7 @@ class Libvirt(VirtualizationAPI):
 
     def generate_networkinterfaces(self, amount=1, bridge='br0', model='virtio'):
         """Generate networkinterfaces."""
-        from data.models import NetworkInterface
+        from orthos2.data.models import NetworkInterface
 
         networkinterfaces = []
         for i in range(amount):
@@ -399,7 +399,8 @@ class Libvirt(VirtualizationAPI):
             - copy image to disk image (if needed)
             - run `virt-install`
         """
-        from data.models import NetworkInterface, ServerConfig
+
+        from orthos2.data.models import NetworkInterface, ServerConfig
 
         bridge = ServerConfig.objects.by_key('virtualization.libvirt.bridge')
         image_directory = ServerConfig.objects.by_key('virtualization.libvirt.images.directory')

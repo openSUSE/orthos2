@@ -1,7 +1,7 @@
 import logging
 
-from data.models import Machine
-from taskmanager.models import Task, TaskManager
+from orthos2.data.models import Machine
+from orthos2.taskmanager.models import Task, TaskManager
 
 logger = logging.getLogger('tasks')
 
@@ -31,7 +31,7 @@ class DailyCheckReservationExpirations(Task):
 
     def execute(self):
         """Execute the task."""
-        from taskmanager import tasks
+        from orthos2.taskmanager import tasks
 
         for machine in Machine.objects.all():
             if machine.administrative or machine.system.administrative:

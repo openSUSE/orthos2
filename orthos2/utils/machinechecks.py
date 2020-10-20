@@ -4,9 +4,9 @@ import socket
 import threading
 from decimal import Decimal
 
-from data.models import Architecture, Installation, Machine, NetworkInterface
-from utils.misc import execute, normalize_ascii
-from utils.ssh import SSH
+from orthos2.data.models import Architecture, Installation, Machine, NetworkInterface
+from orthos2.utils.misc import execute, normalize_ascii
+from orthos2.utils.ssh import SSH
 
 ARPHRD_IEEE80211 = 801
 
@@ -537,7 +537,7 @@ def get_pci_devices(fqdn):
                 return dev
         return None
 
-    from data.models import PCIDevice
+    from orthos2.data.models import PCIDevice
 
     try:
         machine = Machine.objects.get(fqdn=fqdn)

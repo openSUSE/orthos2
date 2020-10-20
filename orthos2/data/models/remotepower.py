@@ -11,12 +11,8 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.template import Context, Template
-from utils.misc import execute, get_s390_hostname
-from utils.ssh import SSH
-
-from . import ServerConfig, System, validate_dns
-
-logger = logging.getLogger('models')
+from orthos2.utils.misc import execute, get_s390_hostname
+from orthos2.utils.ssh import SSH
 
 
 class RemotePower(models.Model):

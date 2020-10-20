@@ -1,4 +1,4 @@
-from data.models import Installation
+from orthos2.data.models import Installation
 from rest_framework import serializers
 
 

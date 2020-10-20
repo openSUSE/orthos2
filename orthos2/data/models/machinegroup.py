@@ -85,7 +85,7 @@ class MachineGroup(models.Model):
                 assert self.dhcpv4_write == self._original.dhcpv4_write
                 assert self.dhcpv6_write == self._original.dhcpv6_write
             except AssertionError:
-                from data.signals import signal_dhcp_regenerate
+                from orthos2.data.signals import signal_dhcp_regenerate
 
                 signal_dhcp_regenerate.send(sender=self.__class__, domain_id=None)
 

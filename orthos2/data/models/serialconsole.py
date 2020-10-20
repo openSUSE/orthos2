@@ -5,8 +5,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.template import Context, Template
-from taskmanager import tasks
-from taskmanager.models import TaskManager
+from orthos2.taskmanager import tasks
+from orthos2.taskmanager.models import TaskManager
 
 from . import validate_dns
 from .serialconsoletype import SerialConsoleType

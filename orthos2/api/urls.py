@@ -1,5 +1,5 @@
-from api import views
-from api.commands import *  # noqa: F403
+from orthos2.api import views
+from orthos2.api.commands import *  # noqa: F403
 from django.conf.urls import re_path
 from rest_framework.authtoken import views as authtoken_views
 

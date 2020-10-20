@@ -3,10 +3,10 @@ import functools
 import logging
 import warnings
 
-from data.exceptions import ReleaseException, ReserveException
-from data.models import (Architecture, Domain, Machine, MachineGroup,
-                         RemotePower, ReservationHistory, SerialConsole,
-                         SerialConsoleType, ServerConfig)
+from orthos2.data.exceptions import ReleaseException, ReserveException
+from orthos2.data.models import (Architecture, Domain, Machine, MachineGroup,
+                                 RemotePower, ReservationHistory, SerialConsole,
+                                 SerialConsoleType, ServerConfig)
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate
@@ -31,9 +31,9 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import ListView
-from taskmanager import tasks
-from taskmanager.models import TaskManager
-from utils.misc import add_offset_to_date, get_random_mac_address
+from orthos2.taskmanager import tasks
+from orthos2.taskmanager.models import TaskManager
+from orthos2.utils.misc import add_offset_to_date, get_random_mac_address
 
 from .decorators import check_permissions
 from .forms import (NewUserForm, PasswordRestoreForm, PreferencesForm,
@@ -577,10 +577,6 @@ def users_create(request):
     if request.method == 'GET':
         form = NewUserForm()
     else:
-        if not ServerConfig.objects.bool_by_key('auth.account.creation'):
-            messages.error(request, "Account creation is disabled!")
-            return redirect('frontend:login')
-
         form = NewUserForm(request.POST)
 
         if form.is_valid():
@@ -895,8 +891,6 @@ def login(request, template_name='registration/login.html',
         redirect_field_name: redirect_to,
         'site': current_site,
         'site_name': current_site.name,
-        'account_creation': ServerConfig.objects.bool_by_key(
-            'auth.account.creation'),
         'title': 'Login'
     }
     if extra_context is not None:

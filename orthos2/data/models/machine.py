@@ -3,7 +3,7 @@ import logging
 import re
 from copy import deepcopy
 
-from data.exceptions import ReleaseException, ReserveException
+from orthos2.data.exceptions import ReleaseException, ReserveException
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
@@ -15,9 +15,9 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-from utils.misc import (DHCPRecordOption, Serializer, get_domain, get_hostname,
-                        get_ipv4, get_ipv6, get_s390_hostname,
-                        is_dns_resolvable)
+from orthos2.utils.misc import (DHCPRecordOption, Serializer, get_domain, get_hostname,
+                                get_ipv4, get_ipv6, get_s390_hostname,
+                                is_dns_resolvable)
 
 from .architecture import Architecture
 from .domain import Domain, validate_domain_ending
@@ -563,7 +563,7 @@ class Machine(models.Model):
                 assert self.dhcpv4_write == self._original.dhcpv4_write
                 assert self.dhcpv6_write == self._original.dhcpv6_write
             except AssertionError:
-                from data.signals import signal_cobbler_regenerate
+                from orthos2.data.signals import signal_cobbler_regenerate
 
                 # regenerate DHCP on all domains (deletion/registration) if domain changed
                 if self.fqdn_domain == self._original.fqdn_domain:
@@ -759,8 +759,8 @@ class Machine(models.Model):
     @check_permission
     def reserve(self, reason, until, user=None, reserve_for_user=None):
         """Reserve machine."""
-        from taskmanager import tasks
-        from taskmanager.models import TaskManager
+        from orthos2.taskmanager import tasks
+        from orthos2.taskmanager.models import TaskManager
 
         from .reservationhistory import ReservationHistory
 
@@ -824,8 +824,8 @@ class Machine(models.Model):
     @check_permission
     def release(self, user=None):
         """Release machine."""
-        from taskmanager import tasks
-        from taskmanager.models import TaskManager
+        from orthos2.taskmanager import tasks
+        from orthos2.taskmanager.models import TaskManager
 
         from .reservationhistory import ReservationHistory
 
@@ -908,7 +908,7 @@ class Machine(models.Model):
     @check_permission
     def ssh_shutdown(self, user=None, reboot=False):
         """Power off/reboot the machine using SSH."""
-        from utils.ssh import SSH
+        from orthos2.utils.ssh import SSH
 
         if reboot:
             option = '--reboot'
@@ -929,8 +929,8 @@ class Machine(models.Model):
     @check_permission
     def setup(self, setup_label, user=None):
         """Setup machine (re-install distribution)."""
-        from taskmanager import tasks
-        from taskmanager.models import TaskManager
+        from orthos2.taskmanager import tasks
+        from orthos2.taskmanager.models import TaskManager
 
         if self.has_setup_capability():
             task = tasks.SetupMachine(self.fqdn, setup_label)
@@ -953,7 +953,7 @@ class Machine(models.Model):
         Try power off via SSH first. If SSH didn't succeed, trigger power off via remote power if
         available.
         """
-        from utils.ssh import SSH
+        from orthos2.utils.ssh import SSH
 
         result = False
 
@@ -986,7 +986,7 @@ class Machine(models.Model):
         Try power off via SSH first. If SSH didn't succeed, trigger power off via remote power if
         available.
         """
-        from utils.ssh import SSH
+        from orthos2.utils.ssh import SSH
 
         result = False
 
@@ -1022,8 +1022,8 @@ class Machine(models.Model):
 
     def scan(self, action='all', user=None):
         """Start scanning/checking the machine by creating a task."""
-        from taskmanager import tasks
-        from taskmanager.models import TaskManager
+        from orthos2.taskmanager import tasks
+        from orthos2.taskmanager.models import TaskManager
 
         if action.lower() not in tasks.MachineCheck.Scan.Action.as_list:
             raise Exception("Unknown scan option '{}'!".format(action))
@@ -1034,14 +1034,14 @@ class Machine(models.Model):
     @check_permission
     def update_motd(self, user=None):
         """Call respective signal."""
-        from data.signals import signal_motd_regenerate
+        from orthos2.data.signals import signal_motd_regenerate
 
         signal_motd_regenerate.send(sender=self.__class__, fqdn=self.fqdn)
 
     @check_permission
     def regenerate_serialconsole_record(self, user=None):
         """Call respective signal."""
-        from data.signals import signal_serialconsole_regenerate
+        from orthos2.data.signals import signal_serialconsole_regenerate
 
         if self.has_serialconsole():
             signal_serialconsole_regenerate.send(
@@ -1052,7 +1052,7 @@ class Machine(models.Model):
     @check_permission
     def regenerate_dhcp_record(self, user=None):
         """Call respective signal."""
-        from data.signals import signal_cobbler_regenerate
+        from orthos2.data.signals import signal_cobbler_regenerate
 
         signal_cobbler_regenerate.send(sender=self.__class__, domain_id=self.fqdn_domain.pk)
 

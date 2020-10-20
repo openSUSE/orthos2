@@ -1,11 +1,11 @@
 import datetime
 import logging
 
-from data.models import Machine
+from orthos2.data.models import Machine
 from django.conf import settings
 from django.contrib.auth.models import User
-from taskmanager.models import Task
-from utils.misc import send_email
+from orthos2.taskmanager.models import Task
+from orthos2.utils.misc import send_email
 
 logger = logging.getLogger('tasks')
 

@@ -1,5 +1,5 @@
-from api.serializers.misc import RootSerializer
-from data.models import ServerConfig
+from orthos2.api.serializers.misc import RootSerializer
+from orthos2.data.models import ServerConfig
 from django.conf import settings
 from django.urls import reverse
 from rest_framework.decorators import api_view
@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view
 @api_view(["GET"])
 def root(request):
     """API root."""
-    import api.commands as commands
+    import orthos2.api.commands as commands
 
     data = {
         'version': settings.VERSION,

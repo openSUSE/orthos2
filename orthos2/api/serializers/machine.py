@@ -1,4 +1,4 @@
-from data.models import Machine, RemotePower
+from orthos2.data.models import Machine, RemotePower
 from rest_framework import serializers
 
 from .annotation import AnnotationSerializer
