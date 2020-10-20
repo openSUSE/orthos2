@@ -3,7 +3,7 @@ import os
 import socket
 
 import paramiko
-from data.models import Machine, ServerConfig
+from orthos2.data.models import Machine, ServerConfig
 from django.conf import settings
 
 logger = logging.getLogger('utils')

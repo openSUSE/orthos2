@@ -2,7 +2,7 @@ import os
 import sys
 from urllib.parse import urlparse
 
-from data.models import ServerConfig
+from orthos2.data.models import ServerConfig
 from django.core.management.base import BaseCommand, CommandError
 
 try:

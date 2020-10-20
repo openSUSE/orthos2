@@ -3,11 +3,11 @@
 import logging
 
 import mock
-import utils.cobbler as cobbler
-from data.models import Architecture, Domain, Machine, MachineGroup
+import orthos2.utils.cobbler as cobbler
+from orthos2.data.models import Architecture, Domain, Machine, MachineGroup
 from django.test import TestCase
 from mock import MagicMock, NonCallableMagicMock
-from utils.cobbler import CobblerException
+from orthos2.utils.cobbler import CobblerException
 
 logging.disable(logging.CRITICAL)
 
@@ -166,7 +166,7 @@ class CobblerMethodTests(TestCase):
     def mocked_get_update_command(machine, _):
         return machine.fqdn + "-update"
 
-    @mock.patch("data.models.Machine.active_machines.filter",
+    @mock.patch("orthos2.data.models.Machine.active_machines.filter",
                 MagicMock(return_value=[machine1, machine2]))
     @mock.patch("utils.cobbler.CobblerServer.get_machines", MagicMock(return_value="test1.foo.bar"))
     @mock.patch("utils.cobbler.get_cobbler_update_command",

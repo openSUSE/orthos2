@@ -2,11 +2,11 @@ import collections
 import logging
 import os
 
-from data.models import Domain, Machine, ServerConfig
+from orthos2.data.models import Domain, Machine, ServerConfig
 from django.conf import settings
-from taskmanager.models import Task
-from utils.cobbler import CobblerServer
-from utils.ssh import SSH
+from orthos2.taskmanager.models import Task
+from orthos2.utils.cobbler import CobblerServer
+from orthos2.utils.ssh import SSH
 
 logger = logging.getLogger('tasks')
 

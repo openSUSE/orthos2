@@ -1,9 +1,9 @@
 import logging
 import os
 
-from data.models import ServerConfig
-from taskmanager.models import Task
-from utils.ssh import SSH
+from orthos2.data.models import ServerConfig
+from orthos2.taskmanager.models import Task
+from orthos2.utils.ssh import SSH
 
 logger = logging.getLogger('tasks')
 
@@ -16,7 +16,7 @@ class RegenerateSerialConsole(Task):
 
     def execute(self):
         """Execute the task."""
-        from data.models import Machine, SerialConsole
+        from orthos2.data.models import Machine, SerialConsole
 
         if not ServerConfig.objects.bool_by_key('orthos.debug.serialconsole.write'):
             logger.warning("Disabled: set 'orthos.debug.serialconsole.write' to 'true'")

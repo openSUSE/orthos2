@@ -1,4 +1,4 @@
-from data.models import ServerConfig
+from orthos2.data.models import ServerConfig
 from django.test import TestCase
 
 SSH_KEYS = 'ssh.keys.paths'

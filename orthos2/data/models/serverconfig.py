@@ -1,7 +1,8 @@
 import logging
 
 from django.db import models
-from utils.misc import str_time_to_datetime
+
+from orthos2.utils.misc import str_time_to_datetime
 
 logger = logging.getLogger('models')
 

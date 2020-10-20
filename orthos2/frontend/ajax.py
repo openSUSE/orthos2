@@ -1,10 +1,10 @@
 import logging
 
-from data.models import Annotation, Machine, RemotePower
+from orthos2.data.models import Annotation, Machine, RemotePower
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.template.defaultfilters import urlize
-from frontend.templatetags.tags import vm_record
+from orthos2.frontend.templatetags.tags import vm_record
 
 from .decorators import check_permissions
 

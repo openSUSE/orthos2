@@ -1,4 +1,4 @@
-from data.models import Machine, ServerConfig
+from orthos2.data.models import Machine, ServerConfig
 from django import template
 from django.urls import resolve, reverse
 from django.utils.safestring import mark_safe

@@ -1,5 +1,5 @@
 import mock
-from data.models import Architecture, Machine, ServerConfig, System
+from orthos2.data.models import Architecture, Machine, ServerConfig, System
 from django.urls import reverse
 from django_webtest import WebTest
 
@@ -12,7 +12,7 @@ class ChangeView(WebTest):
         'data/fixtures/architectures.json'
     ]
 
-    @mock.patch('data.models.machine.is_dns_resolvable')
+    @mock.patch('orthos2.data.models.machine.is_dns_resolvable')
     def setUp(self, m_is_dns_resolvable):
         m_is_dns_resolvable.return_value = True
 

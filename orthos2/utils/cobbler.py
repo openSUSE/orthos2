@@ -1,8 +1,8 @@
 import logging
 
-from data.models import Machine, ServerConfig
+from orthos2.data.models import Machine, ServerConfig
 from django.template import Context, Template
-from utils.ssh import SSH
+from orthos2.utils.ssh import SSH
 
 logger = logging.getLogger('utils')
 

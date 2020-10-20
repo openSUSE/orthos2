@@ -1,5 +1,5 @@
-from api.serializers.misc import SelectSerializer
-from data.models import Machine
+from orthos2.api.serializers.misc import SelectSerializer
+from orthos2.data.models import Machine
 from django.shortcuts import redirect
 from rest_framework.views import APIView
 

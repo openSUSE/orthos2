@@ -2,10 +2,10 @@ from django.apps import AppConfig
 
 
 class DataConfig(AppConfig):
-    name = 'data'
+    name = 'orthos2.data'
 
     def ready(self):
-        import data.signals
+        import orthos2.data.signals
 
         # prepare types for fast and developer-friendly handling
         self.get_model('Architecture').Type.prep()

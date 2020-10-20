@@ -39,10 +39,10 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', gethostname(), getfqdn(), '10.162.227
 # Application definition
 
 INSTALLED_APPS = [
-    'data.apps.DataConfig',
-    'frontend.apps.FrontendConfig',
-    'taskmanager.apps.TaskManagerConfig',
-    'utils.apps.UtilsConfig',
+    'orthos2.data.apps.DataConfig',
+    'orthos2.frontend.apps.FrontendConfig',
+    'orthos2.taskmanager.apps.TaskManagerConfig',
+    'orthos2.utils.apps.UtilsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
-    'api.apps.APIConfig',
+    'orthos2.api.apps.APIConfig',
     'rest_framework',
     'rest_framework.authtoken',
 ]

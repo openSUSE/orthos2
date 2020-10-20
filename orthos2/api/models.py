@@ -1,11 +1,11 @@
 import logging
 import re
 
-from api.lookups import NotEqual
-from data.models import (Annotation, Architecture, Domain, Enclosure,
-                         Installation, Machine, MachineGroup, NetworkInterface,
-                         PCIDevice, Platform, RemotePower, SerialConsole,
-                         SerialConsoleType, System, User, Vendor)
+from orthos2.api.lookups import NotEqual
+from orthos2.data.models import (Annotation, Architecture, Domain, Enclosure,
+                                 Installation, Machine, MachineGroup, NetworkInterface,
+                                 PCIDevice, Platform, RemotePower, SerialConsole,
+                                 SerialConsoleType, System, User, Vendor)
 from django.core.exceptions import (FieldDoesNotExist, FieldError,
                                     MultipleObjectsReturned)
 from django.db.models import Field, Q

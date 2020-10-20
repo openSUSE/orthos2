@@ -1,14 +1,14 @@
 import logging
 
-from data.models import Machine, NetworkInterface, ServerConfig
+from orthos2.data.models import Machine, NetworkInterface, ServerConfig
 from django.utils import timezone
-from taskmanager.models import Task
-from utils.machinechecks import (abuild_test, get_hardware_information,
-                                 get_installations, get_networkinterfaces,
-                                 get_pci_devices, get_status_ip, login_test,
-                                 nmap_check, ping_check_ipv4, ping_check_ipv6)
-from utils.misc import sync, wrap80
-from utils.ssh import SSH
+from orthos2.taskmanager.models import Task
+from orthos2.utils.machinechecks import (abuild_test, get_hardware_information,
+                                         get_installations, get_networkinterfaces,
+                                         get_pci_devices, get_status_ip, login_test,
+                                         nmap_check, ping_check_ipv4, ping_check_ipv6)
+from orthos2.utils.misc import sync, wrap80
+from orthos2.utils.ssh import SSH
 
 logger = logging.getLogger('tasks')
 

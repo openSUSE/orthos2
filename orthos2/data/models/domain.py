@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.template import Context, Template
 from django.utils.translation import ugettext_lazy as _
-from utils.misc import has_valid_domain_ending
+from orthos2.utils.misc import has_valid_domain_ending
 
 from .architecture import Architecture
 from .machinegroup import MachineGroup
@@ -150,7 +150,7 @@ class Domain(models.Model):
                 ...,
             ]
         """
-        from utils.ssh import SSH
+        from orthos2.utils.ssh import SSH
 
         def grouping(records):
             """Group records for HTML form."""

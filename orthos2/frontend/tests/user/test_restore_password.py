@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django_webtest import WebTest
-from taskmanager.models import SingleTask
+from orthos2.taskmanager.models import SingleTask
 
 
 class CreateAccount(WebTest):

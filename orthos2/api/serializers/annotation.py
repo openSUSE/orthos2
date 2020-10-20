@@ -1,4 +1,4 @@
-from data.models import Annotation
+from orthos2.data.models import Annotation
 from rest_framework import serializers
 
 

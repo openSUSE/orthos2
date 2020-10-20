@@ -1,4 +1,4 @@
-from data.models import Machine
+from orthos2.data.models import Machine
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 

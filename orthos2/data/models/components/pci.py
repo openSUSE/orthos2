@@ -1,7 +1,7 @@
 import logging
 import re
 
-from data.models import Component
+from orthos2.data.models import Component
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 

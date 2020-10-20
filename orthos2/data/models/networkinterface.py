@@ -1,7 +1,8 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from utils.misc import is_valid_mac_address
+
+from orthos2.utils.misc import is_valid_mac_address
 
 
 def validate_mac_address(mac_address):

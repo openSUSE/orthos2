@@ -9,7 +9,7 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
-from utils.misc import DHCPRecordOption
+from orthos2.utils.misc import DHCPRecordOption
 
 from .models import (Annotation, Architecture, Domain, Enclosure, Installation,
                      Machine, MachineGroup, MachineGroupMembership,

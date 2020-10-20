@@ -1,8 +1,8 @@
 import collections
 import datetime
 
-from data.models import (Architecture, Installation, Machine, Platform,
-                         ServerConfig, System, Vendor, VirtualizationAPI)
+from orthos2.data.models import (Architecture, Installation, Machine, Platform,
+                                 ServerConfig, System, Vendor, VirtualizationAPI)
 from django import forms
 from django.conf import settings
 from django.contrib.auth.models import User
