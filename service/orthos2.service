@@ -1,0 +1,11 @@
+[Unit]
+Description=Orthos server
+Requires=nginx.service
+
+[Service]
+User=orthos
+Group=orthos
+ExecStart=/usr/sbin/uwsgi --ini /etc/orthos2/orthos2.ini --plugin python3
+
+[Install]
+WantedBy=multi-user.target

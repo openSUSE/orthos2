@@ -1,0 +1,505 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block navbar %}
+{% include 'snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <form method="post" action="{% url 'frontend:advanced_search' %}" class="form-search">
+    {% csrf_token %}
+
+    <div class="row justify-content-center">
+
+      <div class="col-4">
+
+        {{ form.non_field_errors }}
+
+        {{ form.fqdn.errors }}
+        <div class="row" style="margin-bottom: 5px;">
+          <div class="col-4" align="right">
+            <label for="{{ form.fqdn.id_for_label }}">FQDN</label>
+          </div>
+          <div class="col-2" align="center">
+              like
+          </div>
+          <div class="col-6">
+            {{ form.fqdn }}
+          </div>
+        </div>
+        {{ form.fqdn__operator }}
+
+        {{ form.ram_amount.errors }}
+        {{ form.ram_amount__operator.errors }}
+        <div class="row" style="margin-bottom: 5px;">
+          <div class="col-4" align="right">
+            <label for="{{ form.ram_amount.id_for_label }}">RAM (MB)</label>
+          </div>
+          <div class="col-2" align="center">
+            <div class="btn-group" data-toggle="buttons">
+            {% for radio in form.ram_amount__operator %}
+              <label class="btn btn-secondary btn-sm{% if forloop.first %} active{% endif %}">
+                {{ radio.tag }} {{ radio.choice_label }}
+              </label>
+            {% endfor %}
+            </div>
+          </div>
+          <div class="col-6">
+            {{ form.ram_amount }}
+          </div>
+        </div>
+
+        {{ form.cpu_model.errors }}
+        <div class="row" style="margin-bottom: 5px;">
+          <div class="col-4" align="right">
+            <label for="{{ form.cpu_model.id_for_label }}">CPU model</label>
+          </div>
+          <div class="col-2" align="center">
+              like
+          </div>
+          <div class="col-6">
+            {{ form.cpu_model }}
+          </div>
+        </div>
+        {{ form.cpu_model__operator }}
+
+        {{ form.cpu_cores.errors }}
+        {{ form.cpu_cores__operator.errors }}
+        <div class="row" style="margin-bottom: 5px;">
+          <div class="col-4" align="right">
+            <label for="{{ form.cpu_cores.id_for_label }}">CPU cores</label>
+          </div>
+          <div class="col-2" align="center">
+            <div class="btn-group" data-toggle="buttons">
+            {% for radio in form.cpu_cores__operator %}
+              <label class="btn btn-secondary btn-sm{% if forloop.first %} active{% endif %}">
+                {{ radio.tag }} {{ radio.choice_label }}
+              </label>
+            {% endfor %}
+            </div>
+          </div>
+          <div class="col-6">
+            {{ form.cpu_cores }}
+          </div>
+        </div>
+
+        {{ form.cpu_flags.errors }}
+        <div class="row" style="margin-bottom: 5px;">
+          <div class="col-4" align="right">
+            <label>CPU flags</label>
+          </div>
+          <div class="col-2" align="center">
+              like
+          </div>
+          <div class="col-6">
+            {{ form.cpu_flags }}
+          </div>
+        </div>
+        {{ form.cpu_flags__operator }}
+
+        {{ form.system.errors }}
+        <div class="row" style="margin-bottom: 5px;">
+          <div class="col-4" align="right">
+            <label for="{{ form.system.id_for_label }}">System type</label>
+          </div>
+          <div class="col-2" align="center">
+              is
+          </div>
+          <div class="col-6">
+            {{ form.system }}
+          </div>
+        </div>
+
+        {{ form.architecture.errors }}
+        <div class="row" style="margin-bottom: 5px;">
+          <div class="col-4" align="right">
+            <label for="{{ form.architecture.id_for_label }}">Architecture</label>
+          </div>
+          <div class="col-2" align="center">
+              is
+          </div>
+          <div class="col-6">
+            {{ form.architecture }}
+          </div>
+        </div>
+
+        {{ form.hwinfo.errors }}
+        <div class="row" style="margin-bottom: 5px;">
+          <div class="col-4" align="right">
+            <label for="{{ form.hwinfo.id_for_label }}">hwinfo</label>
+          </div>
+          <div class="col-2" align="center">
+              like
+          </div>
+          <div class="col-6">
+            {{ form.hwinfo }}
+          </div>
+        </div>
+        {{ form.hwinfo__operator }}
+
+        {{ form.dmidecode.errors }}
+        <div class="row" style="margin-bottom: 5px;">
+          <div class="col-4" align="right">
+            <label for="{{ form.dmidecode.id_for_label }}">dmidecode</label>
+          </div>
+          <div class="col-2" align="center">
+              like
+          </div>
+          <div class="col-6">
+            {{ form.dmidecode }}
+          </div>
+        </div>
+        {{ form.dmidecode__operator }}
+
+        {{ form.dmesg.errors }}
+        <div class="row" style="margin-bottom: 5px;">
+          <div class="col-4" align="right">
+            <label for="{{ form.dmesg.id_for_label }}">dmesg</label>
+          </div>
+          <div class="col-2" align="center">
+              like
+          </div>
+          <div class="col-6">
+            {{ form.dmesg }}
+          </div>
+        </div>
+        {{ form.dmesg__operator }}
+
+        {{ form.lspci.errors }}
+        <div class="row" style="margin-bottom: 5px;">
+          <div class="col-4" align="right">
+            <label for="{{ form.lspci.id_for_label }}">lspci</label>
+          </div>
+          <div class="col-2" align="center">
+              like
+          </div>
+          <div class="col-6">
+            {{ form.lspci }}
+          </div>
+        </div>
+        {{ form.lspci__operator }}
+
+        {{ form.lsmod.errors }}
+        <div class="row" style="margin-bottom: 5px;">
+          <div class="col-4" align="right">
+            <label for="{{ form.lsmod.id_for_label }}">lsmod</label>
+          </div>
+          <div class="col-2" align="center">
+              like
+          </div>
+          <div class="col-6">
+            {{ form.lsmod }}
+          </div>
+        </div>
+        {{ form.lsmod__operator }}
+
+        {{ form.installations__distribution.errors }}
+        <div class="row" style="margin-bottom: 5px;">
+          <div class="col-4" align="right">
+            <label for="{{ form.installations__distribution.id_for_label }}">Inst. distribution</label>
+          </div>
+          <div class="col-2" align="center">
+            is
+          </div>
+          <div class="col-6">
+            {{ form.installations__distribution }}
+          </div>
+        </div>
+
+        {{ form.networkinterfaces__mac_address.errors }}
+        <div class="row" style="margin-bottom: 5px;">
+          <div class="col-4" align="right">
+            <label for="{{ form.networkinterfaces__mac_address.id_for_label }}">MAC address</label>
+          </div>
+          <div class="col-2" align="center">
+              like
+          </div>
+          <div class="col-6">
+            {{ form.networkinterfaces__mac_address }}
+          </div>
+        </div>
+        {{ form.networkinterfaces__mac_address__operator }}
+
+    </div>
+
+    <div class="col-4">
+      <div id="accordion" role="tablist" style="margin-bottom: 5px;">
+
+          <div class="card" style="margin-bottom: 5px;">
+            <div class="card-header" role="tab" id="headingOne">
+              <span class="mb-0">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+                  Platform
+                </a>
+                <small class="form-text text-muted">Vendor, Platform</small>
+              </span>
+            </div>
+
+            <div id="collapseOne" class="collapse" role="tabpanel">
+              <div class="card-block" style="padding-top: 5px; padding-right: 5px;">
+
+                {{ form.enclosure__platform__vendor.errors }}
+                <div class="row" style="margin-bottom: 5px;">
+                  <div class="col-4" align="right">
+                    <label>Vendor (enclosure)</label>
+                  </div>
+                  <div class="col-2" align="center">
+                      is
+                  </div>
+                  <div class="col-6">
+                    {{ form.enclosure__platform__vendor }}
+                  </div>
+                </div>
+
+                {{ form.enclosure__platform.errors }}
+                <div class="row" style="margin-bottom: 5px;">
+                  <div class="col-4" align="right">
+                    <label>Platform (enclosure)</label>
+                  </div>
+                  <div class="col-2" align="center">
+                      is
+                  </div>
+                  <div class="col-6">
+                    {{ form.enclosure__platform }}
+                  </div>
+                </div>
+
+                {{ form.platform.errors }}
+                <div class="row" style="margin-bottom: 5px;">
+                  <div class="col-4" align="right">
+                    <label>Platform (cartridge)</label>
+                  </div>
+                  <div class="col-2" align="center">
+                      is
+                  </div>
+                  <div class="col-6">
+                    {{ form.platform }}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom: 5px;">
+            <div class="card-header" role="tab" id="headingTwo">
+              <span class="mb-0">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+                  Switches
+                </a>
+                <small class="form-text text-muted">Reserved, IPMI, EFI, ...</small>
+              </span>
+            </div>
+
+            <div id="collapseTwo" class="collapse" role="tabpanel">
+              <div class="card-block" style="padding-top: 5px; padding-right: 5px;">
+
+                {{ form.reserved_by.errors }}
+                <div class="row" style="margin-bottom: 5px;">
+                  <div class="col-4" align="right">
+                    <label for="{{ form.reserved_by.id_for_label }}">Reserved</label>
+                  </div>
+                  <div class="col-2" align="center">
+                  </div>
+                  <div class="col-6">
+                    <div class="btn-group" data-toggle="buttons">
+                    {% for radio in form.reserved_by %}
+                      <label class="btn btn-secondary btn-sm{% if forloop.last %} active{% endif %}">
+                        {{ radio.tag }} {{ radio.choice_label }}
+                      </label>
+                    {% endfor %}
+                    </div>
+                  </div>
+                </div>
+                {{ form.reserved_by__operator }}
+
+                {{ form.ipmi.errors }}
+                <div class="row" style="margin-bottom: 5px;">
+                  <div class="col-4" align="right">
+                    <label for="{{ form.ipmi.id_for_label }}">IPMI supported</label>
+                  </div>
+                  <div class="col-2" align="center">
+                  </div>
+                  <div class="col-6">
+                    <div class="btn-group" data-toggle="buttons">
+                    {% for radio in form.ipmi %}
+                      <label class="btn btn-secondary btn-sm{% if forloop.last %} active{% endif %}">
+                        {{ radio.tag }} {{ radio.choice_label }}
+                      </label>
+                    {% endfor %}
+                    </div>
+                  </div>
+                </div>
+
+                {{ form.efi.errors }}
+                <div class="row" style="margin-bottom: 5px;">
+                  <div class="col-4" align="right">
+                    <label for="{{ form.efi.id_for_label }}">EFI booted</label>
+                  </div>
+                  <div class="col-2" align="center">
+                  </div>
+                  <div class="col-6">
+                    <div class="btn-group" data-toggle="buttons">
+                    {% for radio in form.efi %}
+                      <label class="btn btn-secondary btn-sm{% if forloop.last %} active{% endif %}">
+                        {{ radio.tag }} {{ radio.choice_label }}
+                      </label>
+                    {% endfor %}
+                    </div>
+                  </div>
+                </div>
+
+                {{ form.serialconsole.errors }}
+                <div class="row" style="margin-bottom: 5px;">
+                  <div class="col-4" align="right">
+                    <label for="{{ form.serialconsole.id_for_label }}">Serial console</label>
+                  </div>
+                  <div class="col-2" align="center">
+                    available
+                  </div>
+                  <div class="col-6">
+                    <div class="btn-group" data-toggle="buttons">
+                    {% for radio in form.serialconsole %}
+                      <label class="btn btn-secondary btn-sm{% if forloop.last %} active{% endif %}">
+                        {{ radio.tag }} {{ radio.choice_label }}
+                      </label>
+                    {% endfor %}
+                    </div>
+                  </div>
+                </div>
+                {{ form.serialconsole__operator }}
+
+                {{ form.remotepower.errors }}
+                <div class="row" style="margin-bottom: 5px;">
+                  <div class="col-4" align="right">
+                    <label>Remotepower</label>
+                  </div>
+                  <div class="col-2" align="center">
+                    available
+                  </div>
+                  <div class="col-6">
+                    <div class="btn-group" data-toggle="buttons">
+                    {% for radio in form.remotepower %}
+                      <label class="btn btn-secondary btn-sm{% if forloop.last %} active{% endif %}">
+                        {{ radio.tag }} {{ radio.choice_label }}
+                      </label>
+                    {% endfor %}
+                    </div>
+                  </div>
+                </div>
+                {{ form.remotepower__operator }}
+
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom: 5px;">
+            <div class="card-header" role="tab" id="headingThree">
+              <span class="mb-0">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree">
+                  Machine Status
+                </a>
+                <small class="form-text text-muted">Ping, SSH, Login, ABuild</small>
+              </span>
+            </div>
+            <div id="collapseThree" class="collapse" role="tabpanel">
+              <div class="card-block" style="padding-top: 5px; padding-right: 5px;">
+
+                {{ form.status_ipv4.errors }}
+                <div class="row" style="margin-bottom: 5px;">
+                  <div class="col-4" align="right">
+                      <label>IPv4</label>
+                  </div>
+                  <div class="col-2" align="center">
+                      is
+                  </div>
+                  <div class="col-6">
+                    {{ form.status_ipv4 }}
+                  </div>
+                </div>
+
+                {{ form.status_ipv6.errors }}
+                <div class="row" style="margin-bottom: 5px;">
+                  <div class="col-4" align="right">
+                      <label>IPv6</label>
+                  </div>
+                  <div class="col-2" align="center">
+                      is
+                  </div>
+                  <div class="col-6">
+                    {{ form.status_ipv6 }}
+                  </div>
+                </div>
+
+                {{ form.status_ssh.errors }}
+                <div class="row" style="margin-bottom: 5px;">
+                  <div class="col-4" align="right">
+                      <label>SSH</label>
+                  </div>
+                  <div class="col-2" align="center">
+                  </div>
+                  <div class="col-6">
+                    <div class="btn-group" data-toggle="buttons">
+                    {% for radio in form.status_ssh %}
+                      <label class="btn btn-secondary btn-sm{% if forloop.last %} active{% endif %}">
+                        {{ radio.tag }} {{ radio.choice_label }}
+                      </label>
+                    {% endfor %}
+                    </div>
+                  </div>
+                </div>
+
+                {{ form.status_login.errors }}
+                <div class="row" style="margin-bottom: 5px;">
+                  <div class="col-4" align="right">
+                      <label>Login</label>
+                  </div>
+                  <div class="col-2" align="center">
+                  </div>
+                  <div class="col-6">
+                    <div class="btn-group" data-toggle="buttons">
+                    {% for radio in form.status_login %}
+                      <label class="btn btn-secondary btn-sm{% if forloop.last %} active{% endif %}">
+                        {{ radio.tag }} {{ radio.choice_label }}
+                      </label>
+                    {% endfor %}
+                    </div>
+                  </div>
+                </div>
+
+                {{ form.status_abuild.errors }}
+                <div class="row" style="margin-bottom: 5px;">
+                  <div class="col-4" align="right">
+                      <label>ABuild</label>
+                  </div>
+                  <div class="col-2" align="center">
+                  </div>
+                  <div class="col-6">
+                    <div class="btn-group" data-toggle="buttons">
+                    {% for radio in form.status_abuild %}
+                      <label class="btn btn-secondary btn-sm{% if forloop.last %} active{% endif %}">
+                        {{ radio.tag }} {{ radio.choice_label }}
+                      </label>
+                    {% endfor %}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-8">
+        <button type="submit" class="btn btn-secondary btn-block btn-sm">Search</button>
+      </div>
+    </div>
+
+  </form>
+</div>
+{% endblock %}

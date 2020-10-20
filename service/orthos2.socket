@@ -1,0 +1,11 @@
+[Unit]
+Description=Socket for orthos2
+
+[Socket]
+ListenStream=/run/orthos2/orthos2.sock
+SocketUser=orthos
+SocketGroup=orthos
+SocketMode=0666
+
+[Install]
+WantedBy=sockets.target
