@@ -1,0 +1,45 @@
+{% extends 'machines/machine.html' %}
+{% load filters %}
+
+{% block tabcontent %}
+<div class="title">
+  <h5>PCI Devices</h5>
+</div>
+
+<table class="table table-bordered small table-hover">
+  <thead class="thead-default">
+    <th>Slot</th>
+    <th>Class</th>
+    <th>Vendor</th>
+    <th>Device</th>
+  </thead>
+  <tbody>
+    {% for pci_device in machine.pcidevice_set.all %}
+    <tr class="clickable-row" data-href="#{{ pci_device.slot }}">
+        <td>{{ pci_device.slot }}</td>
+        <td>{{ pci_device.classname }} ({{ pci_device.class_id }})</td>
+        <td>{{ pci_device.vendor }}</td>
+        <td>{{ pci_device.device }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="title">
+  <h5>lspci Output</h5>lspci -vvv -nn
+</div>
+
+<pre class="monospace">
+{{ machine.lspci|pcihooks }}
+</pre>
+{% endblock %}
+
+{% block javascript %}
+<script>
+$(document).ready(function($) {
+  $(".clickable-row").click(function() {
+    window.location = $(this).data("href");
+  });
+});
+</script>
+{% endblock %}

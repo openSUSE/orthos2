@@ -1,0 +1,58 @@
+{% extends 'machines/machine.html' %}
+
+{% block tabcontent %}
+<div class="row">
+  <div class="col-5">
+    {% include 'machines/detail/snippets/general.html' %}
+    {% include 'machines/detail/snippets/system.html' %}
+  </div>
+
+  <div class="col-5">
+    {% include 'machines/detail/snippets/status.html' %}
+    {% include 'machines/detail/snippets/reservation.html' %}
+    {% include 'machines/detail/snippets/platform.html' %}
+    {% include 'machines/detail/snippets/annotations.html' %}
+  </div>
+
+  <div class="col-2">
+    {% include 'machines/detail/snippets/sidebar.html' %}
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+$('#js-noteinput').change(function () {
+  var annotation = $(this).val();
+
+  $.ajax({
+    url: '{% url 'frontend:ajax_annotation' machine.id %}',
+    data: {
+      'text': annotation
+    },
+    dataType: 'json',
+    success: function (data) {
+      console.log(data);
+      var reporter = data.reporter;
+      var date = data.date;
+      var text = data.text;
+      $('#js-notelist').prepend('<tr><td>' + data.text + ' <small>(' + data.reporter + ' ' + data.date + ')</small></td></tr>');
+    }
+  });
+  $(this).val("");
+});
+
+function powercycle(action) {
+  $.ajax({
+    url: '{% url 'frontend:ajax_powercycle' machine.id %}?action=' + action,
+    beforeSend: function() {
+      $('.power-btn-group').children().addClass('disabled')
+    },
+    success: function(data) {
+      showMachineStatusBarMessage(data);
+      $('.power-btn-group').children().removeClass('disabled');
+    },
+  });
+};
+</script>
+{% endblock %}

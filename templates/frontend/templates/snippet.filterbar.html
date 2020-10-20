@@ -1,0 +1,62 @@
+{% load tags %}
+
+{% if architectures and domains %}
+<div class="container-fluid" style="margin-bottom: 15px;">
+  <div class="row">
+    <div class="col-12">
+      <div class="btn-group" role="group">
+        {% for architecture in architectures %}
+        <a class="btn btn-secondary btn-sm {% active request architecture.name %}" href="?{% url_replace request 'arch' architecture.name %}" role="button">{{ architecture.name }}</a>
+        {% endfor %}
+        <a class="btn btn-secondary btn-sm" href="?{% url_replace request 'arch' '' True %}" role="button">&#215;</a>
+      </div>
+
+      <span class="spacer-05"/>
+
+      <div class="btn-group" role="group">
+        <a class="btn btn-secondary btn-sm {% active request 'ping' %}" href="?{% url_replace request 'status' 'ping' %}" role="button">Ping</a>
+        <a class="btn btn-secondary btn-sm {% active request 'ssh' %}" href="?{% url_replace request 'status' 'ssh' %}" role="button">SSH</a>
+        <a class="btn btn-secondary btn-sm {% active request 'login' %}" href="?{% url_replace request 'status' 'login' %}" role="button">Login</a>
+        <a class="btn btn-secondary btn-sm" href="?{% url_replace request 'status' '' True %}" role="button">&#215;</a>
+      </div>
+
+      <span class="spacer-05"/>
+
+      <div class="dropdown" style="display: inline-block;">
+        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          {% get_current_domain_filter request %}
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" href="?{% url_replace request 'domain' domain.name True %}">All Network Domains</a>
+          <div class="dropdown-divider"></div>
+          {% for domain in domains %}
+          <a class="dropdown-item" href="?{% url_replace request 'domain' domain.name %}">{{ domain.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <span class="spacer-05"/>
+
+      <div class="dropdown" style="display: inline-block;">
+        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          {% get_current_machinegroup_filter request %}
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" href="?{% url_replace request 'machinegroup' group.name True %}">All Machine Groups</a>
+          <div class="dropdown-divider"></div>
+          {% for group in machinegroups %}
+          <a class="dropdown-item" href="?{% url_replace request 'machinegroup' group.name %}">{{ group.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <span class="spacer-05"/>
+
+      <div style="display: inline-block">
+          <span class="hint">Found {{ paginator.count }} Machine(s)</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endif %}

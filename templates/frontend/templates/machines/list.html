@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load filters %}
+{% load tags %}
+
+{% block navbar %}
+{% include 'snippet.navlinks.html' %}
+{% include 'snippet.search.html' %}
+{% endblock %}
+
+{% block content %}
+
+{% include 'snippet.filterbar.html' %}
+{% include 'snippet.paginator.html' %}
+
+<div class="container-fluid">
+
+  {% if machines %}
+  <table class="table table-striped table-bordered table-fixed">
+    <thead class="thead-default">
+      <tr style="border: 1px solid #ddd;">
+        <th>FQDN {% order_list request 'fqdn' %}</th>
+        {% if view == 'virtual' %}<th width="45px">&nbsp;</th>{% endif %}
+        <th width="45px">&nbsp;</th>
+        <th width="45px">&nbsp;</th>
+        <th width="45px">&nbsp;</th>
+        <th>Active Distribution {% order_list request 'installations__distribution' %}</th>
+        {% if view != 'free' and view != 'my' %}<th>Reserved By {% order_list request 'reserved_by__username' %}</th>{% endif %}
+        <th colspan="2" width="100px">CPU {% order_list request 'cpu_cores' %}</th>
+        <th width="130px">RAM (GB) {% order_list request 'ram_amount' %}</th>
+        <th width="80px">IPv4</th>
+        <th width="80px">IPv6</th>
+        <th width="80px">SSH</th>
+        <th width="80px">Login</th>
+        <th width="80px">ABuild</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for machine in machines %}
+      <tr>
+        <th scope="row">
+          <a href="{% url 'frontend:detail' machine.id %}" class="text-muted">{{ machine.fqdn }}</a>
+          {% if machine.administrative or machine.system.administrative %}
+            <span class="spacer-05"/>
+            <span class="hint"><i class="fa fa-star" title="Adminsitrative Machine"></i></span>
+          {% endif %}
+          {% if machine.system.virtual %}
+            <span class="spacer-05"/>
+            <span class="hint"><i class="fa fa-cloud" title="Virtual Machine"></i></span>
+          {% endif %}
+          {% if machine.is_bmc %}
+            <span class="spacer-05"/>
+            <span class="hint"><i class="fa fa-heartbeat" title="BMC"></i></span>
+          {% endif %}
+        </th>
+        {% if view == 'virtual' %}
+        <td>
+          {% if machine.vm_dedicated_host %}
+          <a href="{% url 'virtualization_add' machine.id %}"><i class="fa fa-plus" title="Add virtual machine to {{ machine.hostname }}"/></i></a>
+          {% endif %}
+        </td>
+        {% endif %}
+        <td>
+        {% if machine.bmc %}
+          <i class="fa fa-heartbeat" title="Machine has BMC: {{ machine.bmc.fqdn }}"></i>
+        {% endif %}
+        </td>
+        <td>
+        {% if machine.serialconsole %}
+          <i class="fa fa-desktop" title="Machine has serial console ({{ machine.serialconsole.type.name }})"></i>
+        {% endif %}
+        </td>
+        <td>
+        {% if machine.remotepower %}
+          <i class="fa fa-plug" title="Machine has remote power ({{ machine.remotepower.name }})"></i>
+        {% endif %}
+        </td>
+        <td>{{ machine.get_active_distribution.distribution|truncatechars:50 }}</td>
+        {% if view != 'free' and view != 'my' %}
+        <td>{{ machine.reserved_by|default_if_none:"&nbsp;" }}</td>
+        {% endif %}
+        <td>{{ machine.cpu_cores }}x</td>
+        <td>{{ machine.cpu_model|vendor_image:25 }}</td>
+        <td>{{ machine.ram_amount|divide:1024}}</td>
+
+        {% status_ipv4 machine %}
+        {% status_ipv6 machine %}
+        {% status_ssh machine %}
+        {% status_login machine %}
+        {% status_abuild machine %}
+
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  {% include 'snippet.paginator.html' %}
+
+  {% else %}
+  <div class="alert alert-info">
+    No machines found!
+  </div>
+  {% endif %}
+</div>
+
+
+{% endblock %}

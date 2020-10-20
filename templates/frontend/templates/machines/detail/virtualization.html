@@ -1,0 +1,100 @@
+{% extends 'machines/machine.html' %}
+{% load tags %}
+
+{% block tabcontent %}
+<div class="row">
+  <div class="col-10">
+    <div>
+      <div class="title">
+        <h5>Virtual Machines</h5>Managed by Orthos
+      </div>
+
+      <table class="table table-bordered small table-fixed" id="vm_list">
+        <thead class="thead-default">
+          <th>FQDN</th>
+          <th>MAC Address</th>
+          <th>Owner</th>
+          <th width="80px">IPv4</th>
+          <th width="80px">IPv6</th>
+          <th width="80px">SSH</th>
+          <th width="80px">Login</th>
+          <th width="90px">Action</th>
+        </thead>
+        <tbody>
+          {% for vm in machine.get_virtual_machines %}
+            {% vm_record request vm %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <div class="title">
+        <h5>VM list</h5>
+      </div>
+
+      <pre class="monospace" id="virsh_list_output">loading...</pre>
+
+    </div>
+  </div>
+
+  <div class="col-2">
+    <div>
+      <div class="title">
+        <h5>Actions</h5>
+      </div>
+
+      <div class="btn-group-vertical d-flex">
+        <a class="btn btn-secondary btn-sm" href="{% url 'virtualization_add' machine.id %}" role="button">Add Virtual Machine</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+// collect virsh output
+function virsh_list() {
+  $.ajax({
+    url: '{% url 'ajax_virtualization_list' machine.id %}',
+    beforeSend: function() {
+      $('#machine-statusbar').show();
+    },
+    success: function(data) {
+      var type = data.type;
+
+      if (type == 'status') {
+        showMachineStatusBarMessage(data);
+        $('#virsh_list_output').html('no data');
+      } else {
+        var output = data.output;
+        $('#virsh_list_output').html(output);
+      }
+    },
+  });
+};
+
+// delete vm
+function delete_vm(vm_id) {
+  $.ajax({
+    url: '{% url 'ajax_virtualization_delete' machine.id %}?vm=' + vm_id,
+    success: function(data) {
+      showMachineStatusBarMessage(data);
+
+      if ('vm_list' in data) {
+        var vm_list = data.vm_list;
+
+        $('#vm_list tbody').empty();
+        $.each(vm_list, function(index, vm) {
+          $('#vm_list tbody').append(vm);
+        });
+      }
+    },
+  });
+};
+
+$(document).ready(virsh_list());
+</script>
+{% endblock %}
