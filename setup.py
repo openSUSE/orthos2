@@ -38,15 +38,19 @@ if __name__ == "__main__":
         name="orthos2",
         version='0.1',
         description="Machine administration server",
-        long_description="Cobbler is a network install server. Cobbler supports PXE, virtualized installs, "
-                         "and reinstalling existing Linux machines. The last two modes use a helper tool, 'koan', "
-                         "that integrates with cobbler. There is also a web interface 'cobbler-web'. Cobbler's "
-                         "advanced features include importing distributions from DVDs and rsync mirrors, automatic OS "
-                         "installation templating, integrated yum mirroring, and built-in DHCP/DNS Management. "
-                         "Cobbler has a XMLRPC API for integration with other applications.",
-        author="Team Cobbler",
-        author_email="cobbler.project@gmail.com",
-        url="https://cobbler.github.io",
+        long_description="""
+        Orthos is the machine administration tool of the development network at SUSE.
+        It is used for following tasks:
+
+        getting the state of the machine
+        overview about the hardware
+        overview about the installed software (installations)
+        reservation of the machines
+        generating the DHCP configuration (via Cobbler)
+        reboot the machines remotely
+        managing remote (serial) consoles""",
+        author="orthos team",
+        url="https://github.com/openSUSE/orthos2",
         license="GPLv2+",
         setup_requires=[
         ],
@@ -62,10 +66,14 @@ if __name__ == "__main__":
             ("%s/orthos2/wsgi" % execpath, ["wsgi/orthos2.py"]),
             # orthos2 data files in /usr/share/orthos2
             ("/etc/orthos2", ["wsgi/orthos2.ini"]),
-            ("%s/orthos2/fixtures/data" % datapath, glob("orthos2/data/fixtures/*.json")),
-            ("%s/orthos2/fixtures/taskmanager" % datapath, glob("orthos2/taskmanager/fixtures/*.json")),
-            ("%s/orthos2/fixtures/frontend/tests" % datapath, glob("orthos2/frontend/tests/fixtures/*.json")),
-            ("%s/orthos2/fixtures/utils/tests" % datapath, glob("orthos2/utils/tests/fixtures/*.json")),
+            ("%s/orthos2/fixtures/data" % datapath,
+                glob("orthos2/data/fixtures/*.json")),
+            ("%s/orthos2/fixtures/taskmanager" % datapath,
+                glob("orthos2/taskmanager/fixtures/*.json")),
+            ("%s/orthos2/fixtures/frontend/tests" % datapath,
+                glob("orthos2/frontend/tests/fixtures/*.json")),
+            ("%s/orthos2/fixtures/utils/tests" % datapath,
+                glob("orthos2/utils/tests/fixtures/*.json")),
             # tmpfiles.d -> renaming here is ugly, better use a subdirectory in repo
             ("%s" % tmpfilespath, ["service/tmpfiles.d/orthos2.conf"]),
             ("%s" % unitpath, ["service/orthos2.service",
