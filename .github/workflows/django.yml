@@ -39,9 +39,10 @@ jobs:
         sudo chmod o+w /var/log/orthos2/default.log
     - name: Migrate database
       run: |
-        python orthos2/manage.py migrate
+        python orthos2/bin/manage.py migrate
     - name: Run Tests
       run: |
         cd orthos2
-        sh ./bin/install_all_fixtures.sh
+        python bin/manage.py loaddata data/fixtures/*.json
+        python bin/manage.py loaddata taskmanager/fixtures/*.json
         python manage.py test
