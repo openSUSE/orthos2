@@ -9,10 +9,11 @@ from orthos2.api.commands.regenerate import RegenerateCommand
 from orthos2.api.commands.serverconfig import ServerConfigCommand
 from orthos2.api.commands.setup import SetupCommand
 from orthos2.api.commands.power import PowerCommand
-from orthos2.api.commands.add import (AddCommand, AddVMCommand, AddMachineCommand, AddSerialConsoleCommand,
-                                      AddAnnotationCommand, AddRemotePowerCommand)
-from orthos2.api.commands.delete import (DeleteCommand, DeleteMachineCommand, DeleteSerialConsoleCommand,
-                                         DeleteRemotePowerCommand)
+from orthos2.api.commands.add import (AddCommand, AddVMCommand, AddMachineCommand,
+                                      AddSerialConsoleCommand, AddAnnotationCommand,
+                                      AddRemotePowerCommand)
+from orthos2.api.commands.delete import (DeleteCommand, DeleteMachineCommand,
+                                         DeleteSerialConsoleCommand, DeleteRemotePowerCommand)
 
 
 __all__ = [
