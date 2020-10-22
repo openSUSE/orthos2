@@ -45,14 +45,13 @@ BuildRequires:  python-rpm-macros
 %endif
 %{?python_enable_dependency_generator}
 %if ! (%{defined python_enable_dependency_generator} || %{defined python_disable_dependency_generator})
-Requires:  %{python_module django >= 3.1}
-Requires:  %{python_module django-extensions}
-Requires:  %{python_module django-auth-ldap}
-# This is currently latest..., better add the version to paramiko to be safe
-Requires:  %{python_module paramiko}
-Requires:  %{python_module djangorestframework}
-Requires:  %{python_module validators}
-Requires:  %{python_module netaddr}
+Requires:  python3-django >= 3.1
+Requires:  python3-django-extensions
+Requires:  python3-django-auth-ldap
+Requires:  python3-paramiko
+Requires:  python3-djangorestframework
+Requires:  python3-validators
+Requires:  python3-netaddr
 %endif
 Requires:  nginx
 Requires:  uwsgi
