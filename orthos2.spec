@@ -39,6 +39,10 @@ BuildRequires:  python-rpm-macros
 # restrictions (be careful, there they messed it up and
 # python_enable_dependency_generator macro is defined, but does not do
 # anything. This check still also needs to explicitly check for SLE 15 SP2...
+%if 0%{?sle_version} <= 150200
+%undefine python_enable_dependency_generator
+%undefine python_disable_dependency_generator
+%endif
 %{?python_enable_dependency_generator}
 %if ! (%{defined python_enable_dependency_generator} || %{defined python_disable_dependency_generator})
 Requires:  %{python_module django >= 3.1}
