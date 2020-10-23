@@ -134,10 +134,11 @@ getent passwd orthos >/dev/null || \
 %{_sbindir}/rcorthos2
 %endif
 %{_tmpfilesdir}/orthos2.conf
-%attr(755, orthos, orthos) %dir %{python3_sitelib}/orthos2/
-%attr(755, orthos, orthos) %{python3_sitelib}/orthos2/*
+%attr(755,orthos,orthos) %dir %{python3_sitelib}/orthos2/
+%attr(755,orthos,orthos) %{python3_sitelib}/orthos2/*
 %dir %{_sysconfdir}/orthos2
 %config %{_sysconfdir}/orthos2/orthos2.ini
+%config %{_sysconfdir}/orthos2/settings
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
 %dir /usr/share/orthos2
 %dir /usr/lib/orthos2
@@ -147,8 +148,8 @@ getent passwd orthos >/dev/null || \
 %dir /srv/www/orthos2/static
 /srv/www/orthos2/static/*
 %ghost %dir /run/%{name}
-%attr(755, orthos, orthos) %dir /var/log/orthos2
-
+%attr(755,orthos,orthos) %dir /var/log/orthos2
+%attr(775,orthos,orthos) %dir /var/lib/orthos2
 %files client
 %attr(755, root, root) /usr/bin/orthos2
 
