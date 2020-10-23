@@ -5,6 +5,7 @@ import os
 from glob import glob
 
 logpath = os.environ.get('LOG_PATH', "/var/log")
+db_path = os.environ.get('LOG_PATH', "/var/lib")
 tmpfilespath = os.environ.get('TMPFILES_PATH', "/usr/lib/tmpfiles.d")
 # Directory for package specific executables not exposed
 # to the world via /bin or /sbin
@@ -81,6 +82,7 @@ if __name__ == "__main__":
                                "service/orthos2.socket"]),
             # Empty directory creation
             ("%s/orthos2" % logpath, []),
+            ("%s/orthos2" % db_path, []),
             ("/run/orthos2",         [])
         ]
     )
