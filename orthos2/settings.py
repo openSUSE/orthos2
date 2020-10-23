@@ -34,7 +34,7 @@ SECRET_KEY = '$@c7_nq(oi56nl3*-!_(=&-j_=n3=^2f5dydr4chxlwckg_947'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', gethostname(), getfqdn(), '10.162.227.40']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', gethostname(), getfqdn()]
 
 # Application definition
 
