@@ -75,6 +75,21 @@
 9. Open your browser and go to [http://localhost:8000](http://localhost:8000) or [http://localhost:8000/admin](http://localhost:8000/admin) (use the superuser login here)
 
 ## Initial setup (production)
+
+Add repository pre-requires:
+(Tumbleweed)
+# Latest python devel repo
+zypper ar -f https://download.opensuse.org/repositories/devel:/languages:/python/openSUSE_Tumbleweed/devel:languages:python.repo
+# Latest python django repo
+zypper ar -f https://download.opensuse.org/repositories/devel:/languages:/python:/django/openSUSE_Tumbleweed/devel:languages:python:django.repo
+# Latest nginx repo
+zypper ar -f https://download.opensuse.org/repositories/server:/http/openSUSE_Tumbleweed/server:http.repo
+
+(SLE 15 SP2)
+zypper ar -f https://download.opensuse.org/repositories/devel:/languages:/python/SLE_15_SP2/devel:languages:python.repo
+zypper ar -f https://download.opensuse.org/repositories/devel:/languages:/python:/django/SLE_15_SP2/devel:languages:python:django.repo
+
+
 1. Install the orthos2 package:
     ```sh
     $ zypper install orthos2
@@ -106,10 +121,15 @@
 
 7. start all services
     ```sh
-    sudo systemctl start nginx
-    sudo systemctl start orthos2.socket
-    sudo systemctl start orthos2.service
-    sudo systemctl start orthos2_taskmanager
+    systemctl enable nginx
+    systemctl enable orthos2.socket
+    systemctl enable orthos2.service
+    systemctl enable orthos2_taskmanager
+
+    systemctl start nginx
+    systemctl start orthos2.socket
+    systemctl start orthos2.service
+    systemctl start orthos2_taskmanager
     ```
 
 
