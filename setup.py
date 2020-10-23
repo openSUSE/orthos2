@@ -65,7 +65,7 @@ if __name__ == "__main__":
             ("%s/orthos2" % execpath, glob("orthos2/bin/*")),
             ("%s/orthos2/wsgi" % execpath, ["wsgi/orthos2.py"]),
             # orthos2 data files in /usr/share/orthos2
-            ("/etc/orthos2", ["wsgi/orthos2.ini"]),
+            ("/etc/orthos2", ["wsgi/orthos2.ini", "wsgi/orthos.conf"]),
             ("%s/orthos2/fixtures/data" % datapath,
                 glob("orthos2/data/fixtures/*.json")),
             ("%s/orthos2/fixtures/taskmanager" % datapath,
