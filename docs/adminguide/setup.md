@@ -107,16 +107,16 @@ zypper ar -f https://download.opensuse.org/repositories/devel:/languages:/python
 4. Create the database:
     ```sh
     cd /usr/lib/orthos2
-    ./manage.py migrate
+    sudo -u orthos ./manage.py migrate
     ```
 5. Install fixtures:
     ```sh
-    ./install_all_fixtures.sh
+    sudo -u orthos ./install_all_fixtures.sh
     ```
 
 6. Create a superuser
     ```sh
-    ./manage.py createsuperuser
+    sudo -u orthos ./manage.py createsuperuser
     ```
 
 7. start all services
