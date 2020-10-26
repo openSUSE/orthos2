@@ -89,6 +89,7 @@ line interface based on readline.
 
 %install
 %py3_install
+touch /var/lib/orthos2/db_sqlite3
 
 
 #systemd
@@ -114,6 +115,16 @@ getent passwd orthos >/dev/null || \
 
 %post
 %tmpfiles_create %{_tmpfilesdir}/%{name}.conf
+    cd /usr/lib/orthos2
+    sudo -u orthos ./manage.py migrate
+
+    sudo -u orthos ./manage.py collectstatic --noinput
+    ./create_super_user.sh
+    if [ $1 -eq 1 ] ; then
+	# New installation - upgrade is 2:
+	# Data can only be filled up once.
+	sudo -u orthos ./install_all_fixtures.sh
+    fi
 %service_add_post orthos2.service orthos2_taskmanager.service orthos2.socket
 
 
@@ -144,12 +155,15 @@ getent passwd orthos >/dev/null || \
 %dir /usr/lib/orthos2
 /usr/share/orthos2/*
 /usr/lib/orthos2/*
-%dir /srv/www/orthos2
-%dir /srv/www/orthos2/static
+%attr(755,orthos,orthos) %dir /srv/www/orthos2
+%attr(755,orthos,orthos) %dir /srv/www/orthos2/static
 /srv/www/orthos2/static/*
 %ghost %dir /run/%{name}
 %attr(755,orthos,orthos) %dir /var/log/orthos2
 %attr(775,orthos,orthos) %dir /var/lib/orthos2
+# Be careful with the actual db data:
+%config (noreplace) %attr(664,orthos,orthos) %dir /var/lib/orthos2/db.sqlite3
+
 %files client
 %attr(755, root, root) /usr/bin/orthos2
 
