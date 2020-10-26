@@ -2,3 +2,4 @@
 #
 # Add your overrides here:
 #
+STATIC_ROOT = '/srv/www/orthos2/static'
