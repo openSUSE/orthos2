@@ -89,7 +89,6 @@ line interface based on readline.
 
 %install
 %py3_install
-touch /var/lib/orthos2/db_sqlite3
 
 
 #systemd
@@ -161,8 +160,6 @@ getent passwd orthos >/dev/null || \
 %ghost %dir /run/%{name}
 %attr(755,orthos,orthos) %dir /var/log/orthos2
 %attr(775,orthos,orthos) %dir /var/lib/orthos2
-# Be careful with the actual db data:
-%config (noreplace) %attr(664,orthos,orthos) %dir /var/lib/orthos2/db.sqlite3
 
 %files client
 %attr(755, root, root) /usr/bin/orthos2
