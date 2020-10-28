@@ -13,6 +13,7 @@ from django.db import models
 from django.template import Context, Template
 from orthos2.utils.misc import execute, get_s390_hostname
 from orthos2.utils.ssh import SSH
+from orthos2.data.models import System
 
 
 class RemotePower(models.Model):
