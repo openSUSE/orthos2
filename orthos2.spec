@@ -114,16 +114,6 @@ getent passwd orthos >/dev/null || \
 
 %post
 %tmpfiles_create %{_tmpfilesdir}/%{name}.conf
-    cd /usr/lib/orthos2
-    sudo -u orthos ./manage.py migrate
-
-    sudo -u orthos ./manage.py collectstatic --noinput
-    ./create_super_user.sh
-    if [ $1 -eq 1 ] ; then
-	# New installation - upgrade is 2:
-	# Data can only be filled up once.
-	sudo -u orthos ./install_all_fixtures.sh
-    fi
 %service_add_post orthos2.service orthos2_taskmanager.service orthos2.socket
 
 
