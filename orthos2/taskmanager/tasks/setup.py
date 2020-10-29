@@ -39,6 +39,7 @@ class SetupMachine(Task):
             command_template = ServerConfig.objects.by_key('setup.execute.command')
 
             context = Context({
+                'architecture': machine.architecture,
                 'machine': machine,
                 'choice': self.choice
             })
