@@ -98,7 +98,9 @@ ln -sf service %{buildroot}%{_sbindir}/rcorthos2_taskmanager
 ln -sf service %{buildroot}%{_sbindir}/rcorthos2
 %endif
 mkdir -p /%{buildroot}/srv/www/orthos2/
-cp -r orthos2/frontend/static /%{buildroot}/srv/www/orthos2
+# This should go into setup.py - but copying tons of non *.py files recursively
+# is cumbersome...
+cp -r orthos2/frontend/static /%{buildroot}/%{python3_sitelib}/orthos2/frontend
 # ToDo: Try to separate the html templates somewhere else
 cp -r templates/* /%{buildroot}/%{python3_sitelib}/orthos2
 
