@@ -64,7 +64,6 @@ if __name__ == "__main__":
             ("/etc/nginx/conf.d",  ["wsgi/orthos2_nginx.conf"]),
             # orthos2 internal binaries in /usr/lib/orthos2
             ("%s/orthos2" % execpath, glob("orthos2/bin/*")),
-            ("%s/orthos2/wsgi" % execpath, ["wsgi/orthos2.py"]),
             # orthos2 data files in /usr/share/orthos2
             ("/etc/orthos2", ["wsgi/orthos2.ini", "wsgi/settings"]),
             ("%s/orthos2/fixtures/data" % datapath,
