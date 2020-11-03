@@ -103,7 +103,7 @@ mkdir -p /%{buildroot}/srv/www/orthos2
 cp -r orthos2/frontend/static /%{buildroot}/%{python3_sitelib}/orthos2/frontend
 # ToDo: Try to separate the html templates somewhere else
 cp -r templates/* /%{buildroot}/%{python3_sitelib}/orthos2
-
+ln -sr %{buildroot}%{python3_sitelib}/orthos2 %{buildroot}/usr/lib/orthos2/orthos2
 
 
 
