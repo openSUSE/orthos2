@@ -97,7 +97,7 @@ mkdir -p %{buildroot}%{_sbindir}
 ln -sf service %{buildroot}%{_sbindir}/rcorthos2_taskmanager
 ln -sf service %{buildroot}%{_sbindir}/rcorthos2
 %endif
-mkdir -p /%{buildroot}/srv/www/orthos2/
+mkdir -p /%{buildroot}/srv/www/orthos2
 # This should go into setup.py - but copying tons of non *.py files recursively
 # is cumbersome...
 cp -r orthos2/frontend/static /%{buildroot}/%{python3_sitelib}/orthos2/frontend
@@ -147,8 +147,6 @@ getent passwd orthos >/dev/null || \
 /usr/share/orthos2/*
 /usr/lib/orthos2/*
 %attr(755,orthos,orthos) %dir /srv/www/orthos2
-%attr(755,orthos,orthos) %dir /srv/www/orthos2/static
-/srv/www/orthos2/static/*
 %ghost %dir /run/%{name}
 %attr(755,orthos,orthos) %dir /var/log/orthos2
 %attr(775,orthos,orthos) %dir /var/lib/orthos2
