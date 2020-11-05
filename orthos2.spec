@@ -143,12 +143,14 @@ getent passwd orthos >/dev/null || \
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
 %dir /usr/share/orthos2
 %dir /usr/lib/orthos2
+%dir /usr/lib/orthos2/scripts
 /usr/share/orthos2/*
 /usr/lib/orthos2/*
 %attr(755,orthos,orthos) %dir /srv/www/orthos2
 %ghost %dir /run/%{name}
 %attr(755,orthos,orthos) %dir /var/log/orthos2
 %attr(775,orthos,orthos) %dir /var/lib/orthos2
+%attr(775,orthos,orthos) %dir /var/lib/orthos2/archiv
 %attr(755,orthos,orthos) %dir /home/orthos
 %attr(700,orthos,orthos) %dir /home/orthos/.ssh
 
