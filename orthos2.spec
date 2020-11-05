@@ -101,7 +101,7 @@ mkdir -p /%{buildroot}/srv/www/orthos2/
 cp -r orthos2/frontend/static /%{buildroot}/srv/www/orthos2
 # ToDo: Try to separate the html templates somewhere else
 cp -r templates/* /%{buildroot}/%{python3_sitelib}/orthos2
-
+install -d /home/orthos/.ssh
 
 
 
@@ -150,6 +150,8 @@ getent passwd orthos >/dev/null || \
 %ghost %dir /run/%{name}
 %attr(755,orthos,orthos) %dir /var/log/orthos2
 %attr(775,orthos,orthos) %dir /var/lib/orthos2
+%attr(755,orthos,orthos) %dir /home/orthos
+%attr(700,orthos,orthos) %dir /home/orthos/.ssh
 
 %files client
 %attr(755, root, root) /usr/bin/orthos2

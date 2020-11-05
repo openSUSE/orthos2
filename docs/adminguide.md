@@ -16,9 +16,9 @@ File path(s) to private SSH keys. Multiple paths can be separated by a comma.
 In production mode (running e.g on Apache webserver), absolute paths should be used.
 Each SSH connection tries all keys until one of them matches.
 
-Default: `./keys/orthos2-master-test`
+Default: `/home/orthos/.ssh/master`
 
-Example: `/root/.ssh/id_rsa_cobbler_server, /root/.ssh/id_rsa_sconsole`
+Example: `/home/orthos/.ssh/master, /home/orthos/.ssh/power_switch`
 
 ---
 
