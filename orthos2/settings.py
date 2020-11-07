@@ -83,7 +83,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'wsgi.orthos2.application'
+WSGI_APPLICATION = 'orthos2.wsgi.application'
 
 
 DATABASES = {
