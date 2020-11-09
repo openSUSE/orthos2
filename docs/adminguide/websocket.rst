@@ -1,3 +1,5 @@
+.. `websockets`_
+
 **********
 WebSockets
 **********
