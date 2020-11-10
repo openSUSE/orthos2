@@ -12,7 +12,7 @@ information that is also deleted together with the machine object is displayed. 
 administrative reasons, a copy of each deleted machine object is stored in the form of a file. The format (JSON, Yaml)
 as well as the target directory can be set via the server configuration.
 
-Further configuraton information can be found in the :ref:`admin-guide` (``serialization.*``).
+Further configuration information can be found in the :ref:`admin-guide` (``serialization.*``).
 
 .. note::
 

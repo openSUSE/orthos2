@@ -17,8 +17,9 @@ Initial setup (development)
         $ git clone git@github.com:openSUSE/orthos2.git
         $ cd orthos2/
 
-3. Create the virtual Python environment (`virtualenv <https://virtualenv.pypa.io/en/stable/>`_), activate it and update
-    `pip <https://en.wikipedia.org/wiki/Pip_(package_manager)>`_
+.. If we do a linebreak in the following line the formatting is messed up. Let it be!
+
+3. Create the virtual Python environment (`virtualenv <https://virtualenv.pypa.io/en/stable/>`_), activate it and update `pip <https://en.wikipedia.org/wiki/Pip_(package_manager)>`_
     .. code-block::
 
         $ virtualenv .env
@@ -88,30 +89,30 @@ Initial setup (production)
 
         $ zypper install orthos2
 
-1. Change nginx user to orthos:
+2. Change nginx user to orthos:
     In ``/etc/nginx/nginx.conf`` add ``user  orthos orthos;`` to the beginning of the file
 
-1. Enter the correct server name to the nginx server conf:
+3. Enter the correct server name to the nginx server conf:
     In ``/etc/nginx/conf.d/orthos2_nginx.conf`` replace ``127.0.0.1`` in the ``server_name`` directive with the fqdn of
     the orthos2 server
 
-1. Create the database:
+4. Create the database:
     .. code-block::
 
         cd /usr/lib/orthos2
         sudo -u orthos ./manage.py migrate
 
-1. Install fixtures:
+5. Install fixtures:
     .. code-block::
 
         sudo -u orthos ./install_all_fixtures.sh
 
-1. Create a superuser
+6. Create a superuser
     .. code-block::
 
         sudo -u orthos ./manage.py createsuperuser
 
-1. start all services
+7. start all services
     .. code-block::
 
         systemctl enable nginx
