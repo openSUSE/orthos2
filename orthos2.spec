@@ -104,6 +104,8 @@ cp -r orthos2/frontend/static /%{buildroot}/%{python3_sitelib}/orthos2/frontend
 # ToDo: Try to separate the html templates somewhere else
 cp -r templates/* %{buildroot}/%{python3_sitelib}/orthos2
 ln -sr %{buildroot}%{python3_sitelib}/orthos2 %{buildroot}/usr/lib/orthos2/orthos2
+mkdir -p %{buildroot}/usr/share/orthos2/data
+ln -sr %{buildroot}%{python3_sitelib}/orthos2/data/migrations %{buildroot}/usr/share/orthos2/data/migrations
 install -d %{buildroot}/home/orthos/.ssh
 
 %pre
@@ -141,10 +143,20 @@ getent passwd orthos >/dev/null || \
 %config %{_sysconfdir}/orthos2/orthos2.ini
 %config %{_sysconfdir}/orthos2/settings
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
-%dir /usr/share/orthos2
 %dir /usr/lib/orthos2
 %dir /usr/lib/orthos2/scripts
-/usr/share/orthos2/*
+%dir /usr/share/orthos2
+%dir /usr/share/orthos2/fixtures
+/usr/share/orthos2/fixtures/*
+%attr(755,orthos,orthos) %dir /usr/share/orthos2/data
+# The migrations link has to be owned by orthos user:
+# /usr/lib/python3.8/site-packages/orthos2/data ->
+#      /usr/share/orthos2/data/migrations
+# Like this:
+# sudo -u orthos /usr/lib/orthos2/manage.py makemigrations
+# has rights to dump migrations into site-packages subdir
+%attr(755,orthos,orthos) /usr/share/orthos2/data/migrations
+
 /usr/lib/orthos2/*
 %attr(755,orthos,orthos) %dir /srv/www/orthos2
 %ghost %dir /run/%{name}
