@@ -170,19 +170,6 @@ def status_login(machine):
 
 
 @register.simple_tag
-def status_abuild(machine):
-    if not machine.check_abuild:
-        return mark_safe('<td class="blue"><span class="text-small">Disabled</span></td>')
-
-    if machine.status_abuild:
-        result = '<td class="green" title="ABuild running"><i class="fa fa-check"></i></td>'
-    else:
-        result = '<td class="red" title="ABuild not running"><i class="fa fa-close"></i></td>'
-
-    return mark_safe(result)
-
-
-@register.simple_tag
 def order_list(request, field):
     """Return ordering arrows."""
     up = '<i class="fa fa-caret-down"></i>'

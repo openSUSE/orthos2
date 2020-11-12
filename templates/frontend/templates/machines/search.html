@@ -400,7 +400,7 @@
                 <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree">
                   Machine Status
                 </a>
-                <small class="form-text text-muted">Ping, SSH, Login, ABuild</small>
+                <small class="form-text text-muted">Ping, SSH, Login</small>
               </span>
             </div>
             <div id="collapseThree" class="collapse" role="tabpanel">
@@ -467,25 +467,6 @@
                     </div>
                   </div>
                 </div>
-
-                {{ form.status_abuild.errors }}
-                <div class="row" style="margin-bottom: 5px;">
-                  <div class="col-4" align="right">
-                      <label>ABuild</label>
-                  </div>
-                  <div class="col-2" align="center">
-                  </div>
-                  <div class="col-6">
-                    <div class="btn-group" data-toggle="buttons">
-                    {% for radio in form.status_abuild %}
-                      <label class="btn btn-secondary btn-sm{% if forloop.last %} active{% endif %}">
-                        {{ radio.tag }} {{ radio.choice_label }}
-                      </label>
-                    {% endfor %}
-                    </div>
-                  </div>
-                </div>
-
               </div>
             </div>
           </div>

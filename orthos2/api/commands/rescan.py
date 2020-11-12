@@ -25,7 +25,7 @@ Arguments:
     fqdn   - FQDN or hostname of the machine.
     option - Specify what should be rescanned. Options are:
 
-               status            : Check machine status (ping, SSH, login, ABuild).
+               status            : Check machine status (ping, SSH, login).
                all               : Complete scan.
                misc              : Check miscellaneous software/hardware attributes.
                installations     : Rescan installed distributions only.

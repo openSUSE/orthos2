@@ -69,27 +69,6 @@ def login_test(fqdn):
     return True
 
 
-def abuild_test(fqdn):
-    """Check if Autobuild is running."""
-    conn = None
-    try:
-        conn = SSH(fqdn)
-        conn.connect()
-        pids, stderr, exitstatus = conn.execute(
-            r"ps -e -o pid,cmd | awk '/.*\/usr\/sbin\/autobuild.*/{print $1}'"
-        )
-        if pids:
-            return True
-    except Exception as e:
-        logger.warning("SSH login failed for '{}': {}".format(fqdn, e))
-        return False
-    finally:
-        if conn:
-            conn.close()
-
-    return False
-
-
 def get_hardware_information(fqdn):
     """Retrieve information of the system."""
     try:

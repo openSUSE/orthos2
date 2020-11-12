@@ -42,7 +42,6 @@
       "status_ping_ipv6": true,
       "status_ssh": true,
       "status_login": true,
-      "status_abuild": false,
       "administrative": false,
       "updated": "2016-01-01T10:00:00+00:00",
       "created": "2016-01-01T10:00:00+00:00"
@@ -67,7 +66,6 @@
       "status_ping_ipv6": true,
       "status_ssh": true,
       "status_login": false,
-      "status_abuild": false,
       "administrative": false,
       "updated": "2016-01-01T10:00:00+00:00",
       "created": "2016-01-01T10:00:00+00:00"

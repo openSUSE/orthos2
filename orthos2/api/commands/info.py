@@ -86,7 +86,6 @@ Example:
             'status_ipv6',
             'status_ssh',
             'status_login',
-            'status_abuild',
             None,
             'cpu_model',
             'cpu_id',

@@ -87,7 +87,6 @@ class MachineSerializer(serializers.ModelSerializer):
             'status_ipv4',
             'status_ssh',
             'status_login',
-            'status_abuild',
             'reserved_by',
             'reserved_reason',
             'reserved_at',

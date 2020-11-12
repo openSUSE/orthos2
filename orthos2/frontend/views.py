@@ -737,7 +737,6 @@ def statistics(request):
     ).count()
     status_ssh = Machine.objects.filter(status_ssh=True).count()
     status_login = Machine.objects.filter(status_login=True).count()
-    status_abuild = Machine.objects.filter(status_abuild=True).count()
 
     check_ping = Machine.objects.filter(
         check_connectivity__gte=Machine.Connectivity.PING
@@ -750,8 +749,6 @@ def statistics(request):
     check_login = Machine.objects.filter(
         check_connectivity__gte=Machine.Connectivity.ALL
     ).count()
-
-    check_abuild = Machine.objects.filter(check_abuild=True).count()
 
     released_reservations = ReservationHistory.objects.filter(
         reserved_until__gt=timezone.make_aware(
@@ -794,9 +791,9 @@ def statistics(request):
         'total': total,
         'matrix': matrix,
         'status': {
-            'labels': ['Ping', 'SSH', 'Login', 'ABuild'],
-            'values1': [check_ping, check_ssh, check_login, check_abuild],
-            'values2': [status_ping, status_ssh, status_login, status_abuild],
+            'labels': ['Ping', 'SSH', 'Login'],
+            'values1': [check_ping, check_ssh, check_login],
+            'values2': [status_ping, status_ssh, status_login],
             'max': total if total % 100 == 0 else total - (total % 100) + 100
         },
         'domains': {
