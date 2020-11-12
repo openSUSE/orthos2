@@ -151,6 +151,8 @@ getent passwd orthos >/dev/null || \
 %attr(755,orthos,orthos) %dir /var/log/orthos2
 %attr(775,orthos,orthos) %dir /var/lib/orthos2
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/archiv
+%attr(775,orthos,orthos) %dir /var/lib/orthos2/orthos-vm-images
+%attr(775,orthos,orthos) %dir /var/lib/orthos2/database
 %attr(755,orthos,orthos) %dir /home/orthos
 %attr(700,orthos,orthos) %dir /home/orthos/.ssh
 

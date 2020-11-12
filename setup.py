@@ -84,6 +84,8 @@ if __name__ == "__main__":
             ("%s" % logpath, []),
             ("%s" % db_path, []),
             ("%s/archiv" % db_path, []),
+            ("%s/database" % db_path, []),
+            ("%s/orthos-vm-images" % db_path, []),
             ("/run/orthos2",         [])
         ]
     )
