@@ -17,6 +17,23 @@ def get_default_profile(machine):
         return default
     raise ValueError("Machine {machine} has no default profile".format(machine=machine.fqdn))
 
+def get_tftp_server(machine: Machine):
+    """
+    Return the corresponding tftp server attribute for the DHCP record.
+
+    Machine > Group > Domain
+    """
+
+    if machine.tftp_server:
+        server = machine.tft_server
+    elif machine.group and machine.group.tftp_server:
+        server = machine.group.tftp_server
+    elif machine.fqdn_domain.tftp_server:
+        server = machine.fqdn_domain.tftp_server
+    else:
+        server = None
+
+    return server.fqdn if server else None
 
 def create_cobbler_options(machine):
     options = " --name={name} --ip-address={ipv4}".format(name=machine.fqdn, ipv4=machine.ipv4)
@@ -25,6 +42,8 @@ def create_cobbler_options(machine):
     options += " --interface=default --management=True --interface-master=True"
     if get_filename(machine):
         options += " --filename={filename}".format(filename=get_filename(machine))
+    if get_tftp_server(machine):
+        options += "--next-server={server}".format(server=get_tftp_server(machine))
     return options
 
 

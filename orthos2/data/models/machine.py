@@ -438,6 +438,16 @@ class Machine(models.Model):
         blank=True
     )
 
+    tftp_server = models.ForeignKey(
+        'data.Machine',
+        related_name='tftp_server_for',
+        verbose_name='TFTP server',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        limit_choices_to={'administrative': True}
+    )
+
     dhcpv4_write = models.SmallIntegerField(
         'DHCPv4',
         choices=DHCPRecordOption.CHOICE,

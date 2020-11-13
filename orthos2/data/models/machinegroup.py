@@ -37,6 +37,16 @@ class MachineGroup(models.Model):
         blank=True
     )
 
+    tftp_server = models.ForeignKey(
+        'data.Machine',
+        related_name='tftp_server_for_group',
+        verbose_name='TFTP server',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        limit_choices_to={'administrative': True}
+    )
+
     dhcpv4_write = models.BooleanField(
         'Write DHCPv4',
         default=True
