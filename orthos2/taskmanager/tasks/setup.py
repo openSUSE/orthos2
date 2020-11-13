@@ -4,6 +4,7 @@ from orthos2.data.models import Machine, ServerConfig
 from django.template import Context, Template
 from orthos2.taskmanager.models import Task
 from orthos2.utils.ssh import SSH
+from orthos2.utils.cobbler import CobblerServer, CobblerException
 
 logger = logging.getLogger('tasks')
 
@@ -24,46 +25,32 @@ class SetupMachine(Task):
             logger.warning("Disabled: set 'orthos.debug.setup.execute' to 'true'")
             return
 
-        logger.debug('Calling setup script...')
+        logger.debug('Executing setup')
 
         try:
             machine = Machine.objects.get(fqdn=self.fqdn)
-            tftp_server = machine.fqdn_domain.tftp_server
-
-            if not tftp_server:
-                logger.warning(
-                    "No TFTP server available for '{}'".format(machine.fqdn_domain.name)
-                )
+            domain = machine.fqdn_domain
+            servers = domain.cobbler_server.all()
+            if not servers: 
+                logger.warning("No cobbler server available for '%s'", machine.fqdn_domain.name)
                 return
 
-            command_template = ServerConfig.objects.by_key('setup.execute.command')
-
-            context = Context({
-                'architecture': machine.architecture,
-                'machine': machine,
-                'choice': self.choice
-            })
-
-            command = Template(command_template).render(context)
-
-            logger.debug("Initialize setup {}@{}: {}:{}".format(
-                self.choice,
-                machine.fqdn,
-                tftp_server.fqdn,
-                command
-            ))
-
-            tftp_server = SSH(tftp_server.fqdn)
-            tftp_server.connect()
-            stdout, stderr, exitstatus = tftp_server.execute(command)
-            tftp_server.close()
-
-            if exitstatus != 0:
-                logger.warning("Creating setup configuration failed for '{}'".format(machine))
-                return
-
-            # reboot machine finally
-            machine.reboot()
+            for server in servers:
+                try:
+                    logger.debug("trying %s for setup", server.fqdn)
+                    cobbler_server = CobblerServer(server.fqdn, domain)
+                    cobbler_server.setup(machine, self.choice)
+                    
+                except CobblerException as e:
+                    logger.warning("Setup of %s with %s failed on %s with %s",machine.fqdn,
+                    self.choice, server.fqdn, e)
+                else:
+                    logger.debug("success")
+                    machine.reboot()
+                    break
+            else:
+                logger.error("Setup of %s with %s failed on all cobbler servers",
+                         machine.fqdn, self.choice)
 
         except SSH.Exception as exception:
             logger.error(exception)
