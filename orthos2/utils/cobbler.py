@@ -127,3 +127,18 @@ class CobblerServer:
             raise CobblerException("system list failed on {server}".format(server=self._fqdn))
         clean_out = [system.strip(' \n\t') for system in stdout]
         return clean_out
+
+    def setup(self, machine: Machine, choice: str):
+        logger.info("setup called for %s with %s on cobbler server %s ", machine.fqdn, self._fqdn,
+            choice)
+        cobbler_profile = "{arch}:{profile}".format(machine.architecture, choice)
+        command = "{cobbler} system edit --name={machine}  --profile={profile} --netboot=True"\
+            .format(cobbler=self._cobbler_path, machine=machine.fqdn, profile=cobbler_profile)
+        logger.debug("command for setup: %s", command)
+        stdout, stderr, exitstatus = self._conn.execute(command)
+        if exitstatus:
+            logger.warning("setup of  %s with %s failed on %s with %s", machine.fqdn, 
+                cobbler_profile, self._fqdn, stderr)
+            raise CobblerException(
+                "setup of {machine} with {profile} failed on {server} with {error}".format(
+                    machine=machine.fqdn, arch=cobbler_profile, server=self._fqdn))
