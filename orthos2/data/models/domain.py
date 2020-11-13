@@ -44,7 +44,7 @@ class Domain(models.Model):
 
     tftp_server = models.ForeignKey(
         'data.Machine',
-        related_name='tftp_server_for',
+        related_name='tftp_server_for_domain',
         verbose_name='TFTP server',
         null=True,
         blank=True,
