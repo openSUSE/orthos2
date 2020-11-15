@@ -94,6 +94,11 @@ DATABASES = {
 }
 
 RUN_AS_USER = 'orthos'
+CUR_USER = pwd.getpwuid( os.getuid())[ 0 ]
+if CUR_USER != RUN_AS_USER:
+    logging.error("You must run as user: {}, not as user: {}".
+                 format(RUN_AS_USER, CUR_USER))
+    exit(1)
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
