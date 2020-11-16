@@ -8,7 +8,7 @@ Initial setup (development)
 1. Prepare your local system:
     .. code-block::
 
-        $ sudo zypper in python3-pip python3-virtualenv python3-devel libopenssl-devel
+        $ sudo zypper in python3-pip python3-virtualenv python3-devel libopenssl-devel openldap2-devel
 
 
 2. Check out the sources:
