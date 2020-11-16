@@ -11,6 +11,7 @@ Welcome to Orthos2's documentation!
    :caption: Contents:
 
    Adminstrator Guide <adminguide>
+   User Guide <userguide>
 
 
 
