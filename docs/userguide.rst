@@ -35,7 +35,7 @@ Architecture
   :alt: Orthos2 High-Level Architecture
 
 Image Overall Architecture shows the overall architecture. All data is kept in the database. The Orthos Server is the
-central component of Orthos. It has following tasks:
+central component of Orthos. It has following the tasks:
 
 - gathering machine data,
 - communicating with the clients,
