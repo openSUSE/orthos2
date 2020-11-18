@@ -2,9 +2,10 @@
 Groups and Users
 ****************
 
-Users can create their own account on the Orthos site. A standard user does not belong to a group. The user cannot log
-in to the admin dashboard, the necessary rights must be granted by an administrator over the admin dashboard. The user
-name should match the system user name. It is possible to create a user without group membership. However, users should
+A standard user does not belong to a group. Orthos can manage its own user base. Additionally it can also connect to an ldap server
+and add ldap user to it's local database if successfully authenticated. By default the user cannot log
+in to the admin dashboard, the necessary rights must be granted by an administrator over the admin dashboard.
+It is possible to create a user without group membership. However, users should
 be added to the appropriate groups for easier administration and permissions. Administrative permissions are set in
 Orthos in such a way that everything is forbidden first, necessary rights must be set.
 
