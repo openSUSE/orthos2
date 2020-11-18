@@ -49,21 +49,20 @@ Web Client
 ##########
 
 Via the link to your webserver domain it is possible to use the Orthos Web Client. The Web Client is mostly
-self-explanatory, so only the most important things are explained. You can create an account via the web client. This is
-a normal user and has no administrative rights. This means that it is not possible to create and delete machine objects
+self-explanatory, so only the most important things are explained. You can log in via the web client with an LDAP user
+account. This is a normal user and has no administrative rights.This means that it is not possible to create and delete machine objects
 yourself and so on. With this account it is possible to use machines.
 
 You can:
 
-- search for suitable machines,
-- resave machines for you,
-- install the machines you need with SLES, SLED, openSUSE Leap and openSUSE tumbleweed,
-- perform various machine checks,
-- get information about machines and test their accessibility.
-- add annotations for each machine (Machine Features, Glitches, Hardware Upgrades, Bios Updates, etc.)
-- report Problems for each machine.
-- get an overview of the resavation history.
-- download the command line interface (CLI).
+- Search for suitable machines
+- Reserve machines for you
+- Install the machines you need with SLES, SLED, openSUSE Leap and openSUSE tumbleweed,...
+- Perform various machine checks
+- Get information about machines and test their accessibility
+- Add annotations for each machine (Machine Features, Glitches, Hardware Upgrades, Bios Updates, etc.)
+- Report Problems for each machine
+- Get an overview of the reservation history
 
 If administrative rights are required, they must be set up by an Orthos administrator. Below a screenshot of the login
 page.
@@ -87,7 +86,7 @@ Here different possibilities are available to get to machines or to get an entir
 
 - All Machines: Overview of all machines that are available in Orthos.
 - Free Machines: Overview of all machines that are available in Orthos.
-- My Machines: Overview of all Orthos machines resaved under your name.
+- My Machines: Overview of all Orthos machines reserved under your name.
 - Virtual Machines: Overview of all virtual machines. (Host/Gast).
 - Advanced Search: Advanced machine search.
 - Statistics: Statistics about the machines located in Orthos.
@@ -138,7 +137,7 @@ Additional machine information should be entered here. For example, upgrades, ha
 .. image:: img/userguide/09_machine_actions.jpg
   :alt: Orthos2 Machine Overview - Crop on Actions
 
-- Reserve Machines: Here it is possible to reserve a machine under your name. In general, make sure that machines are only reserved for as long as you actually need them. A maximum of 90 days is planned. Please remember that other users may also need the machine. If you need a machine for a longer period of time, only an Orthos administrator can make reservations under your name.
+- Reserve Machines: Here it is possible to reserve a machine under your name. In general, make sure that machines are only reserved for as long as you actually need them. A maximum of 90 days is planned. Please remember that other users may also need the machine. If you need a machine for a longer period of time, only an Orthos administrator can make reservations under your name for longer time periods, up to infinite for constant machine assignment.
 - Rescan Status: Rescan the status information of a machine.
 - Rescan All: Rescan all information of a machine.
 - Rescan Installations: Resacan the installation status of a machine.
@@ -149,7 +148,7 @@ Additional machine information should be entered here. For example, upgrades, ha
 .. image:: img/userguide/10_machine_release.jpg
   :alt: Orthos2 Machine Overview - Crop on Release & Extend Reservation
 
-- Release Machine: This field is only for machines that resaved under your name. Here you have the possibility to release the machine for other users.
+- Release Machine: This field is only for machines that are reserved under your name. Here you have the possibility to release the machine for other users.
 
 Virtual Machines
 ================
@@ -184,7 +183,7 @@ The Orthos CLI is a simple interactive shell. You can perform following tasks wi
 Install the CLI
 ===============
 
-Python 3 recommended, the CLI runs also with python2 but python 2 is untested.
+Python 3 is recommended, the CLI runs also with python2 but python 2 is untested.
 
 .. code-block::
 
