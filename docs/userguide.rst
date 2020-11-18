@@ -2,7 +2,7 @@
 User Guide
 **********
 
-Describes how to use Orthos as a user, how to find, resave and install machines for your purposes with the help of Web
+Describes how to use Orthos as a user, how to find, save and install machines for your purposes with the help of Web
 GUI and the Command Line Interface (CLI).
 
 .. contents::
