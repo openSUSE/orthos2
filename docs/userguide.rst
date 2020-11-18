@@ -39,7 +39,7 @@ central component of Orthos. It has the following tasks:
 
 - gathering machine data,
 - communicating with the clients,
-- executing jobs such as rebooting the machine or syncing some files.
+- executing jobs such as rebooting or installating the machine or syncing some files.
 
 There are two clients: The command line interface and the web interface. While the web interface is able to deal with
 basic tasks such as getting a machine overview and reserving a machine, the CLI is able to deal with more complicated
