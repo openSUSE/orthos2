@@ -35,14 +35,14 @@ Use this if the system a virtual system (VM Gast).
 Administrative
 ==============
 
-Machines that are declared as administrative are machines that belong to the Orthos system and network management. These machines cannot reserved by the user.
+Machines that are declared as administrative are machines that belong to the Orthos system and network management. These machines cannot be reserved by the user.
 
 Example: RemotePower
 
 Enclosures
 ##########
 
-Under Enclosures the case (unit) is defined, here can a parent name for a unit with several devices be defined. Several machines can then be assigned to the enclosure. If you create a machine object and do not specify an enclosure, the name of the enclosure is formed from the FQDN of the machine.
+Under Enclosures the case (unit) is defined. A parent name for a unit with several devices can be defined. Several machines can then be assigned to the enclosure. If you create a machine object and you do not specify an enclosure, the name of the enclosure is formed from the FQDN of the machine.
 
 .. code-block::
 
