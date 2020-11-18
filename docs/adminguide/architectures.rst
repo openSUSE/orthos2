@@ -15,8 +15,8 @@ Machine architectures can be set up, the most common ones are already preconfigu
     | Architecture |
     ----------------
 
-Domain fields description
-#########################
+Architecture fields description
+###############################
 
 Name (required)
 ===============
