@@ -4,8 +4,8 @@
 Administrator`s Guide
 *********************
 
-These pages are partly very technical, you should read the user guide before and to have understood the basic concept of
-Orthos and what the goal of Orthos. Describes how to create and administrate groups and users, architecures, domains,
+These pages are partly very technical. You should read the User Guide before to understand the basic concept and the goals of Orthos. 
+This document describes how to create and administrate groups and users, architectures, domains,
 machines, machine groups, serial console types, systems and enclosures, vendors and platforms. Furthermore, the
 administration of the Orthos server will be discussed.
 
