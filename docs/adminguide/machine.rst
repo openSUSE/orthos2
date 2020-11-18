@@ -43,7 +43,7 @@ Example: bach
 MAC address (required)
 ======================
 
-Media access control address (MAC) of the primary network interface. This address is used for e.g. DHCP configuration.
+Media Access Control address (MAC) of the primary network interface. This address is used for e.g. DHCP configuration.
 
 Example: 3C:A8:2A:10:74:C3
 
