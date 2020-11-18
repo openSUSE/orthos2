@@ -64,7 +64,7 @@ Example: VM, BMC, BareMetal, LPAR, Desctop, RemotePower etc.
 Serial number/Product code/Platform
 ===================================
 
-Specified by the manufacturer. Mostly there is a sticker with the serial number and the product code on the machine chassi, which has to be entered here.
+Specified by the manufacturer. Mostly there is a sticker with the serial number and the product code on the machine's chassis, which has to be entered here.
 
 Example: Serial number: GPKLDV6120104 / Product code: MAKL1K1PFB / Platform: Knights Landing
 
@@ -83,12 +83,13 @@ Example: RemotePower, SerialConsole, DHCP Server etc.
 NDA Hardware
 ============
 
-It marks machines from the Non-disclosure Agreement (NDA) program. That means that we must not publish any details of these not yet sold Beta machines.
+It marks machines from the Non-disclosure Agreement (NDA) program. Do not publish any details of these machines! If you exchange info like lspci or whatever
+hardware specifics, make sure that the bug you post this info in is marked private and people are aware of the sensitivity of the data you post/send.
 
 Active
 ======
 
-Machine is active and can be used from everybody. If deactivated (adminstrator rights needed), the machine is hidden in for ordinary users.
+Machine is active and can be used from everybody. If deactivated (adminstrator rights needed), the machine is hidden for ordinary users.
 
 Dedicated VM host
 =================
@@ -100,8 +101,8 @@ Delete automatically
 
 Determine whether the VM Guest is deleted after the end of the reservation.
 
-Max. VMs
-========
+Max VMs
+=======
 
 Maximum number of possible guest systems on the VM host. The number of VM guests depends on the hardware properties of the host.
 
@@ -119,11 +120,6 @@ Determined whether and how Orthos checks the accessibility of the machine.
 
 Example: Ping, SSH or SSH with login
 
-Check abuild
-============
-
-Checks if the Abild Service is available on the machine.
-
 Collect system information
 ==========================
 
@@ -136,14 +132,14 @@ DHCPv4
 
 How to handle the DHCPv4 server v4.
 
-Example: execlude, write DHCPv4 record or ignore DHCPv4 request
+Example: exclude, write DHCPv4 record or ignore DHCPv4 request
 
 DHCPv6
 ======
 
 How to handle the DHCPv6 server v6.
 
-Example: execlude, write DHCPv6 record or ignore DHCPv6 request
+Example: exclude, write DHCPv6 record or ignore DHCPv6 request
 
 DHCP filename
 =============
@@ -163,7 +159,7 @@ Example: Telnet, IPMI, free command etc
 CScreen server
 ==============
 
-A cscreen srever is a server on which the cscreen service is installed and entered.
+A cscreen server is a server on which the cscreen service is installed and entered.
 
 Example: sconsole1.arch.suse.de
 
@@ -261,5 +257,4 @@ Further configuration information can be found in the :ref:`admin-guide` (``seri
 .. note::
 
     When running in production mode, make sure the target directory (``serialization.output.directory``) can be written
-    by the webserver user - this also affects the default ``/tmp`` directory
-    (`more information <http://blog.oddbit.com/2012/11/05/fedora-private-tmp/>`_).
+    by the webserver user.
