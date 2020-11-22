@@ -40,7 +40,13 @@ Initial setup (development)
         ...
         $ cd orthos2/
 
-5. Migrate (create) the database:
+5. Dump Database Model:
+    .. code-block::
+
+        cd /usr/lib/orthos2
+        sudo -u orthos ./manage.py makemigrate
+
+6. Migrate (create) the database:
     .. code-block::
 
          $ python manage.py migrate
@@ -49,7 +55,7 @@ Initial setup (development)
          Running migrations:
                  Applying ...
 
-6. Load initial data:
+7. Load initial data:
     .. code-block::
 
         $ python manage.py loaddata data/fixtures/*.json
@@ -57,7 +63,7 @@ Initial setup (development)
         $ python manage.py loaddata taskmanager/fixtures/*.json
         Installed 2 object(s) from 1 fixture(s)
 
-7. Create a superuser (administrator) account:
+8. Create a superuser (administrator) account:
     .. code-block::
 
         $ python manage.py createsuperuser
@@ -67,7 +73,7 @@ Initial setup (development)
         Password (again): ********
         Superuser created successfully.
 
-8. Run the test server:
+9. Run the test server:
     .. code-block::
 
         $ python manage.py runserver localhost:8000
@@ -78,7 +84,7 @@ Initial setup (development)
         Starting development server at http://localhost:8000/
         Quit the server with CONTROL-C.
 
-9. Open your browser and go to `http://localhost:8000 <http://localhost:8000>`_ or
+10. Open your browser and go to `http://localhost:8000 <http://localhost:8000>`_ or
    `http://localhost:8000/admin <http://localhost:8000/admin>`_ (use the superuser login here).
 
 Initial setup (production)
@@ -96,23 +102,29 @@ Initial setup (production)
     In ``/etc/nginx/conf.d/orthos2_nginx.conf`` replace ``127.0.0.1`` in the ``server_name`` directive with the fqdn of
     the orthos2 server
 
-4. Create the database:
+4. Dump Database Model:
+    .. code-block::
+
+        cd /usr/lib/orthos2
+        sudo -u orthos ./manage.py makemigrate
+    
+5. Create the database:
     .. code-block::
 
         cd /usr/lib/orthos2
         sudo -u orthos ./manage.py migrate
 
-5. Install fixtures:
+6. Install fixtures:
     .. code-block::
 
         sudo -u orthos ./install_all_fixtures.sh
 
-6. Create a superuser
+7. Create a superuser
     .. code-block::
 
         sudo -u orthos ./manage.py createsuperuser
 
-7. start all services
+8. start all services
     .. code-block::
 
         systemctl enable nginx
