@@ -104,9 +104,15 @@ cp -r orthos2/frontend/static /%{buildroot}/%{python3_sitelib}/orthos2/frontend
 # ToDo: Try to separate the html templates somewhere else
 cp -r templates/* %{buildroot}/%{python3_sitelib}/orthos2
 ln -sr %{buildroot}%{python3_sitelib}/orthos2 %{buildroot}/usr/lib/orthos2/orthos2
-mkdir -p %{buildroot}/usr/share/orthos2/data
-ln -sr %{buildroot}%{python3_sitelib}/orthos2/data/migrations %{buildroot}/usr/share/orthos2/data/migrations
-install -d %{buildroot}/home/orthos/.ssh
+mkdir -p %{buildroot}/usr/share/orthos2/data_migrations
+mkdir -p %{buildroot}/usr/share/orthos2/taskmanager_migrations
+mkdir -p %{buildroot}/usr/share/orthos2/frontend_migrations
+mkdir -p %{buildroot}/usr/share/orthos2/api_migrations
+ln -sr %{buildroot}/usr/share/orthos2/data_migrations %{buildroot}%{python3_sitelib}/orthos2/data/migrations
+ln -sr %{buildroot}/usr/share/orthos2/taskmanager_migrations %{buildroot}%{python3_sitelib}/orthos2/taskmanager/migrations
+ln -sr %{buildroot}/usr/share/orthos2/frontend_migrations %{buildroot}%{python3_sitelib}/orthos2/frontend/migrations
+ln -sr %{buildroot}/usr/share/orthos2/api_migrations %{buildroot}%{python3_sitelib}/orthos2/api/migrations
+
 
 %pre
 getent group orthos >/dev/null || groupadd -r orthos
@@ -148,14 +154,16 @@ getent passwd orthos >/dev/null || \
 %dir /usr/share/orthos2
 %dir /usr/share/orthos2/fixtures
 /usr/share/orthos2/fixtures/*
-%attr(755,orthos,orthos) %dir /usr/share/orthos2/data
 # The migrations link has to be owned by orthos user:
 # /usr/lib/python3.8/site-packages/orthos2/data ->
 #      /usr/share/orthos2/data/migrations
 # Like this:
 # sudo -u orthos /usr/lib/orthos2/manage.py makemigrations
 # has rights to dump migrations into site-packages subdir
-%attr(755,orthos,orthos) /usr/share/orthos2/data/migrations
+%attr(755,orthos,orthos) /usr/share/orthos2/data_migrations
+%attr(755,orthos,orthos) /usr/share/orthos2/taskmanager_migrations
+%attr(755,orthos,orthos) /usr/share/orthos2/frontend_migrations
+%attr(755,orthos,orthos) /usr/share/orthos2/api_migrations
 
 /usr/lib/orthos2/*
 %attr(755,orthos,orthos) %dir /srv/www/orthos2
@@ -165,8 +173,6 @@ getent passwd orthos >/dev/null || \
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/archiv
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/orthos-vm-images
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/database
-%attr(755,orthos,orthos) %dir /home/orthos
-%attr(700,orthos,orthos) %dir /home/orthos/.ssh
 
 %files client
 %attr(755, root, root) /usr/bin/orthos2
