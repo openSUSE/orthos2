@@ -147,6 +147,11 @@ class MachineSerializer(serializers.ModelSerializer):
 
     group = serializers.CharField(source='group.name')
 
+    def __init__(self, machine, *args, **kwargs):
+        super(MachineSerializer, self).__init__(machine, *args, **kwargs)
+        if  not hasattr(machine, 'group') or not machine.group:
+            self.fields.pop('group')
+
     @property
     def data_info(self):
         result = {}
