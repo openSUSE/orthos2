@@ -97,13 +97,16 @@ mkdir -p %{buildroot}%{_sbindir}
 ln -sf service %{buildroot}%{_sbindir}/rcorthos2_taskmanager
 ln -sf service %{buildroot}%{_sbindir}/rcorthos2
 %endif
-mkdir -p /%{buildroot}/srv/www/orthos2/
-cp -r orthos2/frontend/static /%{buildroot}/srv/www/orthos2
+mkdir -p /%{buildroot}/srv/www/orthos2
+# This should go into setup.py - but copying tons of non *.py files recursively
+# is cumbersome...
+cp -r orthos2/frontend/static /%{buildroot}/%{python3_sitelib}/orthos2/frontend
 # ToDo: Try to separate the html templates somewhere else
-cp -r templates/* /%{buildroot}/%{python3_sitelib}/orthos2
-
-
-
+cp -r templates/* %{buildroot}/%{python3_sitelib}/orthos2
+ln -sr %{buildroot}%{python3_sitelib}/orthos2 %{buildroot}/usr/lib/orthos2/orthos2
+mkdir -p %{buildroot}/usr/share/orthos2/data
+ln -sr %{buildroot}%{python3_sitelib}/orthos2/data/migrations %{buildroot}/usr/share/orthos2/data/migrations
+install -d %{buildroot}/home/orthos/.ssh
 
 %pre
 getent group orthos >/dev/null || groupadd -r orthos
@@ -134,22 +137,36 @@ getent passwd orthos >/dev/null || \
 %{_sbindir}/rcorthos2
 %endif
 %{_tmpfilesdir}/orthos2.conf
-%attr(755,orthos,orthos) %dir %{python3_sitelib}/orthos2/
-%attr(755,orthos,orthos) %{python3_sitelib}/orthos2/*
+%dir %{python3_sitelib}/orthos2/
+%{python3_sitelib}/orthos2/*
 %dir %{_sysconfdir}/orthos2
 %config %{_sysconfdir}/orthos2/orthos2.ini
 %config %{_sysconfdir}/orthos2/settings
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
-%dir /usr/share/orthos2
 %dir /usr/lib/orthos2
-/usr/share/orthos2/*
+%dir /usr/lib/orthos2/scripts
+%dir /usr/share/orthos2
+%dir /usr/share/orthos2/fixtures
+/usr/share/orthos2/fixtures/*
+%attr(755,orthos,orthos) %dir /usr/share/orthos2/data
+# The migrations link has to be owned by orthos user:
+# /usr/lib/python3.8/site-packages/orthos2/data ->
+#      /usr/share/orthos2/data/migrations
+# Like this:
+# sudo -u orthos /usr/lib/orthos2/manage.py makemigrations
+# has rights to dump migrations into site-packages subdir
+%attr(755,orthos,orthos) /usr/share/orthos2/data/migrations
+
 /usr/lib/orthos2/*
 %attr(755,orthos,orthos) %dir /srv/www/orthos2
-%attr(755,orthos,orthos) %dir /srv/www/orthos2/static
-/srv/www/orthos2/static/*
 %ghost %dir /run/%{name}
 %attr(755,orthos,orthos) %dir /var/log/orthos2
 %attr(775,orthos,orthos) %dir /var/lib/orthos2
+%attr(775,orthos,orthos) %dir /var/lib/orthos2/archiv
+%attr(775,orthos,orthos) %dir /var/lib/orthos2/orthos-vm-images
+%attr(775,orthos,orthos) %dir /var/lib/orthos2/database
+%attr(755,orthos,orthos) %dir /home/orthos
+%attr(700,orthos,orthos) %dir /home/orthos/.ssh
 
 %files client
 %attr(755, root, root) /usr/bin/orthos2

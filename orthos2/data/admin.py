@@ -182,19 +182,12 @@ class MachineAdminForm(forms.ModelForm):
 
     def clean(self):
         """
-        Only allow ABuild check and collect system information if connectivity is set to `Full`.
+        Only collect system information if connectivity is set to `Full`.
         """
         cleaned_data = self.cleaned_data
 
         check_connectivity = cleaned_data['check_connectivity']
-        check_abuild = cleaned_data['check_abuild']
         collect_system_information = cleaned_data['collect_system_information']
-
-        if check_abuild and check_connectivity != Machine.Connectivity.ALL:
-            self.add_error(
-                'check_abuild',
-                "Connectivity check must set to 'Full'!"
-            )
 
         if collect_system_information and check_connectivity != Machine.Connectivity.ALL:
             self.add_error(
@@ -355,7 +348,6 @@ class MachineAdmin(admin.ModelAdmin):
             'fields': (
                 'check_connectivity',
                 (
-                    'check_abuild',
                     'collect_system_information'
                 )
             )

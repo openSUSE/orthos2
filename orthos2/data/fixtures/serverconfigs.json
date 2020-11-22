@@ -4,7 +4,7 @@
     "pk": null,
     "fields": {
       "key": "ssh.keys.paths",
-      "value": "./keys/orthos2-master-test",
+      "value": "/home/orthos/.ssh/master",
       "created": "2016-01-01T10:00:00+00:00"
     }
   },
@@ -130,7 +130,7 @@
     "pk": null,
     "fields": {
       "key": "orthos.cli.url",
-      "value": "https://build.openSUSE.de/package/show/Devel:Archteam:Orthos/orthos-cli",
+      "value": "https://github.com/openSUSE/orthos2/blob/master/cli/orthos2",
       "created": "2016-01-01T10:00:00+00:00"
     }
   },

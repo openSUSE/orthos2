@@ -447,16 +447,6 @@ class SearchForm(forms.Form):
         widget=forms.RadioSelect(attrs={'autocomplete': 'off'})
     )
 
-    status_abuild = forms.ChoiceField(
-        required=False,
-        choices=(
-            ('__True', 'yes'),
-            ('__False', 'no'),
-            ('', 'not relevant')
-        ),
-        widget=forms.RadioSelect(attrs={'autocomplete': 'off'})
-    )
-
 
 class PasswordRestoreForm(forms.Form):
 
