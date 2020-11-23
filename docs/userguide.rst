@@ -464,7 +464,7 @@ Command description:
         fqdn   - FQDN or hostname of the machine.
         option - Specify what should be rescanned. Options are:
 
-    status            : Check machine status (ping, SSH, login, ABuild).
+    status            : Check machine status (ping, SSH, login).
     all               : Complete scan.
     misc              : Check miscellaneous software/hardware attributes.
     installations     : Rescan installed distributions only.
@@ -590,7 +590,7 @@ self-explanatory and can be used for queries as described above under the QUERY 
 
 - A: active, administrative, annotation_created, annotation_reporter, annotation_text, architecture
 - B: bios_version
-- C: check_abuild, check_connectivity, collect_system_information, comment, contact_email, cpu_cores, cpu_flags, cpu_id,
+- C: check_connectivity, collect_system_information, comment, contact_email, cpu_cores, cpu_flags, cpu_id,
   cpu_model, cpu_physical, cpu_speed, cpu_threads, created
 - D: dhcp_filename, dhcpv4_write, dhcpv6_write, disk_primary_size, disk_type, dmesg, dmidecode, domain
 - E: efi, enclosure, enclosure_platform, enclosure_vendor
