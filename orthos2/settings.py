@@ -16,6 +16,7 @@ import os
 import sys
 from logging.handlers import SysLogHandler
 from socket import getfqdn, gethostbyname, gethostname
+from pwd import getpwuid
 
 import ldap
 from django.contrib.messages import constants as messages
@@ -94,7 +95,7 @@ DATABASES = {
 }
 
 RUN_AS_USER = 'orthos'
-CUR_USER = pwd.getpwuid( os.getuid())[ 0 ]
+CUR_USER = getpwuid( os.getuid())[ 0 ]
 if CUR_USER != RUN_AS_USER:
     logging.error("You must run as user: {}, not as user: {}".
                  format(RUN_AS_USER, CUR_USER))
