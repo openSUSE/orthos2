@@ -405,12 +405,6 @@ class Machine(models.Model):
         default=False
     )
 
-    status_abuild = models.BooleanField(
-        'ABuild',
-        editable=False,
-        default=False
-    )
-
     administrative = models.BooleanField(
         'Administrative machine',
         editable=True,
@@ -421,10 +415,6 @@ class Machine(models.Model):
         choices=CONNECTIVITY_CHOICE,
         default=1,
         blank=False
-    )
-
-    check_abuild = models.BooleanField(
-        default=False
     )
 
     collect_system_information = models.BooleanField(

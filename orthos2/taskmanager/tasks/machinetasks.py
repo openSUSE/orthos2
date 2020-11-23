@@ -3,7 +3,7 @@ import logging
 from orthos2.data.models import Machine, NetworkInterface, ServerConfig
 from django.utils import timezone
 from orthos2.taskmanager.models import Task
-from orthos2.utils.machinechecks import (abuild_test, get_hardware_information,
+from orthos2.utils.machinechecks import (get_hardware_information,
                                          get_installations, get_networkinterfaces,
                                          get_pci_devices, get_status_ip, login_test,
                                          nmap_check, ping_check_ipv4, ping_check_ipv6)
@@ -109,13 +109,12 @@ class MachineCheck(Task):
 
     def status(self):
         """
-        Checks ping, SSH, login and ABuild status.
+        Checks ping, SSH and login status.
         """
         self.machine.status_ipv4 = Machine.StatusIP.UNREACHABLE
         self.machine.status_ipv6 = Machine.StatusIP.UNREACHABLE
         self.machine.status_ssh = False
         self.machine.status_login = False
-        self.machine.status_abuild = False
 
         if self.machine.check_connectivity > Machine.Connectivity.NONE:
             if ping_check_ipv4(self.fqdn, timeout=1):
@@ -130,11 +129,6 @@ class MachineCheck(Task):
                 if self.machine.status_ssh and\
                         self.machine.check_connectivity > Machine.Connectivity.SSH:
                     self.machine.status_login = login_test(self.fqdn)
-
-                    if self.machine.check_abuild and\
-                            self.machine.check_connectivity == Machine.Connectivity.ALL:
-                        self.machine.status_abuild = abuild_test(self.fqdn)
-
         self.online = bool(self.machine.status_login)
 
         self.machine.save()

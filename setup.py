@@ -4,14 +4,14 @@ from setuptools import find_packages, setup
 import os
 from glob import glob
 
-logpath = os.environ.get('LOG_PATH', "/var/log")
-db_path = os.environ.get('LOG_PATH', "/var/lib")
+logpath = os.environ.get('LOG_PATH', "/var/log/orthos2")
+db_path = os.environ.get('DB_PATH', "/var/lib/orthos2")
 tmpfilespath = os.environ.get('TMPFILES_PATH', "/usr/lib/tmpfiles.d")
 # Directory for package specific executables not exposed
 # to the world via /bin or /sbin
-execpath = os.environ.get('EXEC_PATH',  "/usr/lib")
+execpath = os.environ.get('EXEC_PATH',  "/usr/lib/orthos2")
 # Directory for package specific data
-datapath = os.environ.get('DATA_PATH', "/usr/share")
+datapath = os.environ.get('DATA_PATH', "/usr/share/orthos2")
 unitpath = os.environ.get('UNIT_PATH', "/usr/lib/systemd/system")
 
 
@@ -63,17 +63,17 @@ if __name__ == "__main__":
         data_files=[
             ("/etc/nginx/conf.d",  ["wsgi/orthos2_nginx.conf"]),
             # orthos2 internal binaries in /usr/lib/orthos2
-            ("%s/orthos2" % execpath, glob("orthos2/bin/*")),
-            ("%s/orthos2/wsgi" % execpath, ["wsgi/orthos2.py"]),
+            ("%s" % execpath, glob("orthos2/bin/*")),
+            ("%s/scripts" % execpath, glob("orthos2/scripts/*")),
             # orthos2 data files in /usr/share/orthos2
             ("/etc/orthos2", ["wsgi/orthos2.ini", "wsgi/settings"]),
-            ("%s/orthos2/fixtures/data" % datapath,
+            ("%s/fixtures/data" % datapath,
                 glob("orthos2/data/fixtures/*.json")),
-            ("%s/orthos2/fixtures/taskmanager" % datapath,
+            ("%s/fixtures/taskmanager" % datapath,
                 glob("orthos2/taskmanager/fixtures/*.json")),
-            ("%s/orthos2/fixtures/frontend/tests" % datapath,
+            ("%s/fixtures/frontend/tests" % datapath,
                 glob("orthos2/frontend/tests/fixtures/*.json")),
-            ("%s/orthos2/fixtures/utils/tests" % datapath,
+            ("%s/fixtures/utils/tests" % datapath,
                 glob("orthos2/utils/tests/fixtures/*.json")),
             # tmpfiles.d -> renaming here is ugly, better use a subdirectory in repo
             ("%s" % tmpfilespath, ["service/tmpfiles.d/orthos2.conf"]),
@@ -81,8 +81,11 @@ if __name__ == "__main__":
                                "service/orthos2_taskmanager.service",
                                "service/orthos2.socket"]),
             # Empty directory creation
-            ("%s/orthos2" % logpath, []),
-            ("%s/orthos2" % db_path, []),
+            ("%s" % logpath, []),
+            ("%s" % db_path, []),
+            ("%s/archiv" % db_path, []),
+            ("%s/database" % db_path, []),
+            ("%s/orthos-vm-images" % db_path, []),
             ("/run/orthos2",         [])
         ]
     )

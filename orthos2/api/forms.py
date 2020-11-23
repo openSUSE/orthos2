@@ -219,7 +219,7 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         """
         Get or create the enclosure.
 
-        Only allow ABuild check and collect system information if connectivity is set to `Full`.
+        Only allow collect system information if connectivity is set to `Full`.
         """
         cleaned_data = super(MachineAPIForm, self).clean()
 
@@ -233,11 +233,8 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         cleaned_data['enclosure'] = enclosure
 
         check_connectivity = int(cleaned_data['check_connectivity'])
-        check_abuild = cleaned_data['check_abuild']
         collect_system_information = cleaned_data['collect_system_information']
 
-        if check_abuild and check_connectivity != Machine.Connectivity.ALL:
-            self.add_error('check_abuild', "Needs full connectivity check!")
         if collect_system_information and check_connectivity != Machine.Connectivity.ALL:
             self.add_error('collect_system_information', "Needs full connectivity check!")
 
@@ -293,12 +290,6 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         initial=Machine.Connectivity.ALL,
     )
 
-    check_abuild = forms.BooleanField(
-        label='Check ABuild',
-        required=False,
-        initial=False,
-    )
-
     collect_system_information = forms.BooleanField(
         label='Collect system information',
         required=False,
@@ -332,7 +323,6 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
             'nda',
             'administrative',
             'check_connectivity',
-            'check_abuild',
             'collect_system_information',
             'dhcpv4_write',
             'dhcpv6_write',
