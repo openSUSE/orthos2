@@ -18,13 +18,23 @@ Installation/Setup (Production system)
     .. code-block::
 
         cd /usr/lib/orthos2
-        sudo -u orthos ./manage.py makemigrate
+        sudo -u orthos ./manage.py makemigrations data frontend taskmanager api
     
-5. Create the database:
-    .. code-block::
+5. Deploy code to database
+   
+   a. In case of a fresh install - Create the database:
+      .. code-block::
 
         cd /usr/lib/orthos2
         sudo -u orthos ./manage.py migrate
+
+   b. In case of an Update (and makemigrations above produced database difference
+      dumps) - Apply/deploy detected database changes
+      In case of changes detected in the data app, do:
+      .. code-block::
+	 
+       cd /usr/lib/orthos2
+       sudo -u orthos ./manage.py migrate data
 
 6. Install fixtures:
     .. code-block::
