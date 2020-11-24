@@ -11,6 +11,8 @@ from django.forms.fields import (BooleanField, CharField, ChoiceField,
 from django.utils import timezone
 from django.utils.formats import date_format
 
+import logging
+logger = logging.getLogger('views')
 
 class NewUserForm(forms.Form):
     login = forms.CharField(
@@ -515,11 +517,35 @@ class SetupMachineForm(forms.Form):
         if machine.group and not machine.group.setup_use_architecture:
             group = machine.group.name
 
-        records = domain.get_setup_records(architecture, machinegroup=group)
+        '''
+        Change choice html field here (domain.get_setup_records(..., grouped=True)
+        grouped=True
+           SLE-12-SP4-Server-LATEST
+               install
+               install-auto
+               install-auto-ssh
+           SLE-12-SP5-Server-LATEST
+               install
+               install-auto
+               ...
+
+        grouped=False
+           SLE-12-SP4-Server-LATEST:install
+           SLE-12-SP4-Server-LATEST:install-auto
+           SLE-12-SP4-Server-LATEST:install-auto-ssh
+           SLE-12-SP5-Server-LATEST:install
+           SLE-12-SP5-Server-LATEST:install-auto
+           ...
+        '''
+        records = domain.get_setup_records(architecture, machinegroup=group, grouped=True)
+        logger.debug("Setup choices for {}.{} [{}][{}]:\n{}\n".format(
+            machine, domain, architecture, group, records))
 
         super(SetupMachineForm, self).__init__(*args, **kwargs)
 
         self.fields['setup'].choices = self.get_setup_select_choices(records)
+        logger.debug("Setup choicen for {}.{} [{}][{}]:\n{}\n".format(
+            machine, domain, architecture, group, self.fields['setup'].choices))
 
     def get_setup_select_choices(self, records):
         setup_records = []
@@ -534,7 +560,7 @@ class SetupMachineForm(forms.Form):
 
                 for record in record_group:
                     option = record
-                    value = record
+                    value = distribution + ":" + record
                     if distribution not in groups.keys():
                         groups[distribution] = ((value, option),)
                     else:

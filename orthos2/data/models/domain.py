@@ -102,18 +102,20 @@ class Domain(models.Model):
 
         If `grouped` is False, a list of all records gets returned (no grouping).
 
-        Expects stdout:
+        Expects as return value when executing 'setup.list.command' below:
 
-            ['DISTRIBUTION-<architecture|machinegroup>-FLAVOUR', ...]
+            ['<architecture|machinegroup:>DISTRIBUTION:FLAVOUR', ...]
+
+        e.g.:
 
             [
-                'SLES12-SP3-x86_64-install\n',
-                'SLES12-SP3-x86_64-install-ssh\n',
+                'x86_64:SLES12-SP3:install\n',
+                'x86_64:SLES12-SP3:install-ssh\n',
                 ...
-                'SLES12-SP2-x86_64-install\n',
-                'SLES12-SP2-x86_64-rescue\n',
+                'x86_64:SLES12-SP2:install\n',
+                'x86_64:SLES12-SP2:rescue\n',
                 ...,
-                'local-x86_64\n',
+                'x86_64:local\n',
                 ...,
             ]
 
@@ -122,17 +124,17 @@ class Domain(models.Model):
 
             OrderedDict([
                 ('SLES12-SP3', [
-                    'SLES12-SP3-x86_64-install',
-                    'SLES12-SP3-x86_64-install-ssh',
+                    'install',
+                    'install-ssh',
                     ...
                 ]),
                 ('SLES12-SP2', [
-                    'SLES12-SP2-x86_64-install',
-                    'SLES12-SP2-x86_64-rescue',
+                    'install',
+                    'rescue',
                     ...
                 ]),
                 ('local', [
-                    'local-x86_64'
+                    ''
                 ])
             )
 
@@ -140,13 +142,13 @@ class Domain(models.Model):
         Returns (grouped is `False`):
 
             [
-                'SLES12-SP3-x86_64-install',
-                'SLES12-SP3-x86_64-install-ssh',
+                'SLES12-SP3:install',
+                'SLES12-SP3:install-ssh',
                 ...
-                'SLES12-SP2-x86_64-install',
-                'SLES12-SP2-x86_64-rescue',
+                'SLES12-SP2:install',
+                'SLES12-SP2:rescue',
                 ...,
-                'local-x86_64',
+                'local',
                 ...,
             ]
         """
@@ -154,24 +156,8 @@ class Domain(models.Model):
 
         def grouping(records):
             """Group records for HTML form."""
-            groups = {}
 
-            for record in records:
-                record_ = record.split(delimiter)
-
-                if len(record_) == 2:
-                    prefix = record_[0]
-                    suffix = record_[1]
-                else:
-                    logger.debug("Setup record has invalid format: '{}'".format(record))
-                    continue
-
-                if prefix not in groups:
-                    groups[prefix] = []
-
-                groups[prefix].append(suffix)
-
-            return collections.OrderedDict(sorted(groups.items()))
+            
         if not self.tftp_server:
             logger.warning("No TFTP server available for '{}'".format(self.name))
             return {}
@@ -196,7 +182,6 @@ class Domain(models.Model):
                 return {}
 
             logger.debug("Found {} setup records on {}".format(len(stdout), self.tftp_server.fqdn))
-
         except Exception as e:
             logger.warning("Couldn't fetch record list for setup: {}".format(str(e)))
             return {}
@@ -204,11 +189,37 @@ class Domain(models.Model):
             if conn:
                 conn.close()
 
-        records = list(map(lambda record: record.strip('\n'), stdout))
+        records = [record.strip('\n') for record in stdout]
+        logger.debug("Records:\n{}".format(records))
         if grouped:
-            records = grouping(records)
+            groups = {}
+            for record in records:
+                delim_c = record.count(delimiter)
+                # <distro>:<profile>
+                if delim_c == 1:
+                    (distro, profile) = record.split(delimiter)
+                # <arch>:<distro>:<profile>
+                elif delim_c == 2:
+                    (arch, distro, profile) = record.split(delimiter)
+                else:
+                    logger.debug("Setup record has invalid format: '{}'".format(record))
+                    continue
+
+                if distro not in groups:
+                    groups[distro] = []
+
+                groups[distro].append(profile)
+            records = collections.OrderedDict(sorted(groups.items()))
+            logger.debug("Grouped and parsed:\n{}".format(records))
         else:
-            records = list(map(lambda record: record.split(delimiter)[1], records))
+            delim_c = records[0].count(delimiter)
+            if delim_c == 1:
+                # <distro>:<profile>
+                pass
+            elif delim_c == 2:
+                # <arch>:<distro>:<profile>
+                records = [record.split(delimiter, maxsplit=1)[1] for record in records]
+            logger.debug("Not grouped and parsed:\n{}".format(records))
 
         return records
 
@@ -219,4 +230,6 @@ class Domain(models.Model):
             machinegroup=machinegroup,
             grouped=False
         )
-        return choice in choices
+        result = choice in choices
+        logger.debug(result)
+        return result
