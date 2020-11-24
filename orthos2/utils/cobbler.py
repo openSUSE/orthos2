@@ -147,17 +147,39 @@ class CobblerServer:
         clean_out = [system.strip(' \n\t') for system in stdout]
         return clean_out
 
+    @staticmethod
+    def profile_normalize(string):
+        '''
+        This method replaces the second colon (:) of a string with a dash (-)
+        This is to convert:
+        x86_64:SLE-12-SP4-Server-LATEST:install
+        to
+        x86_64:SLE-12-SP4-Server-LATEST-install
+        until cobbler returns profiles where arch:distro:profile are all separated via :
+        '''
+        return string.replace(':', '-', 2).replace('-', ':', 1)
+
     def setup(self, machine: Machine, choice: str):
         logger.info("setup called for %s with %s on cobbler server %s ", machine.fqdn, self._fqdn,
             choice)
-        cobbler_profile = "{arch}:{profile}".format(machine.architecture, choice)
+        cobbler_profile = "{arch}:{profile}".format(arch=machine.architecture, profile=choice)
+
+        # ToDo: Revert this after renaming cobbler profiles
+        cobbler_profile = CobblerServer.profile_normalize(cobbler_profile)
+
         command = "{cobbler} system edit --name={machine}  --profile={profile} --netboot=True"\
             .format(cobbler=self._cobbler_path, machine=machine.fqdn, profile=cobbler_profile)
         logger.debug("command for setup: %s", command)
-        stdout, stderr, exitstatus = self._conn.execute(command)
-        if exitstatus:
-            logger.warning("setup of  %s with %s failed on %s with %s", machine.fqdn, 
-                cobbler_profile, self._fqdn, stderr)
-            raise CobblerException(
-                "setup of {machine} with {profile} failed on {server} with {error}".format(
-                    machine=machine.fqdn, arch=cobbler_profile, server=self._fqdn))
+        self.connect()
+        try:
+            stdout, stderr, exitstatus = self._conn.execute(command)
+            if exitstatus:
+                logger.warning("setup of  %s with %s failed on %s with %s", machine.fqdn, 
+                               cobbler_profile, self._fqdn, stderr)
+                raise CobblerException(
+                    "setup of {machine} with {profile} failed on {server} with {error}".format(
+                        machine=machine.fqdn, arch=cobbler_profile, server=self._fqdn))
+        except:
+            pass
+        finally:
+            self.close()
