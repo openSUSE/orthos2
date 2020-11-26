@@ -135,16 +135,19 @@ class DeleteMachineCommand(BaseAPIView):
 
                 machine = Machine.objects.get(fqdn__iexact=cleaned_data['fqdn'])
 
+                if not machine:
+                    return ErrorMessage("Unknown machine '{}'!".format(cleaned_data['fqdn'])).as_json
+
                 if machine.is_virtual_machine():
                     host = machine.get_hypervisor()
 
-                    if host.virtualization_api is None:
-                        return ErrorMessage("No virtualization API found!").as_json
+                    if host.virtualization_api:
+                        host.virtualization_api.remove(machine):
+                    else:
+                        logger.info("No virtual host/hypservisor found when deleting virtual machine {}"
+                                    .format(machine.fqdn))
 
-                    if host.virtualization_api.remove(machine):
-                        result = machine.delete()
-                else:
-                    result = machine.delete()
+                result = machine.delete()
 
                 theader = [
                     {'objects': 'Deleted objects'},
