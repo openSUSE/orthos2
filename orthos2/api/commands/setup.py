@@ -5,6 +5,8 @@ from django.conf.urls import re_path
 from django.contrib.auth.models import AnonymousUser, User
 from django.http import HttpResponseRedirect, JsonResponse
 
+import logging
+logger = logging.getLogger('api')
 
 class SetupCommand(BaseAPIView):
 
@@ -68,10 +70,11 @@ Example:
         }
 
         for distribution, records in grouped_records.items():
+            logger.info("Distros: {} - records: {}".format(distribution, records))
             for record in records:
                 response['data'].append(
                     {
-                        'full': record,
+                        'full': distribution + ':' + record,
                     }
                 )
 
