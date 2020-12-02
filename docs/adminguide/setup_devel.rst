@@ -41,7 +41,7 @@ Installation/Setup (Devel system)
     .. code-block::
 
         cd /usr/lib/orthos2
-        sudo -u orthos ./manage.py makemigrate
+        sudo -u orthos ./manage.py makemigrations data frontend taskmanager api
 
 6. Migrate (create) the database:
     .. code-block::
