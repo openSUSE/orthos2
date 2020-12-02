@@ -16,7 +16,7 @@ import os
 import sys
 from logging.handlers import SysLogHandler
 from socket import getfqdn, gethostbyname, gethostname
-
+import pwd
 import ldap
 from django.contrib.messages import constants as messages
 from django_auth_ldap.config import GroupOfNamesType, LDAPSearch
