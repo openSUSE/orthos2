@@ -43,7 +43,7 @@ def create_cobbler_options(machine):
     if get_filename(machine):
         options += " --filename={filename}".format(filename=get_filename(machine))
     if get_tftp_server(machine):
-        options += "--next-server={server}".format(server=get_tftp_server(machine))
+        options += " --next-server={server}".format(server=get_tftp_server(machine))
     return options
 
 
@@ -183,3 +183,4 @@ class CobblerServer:
             pass
         finally:
             self.close()
+
