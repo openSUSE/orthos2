@@ -47,7 +47,7 @@ def create_cobbler_options(machine):
     if tftp_server:
         ipv4 = get_ip(tftp_server)
         if ipv4:
-        options += " --next-server={server}".format(server=ipv4[0])
+            options += " --next-server={server}".format(server=ipv4[0])
     return options
 
 
