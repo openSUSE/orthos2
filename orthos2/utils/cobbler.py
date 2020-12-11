@@ -25,7 +25,7 @@ def get_tftp_server(machine: Machine):
     """
 
     if machine.tftp_server:
-        server = machine.tft_server
+        server = machine.tftp_server
     elif machine.group and machine.group.tftp_server:
         server = machine.group.tftp_server
     elif machine.fqdn_domain.tftp_server:
@@ -35,15 +35,19 @@ def get_tftp_server(machine: Machine):
 
     return server.fqdn if server else None
 
+from orthos2.utils.misc import get_ip
 def create_cobbler_options(machine):
+    tftp_server = get_tftp_server(machine)
     options = " --name={name} --ip-address={ipv4}".format(name=machine.fqdn, ipv4=machine.ipv4)
     if machine.ipv6:
         options += " --ipv6-address={ipv6}".format(ipv6=machine.ipv6)
     options += " --interface=default --management=True --interface-master=True"
     if get_filename(machine):
         options += " --filename={filename}".format(filename=get_filename(machine))
-    if get_tftp_server(machine):
-        options += " --next-server={server}".format(server=get_tftp_server(machine))
+    if tftp_server:
+        ipv4 = get_ip(tftp_server)
+        if ipv4:
+        options += " --next-server={server}".format(server=ipv4[0])
     return options
 
 
