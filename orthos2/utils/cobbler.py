@@ -25,25 +25,28 @@ def get_tftp_server(machine: Machine):
     """
 
     if machine.tftp_server:
-        server = machine.tft_server
+        server = machine.tftp_server
     elif machine.group and machine.group.tftp_server:
         server = machine.group.tftp_server
     elif machine.fqdn_domain.tftp_server:
         server = machine.fqdn_domain.tftp_server
     else:
         server = None
-
     return server.fqdn if server else None
 
+from orthos2.utils.misc import get_ip
 def create_cobbler_options(machine):
+    tftp_server = get_tftp_server(machine)
     options = " --name={name} --ip-address={ipv4}".format(name=machine.fqdn, ipv4=machine.ipv4)
     if machine.ipv6:
         options += " --ipv6-address={ipv6}".format(ipv6=machine.ipv6)
     options += " --interface=default --management=True --interface-master=True"
     if get_filename(machine):
         options += " --filename={filename}".format(filename=get_filename(machine))
-    if get_tftp_server(machine):
-        options += " --next-server={server}".format(server=get_tftp_server(machine))
+    if tftp_server:
+        ipv4 = get_ip(tftp_server)
+        if ipv4:
+            options += " --next-server={server}".format(server=ipv4[0])
     return options
 
 
@@ -147,17 +150,39 @@ class CobblerServer:
         clean_out = [system.strip(' \n\t') for system in stdout]
         return clean_out
 
+    @staticmethod
+    def profile_normalize(string):
+        '''
+        This method replaces the second colon (:) of a string with a dash (-)
+        This is to convert:
+        x86_64:SLE-12-SP4-Server-LATEST:install
+        to
+        x86_64:SLE-12-SP4-Server-LATEST-install
+        until cobbler returns profiles where arch:distro:profile are all separated via :
+        '''
+        return string.replace(':', '-', 2).replace('-', ':', 1)
+
     def setup(self, machine: Machine, choice: str):
         logger.info("setup called for %s with %s on cobbler server %s ", machine.fqdn, self._fqdn,
             choice)
-        cobbler_profile = "{arch}:{profile}".format(machine.architecture, choice)
+        cobbler_profile = "{arch}:{profile}".format(arch=machine.architecture, profile=choice)
+
+        # ToDo: Revert this after renaming cobbler profiles
+        cobbler_profile = CobblerServer.profile_normalize(cobbler_profile)
+
         command = "{cobbler} system edit --name={machine}  --profile={profile} --netboot=True"\
             .format(cobbler=self._cobbler_path, machine=machine.fqdn, profile=cobbler_profile)
         logger.debug("command for setup: %s", command)
-        stdout, stderr, exitstatus = self._conn.execute(command)
-        if exitstatus:
-            logger.warning("setup of  %s with %s failed on %s with %s", machine.fqdn, 
-                cobbler_profile, self._fqdn, stderr)
-            raise CobblerException(
-                "setup of {machine} with {profile} failed on {server} with {error}".format(
-                    machine=machine.fqdn, arch=cobbler_profile, server=self._fqdn))
+        self.connect()
+        try:
+            stdout, stderr, exitstatus = self._conn.execute(command)
+            if exitstatus:
+                logger.warning("setup of  %s with %s failed on %s with %s", machine.fqdn, 
+                               cobbler_profile, self._fqdn, stderr)
+                raise CobblerException(
+                    "setup of {machine} with {profile} failed on {server} with {error}".format(
+                        machine=machine.fqdn, arch=cobbler_profile, server=self._fqdn))
+        except:
+            pass
+        finally:
+            self.close()

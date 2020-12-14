@@ -46,7 +46,12 @@ Installation/Setup (Production system)
 
         sudo -u orthos ./manage.py createsuperuser
 
-8. start all services
+8. Create html files from templates
+    .. code-block::
+
+        sudo -u orthos ./manage.py collectstatic
+
+9. start all services
     .. code-block::
 
         systemctl enable nginx

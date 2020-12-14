@@ -901,7 +901,8 @@ class Machine(models.Model):
             return self.reboot_ssh()
 
         elif action == RemotePower.Action.REBOOT_REMOTEPOWER:
-            return self.reboot_remotepower()
+            if self.has_remotepower():
+                return self.reboot_remotepower()
 
         return False
 
@@ -965,7 +966,8 @@ class Machine(models.Model):
         if result is True:
             return True
         else:
-            return self.power_off_remotepower(user=user)
+            if self.has_remotepower():
+                return self.power_off_remotepower(user=user)
 
     @check_permission
     def power_off_ssh(self, user=None):
@@ -998,7 +1000,8 @@ class Machine(models.Model):
         if result is True:
             return True
         else:
-            return self.reboot_remotepower(user=user)
+            if self.has_remotepower():
+                return self.reboot_remotepower(user=user)
 
     @check_permission
     def reboot_ssh(self, user=None):
@@ -1008,12 +1011,16 @@ class Machine(models.Model):
     @check_permission
     def reboot_remotepower(self, user=None):
         """Reboot the machine via remote power."""
-        self.remotepower.reboot()
+        if self.has_remotepower():
+            self.remotepower.reboot()
         return True
 
     def get_power_status(self, to_str=True):
         """Return the current power status."""
         from .remotepower import RemotePower
+
+        if not self.has_remotepower():
+            return RemotePower.Status.UNKNOWN
 
         status = self.remotepower.get_status()
         if to_str:
