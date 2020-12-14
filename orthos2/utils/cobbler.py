@@ -32,7 +32,6 @@ def get_tftp_server(machine: Machine):
         server = machine.fqdn_domain.tftp_server
     else:
         server = None
-
     return server.fqdn if server else None
 
 from orthos2.utils.misc import get_ip
@@ -187,4 +186,3 @@ class CobblerServer:
             pass
         finally:
             self.close()
-
