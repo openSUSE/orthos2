@@ -6,6 +6,7 @@ from orthos2.data.models import (Architecture, Enclosure, Machine, MachineGroup,
                                  validate_dns, validate_mac_address)
 from orthos2.data.models.domain import validate_domain_ending
 from django import forms
+from django.forms.models import ModelChoiceIteratorValue
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.forms import inlineformset_factory
 from django.forms.fields import (BooleanField, CharField, ChoiceField,
@@ -71,9 +72,14 @@ class BaseAPIForm:
             field['items'] = []
 
             for choice in form_field.choices:
-                field['items'].append(
-                    {slugify(choice[0]): {'label': choice[1], 'value': choice[0]}}
-                )
+                if isinstance(choice[0], ModelChoiceIteratorValue):
+                    field['items'].append(
+                        {slugify(choice[0].value): {'label': choice[1], 'value': choice[0].value}}
+                    )
+                else:
+                    field['items'].append(
+                        {slugify(choice[0]): {'label': choice[1], 'value': choice[0]}}
+                    )
 
         return field
 
