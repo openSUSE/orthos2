@@ -47,28 +47,6 @@
     "model": "data.serialconsoletype",
     "pk": null,
     "fields": {
-      "name": "ILO",
-      "command": "ssh root@{{ machine.bmc.fqdn }}",
-      "comment": "ILO",
-      "created": "2016-01-01T10:00:00+00:00",
-      "updated": "2016-01-01T10:00:00+00:00"
-    }
-  },
-  {
-    "model": "data.serialconsoletype",
-    "pk": null,
-    "fields": {
-      "name": "ILO2",
-      "command": "ssh -o MACs=hmac-sha1 root@{{ machine.bmc.fqdn }}",
-      "comment": "ILO2",
-      "created": "2016-01-01T10:00:00+00:00",
-      "updated": "2016-01-01T10:00:00+00:00"
-    }
-  },
-  {
-    "model": "data.serialconsoletype",
-    "pk": null,
-    "fields": {
       "name": "s390",
       "command": "ssh -o StrictHostKeyChecking=no {{ machine.get_s390_hostname }}@{{ console_server.fqdn }}",
       "comment": "s390",
@@ -94,6 +72,17 @@
       "name": "libvirt/lxc",
       "command": "virsh -c lxc+ssh://root@{{ machine.hypervisor.fqdn }}/system console {{ machine.hostname }}",
       "comment": "libvirt/lxc",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serialconsoletype",
+    "pk": null,
+    "fields": {
+      "name": "PowerPC HMC",
+      "command": "ssh -4 -t padmin@{{ machine.hypervisor.fqdn }} rmvterm -p {{ machine.hostname }}; mkvterm -p {{ machine.hostname }}"
+      "comment": "PowerPC HMC",
       "created": "2016-01-01T10:00:00+00:00",
       "updated": "2016-01-01T10:00:00+00:00"
     }
