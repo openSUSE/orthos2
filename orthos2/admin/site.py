@@ -2,7 +2,7 @@ from django.contrib.admin import AdminSite
 
 
 class MyAdminSite(AdminSite):
-    index_template = 'admin/base_site.html'
+    index_template = 'admin/base.html'
     # Text to put at the end of each page's <title>.
     site_title = 'Orthos2 site admin'
     # Text to put in each page's <h1>.
