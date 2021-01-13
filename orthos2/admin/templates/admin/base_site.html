@@ -1,5 +1,13 @@
 {% extends "admin/base.html" %}
 
+{% block extrahead %}
+{{ block.super }}
+<script>
+  alert( 'Hello, world!' );
+</script>
+
+{% endblock %}
+  
 {% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
 
 {% block branding %}
