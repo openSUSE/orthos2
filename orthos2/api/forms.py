@@ -2,7 +2,7 @@ import logging
 
 from orthos2.data.models import (Architecture, Enclosure, Machine, MachineGroup,
                                  NetworkInterface, RemotePower, SerialConsole,
-                                 SerialConsoleType, System, is_unique_mac_address,
+                                 SerialConsoleType, System, BMC, is_unique_mac_address,
                                  validate_dns, validate_mac_address)
 from orthos2.data.models.domain import validate_domain_ending
 from django import forms
@@ -490,6 +490,64 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
 
 
 class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):
+
+    def clean_fqdn(self):
+        """Check whether `fqdn` already exists."""
+        fqdn = self.cleaned_data['fqdn']
+        if Machine.objects.filter(fqdn__iexact=fqdn).count() == 0:
+            self.add_error('fqdn', "FQDN does not exist!")
+        return fqdn
+
+    fqdn = forms.CharField(
+        label='FQDN',
+        max_length=200,
+    )
+
+    def get_order(self):
+        """Return input order."""
+        return [
+            'fqdn',
+        ]
+
+
+class BMCAPIForm(forms.Form, BaseAPIForm):
+
+    def __init__(self, *args, **kwargs):
+        machine = kwargs.pop('machine', None)
+        self.machine = machine
+
+        super(BMCAPIForm, self).__init__(*args, **kwargs)
+
+        self._query_fields = (
+            # TODO
+        )
+
+        BMCFormSet = inlineformset_factory(
+            Machine,
+            BMC,
+            fields=self._query_fields,
+            fk_name='machine'
+        )
+        formset =BMCFormSet(instance=machine)
+
+        self.fields = formset.form().fields
+        # TODO self.fields['type'].empty_label = None ...
+        
+
+    def clean(self):
+        """Add the machine to cleaned data for further processing."""
+        cleaned_data = super(SerialConsoleAPIForm, self).clean()
+        cleaned_data['machine'] = self.machine
+        serialconsole = SerialConsole(**cleaned_data)
+        serialconsole.clean()
+        return cleaned_data
+
+    def get_order(self):
+        """Return input order."""
+        return self._query_fields
+
+
+class DeleteSerialConsoleAPIForm(forms.Form, BaseAPIForm):
 
     def clean_fqdn(self):
         """Check whether `fqdn` already exists."""

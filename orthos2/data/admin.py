@@ -13,7 +13,7 @@ from orthos2.utils.misc import DHCPRecordOption
 
 from .models import (Annotation, Architecture, Domain, Enclosure, Installation,
                      Machine, MachineGroup, MachineGroupMembership,
-                     NetworkInterface, Platform, RemotePower, SerialConsole,
+                     NetworkInterface, Platform, RemotePower, SerialConsole, BMC,
                      SerialConsoleType, ServerConfig, System, Vendor,
                      VirtualizationAPI, is_unique_mac_address, validate_dns,
                      validate_mac_address)
@@ -53,6 +53,8 @@ class SerialConsoleInline(admin.StackedInline):
         self.machine = obj
         return super(SerialConsoleInline, self).get_formset(request, obj, **kwargs)
 
+class BMCInline(admin.StackedInline):
+    model = BMC
 
 class RemotePowerInline(admin.StackedInline):
     model = RemotePower
@@ -514,7 +516,8 @@ class MachineAdmin(admin.ModelAdmin):
                 SerialConsoleInline,
                 RemotePowerInline,
                 NetworkInterfaceInline,
-                AnnotationInline
+                AnnotationInline,
+                BMCInline
             )
 
         return super(MachineAdmin, self).change_view(request, object_id, form_url, extra_context)
