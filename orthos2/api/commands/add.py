@@ -2,7 +2,7 @@ import json
 import logging
 
 from orthos2.api.commands import BaseAPIView, get_machine
-from orthos2.api.forms import (AnnotationAPIForm, MachineAPIForm, RemotePowerAPIForm,
+from orthos2.api.forms import (AnnotationAPIForm, MachineAPIForm, RemotePowerAPIForm, BMCAPIForm,
                                SerialConsoleAPIForm, VirtualMachineAPIForm)
 from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                           InfoMessage, InputSerializer, Message,
@@ -578,7 +578,7 @@ class AddBMCCommand(BaseAPIView):
         if not request.user.is_superuser:
             return ErrorMessage("Only superusers are allowed to perform this action!").as_json
 
-        form = RemotePowerAPIForm(machine=machine)
+        form = BMCAPIForm(machine=machine)
 
         input = InputSerializer(
             form.as_dict(),
@@ -588,14 +588,14 @@ class AddBMCCommand(BaseAPIView):
         return input.as_json
 
     def post(self, request, fqdn, *args, **kwargs):
-        """Add remote power to machine."""
+        """Add BMC to machine."""
         if not request.user.is_superuser:
             return ErrorMessage("Only superusers are allowed to perform this action!").as_json
 
         try:
             result = get_machine(
                 fqdn,
-                redirect_to='api:remotepower_add',
+                redirect_to='api:bmc_add',
                 data=request.GET
             )
             if isinstance(result, Serializer):
@@ -606,16 +606,16 @@ class AddBMCCommand(BaseAPIView):
         except Exception as e:
             return ErrorMessage(str(e)).as_json
 
-        if machine.has_remotepower():
+        if machine.has_bmc():
             return InfoMessage("Machine has already a remote power.").as_json
 
         data = json.loads(request.body.decode('utf-8'))['form']
-        form = RemotePowerAPIForm(data, machine=machine)
+        form = BMCAPIForm(data, machine=machine)
 
         if form.is_valid():
             try:
-                remotepower = RemotePower(**form.cleaned_data)
-                remotepower.save()
+                BMC = BMC(**form.cleaned_data)
+                BMC.save()
             except Exception as e:
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json

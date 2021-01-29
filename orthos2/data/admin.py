@@ -54,7 +54,8 @@ class SerialConsoleInline(admin.StackedInline):
         return super(SerialConsoleInline, self).get_formset(request, obj, **kwargs)
 
 class BMCInline(admin.StackedInline):
-    model = BMC
+    model = BMC,
+    readonly_fields= 'networkinterface'
 
 class RemotePowerInline(admin.StackedInline):
     model = RemotePower
