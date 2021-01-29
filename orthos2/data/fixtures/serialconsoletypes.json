@@ -81,7 +81,7 @@
     "pk": null,
     "fields": {
       "name": "PowerPC HMC",
-      "command": "ssh -4 -t padmin@{{ machine.hypervisor.fqdn }} rmvterm -p {{ machine.hostname }}; mkvterm -p {{ machine.hostname }}"
+      "command": "ssh -4 -t padmin@{{ machine.hypervisor.fqdn }} rmvterm -p {{ machine.hostname }}; mkvterm -p {{ machine.hostname }}",
       "comment": "PowerPC HMC",
       "created": "2016-01-01T10:00:00+00:00",
       "updated": "2016-01-01T10:00:00+00:00"
