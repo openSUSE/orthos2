@@ -3,6 +3,7 @@ import logging
 from orthos2.data.models import Machine, ServerConfig
 from django.template import Context, Template
 from orthos2.utils.ssh import SSH
+from orthos2.utils.misc import get_hostname
 
 logger = logging.getLogger('utils')
 
@@ -49,6 +50,15 @@ def create_cobbler_options(machine):
             options += " --next-server={server}".format(server=ipv4[0])
     return options
 
+def get_bmc_command(machine, cobbler_path):
+    if not hasattr(machine, 'bmc') or not machine.bmc:
+        logger.error("Tried to get bmc command for %s, which does not have one",machine.fqdn)
+    bmc = machine.bmc
+    bmc_command = """{cobbler} system edit --name={name} --interface=bmc --interface-type=bmc"""\
+        .format(cobbler=cobbler_path, name=machine.fqdn)
+    bmc_command += """ --ip-address="{ip}" --mac="{mac}" --dns-name="{dns}" """.format(
+            ip=get_ip(bmc.fqdn)[0], mac=bmc.mac, dns=get_hostname(bmc.fqdn))
+    return bmc_command
 
 def get_cobbler_add_command(machine, cobber_path):
     profile = get_default_profile(machine)
@@ -119,7 +129,11 @@ class CobblerServer:
                 cobbler_commands.append(get_cobbler_update_command(machine, self._cobbler_path))
             else:
                 cobbler_commands.append(get_cobbler_add_command(machine, self._cobbler_path))
+                if hasattr(machine, 'bmc') and machine.bmc:
+                    cobbler_commands.append(get_bmc_command(machine, self._cobbler_path))
+
         for command in cobbler_commands:  # TODO: Convert this to a single ssh call (performance)
+            logger.debug("executing %s ", command)
             _, stderr, exitcode = self._conn.execute(command)
             if exitcode:
                 logger.error("failed to execute %s on %s with error %s",
