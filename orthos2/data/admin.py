@@ -11,13 +11,21 @@ from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 from orthos2.utils.misc import DHCPRecordOption
 
-from .models import (Annotation, Architecture, Domain, Enclosure, Installation,
+from .models import (Annotation, Architecture, BMC, Domain, Enclosure, Installation,
                      Machine, MachineGroup, MachineGroupMembership,
                      NetworkInterface, Platform, RemotePower, SerialConsole,
                      SerialConsoleType, ServerConfig, System, Vendor,
                      VirtualizationAPI, is_unique_mac_address, validate_dns,
                      validate_mac_address)
 
+class BMCInline(admin.StackedInline):
+    model = BMC
+    extra = 1
+
+    def get_formset(self, request, obj=None, **kwargs):
+        """Set machine object for `formfield_for_foreignkey` method."""
+        self.machine = obj
+        return super(BMCInline, self).get_formset(request, obj, **kwargs)
 
 class SerialConsoleInline(admin.StackedInline):
     model = SerialConsole
@@ -508,13 +516,14 @@ class MachineAdmin(admin.ModelAdmin):
             )
 
         if machine.system.administrative:
-            self.inlines = (NetworkInterfaceInline,)
+            self.inlines = (NetworkInterfaceInline, BMCInline)
         else:
             self.inlines = (
                 SerialConsoleInline,
                 RemotePowerInline,
                 NetworkInterfaceInline,
-                AnnotationInline
+                AnnotationInline,
+                BMCInline
             )
 
         return super(MachineAdmin, self).change_view(request, object_id, form_url, extra_context)

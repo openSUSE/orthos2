@@ -16,3 +16,4 @@ from .component import Component
 from .components.pci import PCIDevice
 from .annotation import Annotation
 from .virtualizationapi import *            # noqa: F403
+from .bmc import *                          # noqa: F403
