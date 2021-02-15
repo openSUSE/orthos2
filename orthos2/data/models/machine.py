@@ -349,6 +349,11 @@ class Machine(models.Model):
         blank=True
     )
 
+    bios_date = models.DateTimeField(
+        editable=False,
+        default='1990-10-03T10:00:00+00:00'
+    )
+
     disk_primary_size = models.SmallIntegerField(
         'Disk primary size (GB)',
         null=True,

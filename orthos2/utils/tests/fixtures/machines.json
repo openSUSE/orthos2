@@ -33,6 +33,7 @@
     "reserved_reason": "test HOS",
     "platform": null,
     "bios_version": "",
+    "bios_date": "",
     "disk_primary_size": null,
     "disk_type": "",
     "lsmod": "",
