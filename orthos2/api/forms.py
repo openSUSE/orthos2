@@ -382,7 +382,7 @@ class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
         self.fields = formset.form().fields
         self.fields['type'].empty_label = None
         self.fields['cscreen_server'].empty_label = None
-        self.fields['management_bmc'].queryset = machine.enclosure.get_bmc_list()
+        self.fields['management_bmc'].queryset = machine.bmc
         self.fields['management_bmc'].empty_label = 'None'
         self.fields['baud_rate'].initial = 5
         self.fields['kernel_device'].min_value = 0

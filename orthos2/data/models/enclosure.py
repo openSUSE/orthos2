@@ -65,13 +65,11 @@ class Enclosure(models.Model):
             BMC
         """
         machines = self.get_machines().filter(system__virtual=False)
-        machines = machines.exclude(system=System.Type.REMOTEPOWER)
-        machines = machines.exclude(system=System.Type.BMC)
         return machines
 
     def get_bmc_list(self):
         """Return all baseboard management controller (BMC) of the enclosure."""
-        return self.get_machines().filter(system=System.Type.BMC)
+        raise NotImplementedError("BMCs are associated with machines, not enclosures")
 
     def fetch_location(self, pk=None):
         """
