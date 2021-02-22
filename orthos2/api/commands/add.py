@@ -24,8 +24,9 @@ class Add:
     SERIALCONSOLE = 'serialconsole'
     ANNOTATION = 'annotation'
     REMOTEPOWER = 'remotepower'
+    BMC = 'bmc'
 
-    as_list = [MACHINE, VIRTUALMACHINE, SERIALCONSOLE, ANNOTATION, REMOTEPOWER]
+    as_list = [MACHINE, VIRTUALMACHINE, SERIALCONSOLE, ANNOTATION, REMOTEPOWER, BMC]
 
 
 class AddCommand(BaseAPIView):
@@ -39,29 +40,29 @@ class AddCommand(BaseAPIView):
     HELP_SHORT = "Adds information to the database."
     HELP = """Adds items to the database. All information will be queried interactively.
 
-Usage:
-    ADD <item> [args*]
+    Usage:
+        ADD <item> [args*]
 
-Arguments:
-    item - Specify the item which should be added. Items are:
+    Arguments:
+        item - Specify the item which should be added. Items are:
 
-             machine                       : Add a machine (superusers only).
-             annotation <fqdn>             : Add an annotation to a specific
-                                             machine (no bugreports).
-             serialconsole <fqdn>          : Add a serial console to a specific
-                                             machine (superusers only).
-             remotepower <fqdn>            : Add a remote power to a specific
-                                             machine (superusers only).
-             virtualmachine <architecture> : Add a virtual machine on a specific
-                                             architecture.
+                machine                       : Add a machine (superusers only).
+                annotation <fqdn>             : Add an annotation to a specific
+                                                machine (no bugreports).
+                serialconsole <fqdn>          : Add a serial console to a specific
+                                                machine (superusers only).
+                remotepower <fqdn>            : Add a remote power to a specific
+                                                machine (superusers only).
+                virtualmachine <architecture> : Add a virtual machine on a specific
+                                                architecture.
 
-Example:
-    ADD machine
-    ADD virtualmachine x86_64
-    ADD serialconsole foo.domain.tld
-    ADD remotepower foo.domain.tld
-    ADD annotation foo.domain.tld
-"""
+    Example:
+        ADD machine
+        ADD virtualmachine x86_64
+        ADD serialconsole foo.domain.tld
+        ADD remotepower foo.domain.tld
+        ADD annotation foo.domain.tld
+    """
 
     @staticmethod
     def get_urls():
@@ -267,6 +268,85 @@ class AddMachineCommand(BaseAPIView):
             new_machine.mac_address = mac_address
             try:
                 new_machine.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message('Ok.').as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
+
+class AddBMCCommand(BaseAPIView):
+    URL_POST = '/bmc/{fqdn}/add'
+
+    @staticmethod
+    def get_urls():
+        return [
+            re_path(r'^bmc/add', AddBMCCommand.as_view(), name='bmc_add'),
+            re_path(
+                r'^bmc/(?P<fqdn>[a-z0-9\.-]+)/add$',
+                AddBMCCommand.as_view(),
+                name='bmc_add'
+            ),
+        ]
+
+    def get(self, request, *args, **kwargs):
+        """Return form for adding an BMC."""
+        fqdn = request.GET.get('fqdn', None)
+        try:
+            result = get_machine(
+                fqdn,
+                redirect_to='api:BMC_add',
+                data=request.GET
+            )
+            if isinstance(result, Serializer):
+                return result.as_json
+            elif isinstance(result, HttpResponseRedirect):
+                return result
+            machine = result
+        except Exception as e:
+            return ErrorMessage(str(e)).as_json
+
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        form = BMCAPIForm(machine=machine)
+
+        input = InputSerializer(
+            form.as_dict(),
+            self.URL_POST.format(fqdn=machine.fqdn),
+            form.get_order()
+        )
+        return input.as_json
+
+    def post(self, request, fqdn, *args, **kwargs):
+        """Add BMC to machine."""
+        try:
+            result = get_machine(
+                fqdn,
+                redirect_to='api:bmc_add',
+                data=request.GET
+            )
+            if isinstance(result, Serializer):
+                return result.as_json
+            elif isinstance(result, HttpResponseRedirect):
+                return result
+            machine = result
+        except Exception as e:
+            return ErrorMessage(str(e)).as_json
+
+        data = json.loads(request.body.decode('utf-8'))['form']
+        form = BMCAPIForm(data, machine=machine)
+
+        if form.is_valid():
+            try:
+                cleaned_data = form.cleaned_data
+                annotation = Annotation(
+                    machine_id=machine.pk,
+                    reporter=request.user,
+                    text=cleaned_data['text']
+                )
+                annotation.save()
             except Exception as e:
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json

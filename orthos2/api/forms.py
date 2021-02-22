@@ -442,6 +442,38 @@ class AnnotationAPIForm(forms.Form, BaseAPIForm):
             'text',
         ]
 
+class BMCAPIForm(forms.Form, BaseAPIForm):
+
+    def __init__(self, *args, **kwargs):
+        machine = kwargs.pop('machine', None)
+        self.machine = machine
+
+        super(BMCAPIForm, self).__init__(*args, **kwargs)
+
+    username = forms.CharField(
+        label='BMC Username',
+        max_length=256,
+    )
+    password = forms.CharField(
+        label='BMC Password',
+        max_length=256,
+    )
+    fqdn = forms.CharField(
+        label='fqdn',
+        max_length=256,
+    )
+    mac = forms.CharField(
+        label='MAC Address',
+        max_length=256,
+    )
+
+    def get_order(self):
+        """Return input order."""
+        return [
+            'text',
+        ]
+
+
 
 class RemotePowerAPIForm(forms.Form, BaseAPIForm):
 
