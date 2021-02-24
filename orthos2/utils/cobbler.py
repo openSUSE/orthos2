@@ -68,19 +68,27 @@ def get_power_options(machine):
     options = ""
     if machine.remotepower.type == RemotePower.Type.IPMI:
         options += get_ipmi_options(machine.bmc)
-    if machine.remotepower.type == RemotePower.Type.DOMINIONPX:
+    elif machine.remotepower.type == RemotePower.Type.DOMINIONPX:
         options += get_raritan_options(machine.remotepower)
+    elif machine.remotepower.type in [RemotePower.Type.LIBVIRTQEMU, RemotePower.Type.LIBVIRTLXC]:
+        opptions += get_virsh_options(machine)
     else:
         raise NotImplementedError("Only IPMI and DOMINONPX are implemented")
     username, password = machine.remotepower.get_credentials()
     options += " --power-user={username} --power-pass={password} ".format(username=username,
         password=password)
-    
 
+
+def get_virsh_options(machine):
+    device = machine.remotepower.remote_power_device
+    options = " --power-type=virsh --power-address={host_fqdn} --power-id={fqdn} ".format(
+        host_fqdn=machine.fqdn, fqdn=device.fqdn
+        )
 
 
 def get_raritan_options(remotepower):
-    options = " --power-type=raritan --power-address={fqdn} ".format(fqdn=remotepower.re)
+    options = " --power-type=raritan --power-address={fqdn} --power-id={plug}".format(
+        fqdn=remotepower.fqdn, id=remotepower.plug)
 
 
 def get_ipmi_options(bmc):
@@ -217,16 +225,16 @@ class CobblerServer:
         try:
             stdout, stderr, exitstatus = self._conn.execute(command)
             if exitstatus:
-                logger.warning("setup of  %s with %s failed on %s with %s", machine.fqdn, 
+                logger.warning("setup of  %s with %s failed on %s with %s", machine.fqdn,
                                cobbler_profile, self._fqdn, stderr)
-                raise CobblerException(  
+                raise CobblerException(
                     "setup of {machine} with {profile} failed on {server} with {error}".format(
                         machine=machine.fqdn, arch=cobbler_profile, server=self._fqdn))
         except:
             pass
         finally:
             self.close()
-        
+
     def powerswitch(self,machine: Machine, action: str):
         logger.debug("powerswitching of %s called with action %s", Machine.fqdn, action)
         self.connect()
@@ -240,9 +248,9 @@ class CobblerServer:
             action=cobbler_action, fqdn=machine.fqdn)
         out, stderr, exitcode = self._conn.execute(command)
         if exitcode:
-                logger.warning("Powerswitching of  %s with %s failed on %s with %s", machine.fqdn, 
+                logger.warning("Powerswitching of  %s with %s failed on %s with %s", machine.fqdn,
                                command, self._fqdn, stderr)
-                raise CobblerException(  
+                raise CobblerException(
                     "Powerswitching of {machine} with {command} failed on {server} with {error}".format(
                         machine=machine.fqdn, command=command, server=self._fqdn))
         return out

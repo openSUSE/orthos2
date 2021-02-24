@@ -294,6 +294,7 @@ class RemotePower(models.Model):
         from orthos2.utils.cobbler import CobblerServer
         server =CobblerServer(self.machine.fqdn, self.machine.fqdn)
         result= server.powerswitch(action)
+        return result
 class Telnet(RemotePower):
 
     class Meta:
