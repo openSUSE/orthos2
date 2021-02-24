@@ -80,11 +80,11 @@ def get_power_options(machine):
 
 
 def get_raritan_options(remotepower):
-    options = " --power-type=raritan --power-adress={fqdn} ".format(fqdn=remotepower.re)
+    options = " --power-type=raritan --power-address={fqdn} ".format(fqdn=remotepower.re)
 
 
 def get_ipmi_options(bmc):
-    options = " --power-type=ipmitool --power-adress={fqdn} ".format(fqdn=bmc.fqdn)
+    options = " --power-type=ipmitool --power-address={fqdn} ".format(fqdn=bmc.fqdn)
 
 def get_cobbler_add_command(machine, cobber_path):
     profile = get_default_profile(machine)
