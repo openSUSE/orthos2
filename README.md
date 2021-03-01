@@ -17,4 +17,4 @@ Orthos is the machine administration tool of the development network at SUSE. It
 
 ## Installation/Setup
 
-Click [here](./docs/adminguide/setup.md) for the installation/setup instructions.
+Click [here](./docs/adminguide/setup.rst) for the installation/setup instructions.
