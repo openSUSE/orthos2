@@ -37,11 +37,17 @@ Installation/Setup (Devel system)
         ...
         $ cd orthos2/
 
+   Set environment variables for development:
+    .. code-block::
+
+        $ export PYTHONPATH=$(git rev-parse --show-toplevel)
+        $ export ORTHOS_DEV=1
+
 5. Dump Database Model:
     .. code-block::
 
-        cd /usr/lib/orthos2
-        sudo -u orthos ./manage.py makemigrations data frontend taskmanager api
+        $ cd bin/
+        $ python manage.py makemigrations data frontend taskmanager api
 
 6. Migrate (create) the database:
     .. code-block::
@@ -55,9 +61,9 @@ Installation/Setup (Devel system)
 7. Load initial data:
     .. code-block::
 
-        $ python manage.py loaddata data/fixtures/*.json
+        $ python manage.py loaddata ../data/fixtures/*.json
         Installed 94 object(s) from 7 fixture(s)
-        $ python manage.py loaddata taskmanager/fixtures/*.json
+        $ python manage.py loaddata ../taskmanager/fixtures/*.json
         Installed 2 object(s) from 1 fixture(s)
 
 8. Create a superuser (administrator) account:
