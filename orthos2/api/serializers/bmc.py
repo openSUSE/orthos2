@@ -1,4 +1,4 @@
-from orthos2.data.models import NetworkInterface
+from orthos2.data.models import BMC
 from rest_framework import serializers
 
 

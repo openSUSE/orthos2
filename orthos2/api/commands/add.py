@@ -2,12 +2,11 @@ import json
 import logging
 
 from orthos2.api.commands import BaseAPIView, get_machine
-from orthos2.api.forms import (AnnotationAPIForm, MachineAPIForm, RemotePowerAPIForm,
-                               SerialConsoleAPIForm, VirtualMachineAPIForm)
+from orthos2.api.forms import (AnnotationAPIForm, BMCAPIForm, MachineAPIForm, RemotePowerAPIForm,
 from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                           InfoMessage, InputSerializer, Message,
                                           Serializer)
-from orthos2.data.models import (Annotation, Enclosure, Machine, RemotePower, SerialConsole)
+from orthos2.data.models import (Annotation, BMC, Enclosure, Machine, RemotePower, SerialConsole)
 from django.conf.urls import re_path
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ValidationError
@@ -114,6 +113,12 @@ class AddCommand(BaseAPIView):
                 return ErrorMessage("Invalid number of arguments for 'remotepower'!").as_json
 
             return redirect('{}?fqdn={}'.format(reverse('api:remotepower_add'), sub_arguments[0]))
+
+        elif item == Add.BMC:
+            if len(sub_arguments) != 1:
+                return ErrorMessage("Invalid number of arguments for 'bmc'!").as_json
+
+            return redirect('{}?fqdn={}'.format(reverse('api:bmc_add'), sub_arguments[0]))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -277,14 +282,14 @@ class AddMachineCommand(BaseAPIView):
         return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
 
 class AddBMCCommand(BaseAPIView):
-    URL_POST = '/bmc/{fqdn}/add'
+    URL_POST = '/bmc/add'
 
     @staticmethod
     def get_urls():
         return [
             re_path(r'^bmc/add', AddBMCCommand.as_view(), name='bmc_add'),
             re_path(
-                r'^bmc/(?P<fqdn>[a-z0-9\.-]+)/add$',
+                r'^bmc/add(?P<fqdn>[a-z0-9\.-]+)$/',
                 AddBMCCommand.as_view(),
                 name='bmc_add'
             ),
@@ -296,7 +301,7 @@ class AddBMCCommand(BaseAPIView):
         try:
             result = get_machine(
                 fqdn,
-                redirect_to='api:BMC_add',
+                redirect_to='api:bmc_add',
                 data=request.GET
             )
             if isinstance(result, Serializer):
@@ -341,12 +346,14 @@ class AddBMCCommand(BaseAPIView):
         if form.is_valid():
             try:
                 cleaned_data = form.cleaned_data
-                annotation = Annotation(
-                    machine_id=machine.pk,
-                    reporter=request.user,
-                    text=cleaned_data['text']
+                bmc= BMC(
+                    machine=machine,
+                    fqdn=cleaned_data['fqdn'],
+                    mac=cleaned_data['mac'],
+                    username=cleaned_data['username'],
+                    password=cleaned_data['password']
                 )
-                annotation.save()
+                bmc.save()
             except Exception as e:
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json

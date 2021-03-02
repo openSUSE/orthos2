@@ -465,7 +465,7 @@ class BMCAPIForm(forms.Form, BaseAPIForm):
         max_length=256,
     )
     fqdn = forms.CharField(
-        label='fqdn',
+        label='FQDN',
         max_length=256,
     )
     mac = forms.CharField(
@@ -476,7 +476,10 @@ class BMCAPIForm(forms.Form, BaseAPIForm):
     def get_order(self):
         """Return input order."""
         return [
-            'text',
+            'mac',
+            'fqdn',
+            'username',
+            'password'
         ]
 
 
@@ -491,10 +494,8 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
 
         self._query_fields = (
             'type',
-            'management_bmc',
             'remote_power_device',
             'port',
-            'device',
             'comment',
         )
 
@@ -510,8 +511,6 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
         # remove '-------' choice; `empty_label`/`empty_value` does not work here
         choices = self.fields['type'].choices
         self.fields['type']._set_choices(choices[1:])
-        self.fields['management_bmc'].queryset = machine.enclosure.get_bmc_list()
-        self.fields['management_bmc'].empty_label = 'None'
         self.fields['remote_power_device'].empty_label = 'None'
 
     def clean(self):
