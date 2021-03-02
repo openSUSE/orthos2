@@ -525,6 +525,15 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
         """Return input order."""
         return self._query_fields
 
+class RemotePowerDeviceAPIForm(forms.Form, BaseAPIForm):
+    fqdn = forms.CharField(label='FQDN', max_length=256)
+    mac = forms.CharField(label='MAC', max_length=17)
+    username = forms.CharField(label='Username', max_length=256, required=False)
+    password = forms.CharField(label='Password', max_length=256, required=False)
+
+    def get_order(self):
+        return ['fqdn', 'mac', 'username', 'password']
+
 
 class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):
 

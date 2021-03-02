@@ -26,6 +26,7 @@ urlpatterns += AddSerialConsoleCommand.get_urls()       # noqa: F405
 urlpatterns += AddAnnotationCommand.get_urls()          # noqa: F405
 urlpatterns += AddBMCCommand.get_urls()
 urlpatterns += AddRemotePowerCommand.get_urls()         # noqa: F405
+urlpatterns += AddRemotePowerDeviceCommand.get_urls()
 urlpatterns += DeleteCommand.get_urls()                 # noqa: F405
 urlpatterns += DeleteMachineCommand.get_urls()          # noqa: F405
 urlpatterns += DeleteSerialConsoleCommand.get_urls()    # noqa: F405

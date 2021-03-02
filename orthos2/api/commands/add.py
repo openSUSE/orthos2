@@ -3,10 +3,13 @@ import logging
 
 from orthos2.api.commands import BaseAPIView, get_machine
 from orthos2.api.forms import (AnnotationAPIForm, BMCAPIForm, MachineAPIForm, RemotePowerAPIForm,
+                               RemotePowerDeviceAPIForm, SerialConsoleAPIForm,
+                               VirtualMachineAPIForm)
 from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                           InfoMessage, InputSerializer, Message,
                                           Serializer)
-from orthos2.data.models import (Annotation, BMC, Enclosure, Machine, RemotePower, SerialConsole)
+from orthos2.data.models import (Annotation, BMC, Enclosure, Machine, RemotePower, RemotePowerDevice,
+                                 SerialConsole)
 from django.conf.urls import re_path
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ValidationError
@@ -24,8 +27,10 @@ class Add:
     ANNOTATION = 'annotation'
     REMOTEPOWER = 'remotepower'
     BMC = 'bmc'
+    REMOTEPOWERDEVICE = 'remotepowerdevice'
 
-    as_list = [MACHINE, VIRTUALMACHINE, SERIALCONSOLE, ANNOTATION, REMOTEPOWER, BMC]
+    as_list = [MACHINE, VIRTUALMACHINE, SERIALCONSOLE, ANNOTATION, REMOTEPOWER, 
+              BMC, REMOTEPOWERDEVICE]
 
 
 class AddCommand(BaseAPIView):
@@ -113,6 +118,10 @@ class AddCommand(BaseAPIView):
                 return ErrorMessage("Invalid number of arguments for 'remotepower'!").as_json
 
             return redirect('{}?fqdn={}'.format(reverse('api:remotepower_add'), sub_arguments[0]))
+        elif item == Add.REMOTEPOWERDEVICE:
+            if sub_arguments:
+                return ErrorMessage("Invalid number of arguments for 'remotepowerdevice'!").as_json
+            return redirect(reverse('api:remotepowerdevice_add'))
 
         elif item == Add.BMC:
             if len(sub_arguments) != 1:
@@ -615,6 +624,61 @@ class AddRemotePowerCommand(BaseAPIView):
             try:
                 remotepower = RemotePower(**form.cleaned_data)
                 remotepower.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message('Ok.').as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
+
+
+class AddRemotePowerDeviceCommand(BaseAPIView):
+
+    URL_POST = '/remotepowerdevice/add'
+
+    @staticmethod
+    def get_urls():
+        return [
+            re_path(r'^remotepowerdevice/add',
+            AddRemotePowerDeviceCommand.as_view(), name='remotepowerdevice_add'),
+        ]
+
+    def get(self, request, *args, **kwargs):
+        """Return form for adding a remotepowerdevice."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:
+            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+
+        form = RemotePowerDeviceAPIForm()
+
+        input = InputSerializer(
+            form.as_dict(),
+            self.URL_POST,
+            form.get_order()
+        )
+        return input.as_json
+
+    def post(self, request, *args, **kwargs):
+        """Add remotepowerdevice."""
+        if not request.user.is_superuser:
+            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+
+        data = json.loads(request.body.decode('utf-8'))['form']
+        form = RemotePowerDeviceAPIForm(data)
+
+        if form.is_valid():
+
+            cleaned_data = form.cleaned_data
+            new_device = RemotePowerDevice(username=cleaned_data['username'],
+                                           password=cleaned_data['password'],
+                                           mac=cleaned_data['mac'],
+                                           fqdn=cleaned_data['fqdn'])
+            
+            try:
+                new_device.save()
             except Exception as e:
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json
