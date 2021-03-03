@@ -239,8 +239,7 @@ class RemotePower(models.Model):
             if not self.machine.bmc:
                 errors.append(ValidationError("Please add an BMC to the machine!"))
 
-            if not self.management_bmc:
-                errors.append(ValidationError("Please select a management BMC!"))
+            self.management_bmc = self.machine.bmc
 
             # requires: management_bmc
             self.device = None
