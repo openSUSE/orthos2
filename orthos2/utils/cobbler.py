@@ -138,6 +138,13 @@ class CobblerServer:
         self._domain = domain
         self._cobbler_path = ServerConfig.objects.by_key("cobbler.command")
 
+    @staticmethod
+    def from_machine(machine: Machine):
+        domain = machine.fqdn_domain
+        server = domain.cobbler_server.all()[0]
+        return CobblerServer(server.fqdn, domain)
+    
+
     def connect(self):
         """Connect to DHCP server via SSH."""
         if not self._conn:
