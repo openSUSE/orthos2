@@ -193,7 +193,10 @@ class RemotePower(models.Model):
     def __str__(self):
         if self.type is None:
             return 'None'
-        return '{}@{}'.format(self.name, self.machine.fqdn)
+        if(hasattr(self, 'machine')):
+            return '{}@{}'.format(self.name, self.machine.fqdn)
+        return '{}'.format(self.name)
+
 
     def save(self, *args, **kwargs):
         """Check values before saving the remote power object. Do only save if type is set."""
