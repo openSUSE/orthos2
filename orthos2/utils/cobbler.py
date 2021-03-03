@@ -87,8 +87,8 @@ def get_virsh_options(machine):
 
 
 def get_raritan_options(remotepower):
-    options = " --power-type=raritan --power-address={fqdn} --power-id={plug}".format(
-        fqdn=remotepower.fqdn, id=remotepower.plug)
+    options = " --power-type=raritan --power-address={fqdn} --power-id={id}".format(
+        fqdn=remotepower.fqdn, id=remotepower.port)
 
 
 def get_ipmi_options(bmc):
