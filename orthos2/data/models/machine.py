@@ -595,10 +595,6 @@ class Machine(models.Model):
         return self.status_ipv4 in {Machine.StatusIP.REACHABLE, Machine.StatusIP.CONFIRMED} or\
             self.status_ipv6 in {Machine.StatusIP.REACHABLE, Machine.StatusIP.CONFIRMED}
 
-    def is_remotepower(self):
-        return self.system_id == System.Type.REMOTEPOWER
-    is_remotepower.boolean = True
-
     def is_reserved(self):
         if self.reserved_by:
             return True
