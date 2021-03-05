@@ -13,16 +13,6 @@
     "model": "data.system",
     "pk": null,
     "fields": {
-      "name": "BladeServer",
-      "virtual": false,
-      "administrative": false,
-      "created": "2016-01-01T10:00:00+00:00"
-    }
-  },
-  {
-    "model": "data.system",
-    "pk": null,
-    "fields": {
       "name": "VM KVM",
       "virtual": true,
       "administrative": false,
@@ -86,36 +76,6 @@
       "name": "LPAR zSeries",
       "virtual": true,
       "administrative": false,
-      "created": "2016-01-01T10:00:00+00:00"
-    }
-  },
-  {
-    "model": "data.system",
-    "pk": null,
-    "fields": {
-      "name": "Desktop",
-      "virtual": false,
-      "administrative": false,
-      "created": "2016-01-01T10:00:00+00:00"
-    }
-  },
-  {
-    "model": "data.system",
-    "pk": null,
-    "fields": {
-      "name": "RemotePower",
-      "virtual": false,
-      "administrative": true,
-      "created": "2016-01-01T10:00:00+00:00"
-    }
-  },
-  {
-    "model": "data.system",
-    "pk": null,
-    "fields": {
-      "name": "BMC",
-      "virtual": false,
-      "administrative": true,
       "created": "2016-01-01T10:00:00+00:00"
     }
   }

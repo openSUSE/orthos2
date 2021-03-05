@@ -97,13 +97,6 @@ class RemotePower(models.Model):
         (Type.S390, 's390')
     )
 
-    def limit_remote_power_device_choices():
-        """
-        Allow only devices of type remote power.
-
-        This needs to be in callable form because of later assignment of the type variable.
-        """
-        return {'system': System.Type.REMOTEPOWER}
 
     machine = models.OneToOneField(
         'data.Machine',
