@@ -274,21 +274,23 @@ class RemotePower(models.Model):
         """Return the current power status."""
         status = self.Status.UNKNOWN
         result = self._perform('status')
+        if not result:
+            raise RuntimeError("recieved no result from _perform('status')")
+        result = "\n".join(result)
 
-        if result and isinstance(result, int):
-            status = result
-        elif result and result.lower().find('off') > -1:
+        if result.lower().find('off') > -1:
             status = self.Status.OFF
-        elif result and result.lower().find('on') > -1:
+        elif result.lower().find('on') > -1:
             status = self.Status.ON
-
+        else:
+            raise RuntimeError("Inconclusive result from _perform('status')")
         return status
 
     
     def _perform(self, action: str):
         from orthos2.utils.cobbler import CobblerServer
         server =CobblerServer.from_machine(self.machine)
-        result= server.powerswitch(self, action)
+        result= server.powerswitch(self.machine, action)
         return result
 class Telnet(RemotePower):
 
