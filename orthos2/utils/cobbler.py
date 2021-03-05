@@ -243,7 +243,7 @@ class CobblerServer:
             self.close()
 
     def powerswitch(self,machine: Machine, action: str):
-        logger.debug("powerswitching of %s called with action %s", Machine.fqdn, action)
+        logger.debug("powerswitching of %s called with action %s", machine.fqdn, action)
         self.connect()
         cobbler_action = ""
         if action == "reboot":
