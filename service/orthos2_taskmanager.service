@@ -1,6 +1,7 @@
 [Unit]
 Description=Orthos taskmanager
 Requires=nginx.service
+Wants=logrotate.service
 
 [Service]
 User=orthos

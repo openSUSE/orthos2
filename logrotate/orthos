@@ -1,0 +1,18 @@
+/var/log/orthos/*.log {
+    compress
+    dateext
+    maxage 365
+    rotate 99
+    size=+16M
+    notifempty
+    missingok
+    su orthos orthos
+    create 644 orthos orthos
+#    sharedscripts
+#    prerotate
+#     systemctl stop orthos2
+#    endscript
+#    postrotate
+#     systemctl start orthos2
+#    endscript
+}
