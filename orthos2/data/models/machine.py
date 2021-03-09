@@ -443,6 +443,14 @@ class Machine(models.Model):
         limit_choices_to={'administrative': True}
     )
 
+    hypervisor = models.ForeignKey(
+        'data.Machine',
+        related_name="hypervising",
+        null=True,
+        blank=True,
+        on_delete = models.CASCADE
+    )
+
     dhcpv4_write = models.SmallIntegerField(
         'DHCPv4',
         choices=DHCPRecordOption.CHOICE,
@@ -459,6 +467,9 @@ class Machine(models.Model):
         null=False,
         default=DHCPRecordOption.WRITE
     )
+
+
+    use_bmc = models.BooleanField(verbose_name='Use BMC for powerswitching', default=True)
 
     hostname = None
 

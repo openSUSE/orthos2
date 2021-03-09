@@ -13,8 +13,7 @@ from django.db import models
 from django.template import Context, Template
 from orthos2.utils.misc import execute, get_s390_hostname
 from orthos2.utils.ssh import SSH
-from orthos2.data.models import System
-
+from . import ServerConfig
 
 class RemotePower(models.Model):
 
@@ -39,32 +38,7 @@ class RemotePower(models.Model):
             REBOOT_REMOTEPOWER
         ]
 
-    class Type:
-        TELNET = 0
-        SENTRY = 1
-        ILO = 2
-        IPMI = 3
-        DOMINIONPX = 4
-        LIBVIRTQEMU = 5
-        LIBVIRTLXC = 6
-        WEBCURL = 7
-        S390 = 8
-
-        @classmethod
-        def to_str(cls, index):
-            """Return type as string (remote power type name) by index."""
-            for type_tuple in RemotePower.TYPE_CHOICES:
-                if int(index) == type_tuple[0]:
-                    return type_tuple[1]
-            raise Exception("Remote power type with ID '{}' doesn't exist!".format(index))
-
-        @classmethod
-        def to_int(cls, name):
-            """Return type as integer if name matches."""
-            for type_tuple in RemotePower.TYPE_CHOICES:
-                if name.lower() == type_tuple[1].lower():
-                    return type_tuple[0]
-            raise Exception("Remote power type '{}' not found!".format(name))
+  
 
     class Status:
         UNKNOWN = 0
@@ -85,18 +59,12 @@ class RemotePower(models.Model):
                 cls.PAUSED: 'paused'
             }.get(index, 'undefined')
 
-    TYPE_CHOICES = (
-        (Type.TELNET, 'Telnet'),
-        (Type.SENTRY, 'Sentry'),
-        (Type.ILO, 'ILO'),
-        (Type.IPMI, 'IPMI'),
-        (Type.DOMINIONPX, 'Dominion PX'),
-        (Type.LIBVIRTQEMU, 'libvirt/qemu'),
-        (Type.LIBVIRTLXC, 'libvirt/lxc'),
-        (Type.WEBCURL, 'WEBcurl'),
-        (Type.S390, 's390')
-    )
 
+    kind = models.ForeignKey(
+        'data.RemotePowerType',
+        verbose_name= 'Powerswitch Type',
+        on_delete=models.CASCADE
+    )
 
     machine = models.OneToOneField(
         'data.Machine',
@@ -104,12 +72,7 @@ class RemotePower(models.Model):
         primary_key=True
     )
 
-    type = models.SmallIntegerField(
-        choices=TYPE_CHOICES,
-        blank=False,
-        null=False,
-    )
-
+   
     management_bmc = models.OneToOneField(
         'data.BMC',
         verbose_name='Management BMC',
@@ -127,15 +90,20 @@ class RemotePower(models.Model):
         on_delete=models.CASCADE
     )
 
-    port = models.SmallIntegerField(
+    hypervisor = models.ForeignKey(
+        'data.Machine',
+        related_name='+',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE
+    )
+    port = models.CharField(
+        max_length=255,
         null=True,
         blank=True
     )
 
-    device = models.SmallIntegerField(
-        null=True,
-        blank=True
-    )
+
 
     comment = models.CharField(
         max_length=200,
@@ -153,50 +121,13 @@ class RemotePower(models.Model):
         auto_now_add=True
     )
 
-    def __init__(self, *args, **kwargs):
-        """
-        Cast plain `RemotePower` object to respective subclass.
-
-        Subclasses getting collected automatically by inheritance of `RemotePower` class.
-        """
-        subclasses = {
-            sub.__name__.replace(self.__class__.__name__, '').lower(): sub
-            for sub in self.__class__.__subclasses__()
-        }
-        self._remotepowertypes = dict(
-            map(lambda x: (
-                x[0], {
-                    'class': subclasses[x[1].lower().replace(' ', '').replace('/', '')],
-                    'name': x[1]
-                }), self.TYPE_CHOICES)
-        )
-        super(RemotePower, self).__init__(*args, **kwargs)
-
-    def _set_remotepowertype(self, type):
-        """Set remote power type."""
-        self.__class__ = self._remotepowertypes[type]['class']
-
-    def __setattr__(self, attr, value):
-        """If `type` attribute changes, set respective subclass."""
-        # check for `None` explicitly because type 0 results in false
-        if attr == 'type' and value is not None:
-            self._set_remotepowertype(value)
-        super(RemotePower, self).__setattr__(attr, value)
-
-    def __str__(self):
-        if self.type is None:
-            return 'None'
-        if(hasattr(self, 'machine')):
-            return '{}@{}'.format(self.name, self.machine.fqdn)
-        return '{}'.format(self.name)
-
 
     def save(self, *args, **kwargs):
         """Check values before saving the remote power object. Do only save if type is set."""
         self.clean()
 
         # check for `None` explicitly because type 0 results in false
-        if self.type is not None:
+        if self.kind is not None:
             super(RemotePower, self).save(*args, **kwargs)
         else:
             raise ValidationError("No remote power type set!")
@@ -208,55 +139,44 @@ class RemotePower(models.Model):
         """
         errors = []
 
-        if self.type in {self.Type.TELNET, self.Type.DOMINIONPX}:
-            if not self.remote_power_device:
+        if self.kind.switching_device == "rpower_device":
+            if  self.remote_power_device:
+                self.management_bmc = None
+                self.hypervisor = None
+            else:
                 errors.append(ValidationError("Please provide a remote power device!"))
 
-            if self.port is None:
-                errors.append(ValidationError("Please provide a port!"))
-
-            # requires: remote_power_device, port
-            self.device = None
-            self.management_bmc = None
-
-        elif self.type in {self.Type.SENTRY, self.Type.S390}:
-            if not self.remote_power_device:
-                errors.append(ValidationError("Please provide a remote power device!"))
-
-            # requires: remote_power_device
-            self.device = None
-            self.management_bmc = None
-            self.port = None
-
-        elif self.type in {self.Type.ILO, self.Type.IPMI, self.Type.WEBCURL}:
-            if not self.machine.bmc:
-                errors.append(ValidationError("Please add an BMC to the machine!"))
-
-            self.management_bmc = self.machine.bmc
-
-            # requires: management_bmc
-            self.device = None
-            self.port = None
-            self.remote_power_device = None
-
-        elif self.type in {self.Type.LIBVIRTQEMU, self.Type.LIBVIRTLXC}:
+        if self.kind.switching_device == "bmc":
+            if self.machine.bmc:
+                self.management_bmc = self.machine.bmc
+                self.hypervisor = None
+                self.remote_power_device = None
+            else:
+                errors.append(ValidationError("The machine needs to have an associated BMC"))
+        
+        if self.kind.switching_device == "hypervisor":
             if not self.machine.hypervisor:
                 errors.append(ValidationError("No hypervisor found!"))
+            else:
+                self.hypervisor = self.machine.hypervisor
+                self.management_bmc = None
+                self.remote_power_device = None
 
-            # requires: -
-            self.device = None
-            self.management_bmc = None
+        if self.kind.use_port:
+            if self.port is None: # test for None, as port may be 0
+                errors.append(ValidationError("Please provide a port!"))
+        else:
             self.port = None
-            self.remote_power_device = None
-        
+
+
         if errors:
             raise ValidationError(errors)
 
     @property
     def name(self):
-        if self.type is None:
+        if self.kind is None:
             return None
-        return self.Type.to_str(self.type)
+        return str(self.kind.switching_device)
 
     def power_on(self):
         """Power on the machine."""
@@ -274,169 +194,59 @@ class RemotePower(models.Model):
         """Return the current power status."""
         status = self.Status.UNKNOWN
         result = self._perform('status')
-        if not result:
-            raise RuntimeError("recieved no result from _perform('status')")
-        result = "\n".join(result)
 
-        if result.lower().find('off') > -1:
+        if result and isinstance(result, int):
+            status = result
+        elif result and result.lower().find('off') > -1:
             status = self.Status.OFF
-        elif result.lower().find('on') > -1:
+        elif result and result.lower().find('on') > -1:
             status = self.Status.ON
-        else:
-            raise RuntimeError("Inconclusive result from _perform('status')")
+
         return status
 
     
     def _perform(self, action: str):
         from orthos2.utils.cobbler import CobblerServer
-        server =CobblerServer.from_machine(self.machine)
-        result= server.powerswitch(self.machine, action)
+        server =CobblerServer(self.machine.fqdn, self.machine.fqdn)
+        result= server.powerswitch(action)
         return result
-class Telnet(RemotePower):
 
-    class Meta:
-        proxy = True
-        verbose_name = 'Remote Power'
-
-
-class Sentry(RemotePower):
-
-    class Meta:
-        proxy = True
-        verbose_name = 'Remote Power'
-
- 
-class ILO(RemotePower):
-
-    class Meta:
-        proxy = True
-        verbose_name = 'Remote Power'
-
-
-
-class IPMI(RemotePower):
-
-    class Meta:
-        proxy = True
-        verbose_name = 'Remote Power'
-
-    def get_credentials(self, password_only=False):
+    def get_credentials(self):
         """
-        Return username and password for ipmir login.
-
-        Use values from the associated bmc if present, otherwise read from serverconfig
-        If no password/username can be found, an exception gets raised.
-
-        The return type is a tuple: (<password>, <username>)
+        Return username and password for a login on the switching device
+        Use Values from the approrpriate device object, If they don't exist
+        fall back to the server config. If that does not exist either, raise an
+        exception.
+        Returns a Tuple (username, password)
         """
         password = None
         username = None
 
-        password = self.management_bmc.password
-        if not password:
-            password = ServerConfig.objects.by_key('remotepower.{}.password'.format(self.type))
-
-        if not password:
-            password = ServerConfig.objects.by_key('remotepower.default.password')
-            if not password:
-                raise Exception(
-                    "No login password available for {}".format(self.type)
-                )
-
-        if password_only:
-            return (password, None)
-
-        username = self.management_bmc.username
-        if not username:
-            username = ServerConfig.objects.by_key(
-                'remotepower.{}.username'.format(self.type)
-            )
+        if self.kind.switching_device == "bmc":
+            username = self.management_bmc.username
+            password = self.management_bmc.password
+        elif  self.kind.switching_device == "rpower_device":
+            username = self.remote_power_device.username
+            password = self.remote_power_device.password
 
         if not username:
-            username = ServerConfig.objects.by_key('remotepower.default.username')
-            if not username:
-                raise Exception(
-                    "No login user available for {}".format(self.type)
-                )
-
-        return (password, username)
-
- 
-class DominionPX(RemotePower):
-
-    class Meta:
-        proxy = True
-        verbose_name = 'Remote Power'
-
-    def get_credentials(self, password_only=False):
-        """
-        Return username and password for ipmir login.
-
-        Use values from the associated remotepower device if present,
-        otherwise read from serverconfig
-        If no password/username can be found, an exception gets raised.
-
-        The return type is a tuple: (<password>, <username>)
-        """
-        password = None
-        username = None
-
-        password = self.remote_power_device.password
-        if not password:
-            password = ServerConfig.objects.by_key('remotepower.{}.password'.format(self.type))
-
+            username  = ServerConfig.objects.by_key('remotepower.default.username')
         if not password:
             password = ServerConfig.objects.by_key('remotepower.default.password')
-            if not password:
-                raise Exception(
-                    "No login password available for {}".format(self.type)
-                )
-
-        if password_only:
-            return (password, None)
-
-        username = self.remote_power_device.username
-        if not username:
-            username = ServerConfig.objects.by_key(
-                'remotepower.{}.username'.format(self.type)
-            )
 
         if not username:
-            username = ServerConfig.objects.by_key('remotepower.default.username')
-            if not username:
-                raise Exception(
-                    "No login user available for {}".format(self.type)
-                )
+            raise ValueError("Username not available")
 
-        return (password, username)
+        if not password:
+            raise ValueError("Password not available")
 
-
-
-class LibvirtQEMU(RemotePower):
-
-    class Meta:
-        proxy = True
-        verbose_name = 'Remote Power'
-
-
-
-class LibvirtLXC(RemotePower):
-
-    class Meta:
-        proxy = True
-        verbose_name = 'Remote Power'
-
-
-
-class S390(RemotePower):
-
-    class Meta:
-        proxy = True
-        verbose_name = 'Remote Power'
-
-
-class WEBCurl(RemotePower):
-
-    class Meta:
-        proxy = True
-        verbose_name = 'Remote Power'
+    def get_power_address(self):
+        if self.kind.switching_device == "bmc":
+            return self.management_bmc.fqdn
+        if self.kind.switching_device == "rpower_device":
+            return self.remote_power_device.fqdn
+        if self.kind.switching_device == "hypervisor":
+            return self.hypervisor.fqdn
+        
+    def __str__(self):
+        return  self.kind.fence + "@" + self.kind.switching_device

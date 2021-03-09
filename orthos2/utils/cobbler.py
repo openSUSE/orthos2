@@ -1,6 +1,7 @@
 import logging
 
 from orthos2.data.models import Machine, ServerConfig
+from  orthos2.data.models.serverconfig import SSHManager
 from django.template import Context, Template
 from orthos2.utils.ssh import SSH
 from orthos2.utils.misc import get_hostname
@@ -35,8 +36,8 @@ def get_tftp_server(machine: Machine):
         server = None
     return server.fqdn if server else None
 
-from orthos2.utils.misc import get_ip
 def create_cobbler_options(machine):
+    from orthos2.utils.misc import get_ip
     tftp_server = get_tftp_server(machine)
     options = " --name={name} --ip-address={ipv4}".format(name=machine.fqdn, ipv4=machine.ipv4)
     if machine.ipv6:
@@ -48,6 +49,8 @@ def create_cobbler_options(machine):
         ipv4 = get_ip(tftp_server)
         if ipv4:
             options += " --next-server={server}".format(server=ipv4[0])
+    if machine.has_remotepower():
+        options += get_power_options(machine)
     return options
 
 def get_bmc_command(machine, cobbler_path):
@@ -61,38 +64,24 @@ def get_bmc_command(machine, cobbler_path):
     return bmc_command
 
 def get_power_options(machine):
-    from orthos2.data.models import RemotePower
     if not machine.remotepower:
         logger.error("machine %s has no remotepower", machine.fqdn)
-        raise ValueError("machine {0}has no remotepower".format(machine.fqdn))
-    options = ""
-    if machine.remotepower.type == RemotePower.Type.IPMI:
-        options += get_ipmi_options(machine.bmc)
-    elif machine.remotepower.type == RemotePower.Type.DOMINIONPX:
-        options += get_raritan_options(machine.remotepower)
-    elif machine.remotepower.type in [RemotePower.Type.LIBVIRTQEMU, RemotePower.Type.LIBVIRTLXC]:
-        opptions += get_virsh_options(machine)
+        raise ValueError("machine {0} has no remotepower".format(machine.fqdn))
+    remotepower = machine.remotepower
+    options = " --power-type={} ".format(remotepower.kind.fence)
+
+    if remotepower.kind.use_key:
+        options += " --power-user=root --power-identity-file={key}".format(
+            key=SSHManager().get_keys()[0])
     else:
-        raise NotImplementedError("Only IPMI and DOMINONPX are implemented")
-    username, password = machine.remotepower.get_credentials()
-    options += " --power-user={username} --power-pass={password} ".format(username=username,
+        username, password = remotepower.get_credentials()
+        options += " --power-user={username} --power-pass={password} ".format(username=username,
         password=password)
+    if remotepower.kind.use_port:
+        options += " --power-id={port}".format(port=remotepower.port)
 
-
-def get_virsh_options(machine):
-    device = machine.remotepower.remote_power_device
-    options = " --power-type=virsh --power-address={host_fqdn} --power-id={fqdn} ".format(
-        host_fqdn=machine.fqdn, fqdn=device.fqdn
-        )
-
-
-def get_raritan_options(remotepower):
-    options = " --power-type=raritan --power-address={fqdn} --power-id={id}".format(
-        fqdn=remotepower.fqdn, id=remotepower.port)
-
-
-def get_ipmi_options(bmc):
-    options = " --power-type=ipmitool --power-address={fqdn} ".format(fqdn=bmc.fqdn)
+    options += " --power-address={address}".format(address=remotepower.get_power_address())
+    return options
 
 def get_cobbler_add_command(machine, cobber_path):
     profile = get_default_profile(machine)

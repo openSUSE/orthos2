@@ -13,8 +13,8 @@ from orthos2.utils.misc import DHCPRecordOption
 
 from .models import (Annotation, Architecture, BMC, Domain, Enclosure, Installation,
                      Machine, MachineGroup, MachineGroupMembership,
-                     NetworkInterface, Platform, RemotePower, RemotePowerDevice, SerialConsole,
-                     SerialConsoleType, ServerConfig, System, Vendor,
+                     NetworkInterface, Platform, RemotePower, RemotePowerDevice, RemotePowerType,
+                     SerialConsole, SerialConsoleType, ServerConfig, System, Vendor,
                      VirtualizationAPI, is_unique_mac_address, validate_dns,
                      validate_mac_address)
 
