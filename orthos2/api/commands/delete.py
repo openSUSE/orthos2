@@ -141,7 +141,7 @@ class DeleteMachineCommand(BaseAPIView):
                 if machine.is_virtual_machine():
                     host = machine.get_hypervisor()
 
-                    if host.virtualization_api:
+                    if host and host.virtualization_api:
                         host.virtualization_api.remove(machine)
                     else:
                         logger.info("No virtual host/hypservisor found when deleting virtual machine {}"

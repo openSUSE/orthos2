@@ -38,19 +38,14 @@
     <th>Comment</th>
   </thead>
   <tbody>
-    {% for bmc in machine.enclosure.get_bmc_list %}
     <tr>
-      <td>{{ bmc.mac_address }}</td>
+      <td>{{ machine.bmc.mac }}</td>
       <td>
-        {{ bmc.fqdn }}
-        <small>(<a href="http://{{ bmc.fqdn }}">http</a>|<a href="https://{{ bmc.fqdn }}">https</a>)</small></td>
-      <td>{{ bmc.comment }}</td>
+        {{ machine.bmc.fqdn }}
+        <small>(<a href="http://{{ machine.bmc.fqdn }}">http</a>|<a href="https://{{ machine.bmc.fqdn }}">https</a>)</small></td>
+      <td>{{ machine.bmc.comment }}</td>
     </tr>
-    {% empty %}
-    <tr>
-      <td colspan="3" style="text-align: center;">No BMC(s) available.</td>
-    </tr>
-    {% endfor %}
+   
   </tbody>
 </table>
 {% endblock %}

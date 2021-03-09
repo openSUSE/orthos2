@@ -4,6 +4,7 @@ from rest_framework import serializers
 from .annotation import AnnotationSerializer
 from .installation import InstallationSerializer
 from .networkinterface import NetworkInterfaceSerializer
+from .bmc import BMCSerializer
 
 
 class NetworkInterfaceListingField(NetworkInterfaceSerializer):
@@ -46,6 +47,16 @@ class AnnotationListingField(AnnotationSerializer):
 
         return result
 
+class BMCListingField(BMCSerializer):
+
+    def to_representation(self, bmc):
+        result = {}
+
+        for name, field in self.fields.items():
+            value = getattr(bmc, str(name))
+            result[name] = {'label': field.label, 'value': value}
+        return result
+
 
 class MachineSerializer(serializers.ModelSerializer):
 
@@ -65,7 +76,7 @@ class MachineSerializer(serializers.ModelSerializer):
 
     status_ipv4 = serializers.SerializerMethodField()
     status_ipv6 = serializers.SerializerMethodField()
-
+    bmc = BMCListingField()
     class Meta:
         model = Machine
         fields = (
@@ -79,6 +90,11 @@ class MachineSerializer(serializers.ModelSerializer):
             'enclosure',
             'nda',
             'system',
+            'bmc',
+            'bmc_fqdn',
+            'bmc_mac',
+            'bmc_password',
+            'bmc_username',
             'architecture',
             'networkinterfaces',
             'installations',
@@ -141,6 +157,10 @@ class MachineSerializer(serializers.ModelSerializer):
     power_device = serializers.CharField(source='remotepower.device')
     power_comment = serializers.CharField(source='remotepower.comment')
 
+    bmc_fqdn = serializers.CharField(source='bmc.fqdn')
+    bmc_mac = serializers.CharField(source='bmc.mac')
+    bmc_username = serializers.CharField(source='bmc.username')
+    bmc_password = serializers.CharField(source='bmc.password')
     location_room = serializers.CharField(source='enclosure.location_room')
     location_rack = serializers.CharField(source='enclosure.location_rack')
     location_rack_position = serializers.CharField(source='enclosure.location_rack_position')

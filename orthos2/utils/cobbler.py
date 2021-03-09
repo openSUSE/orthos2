@@ -3,6 +3,7 @@ import logging
 from orthos2.data.models import Machine, ServerConfig
 from django.template import Context, Template
 from orthos2.utils.ssh import SSH
+from orthos2.utils.misc import get_hostname
 
 logger = logging.getLogger('utils')
 
@@ -49,6 +50,49 @@ def create_cobbler_options(machine):
             options += " --next-server={server}".format(server=ipv4[0])
     return options
 
+def get_bmc_command(machine, cobbler_path):
+    if not hasattr(machine, 'bmc') or not machine.bmc:
+        logger.error("Tried to get bmc command for %s, which does not have one",machine.fqdn)
+    bmc = machine.bmc
+    bmc_command = """{cobbler} system edit --name={name} --interface=bmc --interface-type=bmc"""\
+        .format(cobbler=cobbler_path, name=machine.fqdn)
+    bmc_command += """ --ip-address="{ip}" --mac="{mac}" --dns-name="{dns}" """.format(
+            ip=get_ip(bmc.fqdn)[0], mac=bmc.mac, dns=get_hostname(bmc.fqdn))
+    return bmc_command
+
+def get_power_options(machine):
+    from orthos2.data.models import RemotePower
+    if not machine.remotepower:
+        logger.error("machine %s has no remotepower", machine.fqdn)
+        raise ValueError("machine {0}has no remotepower".format(machine.fqdn))
+    options = ""
+    if machine.remotepower.type == RemotePower.Type.IPMI:
+        options += get_ipmi_options(machine.bmc)
+    elif machine.remotepower.type == RemotePower.Type.DOMINIONPX:
+        options += get_raritan_options(machine.remotepower)
+    elif machine.remotepower.type in [RemotePower.Type.LIBVIRTQEMU, RemotePower.Type.LIBVIRTLXC]:
+        opptions += get_virsh_options(machine)
+    else:
+        raise NotImplementedError("Only IPMI and DOMINONPX are implemented")
+    username, password = machine.remotepower.get_credentials()
+    options += " --power-user={username} --power-pass={password} ".format(username=username,
+        password=password)
+
+
+def get_virsh_options(machine):
+    device = machine.remotepower.remote_power_device
+    options = " --power-type=virsh --power-address={host_fqdn} --power-id={fqdn} ".format(
+        host_fqdn=machine.fqdn, fqdn=device.fqdn
+        )
+
+
+def get_raritan_options(remotepower):
+    options = " --power-type=raritan --power-address={fqdn} --power-id={id}".format(
+        fqdn=remotepower.fqdn, id=remotepower.port)
+
+
+def get_ipmi_options(bmc):
+    options = " --power-type=ipmitool --power-address={fqdn} ".format(fqdn=bmc.fqdn)
 
 def get_cobbler_add_command(machine, cobber_path):
     profile = get_default_profile(machine)
@@ -94,6 +138,13 @@ class CobblerServer:
         self._domain = domain
         self._cobbler_path = ServerConfig.objects.by_key("cobbler.command")
 
+    @staticmethod
+    def from_machine(machine: Machine):
+        domain = machine.fqdn_domain
+        server = domain.cobbler_server.all()[0]
+        return CobblerServer(server.fqdn, domain)
+    
+
     def connect(self):
         """Connect to DHCP server via SSH."""
         if not self._conn:
@@ -119,7 +170,11 @@ class CobblerServer:
                 cobbler_commands.append(get_cobbler_update_command(machine, self._cobbler_path))
             else:
                 cobbler_commands.append(get_cobbler_add_command(machine, self._cobbler_path))
+                if hasattr(machine, 'bmc') and machine.bmc:
+                    cobbler_commands.append(get_bmc_command(machine, self._cobbler_path))
+
         for command in cobbler_commands:  # TODO: Convert this to a single ssh call (performance)
+            logger.debug("executing %s ", command)
             _, stderr, exitcode = self._conn.execute(command)
             if exitcode:
                 logger.error("failed to execute %s on %s with error %s",
@@ -177,7 +232,7 @@ class CobblerServer:
         try:
             stdout, stderr, exitstatus = self._conn.execute(command)
             if exitstatus:
-                logger.warning("setup of  %s with %s failed on %s with %s", machine.fqdn, 
+                logger.warning("setup of  %s with %s failed on %s with %s", machine.fqdn,
                                cobbler_profile, self._fqdn, stderr)
                 raise CobblerException(
                     "setup of {machine} with {profile} failed on {server} with {error}".format(
@@ -186,3 +241,23 @@ class CobblerServer:
             pass
         finally:
             self.close()
+
+    def powerswitch(self,machine: Machine, action: str):
+        logger.debug("powerswitching of %s called with action %s", machine.fqdn, action)
+        self.connect()
+        cobbler_action = ""
+        if action == "reboot":
+            cobbler_action = "reboot"
+        else:
+            cobbler_action = "power" + action
+
+        command = "{cobbler} system {action} --name  {fqdn}".format(cobbler=self._cobbler_path,
+            action=cobbler_action, fqdn=machine.fqdn)
+        out, stderr, exitcode = self._conn.execute(command)
+        if exitcode:
+                logger.warning("Powerswitching of  %s with %s failed on %s with %s", machine.fqdn,
+                               command, self._fqdn, stderr)
+                raise CobblerException(
+                    "Powerswitching of {machine} with {command} failed on {server} with {error}".format(
+                        machine=machine.fqdn, command=command, server=self._fqdn))
+        return out
