@@ -550,6 +550,8 @@ class Machine(models.Model):
 
         validate_mac_address(self.mac_address)
 
+        if not self.system.virtual and  self.hypervisor:
+            raise ValidationError("Only virtuals machines may have hypervisors")
         # create & assign network domain and ensure that the FQDN always matches the fqdn_domain
         domain, created = Domain.objects.get_or_create(name=get_domain(self.fqdn))
         if created:
@@ -637,7 +639,7 @@ class Machine(models.Model):
 
     def get_virtual_machines(self):
         if self.system_id == System.Type.BAREMETAL:
-            return self.enclosure.get_virtual_machines()
+            return self.hypervising.all()
         return None
 
     def get_kernel_options(self):
@@ -710,15 +712,6 @@ class Machine(models.Model):
 
         return False
 
-
-    def get_hypervisor(self):
-        if self.system.virtual:
-            return self.enclosure.get_non_virtual_machines().first()
-        return None
-
-    @property
-    def hypervisor(self):
-        return self.get_hypervisor()
 
     def get_s390_hostname(self, use_uppercase=False):
         if self.system_id in {System.Type.ZVM_VM, System.Type.ZVM_KVM}:
