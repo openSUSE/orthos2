@@ -153,8 +153,7 @@ class MachineSerializer(serializers.ModelSerializer):
         source='remotepower.management_bmc'
     )
     power_host = serializers.CharField(source='remotepower.remote_power_device')
-    power_port = serializers.IntegerField(source='remotepower.port')
-    power_device = serializers.CharField(source='remotepower.device')
+    power_port = serializers.CharField(source='remotepower.port')
     power_comment = serializers.CharField(source='remotepower.comment')
 
     bmc_fqdn = serializers.CharField(source='bmc.fqdn')
