@@ -18,4 +18,4 @@ from .annotation import Annotation
 from .virtualizationapi import *            # noqa: F403
 from .bmc import *                          # noqa: F403
 from .remotepowerdevice import *            # noqa: F403
-
+from .remotepowertype import *              # noqa: F403

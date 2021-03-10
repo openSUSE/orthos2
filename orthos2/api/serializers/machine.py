@@ -148,13 +148,12 @@ class MachineSerializer(serializers.ModelSerializer):
     serial_baud_rate = serializers.IntegerField(source='serialconsole.baud_rate')
     serial_kernel_device = serializers.IntegerField(source='serialconsole.kernel_device')
 
-    power_type = serializers.CharField(source='remotepower.type')
+    power_type = serializers.CharField(source='remotepower.kind.switching_device')
     power_management_bmc = serializers.CharField(
         source='remotepower.management_bmc'
     )
     power_host = serializers.CharField(source='remotepower.remote_power_device')
-    power_port = serializers.IntegerField(source='remotepower.port')
-    power_device = serializers.CharField(source='remotepower.device')
+    power_port = serializers.CharField(source='remotepower.port')
     power_comment = serializers.CharField(source='remotepower.comment')
 
     bmc_fqdn = serializers.CharField(source='bmc.fqdn')
@@ -197,9 +196,9 @@ class MachineSerializer(serializers.ModelSerializer):
                 field.label = 'Status IPv4'
             if name == 'status_ipv6':
                 field.label = 'Status IPv6'
-            if name == 'power_type' and data[name]:
-                data[name] = RemotePower.Type.to_str(data[name])
-
+            # TODO: Adapt this to the new implementation
+            #if name == 'power_type' and data[name]:
+            #    data[name] = RemotePower.Type.to_str(data[name])
             # ... do not add label/values if in exclude list
             if (name in exclude) and (data[name] is None):
                 continue

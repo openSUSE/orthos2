@@ -251,34 +251,30 @@ class QueryField:
             'post': lambda x:
                 Machine.objects.get(pk=x).fqdn
         },
-        'rpower_device': {
-            'field': RemotePower._meta.get_field('device'),
-            'related_name': 'remotepower',
-            'verbose_name': 'Device',
-        },
         'rpower_port': {
             'field': RemotePower._meta.get_field('port'),
             'related_name': 'remotepower',
             'verbose_name': 'Port',
         },
-        'rpower_type': {
-            'field': RemotePower._meta.get_field('type'),
-            'related_name': 'remotepower',
-            'verbose_name': 'Remotepower',
-            'pre': lambda x:
-                RemotePower.Type.to_int(x) if isinstance(x, str) else x,
-            'post': lambda x:
-                RemotePower.Type.to_str(x)
-        },
-        'rpower': {
-            'field': RemotePower._meta.get_field('type'),
-            'related_name': 'remotepower',
-            'verbose_name': 'Remotepower',
-            'pre': lambda x:
-                RemotePower.Type.to_int(x) if isinstance(x, str) else x,
-            'post': lambda x:
-                RemotePower.Type.to_str(x)
-        },
+# TODO: adapt this to new implementation
+#        'rpower_type': { 
+#            'field': RemotePower._meta.get_field('type'),
+#            'related_name': 'remotepower',
+#            'verbose_name': 'Remotepower',
+#            'pre': lambda x:
+#                RemotePower.Type.to_int(x) if isinstance(x, str) else x,
+#            'post': lambda x:
+#                RemotePower.Type.to_str(x)
+#        },
+#        'rpower': {
+#            'field': RemotePower._meta.get_field('type'),
+#            'related_name': 'remotepower',
+#            'verbose_name': 'Remotepower',
+#            'pre': lambda x:
+#                RemotePower.Type.to_int(x) if isinstance(x, str) else x,
+#            'post': lambda x:
+#                RemotePower.Type.to_str(x)
+#        },
 
         # Installation
         'inst_active': {

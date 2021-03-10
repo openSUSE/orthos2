@@ -443,6 +443,14 @@ class Machine(models.Model):
         limit_choices_to={'administrative': True}
     )
 
+    hypervisor = models.ForeignKey(
+        'data.Machine',
+        related_name="hypervising",
+        null=True,
+        blank=True,
+        on_delete = models.CASCADE
+    )
+
     dhcpv4_write = models.SmallIntegerField(
         'DHCPv4',
         choices=DHCPRecordOption.CHOICE,
@@ -459,6 +467,9 @@ class Machine(models.Model):
         null=False,
         default=DHCPRecordOption.WRITE
     )
+
+
+    use_bmc = models.BooleanField(verbose_name='Use BMC for powerswitching', default=True)
 
     hostname = None
 
@@ -539,6 +550,8 @@ class Machine(models.Model):
 
         validate_mac_address(self.mac_address)
 
+        if not self.system.virtual and  self.hypervisor:
+            raise ValidationError("Only virtuals machines may have hypervisors")
         # create & assign network domain and ensure that the FQDN always matches the fqdn_domain
         domain, created = Domain.objects.get_or_create(name=get_domain(self.fqdn))
         if created:
@@ -595,10 +608,6 @@ class Machine(models.Model):
         return self.status_ipv4 in {Machine.StatusIP.REACHABLE, Machine.StatusIP.CONFIRMED} or\
             self.status_ipv6 in {Machine.StatusIP.REACHABLE, Machine.StatusIP.CONFIRMED}
 
-    def is_remotepower(self):
-        return self.system_id == System.Type.REMOTEPOWER
-    is_remotepower.boolean = True
-
     def is_reserved(self):
         if self.reserved_by:
             return True
@@ -630,7 +639,7 @@ class Machine(models.Model):
 
     def get_virtual_machines(self):
         if self.system_id == System.Type.BAREMETAL:
-            return self.enclosure.get_virtual_machines()
+            return self.hypervising.all()
         return None
 
     def get_kernel_options(self):
@@ -703,15 +712,6 @@ class Machine(models.Model):
 
         return False
 
-
-    def get_hypervisor(self):
-        if self.system.virtual:
-            return self.enclosure.get_non_virtual_machines().first()
-        return None
-
-    @property
-    def hypervisor(self):
-        return self.get_hypervisor()
 
     def get_s390_hostname(self, use_uppercase=False):
         if self.system_id in {System.Type.ZVM_VM, System.Type.ZVM_KVM}:

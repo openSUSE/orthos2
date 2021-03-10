@@ -13,8 +13,8 @@ from orthos2.utils.misc import DHCPRecordOption
 
 from .models import (Annotation, Architecture, BMC, Domain, Enclosure, Installation,
                      Machine, MachineGroup, MachineGroupMembership,
-                     NetworkInterface, Platform, RemotePower, RemotePowerDevice, SerialConsole,
-                     SerialConsoleType, ServerConfig, System, Vendor,
+                     NetworkInterface, Platform, RemotePower, RemotePowerDevice, RemotePowerType,
+                     SerialConsole, SerialConsoleType, ServerConfig, System, Vendor,
                      VirtualizationAPI, is_unique_mac_address, validate_dns,
                      validate_mac_address)
 
@@ -71,6 +71,7 @@ class RemotePowerInline(admin.StackedInline):
     fk_name = 'machine'
     verbose_name = 'Remote Power'
     verbose_name_plural = 'Remote Power'
+    fields = ["kind", "port", "comment", "remote_power_device"]
 
  
 
@@ -334,7 +335,8 @@ class MachineAdmin(admin.ModelAdmin):
                     'administrative',
                     'nda'
                 ),
-                'active'
+                'active',
+                'use_bmc'
             )
         }),
         ('VIRTUALIZATION', {
@@ -344,8 +346,9 @@ class MachineAdmin(admin.ModelAdmin):
                     'vm_auto_delete'
                 ),
                 'vm_max',
-                'virtualization_api'
-            )
+                'virtualization_api',
+                'hypervisor'
+            ),
         }),
         ('MACHINE CHECKS', {
             'fields': (
@@ -513,13 +516,26 @@ class MachineAdmin(admin.ModelAdmin):
         if machine.system.administrative:
             self.inlines = (NetworkInterfaceInline, BMCInline)
         else:
-            self.inlines = (
-                SerialConsoleInline,
-                RemotePowerInline,
-                NetworkInterfaceInline,
-                AnnotationInline,
-                BMCInline
-            )
+            if machine.use_bmc:
+                if hasattr(machine, 'bmc'):
+                        self.inlines = (
+                            RemotePowerInline,
+                            NetworkInterfaceInline,
+                            AnnotationInline,
+                            BMCInline
+                        )
+                else:
+                    self.inlines = (
+                        NetworkInterfaceInline,
+                        AnnotationInline,
+                        BMCInline
+                    )
+            else:
+                self.inlines = (
+                        RemotePowerInline,
+                        NetworkInterfaceInline,
+                        AnnotationInline
+                    )
 
         return super(MachineAdmin, self).change_view(request, object_id, form_url, extra_context)
 
@@ -597,7 +613,7 @@ class EnclosureAdmin(admin.ModelAdmin):
         'location_rack',
         'location_rack_position'
     )
-    list_display = ('name', 'machine_count', 'platform_name', 'bmc_list')
+    list_display = ('name', 'machine_count', 'platform_name')
     search_fields = ('name',)
 
     def machine_count(self, obj):
@@ -611,12 +627,8 @@ class EnclosureAdmin(admin.ModelAdmin):
             return platform.name
         return None
 
-    def bmc_list(self, obj):
-        """Return string with comma seperated list of all BMC FQDNs."""
-        raise NotImplementedError("this functionality moved")
-        return ', '.join([bmc.fqdn for bmc in obj.get_bmc_list()])
 
-    
+
 
 admin.site.register(Enclosure, EnclosureAdmin)
 
@@ -624,6 +636,12 @@ class RemotePowerDeviceAdmin(admin.ModelAdmin):
     list_display = ['fqdn']
 
 admin.site.register(RemotePowerDevice, RemotePowerDeviceAdmin)
+
+class RemotePowerTypeAdmin(admin.ModelAdmin):
+    list_display = ['name']
+
+admin.site.register(RemotePowerType, RemotePowerTypeAdmin)
+
 
 class ServerConfigAdmin(admin.ModelAdmin):
     list_display = ('key', 'augmented_value')
