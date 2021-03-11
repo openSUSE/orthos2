@@ -150,6 +150,7 @@ getent passwd orthos >/dev/null || \
 %dir %{_sysconfdir}/orthos2
 %config %{_sysconfdir}/orthos2/orthos2.ini
 %config %{_sysconfdir}/orthos2/settings
+%config %{_sysconfdir}/logrotate.d/orthos
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
 %dir /usr/lib/orthos2
 %dir /usr/lib/orthos2/scripts
