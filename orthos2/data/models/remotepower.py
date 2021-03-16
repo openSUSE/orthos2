@@ -13,7 +13,7 @@ from django.db import models
 from django.template import Context, Template
 from orthos2.utils.misc import execute, get_s390_hostname
 from orthos2.utils.ssh import SSH
-from . import ServerConfig
+from . import ServerConfig, RemotePowerType
 
 class RemotePower(models.Model):
 
@@ -38,7 +38,7 @@ class RemotePower(models.Model):
             REBOOT_REMOTEPOWER
         ]
 
-  
+
 
     class Status:
         UNKNOWN = 0
@@ -59,12 +59,14 @@ class RemotePower(models.Model):
                 cls.PAUSED: 'paused'
             }.get(index, 'undefined')
 
+    remotepower_types = []
+    for remotepower_type in settings.REMOTEPOWER_TYPES:
+        remotepower_types.append(RemotePowerType(remotepower_type))
 
-    kind = models.ForeignKey(
-        'data.RemotePowerType',
-        verbose_name= 'Powerswitch Type',
-        on_delete=models.CASCADE
-    )
+    remotepower_type_choices = [ (fence.fence, fence.fence) for fence in remotepower_types]
+
+    kind = models.CharField(choices=remotepower_type_choices, max_length=255)
+
 
     machine = models.OneToOneField(
         'data.Machine',
@@ -72,7 +74,7 @@ class RemotePower(models.Model):
         primary_key=True
     )
 
-   
+
     management_bmc = models.OneToOneField(
         'data.BMC',
         verbose_name='Management BMC',
@@ -138,23 +140,23 @@ class RemotePower(models.Model):
         values.
         """
         errors = []
-
-        if self.kind.switching_device == "rpower_device":
+        fence = [x for x in self.remotepower_types if x.fence == self.kind][0]
+        if fence.device == "rpower_device":
             if  self.remote_power_device:
                 self.management_bmc = None
                 self.hypervisor = None
             else:
                 errors.append(ValidationError("Please provide a remote power device!"))
 
-        if self.kind.switching_device == "bmc":
+        elif fence.device == "bmc":
             if self.machine.bmc:
                 self.management_bmc = self.machine.bmc
                 self.hypervisor = None
                 self.remote_power_device = None
             else:
                 errors.append(ValidationError("The machine needs to have an associated BMC"))
-        
-        if self.kind.switching_device == "hypervisor":
+
+        elif fence.device == "hypervisor":
             if not self.machine.hypervisor:
                 errors.append(ValidationError("No hypervisor found!"))
             else:
@@ -162,7 +164,9 @@ class RemotePower(models.Model):
                 self.management_bmc = None
                 self.remote_power_device = None
 
-        if self.kind.use_port:
+        else:
+            errors.append(ValidationError("{} is not a valid switching device".format(fence['switching_device'])))
+        if fence.use_port:
             if self.port is None: # test for None, as port may be 0
                 errors.append(ValidationError("Please provide a port!"))
         else:
@@ -206,7 +210,7 @@ class RemotePower(models.Model):
             raise RuntimeError("Inconclusive result from _perform('status')")
         return status
 
-    
+
     def _perform(self, action: str):
         from orthos2.utils.cobbler import CobblerServer
         server = CobblerServer.from_machine(self.machine)
@@ -223,11 +227,11 @@ class RemotePower(models.Model):
         """
         password = None
         username = None
-
-        if self.kind.switching_device == "bmc":
+        fence = [x for x in self.remotepower_types if x.fence == self.kind][0]
+        if fence.device == "bmc":
             username = self.management_bmc.username
             password = self.management_bmc.password
-        elif  self.kind.switching_device == "rpower_device":
+        elif  fence.device == "rpower_device":
             username = self.remote_power_device.username
             password = self.remote_power_device.password
 
@@ -243,12 +247,14 @@ class RemotePower(models.Model):
             raise ValueError("Password not available")
 
     def get_power_address(self):
-        if self.kind.switching_device == "bmc":
+        fence = [x for x in self.remotepower_types if x.fence == self.kind][0]
+        if fence.device == "bmc":
             return self.management_bmc.fqdn
-        if self.kind.switching_device == "rpower_device":
+        if fence.device == "rpower_device":
             return self.remote_power_device.fqdn
-        if self.kind.switching_device == "hypervisor":
+        if fence.device == "hypervisor":
             return self.hypervisor.fqdn
-        
+
     def __str__(self):
-        return  self.kind.fence + "@" + self.kind.switching_device
+        fence = [x for x in self.remotepower_types if x.fence == self.kind][0]
+        return  fence.fence + "@" + fence.device

@@ -282,7 +282,26 @@ SUPPORT_CONTACT = 'tbd@domain.tld'
 VERSION = '2.0.0'
 SYSTEM_USER = 'orthos'
 
-FENCIG_AGENTS = ["virsh", "ipmitool", "raritan"]
+REMOTEPOWER_TYPES  = [
+                        {
+                            'fence': 'virsh',
+                            'device': 'rpower_device',
+                            'username': 'root',
+                            'identity_file': '/var/lib/orthos2/.ssh/master'
+                        },
+                        {
+                            'fence': 'ipmitool',
+                            'device': 'bmc',
+                            'username': 'xxx',
+                            'password': 'XXX',
+                        },
+                        {
+                            'fence': 'raritan',
+                            'device': 'hypervisor'
+                            'username': 'xxx',
+                            'password': 'XXX',
+                            'port': True
+                        }]
 
 # Check for alternative settings file. If this file exists, we use it and evaluate the code.
 # This is intended to be used for production mode.
