@@ -64,21 +64,48 @@ class SerialConsoleInline(admin.StackedInline):
         self.machine = obj
         return super(SerialConsoleInline, self).get_formset(request, obj, **kwargs)
 
-
-class RemotePowerInline(admin.StackedInline):
+class RemotePowerInlineRpower(admin.StackedInline):
     model = RemotePower
     extra = 0
     fk_name = 'machine'
     verbose_name = 'Remote Power'
     verbose_name_plural = 'Remote Power'
-    fields = ["kind", "port", "comment", "remote_power_device"]
-
- 
+    fields = ["port", "comment", "remote_power_device"]
 
     def get_formset(self, request, obj=None, **kwargs):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
-        return super(RemotePowerInline, self).get_formset(request, obj, **kwargs)
+        return super(RemotePowerInlineRpower, self).get_formset(request, obj, **kwargs)
+
+
+
+class RemotePowerInlineBMC(admin.StackedInline):
+    model = RemotePower
+    extra = 0
+    fk_name = 'machine'
+    verbose_name = 'Remote Power'
+    verbose_name_plural = 'Remote Power'
+    fields = ["comment", "management_bmc"]
+
+    def get_formset(self, request, obj=None, **kwargs):
+        """Set machine object for `formfield_for_foreignkey` method."""
+        self.machine = obj
+        return super(RemotePowerInlineBMC, self).get_formset(request, obj, **kwargs)
+
+
+
+class RemotePowerInlineHypervisor(admin.StackedInline):
+    model = RemotePower
+    extra = 0
+    fk_name = 'machine'
+    verbose_name = 'Remote Power'
+    verbose_name_plural = 'Remote Power'
+    fields = ["fence_name", "comment"]
+
+    def get_formset(self, request, obj=None, **kwargs):
+        """Set machine object for `formfield_for_foreignkey` method."""
+        self.machine = obj
+        return super(RemotePowerInlineHypervisor, self).get_formset(request, obj, **kwargs)
 
 
 class NetworkInterfaceInline(admin.TabularInline):
@@ -146,7 +173,6 @@ class MachineAdminForm(forms.ModelForm):
     def save(self, commit=True):
         machine = super(MachineAdminForm, self).save(commit=False)
         machine.mac_address = self.cleaned_data['mac_address']
-
         if commit:
             machine.save()
         return machine
@@ -519,7 +545,7 @@ class MachineAdmin(admin.ModelAdmin):
             if machine.use_bmc:
                 if hasattr(machine, 'bmc'):
                         self.inlines = (
-                            RemotePowerInline,
+                            RemotePowerInlineBMC,
                             NetworkInterfaceInline,
                             AnnotationInline,
                             BMCInline
@@ -530,14 +556,29 @@ class MachineAdmin(admin.ModelAdmin):
                         AnnotationInline,
                         BMCInline
                     )
+            elif machine.is_virtual_machine():
+                self.inlines = (
+                        RemotePowerInlineHypervisor,
+                        NetworkInterfaceInline,
+                        AnnotationInline
+                    )
             else:
                 self.inlines = (
-                        RemotePowerInline,
+                        RemotePowerInlineRpower,
                         NetworkInterfaceInline,
                         AnnotationInline
                     )
 
         return super(MachineAdmin, self).change_view(request, object_id, form_url, extra_context)
+
+    def save_formset(self, request, form, formset, change):
+        formset.save()
+        machine = form.save(commit=False)
+        if machine.use_bmc and hasattr(machine,'bmc') and not hasattr(machine, 'remotepower'):
+            machine.remotepower = RemotePower(machine.bmc.fence_name, machine, machine.bmc)
+            machine.bmc.save()
+            machine.remotepower.save()
+            machine.save()
 
 
 admin.site.register(Machine, MachineAdmin)
@@ -636,11 +677,6 @@ class RemotePowerDeviceAdmin(admin.ModelAdmin):
     list_display = ['fqdn']
 
 admin.site.register(RemotePowerDevice, RemotePowerDeviceAdmin)
-
-class RemotePowerTypeAdmin(admin.ModelAdmin):
-    list_display = ['name']
-
-admin.site.register(RemotePowerType, RemotePowerTypeAdmin)
 
 
 class ServerConfigAdmin(admin.ModelAdmin):
