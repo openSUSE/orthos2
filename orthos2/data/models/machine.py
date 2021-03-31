@@ -469,7 +469,7 @@ class Machine(models.Model):
     )
 
 
-    use_bmc = models.BooleanField(verbose_name='Use BMC for powerswitching', default=True)
+    use_bmc = models.BooleanField(verbose_name='Use BMC', default=True)
 
     hostname = None
 
