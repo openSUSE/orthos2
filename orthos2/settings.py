@@ -285,7 +285,7 @@ SYSTEM_USER = 'orthos'
 REMOTEPOWER_TYPES  = [
                         {
                             'fence': 'virsh',
-                            'device': 'rpower_device',
+                            'device': 'hypervisor',
                             'username': 'root',
                             'identity_file': '/var/lib/orthos2/.ssh/master'
                         },
@@ -297,7 +297,7 @@ REMOTEPOWER_TYPES  = [
                         },
                         {
                             'fence': 'raritan',
-                            'device': 'hypervisor'
+                            'device': 'rpower_device',
                             'username': 'xxx',
                             'password': 'XXX',
                             'port': True
