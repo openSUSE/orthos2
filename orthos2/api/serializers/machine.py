@@ -148,7 +148,7 @@ class MachineSerializer(serializers.ModelSerializer):
     serial_baud_rate = serializers.IntegerField(source='serialconsole.baud_rate')
     serial_kernel_device = serializers.IntegerField(source='serialconsole.kernel_device')
 
-    power_type = serializers.CharField(source='remotepower.kind.switching_device')
+    power_type = serializers.CharField(source='remotepower.fence_name')
     power_management_bmc = serializers.CharField(
         source='remotepower.management_bmc'
     )

@@ -13,10 +13,10 @@ from django.db import models
 from django.template import Context, Template
 from orthos2.utils.misc import execute, get_s390_hostname
 from orthos2.utils.ssh import SSH
-from . import ServerConfig, RemotePowerType
+from . import ServerConfig
+from orthos2.utils.remotepowertype import RemotePowerType, get_remote_power_type_choices
 
 class RemotePower(models.Model):
-
     class Action:
         ON = 'on'
         OFF = 'off'
@@ -59,13 +59,9 @@ class RemotePower(models.Model):
                 cls.PAUSED: 'paused'
             }.get(index, 'undefined')
 
-    remotepower_types = []
-    for remotepower_type in settings.REMOTEPOWER_TYPES:
-        remotepower_types.append(RemotePowerType(remotepower_type))
-
-    remotepower_type_choices = [ (fence.fence, fence.fence) for fence in remotepower_types]
-
-    kind = models.CharField(choices=remotepower_type_choices, max_length=255)
+    remotepower_type_choices = get_remote_power_type_choices("hypervisor")
+    
+    fence_name = models.CharField(choices=remotepower_type_choices, max_length=255, verbose_name="Fence Agent")
 
 
     machine = models.OneToOneField(
@@ -129,7 +125,7 @@ class RemotePower(models.Model):
         self.clean()
 
         # check for `None` explicitly because type 0 results in false
-        if self.kind is not None:
+        if self.fence_name is not None:
             super(RemotePower, self).save(*args, **kwargs)
         else:
             raise ValidationError("No remote power type set!")
@@ -140,9 +136,12 @@ class RemotePower(models.Model):
         values.
         """
         errors = []
-        fence = [x for x in self.remotepower_types if x.fence == self.kind][0]
+        self.fence_name = self._get_remotepower_fence_name()
+        logging.debug("getting fence object for %s", self.fence_name)
+        fence = RemotePowerType.from_fence(self.fence_name)
         if fence.device == "rpower_device":
             if  self.remote_power_device:
+                self.fence_name = self.remote_power_device.fence_name
                 self.management_bmc = None
                 self.hypervisor = None
             else:
@@ -151,6 +150,7 @@ class RemotePower(models.Model):
         elif fence.device == "bmc":
             if self.machine.bmc:
                 self.management_bmc = self.machine.bmc
+                self.fence_name=self.management_bmc.fence_name
                 self.hypervisor = None
                 self.remote_power_device = None
             else:
@@ -176,11 +176,20 @@ class RemotePower(models.Model):
         if errors:
             raise ValidationError(errors)
 
+    def _get_remotepower_fence_name(self):
+        if self.fence_name:
+            return self.fence_name
+        if self.remote_power_device:
+            return self.remote_power_device.fence_name
+        if self.management_bmc:
+            return self.management_bmc.fence_name
+
     @property
     def name(self):
-        if self.kind is None:
+        if self.fence_name is None:
             return None
-        return str(self.kind.switching_device)
+        logging.debug("getting fence object for %s", self.fence_name)
+        return str(RemotePowerType.from_fence(self.fence_name).device)
 
     def power_on(self):
         """Power on the machine."""
@@ -227,7 +236,7 @@ class RemotePower(models.Model):
         """
         password = None
         username = None
-        fence = [x for x in self.remotepower_types if x.fence == self.kind][0]
+        fence = [x for x in self.remotepower_types if x.fence == self.fence_name][0]
         if fence.device == "bmc":
             username = self.management_bmc.username
             password = self.management_bmc.password
@@ -247,7 +256,8 @@ class RemotePower(models.Model):
             raise ValueError("Password not available")
 
     def get_power_address(self):
-        fence = [x for x in self.remotepower_types if x.fence == self.kind][0]
+        logging.debug("getting fence object for %s in get_power_adress", self.fence_name)
+        fence = RemotePowerType.from_fence(self.fence_name)
         if fence.device == "bmc":
             return self.management_bmc.fqdn
         if fence.device == "rpower_device":
@@ -256,5 +266,6 @@ class RemotePower(models.Model):
             return self.hypervisor.fqdn
 
     def __str__(self):
-        fence = [x for x in self.remotepower_types if x.fence == self.kind][0]
+        logging.debug("getting fence object for %s in __str___", self.fence_name)
+        fence = RemotePowerType.from_fence(self.fence_name)
         return  fence.fence + "@" + fence.device
