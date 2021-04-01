@@ -85,7 +85,7 @@ class RemotePowerInlineBMC(admin.StackedInline):
     fk_name = 'machine'
     verbose_name = 'Remote Power'
     verbose_name_plural = 'Remote Power'
-    fields = ["comment", "management_bmc"]
+    fields = ["comment"]
 
     def get_formset(self, request, obj=None, **kwargs):
         """Set machine object for `formfield_for_foreignkey` method."""
