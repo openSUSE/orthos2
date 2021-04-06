@@ -5,6 +5,7 @@ from  orthos2.data.models.serverconfig import SSHManager
 from django.template import Context, Template
 from orthos2.utils.ssh import SSH
 from orthos2.utils.misc import get_hostname
+from orthos2.utils.remotepowertype import RemotePowerType
 
 logger = logging.getLogger('utils')
 
@@ -68,16 +69,17 @@ def get_power_options(machine):
         logger.error("machine %s has no remotepower", machine.fqdn)
         raise ValueError("machine {0} has no remotepower".format(machine.fqdn))
     remotepower = machine.remotepower
-    options = " --power-type={} ".format(remotepower.kind.fence)
+    fence = RemotePowerType.from_fence(remotepower.fence_name)
+    options = " --power-type={} ".format(fence.fence)
 
-    if remotepower.kind.use_key:
+    if fence.use_key:
         options += " --power-user=root --power-identity-file={key}".format(
             key=SSHManager().get_keys()[0])
     else:
         username, password = remotepower.get_credentials()
         options += " --power-user={username} --power-pass={password} ".format(username=username,
         password=password)
-    if remotepower.kind.use_port:
+    if fence.use_port:
         options += " --power-id={port}".format(port=remotepower.port)
 
     options += " --power-address={address}".format(address=remotepower.get_power_address())

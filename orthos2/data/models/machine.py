@@ -469,7 +469,7 @@ class Machine(models.Model):
     )
 
 
-    use_bmc = models.BooleanField(verbose_name='Use BMC for powerswitching', default=True)
+    use_bmc = models.BooleanField(verbose_name='Use BMC', default=True)
 
     hostname = None
 
@@ -550,8 +550,10 @@ class Machine(models.Model):
 
         validate_mac_address(self.mac_address)
 
-        if not self.system.virtual and  self.hypervisor:
+        if not self.system.virtual and self.hypervisor:
             raise ValidationError("Only virtuals machines may have hypervisors")
+        if self.system.virtual and self.use_bmc:
+            raise ValidationError("Virtual machines can not use a BMC")
         # create & assign network domain and ensure that the FQDN always matches the fqdn_domain
         domain, created = Domain.objects.get_or_create(name=get_domain(self.fqdn))
         if created:

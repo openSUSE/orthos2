@@ -1,6 +1,22 @@
 import logging
+from django.conf import settings
+
+def get_remote_power_type_choices(device: str = ""):
+    if device:
+        remotepower_type_choices = [ (fence['fence'], fence['fence']) for fence in settings.REMOTEPOWER_TYPES 
+                                if fence['device'] == device]
+    else:
+        remotepower_type_choices = [ (fence['fence'], fence['fence']) for fence in settings.REMOTEPOWER_TYPES]
+    return remotepower_type_choices
 
 class RemotePowerType:
+    @classmethod
+    def from_fence(cls, fence: str):
+        if not fence:
+            raise ValueError("Empty Argument")
+        obj = [cls(x) for x in settings.REMOTEPOWER_TYPES if x['fence']==fence][0]
+        return obj
+
     def __init__(self, options:dict):
         self.fence = options.get('fence')
         logging.debug("Initialiced RemotePowerType for %s", self.fence)
@@ -20,4 +36,5 @@ class RemotePowerType:
             self.use_port = options['port']
         else:
             self.use_port = False
+
 
