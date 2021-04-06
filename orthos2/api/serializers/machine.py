@@ -128,7 +128,6 @@ class MachineSerializer(serializers.ModelSerializer):
             'power_management_bmc',
             'power_host',
             'power_port',
-            'power_device',
             'power_comment',
             'location_room',
             'location_rack',
