@@ -158,7 +158,13 @@ class MachineSerializer(serializers.ModelSerializer):
     bmc_fqdn = serializers.CharField(source='bmc.fqdn')
     bmc_mac = serializers.CharField(source='bmc.mac')
     bmc_username = serializers.CharField(source='bmc.username')
-    bmc_password = serializers.CharField(source='bmc.password')
+    bmc_password = serializers.SerializerMethodField()
+    def get_bmc_password(self, obj):
+        if hasattr(self, 'bmc') and self.bmc:
+            if self.bmc_password:
+                return "***"
+        return "-"
+
     location_room = serializers.CharField(source='enclosure.location_room')
     location_rack = serializers.CharField(source='enclosure.location_rack')
     location_rack_position = serializers.CharField(source='enclosure.location_rack_position')
