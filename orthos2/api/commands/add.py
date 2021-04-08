@@ -277,9 +277,12 @@ class AddMachineCommand(BaseAPIView):
             cleaned_data = form.cleaned_data
             mac_address = cleaned_data['mac_address']
             del cleaned_data['mac_address']
-
+            if cleaned_data['hypervisor_fqdn']:
+                hypervisor = Machine.objects.filter(fqdn=cleaned_data['hypervisor_fqdn'])[0]
+            del cleaned_data['hypervisor_fqdn']
             new_machine = Machine(**cleaned_data)
             new_machine.mac_address = mac_address
+            new_machine.hypervisor = hypervisor
             try:
                 new_machine.save()
             except Exception as e:

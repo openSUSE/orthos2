@@ -322,6 +322,11 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         ],
         initial=DHCPRecordOption.WRITE,
     )
+    hypervisor_fqdn = forms.CharField(
+        label='Hypervisor',
+        max_length=256,
+        required=False,
+    )
 
     def get_order(self):
         """Return input order."""
@@ -332,6 +337,7 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
             'architecture_id',
             'system_id',
             'group_id',
+            'hypervisor_fqdn',
             'nda',
             'administrative',
             'use_bmc',
