@@ -466,10 +466,12 @@ class BMCAPIForm(forms.Form, BaseAPIForm):
     username = forms.CharField(
         label='BMC Username',
         max_length=256,
+        required=False
     )
     password = forms.CharField(
         label='BMC Password',
         max_length=256,
+        required=False
     )
     fqdn = forms.CharField(
         label='FQDN',
