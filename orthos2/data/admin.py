@@ -207,16 +207,16 @@ class MachineAdminForm(forms.ModelForm):
             # new machine
             if Machine.objects.filter(fqdn=fqdn):
                 raise ValidationError("FQDN is already in use!")
-
         return fqdn
 
-   def clean_use_bmc(self):
+    def clean_use_bmc(self):
         use_bmc = self.cleaned_data['use_bmc']
         system = self.cleaned_data['system']
         if system.virtual and use_bmc:
             raise ValidationError("System {} is virtual. Virtual machines can't have a BMC"
                 .format(system))
         return use_bmc
+
 
     def clean_hypervisor(self):
         hypervisor = self.cleaned_data['hypervisor']
@@ -227,7 +227,7 @@ class MachineAdminForm(forms.ModelForm):
         if hypervisor and hypervisor.is_virtual_machine():
             raise ValidationError("{} is a Virtual Machines. Hypervisors must be physical")
         return hypervisor
-
+    
     def clean(self):
         """
         Only collect system information if connectivity is set to `Full`.
