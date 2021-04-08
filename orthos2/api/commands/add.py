@@ -277,9 +277,12 @@ class AddMachineCommand(BaseAPIView):
             cleaned_data = form.cleaned_data
             mac_address = cleaned_data['mac_address']
             del cleaned_data['mac_address']
-
+            if cleaned_data['hypervisor_fqdn']:
+                hypervisor = Machine.objects.filter(fqdn=cleaned_data['hypervisor_fqdn'])[0]
+            del cleaned_data['hypervisor_fqdn']
             new_machine = Machine(**cleaned_data)
             new_machine.mac_address = mac_address
+            new_machine.hypervisor = hypervisor
             try:
                 new_machine.save()
             except Exception as e:
@@ -291,14 +294,14 @@ class AddMachineCommand(BaseAPIView):
         return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
 
 class AddBMCCommand(BaseAPIView):
-    URL_POST = '/bmc/add'
+    URL_POST = '/bmc/add/{fqdn}'
 
     @staticmethod
     def get_urls():
         return [
             re_path(r'^bmc/add', AddBMCCommand.as_view(), name='bmc_add'),
             re_path(
-                r'^bmc/add(?P<fqdn>[a-z0-9\.-]+)$/',
+                r'^bmc/add/(?P<fqdn>[a-z0-9\.-]+)$/',
                 AddBMCCommand.as_view(),
                 name='bmc_add'
             ),
@@ -333,9 +336,11 @@ class AddBMCCommand(BaseAPIView):
         )
         return input.as_json
 
-    def post(self, request, fqdn, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         """Add BMC to machine."""
         try:
+            
+            fqdn = request.path.split("/")[-1]
             result = get_machine(
                 fqdn,
                 redirect_to='api:bmc_add',
@@ -360,7 +365,8 @@ class AddBMCCommand(BaseAPIView):
                     fqdn=cleaned_data['fqdn'],
                     mac=cleaned_data['mac'],
                     username=cleaned_data['username'],
-                    password=cleaned_data['password']
+                    password=cleaned_data['password'],
+                    fence_name=cleaned_data['fence_name']
                 )
                 bmc.save()
             except Exception as e:
@@ -547,14 +553,14 @@ class AddAnnotationCommand(BaseAPIView):
 
 class AddRemotePowerCommand(BaseAPIView):
 
-    URL_POST = '/remotepower/{fqdn}/add'
+    URL_POST = '/remotepower/add/{fqdn}'
 
     @staticmethod
     def get_urls():
         return [
             re_path(r'^remotepower/add', AddRemotePowerCommand.as_view(), name='remotepower_add'),
             re_path(
-                r'^remotepower/(?P<fqdn>[a-z0-9\.-]+)/add$',
+                r'^remotepower/add/(?P<fqdn>[a-z0-9\.-]+)$/',
                 AddRemotePowerCommand.as_view(),
                 name='remotepower_add'
             ),
@@ -595,12 +601,13 @@ class AddRemotePowerCommand(BaseAPIView):
         )
         return input.as_json
 
-    def post(self, request, fqdn, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         """Add remote power to machine."""
         if not request.user.is_superuser:
             return ErrorMessage("Only superusers are allowed to perform this action!").as_json
 
         try:
+            fqdn = request.path.split("/")[-1]
             result = get_machine(
                 fqdn,
                 redirect_to='api:remotepower_add',

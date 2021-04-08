@@ -4,7 +4,7 @@ from django.conf import settings
 def get_remote_power_type_choices(device: str = ""):
     if device:
         remotepower_type_choices = [ (fence['fence'], fence['fence']) for fence in settings.REMOTEPOWER_TYPES 
-                                if fence['device'] == device]
+                                if fence['device'].lower() == device.lower()]
     else:
         remotepower_type_choices = [ (fence['fence'], fence['fence']) for fence in settings.REMOTEPOWER_TYPES]
     return remotepower_type_choices
