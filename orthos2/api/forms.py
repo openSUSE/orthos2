@@ -14,7 +14,7 @@ from django.forms.fields import (BooleanField, CharField, ChoiceField,
 from django.template.defaultfilters import slugify
 from orthos2.frontend.forms import ReserveMachineForm, VirtualMachineForm
 from orthos2.utils.misc import DHCPRecordOption
-
+from orthos2.utils.remotepowertype import get_remote_power_type_choices
 logger = logging.getLogger('api')
 
 
@@ -290,6 +290,12 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         initial=False,
     )
 
+    use_bmc =forms.BooleanField(
+        label='Use BMC',
+        required=False,
+        initial=True,
+    )
+
     check_connectivity = forms.ChoiceField(
         label='Check connectivity',
         choices=Machine.CONNECTIVITY_CHOICE,
@@ -328,6 +334,7 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
             'group_id',
             'nda',
             'administrative',
+            'use_bmc',
             'check_connectivity',
             'collect_system_information',
             'dhcpv4_write',
@@ -472,14 +479,19 @@ class BMCAPIForm(forms.Form, BaseAPIForm):
         label='MAC Address',
         max_length=256,
     )
+    fence_name = forms.ChoiceField(
+        choices=get_remote_power_type_choices('BMC'),
+        label="Fence Agent",
+    )
 
     def get_order(self):
         """Return input order."""
         return [
-            'mac',
             'fqdn',
+            'mac',
             'username',
-            'password'
+            'password',
+            'fence_name'
         ]
 
 
@@ -493,7 +505,7 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
         super(RemotePowerAPIForm, self).__init__(*args, **kwargs)
 
         self._query_fields = (
-            'type',
+            'fence_name',
             'remote_power_device',
             'port',
             'comment',
@@ -508,10 +520,8 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
         formset = RemotePowerFormSet(instance=machine)
 
         self.fields = formset.form().fields
-        # remove '-------' choice; `empty_label`/`empty_value` does not work here
-        choices = self.fields['type'].choices
-        self.fields['type']._set_choices(choices[1:])
         self.fields['remote_power_device'].empty_label = 'None'
+        self.fields['fence_name'].required = False
 
     def clean(self):
         """Add the machine to cleaned data for further processing."""
@@ -530,9 +540,12 @@ class RemotePowerDeviceAPIForm(forms.Form, BaseAPIForm):
     mac = forms.CharField(label='MAC', max_length=17)
     username = forms.CharField(label='Username', max_length=256, required=False)
     password = forms.CharField(label='Password', max_length=256, required=False)
-
+    fence_name = forms.ChoiceField(
+        choices=get_remote_power_type_choices("rpower_device"),
+        label="Fence Agent"
+    )
     def get_order(self):
-        return ['fqdn', 'mac', 'username', 'password']
+        return ['fqdn', 'mac','fence_name', 'username', 'password']
 
 
 class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):

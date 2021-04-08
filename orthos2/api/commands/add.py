@@ -360,7 +360,8 @@ class AddBMCCommand(BaseAPIView):
                     fqdn=cleaned_data['fqdn'],
                     mac=cleaned_data['mac'],
                     username=cleaned_data['username'],
-                    password=cleaned_data['password']
+                    password=cleaned_data['password'],
+                    fence_name=cleaned_data['fence_name']
                 )
                 bmc.save()
             except Exception as e:
