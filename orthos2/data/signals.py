@@ -10,12 +10,12 @@ from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.misc import (Serializer, get_hostname, is_dns_resolvable,
                                 is_valid_mac_address)
+from orthos2.utils.cobbler import CobblerServer
 
 from .exceptions import HostnameNotDnsResolvable
 from .models import (Enclosure, Machine, NetworkInterface, RemotePower,
                      SerialConsole, ServerConfig, System,
                      is_unique_mac_address, validate_dns, validate_mac_address)
-
 logger = logging.getLogger('orthos')
 
 
@@ -105,7 +105,9 @@ def machine_post_init(sender, instance, *args, **kwargs):
 
 @receiver(pre_delete, sender=Machine)
 def machine_pre_delete(sender, instance, *args, **kwargs):
-    """Pre delete action for machine. Save deleted machine object as file for archiving."""
+    """Pre delete action for machine. Save deleted machine object as file for archiving.
+       Also remove the machine from the cobbler Server.
+    """
     if not ServerConfig.objects.bool_by_key('serialization.execute'):
         return
 
@@ -141,6 +143,8 @@ def machine_pre_delete(sender, instance, *args, **kwargs):
 
     logger.info("Machine object serialized (target: '{}')".format(filename))
 
+    server = CobblerServer.from_machine(instance)
+    server.remove(instance)
 
 @receiver(post_save, sender=SerialConsole)
 def serialconsole_post_save(sender, instance, *args, **kwargs):

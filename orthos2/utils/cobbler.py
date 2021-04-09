@@ -4,7 +4,7 @@ from orthos2.data.models import Machine, ServerConfig
 from  orthos2.data.models.serverconfig import SSHManager
 from django.template import Context, Template
 from orthos2.utils.ssh import SSH
-from orthos2.utils.misc import get_hostname
+from orthos2.utils.misc import get_hostname, get_ip
 from orthos2.utils.remotepowertype import RemotePowerType
 
 logger = logging.getLogger('utils')
@@ -172,6 +172,19 @@ class CobblerServer:
                              command, self._fqdn, stderr)
 
         self.close()
+
+    def remove(self, machine: Machine):
+        self.connect()
+        if not self.is_installed():
+            raise CobblerException("No Cobbler service found: {}".format(self._fqdn))
+        if not self.is_running():
+            raise CobblerException("Cobbler server is not running: {}".format(self._fqdn))
+        command = "{cobbler} system remove --name {fqdn}".format(
+            cobbler=self._cobbler_path, fqdn=machine.fqdn)
+        _, stderr, exitcode= self._conn.execute(command)
+        if(exitcode):
+            logging.error("Removing %s failed with '%s'", machine.fqdn, stderr)
+
 
     def is_installed(self):
         """Check if Cobbler server is available."""
