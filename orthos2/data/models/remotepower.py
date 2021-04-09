@@ -236,7 +236,7 @@ class RemotePower(models.Model):
         """
         password = None
         username = None
-        fence = [x for x in self.remotepower_types if x.fence == self.fence_name][0]
+        fence = RemotePowerType.from_fence(self.fence_name)
         if fence.device == "bmc":
             username = self.management_bmc.username
             password = self.management_bmc.password
@@ -254,6 +254,8 @@ class RemotePower(models.Model):
 
         if not password:
             raise ValueError("Password not available")
+
+        return username, password
 
     def get_power_address(self):
         logging.debug("getting fence object for %s in get_power_adress", self.fence_name)
