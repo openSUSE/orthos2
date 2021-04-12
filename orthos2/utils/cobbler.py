@@ -44,6 +44,7 @@ def create_cobbler_options(machine):
     if machine.ipv6:
         options += " --ipv6-address={ipv6}".format(ipv6=machine.ipv6)
     options += " --interface=default --management=True --interface-master=True"
+    options += " --mac-address={mac} ".format(mac=machine.mac_address)
     if get_filename(machine):
         options += " --filename={filename}".format(filename=get_filename(machine))
     if tftp_server:
