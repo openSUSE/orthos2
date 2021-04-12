@@ -68,12 +68,11 @@ Example:
             return ErrorMessage("Unknown option '{}'!".format(option)).as_json
 
         try:
-            machine.scan(option)
-
             if not machine.collect_system_information:
                 return InfoMessage(
                     "Collecting system information is disabled for this machine."
                 ).as_json
+            machine.scan(option)
 
         except Exception as e:
             return ErrorMessage(str(e)).as_json
