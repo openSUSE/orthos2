@@ -73,7 +73,7 @@ def get_power_options(machine):
     fence = RemotePowerType.from_fence(remotepower.fence_name)
     options = " --power-type={} ".format(fence.fence)
 
-    if fence.use_key:
+    if fence.use_identity_file:
         options += " --power-user=root --power-identity-file={key}".format(
             key=SSHManager().get_keys()[0])
     else:
