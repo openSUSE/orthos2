@@ -20,9 +20,9 @@ logger = logging.getLogger('orthos')
 
 
 signal_cobbler_regenerate = Signal(providing_args=['domain_id'])
+signal_cobbler_machine_update = Signal(providing_args=['domain_id', 'machine_id'])
 signal_serialconsole_regenerate = Signal(providing_args=['cscreen_server_fqdn'])
 signal_motd_regenerate = Signal(providing_args=['fqdn'])
-
 
 @receiver(pre_save, sender=Machine)
 def machine_pre_save(sender, instance, *args, **kwargs):
@@ -188,6 +188,17 @@ def regenerate_cobbler(sender, domain_id, *args, **kwargs):
     else:
         task = tasks.RegenerateCobbler(domain_id)
 
+    TaskManager.add(task)
+
+
+@receiver(signal_cobbler_machine_update)
+def update_cobbler_machine(sender, domain_id, machine_id):
+    """
+    Create `RegenerateCobbler()` task here.
+
+    This should be the one and only place for creating this task.
+    """
+    task = tasks.UpdateCobblerMachine(domain_id, machine_id)
     TaskManager.add(task)
 
 
