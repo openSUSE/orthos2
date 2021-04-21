@@ -75,13 +75,15 @@ def get_power_options(machine):
 
     if fence.use_identity_file:
         options += " --power-user=root --power-identity-file={key}".format(
-            key=SSHManager().get_keys()[0])
+            key=fence.identity_file)
     else:
         username, password = remotepower.get_credentials()
         options += " --power-user={username} --power-pass={password} ".format(username=username,
         password=password)
     if fence.use_port:
         options += " --power-id={port}".format(port=remotepower.port)
+    elif fence.device == "hypervisor":
+        options += " --power-id={name}".format(name=machine.hostname)
 
     options += " --power-address={address}".format(address=remotepower.get_power_address())
     return options
