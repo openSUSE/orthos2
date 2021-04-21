@@ -14,10 +14,8 @@ class SetupMachine(Task):
 
     def __init__(self, fqdn, choice=None):
         self.fqdn = fqdn
-        if choice:
-            self.choice = choice
-        else:
-            self.choice = 'default'
+        self.choice = choice
+
 
     def execute(self):
         """Execute the task."""
@@ -31,7 +29,7 @@ class SetupMachine(Task):
             machine = Machine.objects.get(fqdn=self.fqdn)
             domain = machine.fqdn_domain
             servers = domain.cobbler_server.all()
-            if not servers: 
+            if not servers:
                 logger.warning("No cobbler server available for '%s'", machine.fqdn_domain.name)
                 return
 
@@ -40,7 +38,7 @@ class SetupMachine(Task):
                     logger.debug("trying %s for setup", server.fqdn)
                     cobbler_server = CobblerServer(server.fqdn, domain)
                     cobbler_server.setup(machine, self.choice)
-                    
+
                 except CobblerException as e:
                     logger.warning("Setup of %s with %s failed on %s with %s",machine.fqdn,
                     self.choice, server.fqdn, e)

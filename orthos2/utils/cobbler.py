@@ -213,10 +213,14 @@ class CobblerServer:
         return clean_out
 
 
+
     def setup(self, machine: Machine, choice: str):
         logger.info("setup called for %s with %s on cobbler server %s ", machine.fqdn, self._fqdn,
             choice)
-        cobbler_profile = "{arch}:{profile}".format(arch=machine.architecture, profile=choice)
+        if choice:
+            cobbler_profile = "{arch}:{profile}".format(arch=machine.architecture, profile=choice)
+        else:
+            cobbler_profile = get_default_profile(machine)
 
         command = "{cobbler} system edit --name={machine}  --profile={profile} --netboot=True"\
             .format(cobbler=self._cobbler_path, machine=machine.fqdn, profile=cobbler_profile)

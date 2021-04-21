@@ -845,7 +845,7 @@ class Machine(models.Model):
         reservationhistory.save()
 
         if self.has_setup_capability():
-            self.setup('default')
+            self.setup()
         else:
             self.update_motd()
 
@@ -909,7 +909,7 @@ class Machine(models.Model):
         return True
 
     @check_permission
-    def setup(self, setup_label, user=None):
+    def setup(self, setup_label=None, user=None):
         """Setup machine (re-install distribution)."""
         from orthos2.taskmanager import tasks
         from orthos2.taskmanager.models import TaskManager
