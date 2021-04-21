@@ -8,7 +8,7 @@ from orthos2.utils.misc import get_domain
 from orthos2.data.models import Domain
 
 from django.conf.urls import re_path
-from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponseRedirect
 
 
@@ -143,6 +143,6 @@ Example:
             machine.update_motd(user=request.user)
             return Message("OK.").as_json
         else:
-            return ErrorMessage("Unknown option '{}'".format(option)).as_json
+            return ErrorMessage("Unknown service {}".format(service)).as_json
 
-        return ErrorMessage("Unknown service '{}'".format(service)).as_json
+        return ErrorMessage("Unknown error - params: {} - {}".format(service, fqdn)).as_json
