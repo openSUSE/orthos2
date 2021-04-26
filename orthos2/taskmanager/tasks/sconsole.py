@@ -75,7 +75,7 @@ class RegenerateSerialConsole(Task):
                 if _errno == errno.ENOENT:
                     file_found = False
                     logging.warning("{}:{} not found - creating...".format(cscreen_server.fqdn,
-                                                                         screenrc_file))
+                                                                           screenrc_file))
                 else:
                     raise(e)
 

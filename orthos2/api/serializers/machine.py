@@ -47,6 +47,7 @@ class AnnotationListingField(AnnotationSerializer):
 
         return result
 
+
 class BMCListingField(BMCSerializer):
 
     def to_representation(self, bmc):
@@ -77,6 +78,7 @@ class MachineSerializer(serializers.ModelSerializer):
     status_ipv4 = serializers.SerializerMethodField()
     status_ipv6 = serializers.SerializerMethodField()
     bmc = BMCListingField()
+
     class Meta:
         model = Machine
         fields = (
@@ -159,6 +161,7 @@ class MachineSerializer(serializers.ModelSerializer):
     bmc_mac = serializers.CharField(source='bmc.mac')
     bmc_username = serializers.CharField(source='bmc.username')
     bmc_password = serializers.SerializerMethodField()
+
     def get_bmc_password(self, obj):
         if hasattr(self, 'bmc') and self.bmc:
             if self.bmc_password:
@@ -173,7 +176,7 @@ class MachineSerializer(serializers.ModelSerializer):
 
     def __init__(self, machine, *args, **kwargs):
         super(MachineSerializer, self).__init__(machine, *args, **kwargs)
-        if  not hasattr(machine, 'group') or not machine.group:
+        if not hasattr(machine, 'group') or not machine.group:
             self.fields.pop('group')
 
     @property
@@ -202,7 +205,7 @@ class MachineSerializer(serializers.ModelSerializer):
             if name == 'status_ipv6':
                 field.label = 'Status IPv6'
             # TODO: Adapt this to the new implementation
-            #if name == 'power_type' and data[name]:
+            # if name == 'power_type' and data[name]:
             #    data[name] = RemotePower.Type.to_str(data[name])
             # ... do not add label/values if in exclude list
             if (name in exclude) and (data[name] is None):

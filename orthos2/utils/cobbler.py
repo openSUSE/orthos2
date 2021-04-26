@@ -1,7 +1,7 @@
 import logging
 
 from orthos2.data.models import Machine, ServerConfig
-from  orthos2.data.models.serverconfig import SSHManager
+from orthos2.data.models.serverconfig import SSHManager
 from django.template import Context, Template
 from orthos2.utils.ssh import SSH
 from orthos2.utils.misc import get_hostname, get_ip
@@ -20,6 +20,7 @@ def get_default_profile(machine):
         return default
     raise ValueError("Machine {machine} has no default profile".format(machine=machine.fqdn))
 
+
 def get_tftp_server(machine: Machine):
     """
     Return the corresponding tftp server attribute for the DHCP record.
@@ -36,6 +37,7 @@ def get_tftp_server(machine: Machine):
     else:
         server = None
     return server.fqdn if server else None
+
 
 def create_cobbler_options(machine):
     from orthos2.utils.misc import get_ip
@@ -55,15 +57,17 @@ def create_cobbler_options(machine):
         options += get_power_options(machine)
     return options
 
+
 def get_bmc_command(machine, cobbler_path):
     if not hasattr(machine, 'bmc') or not machine.bmc:
-        logger.error("Tried to get bmc command for %s, which does not have one",machine.fqdn)
+        logger.error("Tried to get bmc command for %s, which does not have one", machine.fqdn)
     bmc = machine.bmc
     bmc_command = """{cobbler} system edit --name={name} --interface=bmc --interface-type=bmc"""\
         .format(cobbler=cobbler_path, name=machine.fqdn)
     bmc_command += """ --ip-address="{ip}" --mac="{mac}" --dns-name="{dns}" """.format(
             ip=get_ip(bmc.fqdn)[0], mac=bmc.mac, dns=get_hostname(bmc.fqdn))
     return bmc_command
+
 
 def get_power_options(machine):
     if not machine.remotepower:
@@ -79,7 +83,7 @@ def get_power_options(machine):
     else:
         username, password = remotepower.get_credentials()
         options += " --power-user={username} --power-pass={password} ".format(username=username,
-        password=password)
+                                                                              password=password)
     if fence.use_port:
         options += " --power-id={port}".format(port=remotepower.port)
     elif fence.device == "hypervisor":
@@ -87,6 +91,7 @@ def get_power_options(machine):
 
     options += " --power-address={address}".format(address=remotepower.get_power_address())
     return options
+
 
 def get_cobbler_add_command(machine, cobber_path):
     profile = get_default_profile(machine)
@@ -137,7 +142,6 @@ class CobblerServer:
         domain = machine.fqdn_domain
         server = domain.cobbler_server.all()[0]
         return CobblerServer(server.fqdn, domain)
-    
 
     def connect(self):
         """Connect to DHCP server via SSH."""
@@ -184,10 +188,9 @@ class CobblerServer:
             raise CobblerException("Cobbler server is not running: {}".format(self._fqdn))
         command = "{cobbler} system remove --name {fqdn}".format(
             cobbler=self._cobbler_path, fqdn=machine.fqdn)
-        _, stderr, exitcode= self._conn.execute(command)
+        _, stderr, exitcode = self._conn.execute(command)
         if(exitcode):
             logging.error("Removing %s failed with '%s'", machine.fqdn, stderr)
-
 
     def is_installed(self):
         """Check if Cobbler server is available."""
@@ -239,7 +242,7 @@ class CobblerServer:
         finally:
             self.close()
 
-    def powerswitch(self,machine: Machine, action: str):
+    def powerswitch(self, machine: Machine, action: str):
         logger.debug("powerswitching of %s called with action %s", machine.fqdn, action)
         self.connect()
         cobbler_action = ""
@@ -249,12 +252,13 @@ class CobblerServer:
             cobbler_action = "power" + action
 
         command = "{cobbler} system {action} --name  {fqdn}".format(cobbler=self._cobbler_path,
-            action=cobbler_action, fqdn=machine.fqdn)
+                                                                    action=cobbler_action,
+                                                                    fqdn=machine.fqdn)
         out, stderr, exitcode = self._conn.execute(command)
         if exitcode:
-                logger.warning("Powerswitching of  %s with %s failed on %s with %s", machine.fqdn,
-                               command, self._fqdn, stderr)
-                raise CobblerException(
-                    "Powerswitching of {machine} with {command} failed on {server} with {error}".format(
-                        machine=machine.fqdn, command=command, server=self._fqdn))
+            logger.warning("Powerswitching of  %s with %s failed on %s with %s", machine.fqdn,
+                           command, self._fqdn, stderr)
+            raise CobblerException(
+                "Powerswitching of {machine} with {command} failed on {server} with {error}".format(
+                    machine=machine.fqdn, command=command, server=self._fqdn))
         return out

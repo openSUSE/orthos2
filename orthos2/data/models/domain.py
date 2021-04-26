@@ -157,7 +157,6 @@ class Domain(models.Model):
         def grouping(records):
             """Group records for HTML form."""
 
-            
         if not self.tftp_server:
             logger.warning("No TFTP server available for '{}'".format(self.name))
             return {}

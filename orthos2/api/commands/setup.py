@@ -8,6 +8,7 @@ from django.http import HttpResponseRedirect, JsonResponse
 import logging
 logger = logging.getLogger('api')
 
+
 class SetupCommand(BaseAPIView):
 
     METHOD = 'GET'

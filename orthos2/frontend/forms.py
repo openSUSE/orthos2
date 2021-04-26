@@ -14,6 +14,7 @@ from django.utils.formats import date_format
 import logging
 logger = logging.getLogger('views')
 
+
 class NewUserForm(forms.Form):
     login = forms.CharField(
         max_length=100,

@@ -134,7 +134,8 @@ Example:
                 for fqdn in machines.distinct():
                     signal_serialconsole_regenerate.send(sender=None, cscreen_server_fqdn=fqdn)
                     msg += ' ' + fqdn
-            return Message("Regenerated serial console entries for serial console servers: " + msg).as_json
+            return Message("Regenerated serial console entries for serial console servers: "
+                           + msg).as_json
 
         # regenerate MOTD (only works per machine atm)
         elif service.lower() == RegenerateCommand.MOTD:

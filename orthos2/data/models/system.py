@@ -18,7 +18,6 @@ class System(models.Model):
                 -1
             )
 
-
     name = models.CharField(
         max_length=200,
         blank=False,

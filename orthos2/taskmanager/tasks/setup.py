@@ -40,15 +40,15 @@ class SetupMachine(Task):
                     cobbler_server.setup(machine, self.choice)
 
                 except CobblerException as e:
-                    logger.warning("Setup of %s with %s failed on %s with %s",machine.fqdn,
-                    self.choice, server.fqdn, e)
+                    logger.warning("Setup of %s with %s failed on %s with %s", machine.fqdn,
+                                   self.choice, server.fqdn, e)
                 else:
                     logger.debug("success")
                     machine.reboot()
                     break
             else:
                 logger.error("Setup of %s with %s failed on all cobbler servers",
-                         machine.fqdn, self.choice)
+                             machine.fqdn, self.choice)
 
         except SSH.Exception as exception:
             logger.error(exception)
