@@ -8,8 +8,8 @@ from orthos2.api.forms import (AnnotationAPIForm, BMCAPIForm, MachineAPIForm, Re
 from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                           InfoMessage, InputSerializer, Message,
                                           Serializer)
-from orthos2.data.models import (Annotation, BMC, Enclosure, Machine, RemotePower, RemotePowerDevice,
-                                 SerialConsole)
+from orthos2.data.models import (Annotation, BMC, Enclosure, Machine, RemotePower,
+                                 RemotePowerDevice, SerialConsole)
 from django.conf.urls import re_path
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ValidationError
@@ -29,8 +29,8 @@ class Add:
     BMC = 'bmc'
     REMOTEPOWERDEVICE = 'remotepowerdevice'
 
-    as_list = [MACHINE, VIRTUALMACHINE, SERIALCONSOLE, ANNOTATION, REMOTEPOWER, 
-              BMC, REMOTEPOWERDEVICE]
+    as_list = [MACHINE, VIRTUALMACHINE, SERIALCONSOLE, ANNOTATION, REMOTEPOWER,
+               BMC, REMOTEPOWERDEVICE]
 
 
 class AddCommand(BaseAPIView):
@@ -293,6 +293,7 @@ class AddMachineCommand(BaseAPIView):
 
         return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
 
+
 class AddBMCCommand(BaseAPIView):
     URL_POST = '/bmc/add/{fqdn}'
 
@@ -339,7 +340,7 @@ class AddBMCCommand(BaseAPIView):
     def post(self, request, *args, **kwargs):
         """Add BMC to machine."""
         try:
-            
+
             fqdn = request.path.split("/")[-1]
             result = get_machine(
                 fqdn,
@@ -360,7 +361,7 @@ class AddBMCCommand(BaseAPIView):
         if form.is_valid():
             try:
                 cleaned_data = form.cleaned_data
-                bmc= BMC(
+                bmc = BMC(
                     machine=machine,
                     fqdn=cleaned_data['fqdn'],
                     mac=cleaned_data['mac'],
@@ -648,7 +649,8 @@ class AddRemotePowerDeviceCommand(BaseAPIView):
     def get_urls():
         return [
             re_path(r'^remotepowerdevice/add',
-            AddRemotePowerDeviceCommand.as_view(), name='remotepowerdevice_add'),
+                    AddRemotePowerDeviceCommand.as_view(),
+                    name='remotepowerdevice_add'),
         ]
 
     def get(self, request, *args, **kwargs):
@@ -683,7 +685,7 @@ class AddRemotePowerDeviceCommand(BaseAPIView):
                                            password=cleaned_data['password'],
                                            mac=cleaned_data['mac'],
                                            fqdn=cleaned_data['fqdn'])
-            
+
             try:
                 new_device.save()
             except Exception as e:

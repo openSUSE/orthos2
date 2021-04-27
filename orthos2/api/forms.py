@@ -290,7 +290,7 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         initial=False,
     )
 
-    use_bmc =forms.BooleanField(
+    use_bmc = forms.BooleanField(
         label='Use BMC',
         required=False,
         initial=True,
@@ -461,6 +461,7 @@ class AnnotationAPIForm(forms.Form, BaseAPIForm):
             'text',
         ]
 
+
 class BMCAPIForm(forms.Form, BaseAPIForm):
 
     def __init__(self, *args, **kwargs):
@@ -503,7 +504,6 @@ class BMCAPIForm(forms.Form, BaseAPIForm):
         ]
 
 
-
 class RemotePowerAPIForm(forms.Form, BaseAPIForm):
 
     def __init__(self, *args, **kwargs):
@@ -543,6 +543,7 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
         """Return input order."""
         return self._query_fields
 
+
 class RemotePowerDeviceAPIForm(forms.Form, BaseAPIForm):
     fqdn = forms.CharField(label='FQDN', max_length=256)
     mac = forms.CharField(label='MAC', max_length=17)
@@ -552,8 +553,9 @@ class RemotePowerDeviceAPIForm(forms.Form, BaseAPIForm):
         choices=get_remote_power_type_choices("rpower_device"),
         label="Fence Agent"
     )
+
     def get_order(self):
-        return ['fqdn', 'mac','fence_name', 'username', 'password']
+        return ['fqdn', 'mac', 'fence_name', 'username', 'password']
 
 
 class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):

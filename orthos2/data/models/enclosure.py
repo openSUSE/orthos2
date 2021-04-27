@@ -67,7 +67,6 @@ class Enclosure(models.Model):
         machines = self.get_machines().filter(system__virtual=False)
         return machines
 
-
     def fetch_location(self, pk=None):
         """
         Fetch location from RackTables.

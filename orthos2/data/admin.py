@@ -18,6 +18,7 @@ from .models import (Annotation, Architecture, BMC, Domain, Enclosure, Installat
                      VirtualizationAPI, is_unique_mac_address, validate_dns,
                      validate_mac_address)
 
+
 class BMCInline(admin.StackedInline):
     model = BMC
     extra = 1
@@ -26,6 +27,7 @@ class BMCInline(admin.StackedInline):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
         return super(BMCInline, self).get_formset(request, obj, **kwargs)
+
 
 class SerialConsoleInline(admin.StackedInline):
     model = SerialConsole
@@ -64,6 +66,7 @@ class SerialConsoleInline(admin.StackedInline):
         self.machine = obj
         return super(SerialConsoleInline, self).get_formset(request, obj, **kwargs)
 
+
 class RemotePowerInlineRpower(admin.StackedInline):
     model = RemotePower
     extra = 0
@@ -78,7 +81,6 @@ class RemotePowerInlineRpower(admin.StackedInline):
         return super(RemotePowerInlineRpower, self).get_formset(request, obj, **kwargs)
 
 
-
 class RemotePowerInlineBMC(admin.StackedInline):
     model = RemotePower
     extra = 0
@@ -91,7 +93,6 @@ class RemotePowerInlineBMC(admin.StackedInline):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
         return super(RemotePowerInlineBMC, self).get_formset(request, obj, **kwargs)
-
 
 
 class RemotePowerInlineHypervisor(admin.StackedInline):
@@ -214,20 +215,19 @@ class MachineAdminForm(forms.ModelForm):
         system = self.cleaned_data['system']
         if system.virtual and use_bmc:
             raise ValidationError("System {} is virtual. Virtual machines can't have a BMC"
-                .format(system))
+                                  .format(system))
         return use_bmc
-
 
     def clean_hypervisor(self):
         hypervisor = self.cleaned_data['hypervisor']
         system = self.cleaned_data['system']
         if hypervisor and not system.virtual:
             raise ValidationError("system {} is not virtual. Only Virtual Machines may have "
-            "a hypervisor".format(system))
+                                  "a hypervisor".format(system))
         if hypervisor and hypervisor.is_virtual_machine():
             raise ValidationError("{} is a Virtual Machines. Hypervisors must be physical")
         return hypervisor
-    
+
     def clean(self):
         """
         Only collect system information if connectivity is set to `Full`.
@@ -562,12 +562,12 @@ class MachineAdmin(admin.ModelAdmin):
         else:
             if machine.use_bmc:
                 if hasattr(machine, 'bmc'):
-                        self.inlines = (
-                            RemotePowerInlineBMC,
-                            NetworkInterfaceInline,
-                            AnnotationInline,
-                            BMCInline
-                        )
+                    self.inlines = (
+                        RemotePowerInlineBMC,
+                        NetworkInterfaceInline,
+                        AnnotationInline,
+                        BMCInline
+                    )
                 else:
                     self.inlines = (
                         NetworkInterfaceInline,
@@ -592,7 +592,7 @@ class MachineAdmin(admin.ModelAdmin):
     def save_formset(self, request, form, formset, change):
         formset.save()
         machine = form.save(commit=False)
-        if machine.use_bmc and hasattr(machine,'bmc') and not hasattr(machine, 'remotepower'):
+        if machine.use_bmc and hasattr(machine, 'bmc') and not hasattr(machine, 'remotepower'):
             machine.remotepower = RemotePower(machine.bmc.fence_name, machine, machine.bmc)
             machine.bmc.save()
             machine.remotepower.save()
@@ -687,12 +687,12 @@ class EnclosureAdmin(admin.ModelAdmin):
         return None
 
 
-
-
 admin.site.register(Enclosure, EnclosureAdmin)
+
 
 class RemotePowerDeviceAdmin(admin.ModelAdmin):
     list_display = ['fqdn']
+
 
 admin.site.register(RemotePowerDevice, RemotePowerDeviceAdmin)
 

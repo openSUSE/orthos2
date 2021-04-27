@@ -444,7 +444,7 @@ class Machine(models.Model):
         related_name="hypervising",
         null=True,
         blank=True,
-        on_delete = models.CASCADE
+        on_delete=models.CASCADE
     )
 
     dhcpv4_write = models.SmallIntegerField(
@@ -463,7 +463,6 @@ class Machine(models.Model):
         null=False,
         default=DHCPRecordOption.WRITE
     )
-
 
     use_bmc = models.BooleanField(verbose_name='Use BMC', default=True)
 
@@ -709,7 +708,6 @@ class Machine(models.Model):
             return True
 
         return False
-
 
     def get_s390_hostname(self, use_uppercase=False):
         if self.system_id in {System.Type.ZVM_VM, System.Type.ZVM_KVM}:

@@ -146,6 +146,7 @@ def machine_pre_delete(sender, instance, *args, **kwargs):
     server = CobblerServer.from_machine(instance)
     server.remove(instance)
 
+
 @receiver(post_save, sender=SerialConsole)
 def serialconsole_post_save(sender, instance, *args, **kwargs):
     signal_serialconsole_regenerate.send(

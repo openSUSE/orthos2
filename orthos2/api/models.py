@@ -257,7 +257,8 @@ class QueryField:
             'verbose_name': 'Port',
         },
 # TODO: adapt this to new implementation
-#        'rpower_type': { 
+
+#        'rpower_type': {   # noqa
 #            'field': RemotePower._meta.get_field('type'),
 #            'related_name': 'remotepower',
 #            'verbose_name': 'Remotepower',

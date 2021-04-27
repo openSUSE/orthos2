@@ -16,6 +16,7 @@ from orthos2.utils.ssh import SSH
 from . import ServerConfig
 from orthos2.utils.remotepowertype import RemotePowerType, get_remote_power_type_choices
 
+
 class RemotePower(models.Model):
     class Action:
         ON = 'on'
@@ -38,8 +39,6 @@ class RemotePower(models.Model):
             REBOOT_REMOTEPOWER
         ]
 
-
-
     class Status:
         UNKNOWN = 0
         ON = 1
@@ -60,16 +59,17 @@ class RemotePower(models.Model):
             }.get(index, 'undefined')
 
     remotepower_type_choices = get_remote_power_type_choices("hypervisor")
-    
-    fence_name = models.CharField(choices=remotepower_type_choices, max_length=255, verbose_name="Fence Agent")
 
+    fence_name = models.CharField(
+                                  choices=remotepower_type_choices,
+                                  max_length=255,
+                                  verbose_name="Fence Agent")
 
     machine = models.OneToOneField(
         'data.Machine',
         on_delete=models.CASCADE,
         primary_key=True
     )
-
 
     management_bmc = models.OneToOneField(
         'data.BMC',
@@ -101,8 +101,6 @@ class RemotePower(models.Model):
         blank=True
     )
 
-
-
     comment = models.CharField(
         max_length=200,
         null=True,
@@ -118,7 +116,6 @@ class RemotePower(models.Model):
         'Created at',
         auto_now_add=True
     )
-
 
     def save(self, *args, **kwargs):
         """Check values before saving the remote power object. Do only save if type is set."""
@@ -140,7 +137,7 @@ class RemotePower(models.Model):
         logging.debug("getting fence object for %s", self.fence_name)
         fence = RemotePowerType.from_fence(self.fence_name)
         if fence.device == "rpower_device":
-            if  self.remote_power_device:
+            if self.remote_power_device:
                 self.fence_name = self.remote_power_device.fence_name
                 self.management_bmc = None
                 self.hypervisor = None
@@ -150,7 +147,7 @@ class RemotePower(models.Model):
         elif fence.device == "bmc":
             if self.machine.bmc:
                 self.management_bmc = self.machine.bmc
-                self.fence_name=self.management_bmc.fence_name
+                self.fence_name = self.management_bmc.fence_name
                 self.hypervisor = None
                 self.remote_power_device = None
             else:
@@ -165,13 +162,13 @@ class RemotePower(models.Model):
                 self.remote_power_device = None
 
         else:
-            errors.append(ValidationError("{} is not a valid switching device".format(fence['switching_device'])))
+            errors.append(ValidationError(
+                "{} is not a valid switching device".format(fence['switching_device'])))
         if fence.use_port:
-            if self.port is None: # test for None, as port may be 0
+            if self.port is None:  # test for None, as port may be 0
                 errors.append(ValidationError("Please provide a port!"))
         else:
             self.port = None
-
 
         if errors:
             raise ValidationError(errors)
@@ -219,7 +216,6 @@ class RemotePower(models.Model):
             raise RuntimeError("Inconclusive result from _perform('status')")
         return status
 
-
     def _perform(self, action: str):
         from orthos2.utils.cobbler import CobblerServer
         server = CobblerServer.from_machine(self.machine)
@@ -240,12 +236,12 @@ class RemotePower(models.Model):
         if fence.device == "bmc":
             username = self.management_bmc.username
             password = self.management_bmc.password
-        elif  fence.device == "rpower_device":
+        elif fence.device == "rpower_device":
             username = self.remote_power_device.username
             password = self.remote_power_device.password
 
         if not username:
-            username  = ServerConfig.objects.by_key('remotepower.default.username')
+            username = ServerConfig.objects.by_key('remotepower.default.username')
         if not password:
             password = ServerConfig.objects.by_key('remotepower.default.password')
 
@@ -270,4 +266,4 @@ class RemotePower(models.Model):
     def __str__(self):
         logging.debug("getting fence object for %s in __str___", self.fence_name)
         fence = RemotePowerType.from_fence(self.fence_name)
-        return  fence.fence + "@" + fence.device
+        return fence.fence + "@" + fence.device

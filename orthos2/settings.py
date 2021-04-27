@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'orthos2.frontend.apps.FrontendConfig',
     'orthos2.taskmanager.apps.TaskManagerConfig',
     'orthos2.utils.apps.UtilsConfig',
-#    'django.contrib.admin',
+    #  'django.contrib.admin',
     'orthos2.admin.apps.AdminConfig',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -96,10 +96,10 @@ DATABASES = {
 }
 
 RUN_AS_USER = 'orthos'
-CUR_USER = getpwuid( os.getuid())[ 0 ]
+CUR_USER = getpwuid(os.getuid())[0]
 if CUR_USER != RUN_AS_USER:
     logging.error("You must run as user: {}, not as user: {}".
-                 format(RUN_AS_USER, CUR_USER))
+                  format(RUN_AS_USER, CUR_USER))
     exit(1)
 
 # Password validation
@@ -282,7 +282,7 @@ SUPPORT_CONTACT = 'tbd@domain.tld'
 VERSION = '2.0.0'
 SYSTEM_USER = 'orthos'
 
-REMOTEPOWER_TYPES  = [
+REMOTEPOWER_TYPES = [
                         {
                             'fence': 'virsh',
                             'device': 'hypervisor',
