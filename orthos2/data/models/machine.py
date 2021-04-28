@@ -635,7 +635,7 @@ class Machine(models.Model):
         return self.networkinterfaces.get(primary=True)
 
     def get_virtual_machines(self):
-        if self.system_id == System.Type.BAREMETAL:
+        if not self.is_virtual_machine()
             return self.hypervising.all()
         return None
 
