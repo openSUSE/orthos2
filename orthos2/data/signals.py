@@ -144,7 +144,8 @@ def machine_pre_delete(sender, instance, *args, **kwargs):
     logger.info("Machine object serialized (target: '{}')".format(filename))
 
     server = CobblerServer.from_machine(instance)
-    server.remove(instance)
+    if server:
+        server.remove(instance)
 
 
 @receiver(post_save, sender=SerialConsole)

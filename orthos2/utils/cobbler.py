@@ -139,9 +139,17 @@ class CobblerServer:
 
     @staticmethod
     def from_machine(machine: Machine):
+        """
+        Return the cobbler server associated to a machine
+
+        :param machine: Machine object which is managed by the cobbler server to fetch
+        :returns: The corresponding cobbler server or None
+        """
         domain = machine.fqdn_domain
-        server = domain.cobbler_server.all()[0]
-        return CobblerServer(server.fqdn, domain)
+        server = domain.cobbler_server.all()
+        if server and server[0]:
+            return CobblerServer(server[0].fqdn, domain)
+        return None
 
     def connect(self):
         """Connect to DHCP server via SSH."""
@@ -181,6 +189,9 @@ class CobblerServer:
         self.close()
 
     def remove(self, machine: Machine):
+        #ToDo: We do not remove machines from cobbler server actively in orthos2 yet
+        logging.warning("cobbler remove is switched off")
+        return
         self.connect()
         if not self.is_installed():
             raise CobblerException("No Cobbler service found: {}".format(self._fqdn))
