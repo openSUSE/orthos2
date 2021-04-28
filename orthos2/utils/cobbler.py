@@ -190,6 +190,16 @@ class CobblerServer:
 
         self.close()
 
+    def update(self, machine: Machine):
+        self.connect()
+        self._check()
+        command = get_cobbler_update_command(machine, self._cobbler_path)
+        _, stderr, exitcode = self._conn.execute(command)
+        if exitcode:
+            raise CobblerException("Updating {machine} failed with {err}".format(
+                machine.fqdn, stderr))
+
+
     def remove(self, machine: Machine):
         #ToDo: We do not remove machines from cobbler server actively in orthos2 yet
         logging.warning("cobbler remove is switched off")
@@ -275,3 +285,9 @@ class CobblerServer:
                 "Powerswitching of {machine} with {command} failed on {server} with {error}".format(
                     machine=machine.fqdn, command=command, server=self._fqdn))
         return out
+
+    def _check(self):
+        if not self.is_installed():
+            raise CobblerException("No Cobbler service found: {}".format(self._fqdn))
+        if not self.is_running():
+            raise CobblerException("Cobbler server is not running: {}".format(self._fqdn))

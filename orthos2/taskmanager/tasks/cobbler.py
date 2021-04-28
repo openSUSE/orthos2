@@ -74,3 +74,36 @@ class RegenerateCobbler(Task):
             logger.exception(e)
         finally:
             logger.info("--- Cobbler deployment finished ---")
+
+class UpdateCobblerMachine(Task):
+    def __init__(self, domain_id, machine_id):
+        self._domain_id = domain_id
+        self._machine_id = machine_id
+    def execute(self):
+        domain = Domain.objects.filter(pk=self._domain_id)
+        machine = Machine.objects.filter(pk=self._machine_id)
+        try:
+            logger.info("Cobbler update started")
+            if domain.cobbler_server.all().count() == 0:
+                    logger.info("Domain '{}' has no Cobbler server... aborting".format(domain.name))
+                    return
+            logger.info("Generate Cobbler configuration for '{}'...".format(machine.fqdn))
+            # deploy generated DHCP files on all servers belonging to one domain
+            for server in domain.cobbler_server.all():
+                cobbler_server = CobblerServer(server.fqdn, domain)
+                try:
+                    logger.info("* Cobbler deployment started...")
+                    cobbler_server.update(machine)
+                    logger.info("* Cobbler deployment finished successfully")
+                except Exception as e:
+                    message = "* Cobbler deployment failed; {}".format(e)
+                    if isinstance(e, (SystemError, SyntaxError)):
+                        logger.error(message)
+                    else:
+                        logger.exception(message)
+        except SSH.Exception as e:
+            logger.error(e)
+        except Exception as e:
+            logger.exception(e)
+        finally:
+            logger.info("--- Cobbler deployment finished ---")

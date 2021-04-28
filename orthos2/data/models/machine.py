@@ -23,6 +23,7 @@ from .networkinterface import validate_mac_address
 from .platform import Platform
 from .system import System
 from .virtualizationapi import VirtualizationAPI
+from .serverconfig import ServerConfig
 
 logger = logging.getLogger('models')
 
@@ -578,15 +579,27 @@ class Machine(models.Model):
                 assert self.dhcpv4_write == self._original.dhcpv4_write
                 assert self.dhcpv6_write == self._original.dhcpv6_write
             except AssertionError:
-                from orthos2.data.signals import signal_cobbler_regenerate
+                if ServerConfig.bool_by_key("orthos.cobblersync.full"):
+                    from orthos2.data.signals import signal_cobbler_regenerate
 
-                # regenerate DHCP on all domains (deletion/registration) if domain changed
-                if self.fqdn_domain == self._original.fqdn_domain:
-                    domain_id = self.fqdn_domain.pk
+                    # regenerate DHCP on all domains (deletion/registration) if domain changed
+                    if self.fqdn_domain == self._original.fqdn_domain:
+                        domain_id = self.fqdn_domain.pk
+                    else:
+                        domain_id = None
+
+                    signal_cobbler_regenerate.send(sender=self.__class__, domain_id=domain_id)
                 else:
-                    domain_id = None
-
-                signal_cobbler_regenerate.send(sender=self.__class__, domain_id=domain_id)
+                    from orthos2.data.signals import signal_cobbler_machine_update
+                    if self.fqdn_domain == self._original.fqdn_domain:
+                        domain_id = self.fqdn_domain.pk
+                        machine_id = self.pk
+                        signal_cobbler_machine_update.send(
+                            sender=self.__class__, domain_id=domain_id, machine_id=machine_id)
+                    else:
+                        raise NotImplementedError(
+                            "Moving machines between domains with quick cobbler synchronization "
+                            "is not implemented yet")
 
     @property
     def ipv4(self):
