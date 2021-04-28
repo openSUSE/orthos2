@@ -216,10 +216,18 @@ class RemotePower(models.Model):
             raise RuntimeError("Inconclusive result from _perform('status')")
         return status
 
-    def _perform(self, action: str):
+    def _perform(self, action: str) -> str:
+        """
+        Perform a power action on machine associated to the object
+
+        :param action: The action to perform. Mustbe 'on', 'off', 'reboot' or 'status'
+        :returns: A string as retrieved from the underlying power switch tool
+        """
         from orthos2.utils.cobbler import CobblerServer
+        result = "No Cobbler server found"
         server = CobblerServer.from_machine(self.machine)
-        result = server.powerswitch(self.machine, action)
+        if server:
+            result = server.powerswitch(self.machine, action)
         return result
 
     def get_credentials(self):
