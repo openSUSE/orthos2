@@ -78,8 +78,8 @@ def get_power_options(machine):
     options = " --power-type={} ".format(fence.fence)
 
     if fence.use_identity_file:
-        options += " --power-user=root --power-identity-file={key}".format(
-            key=fence.identity_file)
+        options += " --power-user={user} --power-identity-file={key}".format(
+            user=fence.username, key=fence.identity_file)
     else:
         username, password = remotepower.get_credentials()
         options += " --power-user={username} --power-pass={password} ".format(username=username,
@@ -90,6 +90,8 @@ def get_power_options(machine):
         options += " --power-id={name}".format(name=machine.hostname)
 
     options += " --power-address={address}".format(address=remotepower.get_power_address())
+    if fence.options:
+        options += " --power-options={options}".format(options=fence.options)
     return options
 
 
