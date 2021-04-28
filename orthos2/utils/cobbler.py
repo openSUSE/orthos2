@@ -190,6 +190,7 @@ class CobblerServer:
 
     def remove(self, machine: Machine):
         #ToDo: We do not remove machines from cobbler server actively in orthos2 yet
+        logging.warning("cobbler remove is switched off")
         return
         self.connect()
         if not self.is_installed():
