@@ -127,12 +127,16 @@ def is_dns_resolvable(fqdn):
 
 def has_valid_domain_ending(fqdn, valid_endings):
     """
-    Check if FQDN has valid domain ending.
+    Check if FQDN has valid domain ending. This check can be bypassed if no
+    valid domain endings are given.
 
     Example:
         example.de
         example.com
     """
+    if valid_endings is None:
+        return True
+
     if isinstance(valid_endings, str):
         valid_endings = [valid_endings]
 
