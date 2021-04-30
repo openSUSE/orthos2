@@ -56,6 +56,7 @@ Requires:  python3-validators
 Requires:  python3-netaddr
 %endif
 Requires:  nginx
+Requires:  ansible
 Requires:  uwsgi
 Requires:  uwsgi-python3
 Requires:  /sbin/service
@@ -154,6 +155,7 @@ getent passwd orthos >/dev/null || \
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
 %dir /usr/lib/orthos2
 %dir /usr/lib/orthos2/scripts
+%dir /usr/lib/orthos2/ansible
 %dir /usr/share/orthos2
 %dir /usr/share/orthos2/fixtures
 /usr/share/orthos2/fixtures/*

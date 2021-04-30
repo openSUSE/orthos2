@@ -1,0 +1,9 @@
+all:
+  hosts:
+{% for machine in machine_list %}
+    {{ machine }} 
+{% endfor %}
+  vars:
+    ansible_connection: ssh
+    ansible_user: root
+
