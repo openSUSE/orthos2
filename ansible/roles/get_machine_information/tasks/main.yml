@@ -1,0 +1,11 @@
+- name: saving gathered facts to local file
+  local_action:
+    module: copy
+    content: "{{ ansible_facts }}"
+    dest: "/run/orthos2/ansible/{{ ansible_facts.fqdn }}.json"
+
+- name: saving gathered facts to remote machine
+  copy:
+    content: "{{ ansible_facts }}"
+    dest: "/tmp/ansible_facts.json"
+
