@@ -2,12 +2,14 @@ import json
 import logging
 
 from orthos2.api.commands import BaseAPIView, get_machine
-from orthos2.api.forms import (AnnotationAPIForm, MachineAPIForm, RemotePowerAPIForm,
-                               SerialConsoleAPIForm, VirtualMachineAPIForm)
+from orthos2.api.forms import (AnnotationAPIForm, BMCAPIForm, MachineAPIForm, RemotePowerAPIForm,
+                               RemotePowerDeviceAPIForm, SerialConsoleAPIForm,
+                               VirtualMachineAPIForm)
 from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                           InfoMessage, InputSerializer, Message,
                                           Serializer)
-from orthos2.data.models import (Annotation, Enclosure, Machine, RemotePower, SerialConsole)
+from orthos2.data.models import (Annotation, BMC, Enclosure, Machine, RemotePower,
+                                 RemotePowerDevice, SerialConsole)
 from django.conf.urls import re_path
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ValidationError
@@ -24,8 +26,11 @@ class Add:
     SERIALCONSOLE = 'serialconsole'
     ANNOTATION = 'annotation'
     REMOTEPOWER = 'remotepower'
+    BMC = 'bmc'
+    REMOTEPOWERDEVICE = 'remotepowerdevice'
 
-    as_list = [MACHINE, VIRTUALMACHINE, SERIALCONSOLE, ANNOTATION, REMOTEPOWER]
+    as_list = [MACHINE, VIRTUALMACHINE, SERIALCONSOLE, ANNOTATION, REMOTEPOWER,
+               BMC, REMOTEPOWERDEVICE]
 
 
 class AddCommand(BaseAPIView):
@@ -39,29 +44,29 @@ class AddCommand(BaseAPIView):
     HELP_SHORT = "Adds information to the database."
     HELP = """Adds items to the database. All information will be queried interactively.
 
-Usage:
-    ADD <item> [args*]
+    Usage:
+        ADD <item> [args*]
 
-Arguments:
-    item - Specify the item which should be added. Items are:
+    Arguments:
+        item - Specify the item which should be added. Items are:
 
-             machine                       : Add a machine (superusers only).
-             annotation <fqdn>             : Add an annotation to a specific
-                                             machine (no bugreports).
-             serialconsole <fqdn>          : Add a serial console to a specific
-                                             machine (superusers only).
-             remotepower <fqdn>            : Add a remote power to a specific
-                                             machine (superusers only).
-             virtualmachine <architecture> : Add a virtual machine on a specific
-                                             architecture.
+                machine                       : Add a machine (superusers only).
+                annotation <fqdn>             : Add an annotation to a specific
+                                                machine (no bugreports).
+                serialconsole <fqdn>          : Add a serial console to a specific
+                                                machine (superusers only).
+                remotepower <fqdn>            : Add a remote power to a specific
+                                                machine (superusers only).
+                virtualmachine <architecture> : Add a virtual machine on a specific
+                                                architecture.
 
-Example:
-    ADD machine
-    ADD virtualmachine x86_64
-    ADD serialconsole foo.domain.tld
-    ADD remotepower foo.domain.tld
-    ADD annotation foo.domain.tld
-"""
+    Example:
+        ADD machine
+        ADD virtualmachine x86_64
+        ADD serialconsole foo.domain.tld
+        ADD remotepower foo.domain.tld
+        ADD annotation foo.domain.tld
+    """
 
     @staticmethod
     def get_urls():
@@ -113,6 +118,16 @@ Example:
                 return ErrorMessage("Invalid number of arguments for 'remotepower'!").as_json
 
             return redirect('{}?fqdn={}'.format(reverse('api:remotepower_add'), sub_arguments[0]))
+        elif item == Add.REMOTEPOWERDEVICE:
+            if sub_arguments:
+                return ErrorMessage("Invalid number of arguments for 'remotepowerdevice'!").as_json
+            return redirect(reverse('api:remotepowerdevice_add'))
+
+        elif item == Add.BMC:
+            if len(sub_arguments) != 1:
+                return ErrorMessage("Invalid number of arguments for 'bmc'!").as_json
+
+            return redirect('{}?fqdn={}'.format(reverse('api:bmc_add'), sub_arguments[0]))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -262,11 +277,99 @@ class AddMachineCommand(BaseAPIView):
             cleaned_data = form.cleaned_data
             mac_address = cleaned_data['mac_address']
             del cleaned_data['mac_address']
-
+            if cleaned_data['hypervisor_fqdn']:
+                hypervisor = Machine.objects.filter(fqdn=cleaned_data['hypervisor_fqdn'])[0]
+            del cleaned_data['hypervisor_fqdn']
             new_machine = Machine(**cleaned_data)
             new_machine.mac_address = mac_address
+            new_machine.hypervisor = hypervisor
             try:
                 new_machine.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message('Ok.').as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
+
+
+class AddBMCCommand(BaseAPIView):
+    URL_POST = '/bmc/add/{fqdn}'
+
+    @staticmethod
+    def get_urls():
+        return [
+            re_path(r'^bmc/add', AddBMCCommand.as_view(), name='bmc_add'),
+            re_path(
+                r'^bmc/add/(?P<fqdn>[a-z0-9\.-]+)$/',
+                AddBMCCommand.as_view(),
+                name='bmc_add'
+            ),
+        ]
+
+    def get(self, request, *args, **kwargs):
+        """Return form for adding an BMC."""
+        fqdn = request.GET.get('fqdn', None)
+        try:
+            result = get_machine(
+                fqdn,
+                redirect_to='api:bmc_add',
+                data=request.GET
+            )
+            if isinstance(result, Serializer):
+                return result.as_json
+            elif isinstance(result, HttpResponseRedirect):
+                return result
+            machine = result
+        except Exception as e:
+            return ErrorMessage(str(e)).as_json
+
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        form = BMCAPIForm(machine=machine)
+
+        input = InputSerializer(
+            form.as_dict(),
+            self.URL_POST.format(fqdn=machine.fqdn),
+            form.get_order()
+        )
+        return input.as_json
+
+    def post(self, request, *args, **kwargs):
+        """Add BMC to machine."""
+        try:
+
+            fqdn = request.path.split("/")[-1]
+            result = get_machine(
+                fqdn,
+                redirect_to='api:bmc_add',
+                data=request.GET
+            )
+            if isinstance(result, Serializer):
+                return result.as_json
+            elif isinstance(result, HttpResponseRedirect):
+                return result
+            machine = result
+        except Exception as e:
+            return ErrorMessage(str(e)).as_json
+
+        data = json.loads(request.body.decode('utf-8'))['form']
+        form = BMCAPIForm(data, machine=machine)
+
+        if form.is_valid():
+            try:
+                cleaned_data = form.cleaned_data
+                bmc = BMC(
+                    machine=machine,
+                    fqdn=cleaned_data['fqdn'],
+                    mac=cleaned_data['mac'],
+                    username=cleaned_data['username'],
+                    password=cleaned_data['password'],
+                    fence_name=cleaned_data['fence_name']
+                )
+                bmc.save()
             except Exception as e:
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json
@@ -451,14 +554,14 @@ class AddAnnotationCommand(BaseAPIView):
 
 class AddRemotePowerCommand(BaseAPIView):
 
-    URL_POST = '/remotepower/{fqdn}/add'
+    URL_POST = '/remotepower/add/{fqdn}'
 
     @staticmethod
     def get_urls():
         return [
             re_path(r'^remotepower/add', AddRemotePowerCommand.as_view(), name='remotepower_add'),
             re_path(
-                r'^remotepower/(?P<fqdn>[a-z0-9\.-]+)/add$',
+                r'^remotepower/add/(?P<fqdn>[a-z0-9\.-]+)$/',
                 AddRemotePowerCommand.as_view(),
                 name='remotepower_add'
             ),
@@ -499,12 +602,13 @@ class AddRemotePowerCommand(BaseAPIView):
         )
         return input.as_json
 
-    def post(self, request, fqdn, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         """Add remote power to machine."""
         if not request.user.is_superuser:
             return ErrorMessage("Only superusers are allowed to perform this action!").as_json
 
         try:
+            fqdn = request.path.split("/")[-1]
             result = get_machine(
                 fqdn,
                 redirect_to='api:remotepower_add',
@@ -528,6 +632,62 @@ class AddRemotePowerCommand(BaseAPIView):
             try:
                 remotepower = RemotePower(**form.cleaned_data)
                 remotepower.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message('Ok.').as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
+
+
+class AddRemotePowerDeviceCommand(BaseAPIView):
+
+    URL_POST = '/remotepowerdevice/add'
+
+    @staticmethod
+    def get_urls():
+        return [
+            re_path(r'^remotepowerdevice/add',
+                    AddRemotePowerDeviceCommand.as_view(),
+                    name='remotepowerdevice_add'),
+        ]
+
+    def get(self, request, *args, **kwargs):
+        """Return form for adding a remotepowerdevice."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:
+            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+
+        form = RemotePowerDeviceAPIForm()
+
+        input = InputSerializer(
+            form.as_dict(),
+            self.URL_POST,
+            form.get_order()
+        )
+        return input.as_json
+
+    def post(self, request, *args, **kwargs):
+        """Add remotepowerdevice."""
+        if not request.user.is_superuser:
+            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+
+        data = json.loads(request.body.decode('utf-8'))['form']
+        form = RemotePowerDeviceAPIForm(data)
+
+        if form.is_valid():
+
+            cleaned_data = form.cleaned_data
+            new_device = RemotePowerDevice(username=cleaned_data['username'],
+                                           password=cleaned_data['password'],
+                                           mac=cleaned_data['mac'],
+                                           fqdn=cleaned_data['fqdn'])
+
+            try:
+                new_device.save()
             except Exception as e:
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json

@@ -6,6 +6,7 @@ from orthos2.data.models import (Architecture, Enclosure, Machine, MachineGroup,
                                  validate_dns, validate_mac_address)
 from orthos2.data.models.domain import validate_domain_ending
 from django import forms
+from django.forms.models import ModelChoiceIteratorValue
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.forms import inlineformset_factory
 from django.forms.fields import (BooleanField, CharField, ChoiceField,
@@ -13,7 +14,7 @@ from django.forms.fields import (BooleanField, CharField, ChoiceField,
 from django.template.defaultfilters import slugify
 from orthos2.frontend.forms import ReserveMachineForm, VirtualMachineForm
 from orthos2.utils.misc import DHCPRecordOption
-
+from orthos2.utils.remotepowertype import get_remote_power_type_choices
 logger = logging.getLogger('api')
 
 
@@ -71,9 +72,14 @@ class BaseAPIForm:
             field['items'] = []
 
             for choice in form_field.choices:
-                field['items'].append(
-                    {slugify(choice[0]): {'label': choice[1], 'value': choice[0]}}
-                )
+                if isinstance(choice[0], ModelChoiceIteratorValue):
+                    field['items'].append(
+                        {slugify(choice[0].value): {'label': choice[1], 'value': choice[0].value}}
+                    )
+                else:
+                    field['items'].append(
+                        {slugify(choice[0]): {'label': choice[1], 'value': choice[0]}}
+                    )
 
         return field
 
@@ -284,6 +290,12 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         initial=False,
     )
 
+    use_bmc = forms.BooleanField(
+        label='Use BMC',
+        required=False,
+        initial=True,
+    )
+
     check_connectivity = forms.ChoiceField(
         label='Check connectivity',
         choices=Machine.CONNECTIVITY_CHOICE,
@@ -310,6 +322,11 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         ],
         initial=DHCPRecordOption.WRITE,
     )
+    hypervisor_fqdn = forms.CharField(
+        label='Hypervisor',
+        max_length=256,
+        required=False,
+    )
 
     def get_order(self):
         """Return input order."""
@@ -320,8 +337,10 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
             'architecture_id',
             'system_id',
             'group_id',
+            'hypervisor_fqdn',
             'nda',
             'administrative',
+            'use_bmc',
             'check_connectivity',
             'collect_system_information',
             'dhcpv4_write',
@@ -382,7 +401,7 @@ class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
         self.fields = formset.form().fields
         self.fields['type'].empty_label = None
         self.fields['cscreen_server'].empty_label = None
-        self.fields['management_bmc'].queryset = machine.enclosure.get_bmc_list()
+        self.fields['management_bmc'].queryset = machine.bmc
         self.fields['management_bmc'].empty_label = 'None'
         self.fields['baud_rate'].initial = 5
         self.fields['kernel_device'].min_value = 0
@@ -443,6 +462,48 @@ class AnnotationAPIForm(forms.Form, BaseAPIForm):
         ]
 
 
+class BMCAPIForm(forms.Form, BaseAPIForm):
+
+    def __init__(self, *args, **kwargs):
+        machine = kwargs.pop('machine', None)
+        self.machine = machine
+
+        super(BMCAPIForm, self).__init__(*args, **kwargs)
+
+    username = forms.CharField(
+        label='BMC Username',
+        max_length=256,
+        required=False
+    )
+    password = forms.CharField(
+        label='BMC Password',
+        max_length=256,
+        required=False
+    )
+    fqdn = forms.CharField(
+        label='FQDN',
+        max_length=256,
+    )
+    mac = forms.CharField(
+        label='MAC Address',
+        max_length=256,
+    )
+    fence_name = forms.ChoiceField(
+        choices=get_remote_power_type_choices('BMC'),
+        label="Fence Agent",
+    )
+
+    def get_order(self):
+        """Return input order."""
+        return [
+            'fqdn',
+            'mac',
+            'username',
+            'password',
+            'fence_name'
+        ]
+
+
 class RemotePowerAPIForm(forms.Form, BaseAPIForm):
 
     def __init__(self, *args, **kwargs):
@@ -452,11 +513,9 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
         super(RemotePowerAPIForm, self).__init__(*args, **kwargs)
 
         self._query_fields = (
-            'type',
-            'management_bmc',
+            'fence_name',
             'remote_power_device',
             'port',
-            'device',
             'comment',
         )
 
@@ -469,12 +528,8 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
         formset = RemotePowerFormSet(instance=machine)
 
         self.fields = formset.form().fields
-        # remove '-------' choice; `empty_label`/`empty_value` does not work here
-        choices = self.fields['type'].choices
-        self.fields['type']._set_choices(choices[1:])
-        self.fields['management_bmc'].queryset = machine.enclosure.get_bmc_list()
-        self.fields['management_bmc'].empty_label = 'None'
         self.fields['remote_power_device'].empty_label = 'None'
+        self.fields['fence_name'].required = False
 
     def clean(self):
         """Add the machine to cleaned data for further processing."""
@@ -487,6 +542,20 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
     def get_order(self):
         """Return input order."""
         return self._query_fields
+
+
+class RemotePowerDeviceAPIForm(forms.Form, BaseAPIForm):
+    fqdn = forms.CharField(label='FQDN', max_length=256)
+    mac = forms.CharField(label='MAC', max_length=17)
+    username = forms.CharField(label='Username', max_length=256, required=False)
+    password = forms.CharField(label='Password', max_length=256, required=False)
+    fence_name = forms.ChoiceField(
+        choices=get_remote_power_type_choices("rpower_device"),
+        label="Fence Agent"
+    )
+
+    def get_order(self):
+        return ['fqdn', 'mac', 'fence_name', 'username', 'password']
 
 
 class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):

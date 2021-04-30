@@ -29,6 +29,8 @@ BuildRequires:  systemd-rpm-macros
 BuildRequires:  nginx
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-devel
+# Needed to install /etc/logrotate.d/orthos
+BuildRequires:  logrotate
 %if 0%{?suse_version}
 BuildRequires:  python-rpm-macros
 %endif
@@ -117,7 +119,7 @@ ln -sr %{buildroot}/usr/share/orthos2/api_migrations %{buildroot}%{python3_sitel
 %pre
 getent group orthos >/dev/null || groupadd -r orthos
 getent passwd orthos >/dev/null || \
-    useradd -r -g orthos -d /home/orthos -s /sbin/nologin \
+    useradd -r -g orthos -d /var/lib/orthos2 -s /bin/bash \
     -c "Useful comment about the purpose of this account" orthos
 %service_add_pre orthos2.service orthos2_taskmanager.service orthos2.socket
 
@@ -148,6 +150,7 @@ getent passwd orthos >/dev/null || \
 %dir %{_sysconfdir}/orthos2
 %config %{_sysconfdir}/orthos2/orthos2.ini
 %config %{_sysconfdir}/orthos2/settings
+%config %{_sysconfdir}/logrotate.d/orthos
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
 %dir /usr/lib/orthos2
 %dir /usr/lib/orthos2/scripts
@@ -173,6 +176,7 @@ getent passwd orthos >/dev/null || \
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/archiv
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/orthos-vm-images
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/database
+%attr(700,orthos,orthos) %dir /var/lib/orthos2/.ssh
 
 %files client
 %attr(755, root, root) /usr/bin/orthos2

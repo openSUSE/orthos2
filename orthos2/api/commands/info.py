@@ -112,6 +112,11 @@ Example:
             'power_port',
             'power_device',
             'power_comment',
+            None,
+            'bmc_fqdn',
+            'bmc_mac',
+            'bmc_username',
+            'bmc_password',
             [
                 'installations', [
                     'distribution',

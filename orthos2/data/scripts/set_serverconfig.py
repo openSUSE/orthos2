@@ -11,16 +11,15 @@
 #
 
 
-
-
 import json
 from orthos2.data.models.serverconfig import ServerConfig
+
 
 def run(*args):
     if not args:
         print("Use --script-args to pass data.serverconfig.json file")
         exit(1)
-        
+
     with open(args[0], 'r') as json_file:
         serverconf = json.load(json_file)
 
@@ -29,7 +28,7 @@ def run(*args):
     for entry in serverconf:
         key = entry['fields'].get('key')
         value = entry['fields'].get('value')
-        db_obj = db_serverconf.get(key = key)
+        db_obj = db_serverconf.get(key=key)
         if not db_obj:
             print("Key {} does not exist in server config".format(key))
             exit(1)

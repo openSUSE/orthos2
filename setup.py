@@ -62,6 +62,7 @@ if __name__ == "__main__":
         ],
         data_files=[
             ("/etc/nginx/conf.d",  ["wsgi/orthos2_nginx.conf"]),
+            ("/etc/logrotate.d",  ["logrotate/orthos"]),
             # orthos2 internal binaries in /usr/lib/orthos2
             ("%s" % execpath, glob("orthos2/bin/*")),
             ("%s/scripts" % execpath, glob("orthos2/scripts/*")),
@@ -83,6 +84,7 @@ if __name__ == "__main__":
             # Empty directory creation
             ("%s" % logpath, []),
             ("%s" % db_path, []),
+            ("%s/.ssh" % db_path, []),
             ("%s/archiv" % db_path, []),
             ("%s/database" % db_path, []),
             ("%s/orthos-vm-images" % db_path, []),

@@ -5,16 +5,12 @@ from copy import deepcopy
 
 from orthos2.data.exceptions import ReleaseException, ReserveException
 from django.conf import settings
-from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.core import serializers
-from django.core.exceptions import (FieldError, MultipleObjectsReturned,
-                                    ObjectDoesNotExist, PermissionDenied,
-                                    ValidationError)
+from django.core.exceptions import (PermissionDenied, ValidationError)
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
 from orthos2.utils.misc import (DHCPRecordOption, Serializer, get_domain, get_hostname,
                                 get_ipv4, get_ipv6, get_s390_hostname,
                                 is_dns_resolvable)
@@ -27,13 +23,14 @@ from .networkinterface import validate_mac_address
 from .platform import Platform
 from .system import System
 from .virtualizationapi import VirtualizationAPI
+from .serverconfig import ServerConfig
 
 logger = logging.getLogger('models')
 
 
 def validate_dns(value):
     if not is_dns_resolvable(value):
-        raise ValidationError("No DNS lookup result for '{}'!".format(value))
+        raise ValidationError("No DNS lookup result for '{}'".format(value))
 
 
 def check_permission(function):
@@ -349,6 +346,11 @@ class Machine(models.Model):
         blank=True
     )
 
+    bios_date = models.DateTimeField(
+        editable=False,
+        default='1990-10-03T10:00:00+00:00'
+    )
+
     disk_primary_size = models.SmallIntegerField(
         'Disk primary size (GB)',
         null=True,
@@ -438,6 +440,14 @@ class Machine(models.Model):
         limit_choices_to={'administrative': True}
     )
 
+    hypervisor = models.ForeignKey(
+        'data.Machine',
+        related_name="hypervising",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE
+    )
+
     dhcpv4_write = models.SmallIntegerField(
         'DHCPv4',
         choices=DHCPRecordOption.CHOICE,
@@ -454,6 +464,8 @@ class Machine(models.Model):
         null=False,
         default=DHCPRecordOption.WRITE
     )
+
+    use_bmc = models.BooleanField(verbose_name='Use BMC', default=True)
 
     hostname = None
 
@@ -534,6 +546,10 @@ class Machine(models.Model):
 
         validate_mac_address(self.mac_address)
 
+        if not self.system.virtual and self.hypervisor:
+            raise ValidationError("Only virtuals machines may have hypervisors")
+        if self.system.virtual and self.use_bmc:
+            raise ValidationError("Virtual machines can not use a BMC")
         # create & assign network domain and ensure that the FQDN always matches the fqdn_domain
         domain, created = Domain.objects.get_or_create(name=get_domain(self.fqdn))
         if created:
@@ -563,15 +579,27 @@ class Machine(models.Model):
                 assert self.dhcpv4_write == self._original.dhcpv4_write
                 assert self.dhcpv6_write == self._original.dhcpv6_write
             except AssertionError:
-                from orthos2.data.signals import signal_cobbler_regenerate
+                if ServerConfig.bool_by_key("orthos.cobblersync.full"):
+                    from orthos2.data.signals import signal_cobbler_regenerate
 
-                # regenerate DHCP on all domains (deletion/registration) if domain changed
-                if self.fqdn_domain == self._original.fqdn_domain:
-                    domain_id = self.fqdn_domain.pk
+                    # regenerate DHCP on all domains (deletion/registration) if domain changed
+                    if self.fqdn_domain == self._original.fqdn_domain:
+                        domain_id = self.fqdn_domain.pk
+                    else:
+                        domain_id = None
+
+                    signal_cobbler_regenerate.send(sender=self.__class__, domain_id=domain_id)
                 else:
-                    domain_id = None
-
-                signal_cobbler_regenerate.send(sender=self.__class__, domain_id=domain_id)
+                    from orthos2.data.signals import signal_cobbler_machine_update
+                    if self.fqdn_domain == self._original.fqdn_domain:
+                        domain_id = self.fqdn_domain.pk
+                        machine_id = self.pk
+                        signal_cobbler_machine_update.send(
+                            sender=self.__class__, domain_id=domain_id, machine_id=machine_id)
+                    else:
+                        raise NotImplementedError(
+                            "Moving machines between domains with quick cobbler synchronization "
+                            "is not implemented yet")
 
     @property
     def ipv4(self):
@@ -589,10 +617,6 @@ class Machine(models.Model):
     def status_ping(self):
         return self.status_ipv4 in {Machine.StatusIP.REACHABLE, Machine.StatusIP.CONFIRMED} or\
             self.status_ipv6 in {Machine.StatusIP.REACHABLE, Machine.StatusIP.CONFIRMED}
-
-    def is_remotepower(self):
-        return self.system_id == System.Type.REMOTEPOWER
-    is_remotepower.boolean = True
 
     def is_reserved(self):
         if self.reserved_by:
@@ -612,10 +636,6 @@ class Machine(models.Model):
         """Return `True` if machine is a virtual machine (system), `False` otherwise."""
         return self.system.virtual
 
-    def is_bmc(self):
-        """Return `True` if machine is BMC, `False` otherwise."""
-        return self.system_id == System.Type.BMC
-
     def get_cobbler_domains(self):
         if not self.is_cobbler_server():
             return None
@@ -628,8 +648,8 @@ class Machine(models.Model):
         return self.networkinterfaces.get(primary=True)
 
     def get_virtual_machines(self):
-        if self.system_id == System.Type.BAREMETAL:
-            return self.enclosure.get_virtual_machines()
+        if not self.is_virtual_machine()
+            return self.hypervising.all()
         return None
 
     def get_kernel_options(self):
@@ -701,31 +721,6 @@ class Machine(models.Model):
             return True
 
         return False
-
-    def get_primary_bmc(self):
-        """
-        Return primary BMC for machine (simply the first), `None` if no BMC exists.
-
-        Only non BMC sytems can have a primary BMC.
-        """
-        if self.system_id != System.Type.BMC:
-            bmc_list = self.enclosure.get_bmc_list()
-            if bmc_list:
-                return bmc_list.first()
-        return None
-
-    @property
-    def bmc(self):
-        return self.get_primary_bmc()
-
-    def get_hypervisor(self):
-        if self.system.virtual:
-            return self.enclosure.get_non_virtual_machines().first()
-        return None
-
-    @property
-    def hypervisor(self):
-        return self.get_hypervisor()
 
     def get_s390_hostname(self, use_uppercase=False):
         if self.system_id in {System.Type.ZVM_VM, System.Type.ZVM_KVM}:
@@ -824,9 +819,6 @@ class Machine(models.Model):
     @check_permission
     def release(self, user=None):
         """Release machine."""
-        from orthos2.taskmanager import tasks
-        from orthos2.taskmanager.models import TaskManager
-
         from .reservationhistory import ReservationHistory
 
         if not self.is_reserved():
@@ -864,7 +856,7 @@ class Machine(models.Model):
         reservationhistory.save()
 
         if self.has_setup_capability():
-            self.setup('default')
+            self.setup()
         else:
             self.update_motd()
 
@@ -928,7 +920,7 @@ class Machine(models.Model):
         return True
 
     @check_permission
-    def setup(self, setup_label, user=None):
+    def setup(self, setup_label=None, user=None):
         """Setup machine (re-install distribution)."""
         from orthos2.taskmanager import tasks
         from orthos2.taskmanager.models import TaskManager
