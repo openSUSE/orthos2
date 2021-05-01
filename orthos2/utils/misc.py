@@ -78,7 +78,7 @@ def get_ip(fqdn, ip_version=4):
             elif address_family[0] == socket.AF_INET6:
                 ipv6.append(address_family[4][0])
     except (IndexError, socket.gaierror) as e:
-        logger.error("DNS lookup for '{}': NXDOMAIN (non-existing domain)".format(fqdn, str(e)))
+        logger.exception("DNS lookup for '{}': NXDOMAIN (non-existing domain)".format(fqdn, str(e)))
         return None
 
     if not ipv4:
@@ -205,7 +205,7 @@ def send_email(to_addr, subject, message, from_addr=None):
         s.sendmail(msg['From'], [to_addr], msg.as_string())
         s.quit()
     except Exception:
-        logger.error("Something went wrong while sending E-Mail!")
+        logger.exception("Something went wrong while sending E-Mail!")
 
 
 def execute(command):
@@ -229,7 +229,7 @@ def execute(command):
         # stdout, stderr, exitcode
         result = data[0].decode('utf-8'), data[1].decode('utf-8'), process.returncode
     except FileNotFoundError:
-        logger.error("No such file or directory: {}".format(command))
+        logger.exception("No such file or directory: {}".format(command))
     except Exception as e:
         logger.exception(e)
 

@@ -64,12 +64,12 @@ class RegenerateCobbler(Task):
                     except Exception as e:
                         message = "* Cobbler deployment failed; {}".format(e)
                         if isinstance(e, (SystemError, SyntaxError)):
-                            logger.error(message)
+                            logger.exception(message)
                         else:
                             logger.exception(message)
 
         except SSH.Exception as e:
-            logger.error(e)
+            logger.exception(e)
         except Exception as e:
             logger.exception(e)
         finally:
@@ -98,11 +98,11 @@ class UpdateCobblerMachine(Task):
                 except Exception as e:
                     message = "* Cobbler deployment failed; {}".format(e)
                     if isinstance(e, (SystemError, SyntaxError)):
-                        logger.error(message)
+                        logger.exception(message)
                     else:
                         logger.exception(message)
         except SSH.Exception as e:
-            logger.error(e)
+            logger.exception(e)
         except Exception as e:
             logger.exception(e)
         finally:
