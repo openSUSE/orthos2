@@ -1,6 +1,6 @@
 [
    {
-      "model":"taskmanager.dailytask",
+      "model":"orthos2.taskmanager.dailytask",
       "pk": null,
       "fields":{
          "name": "DailyMachineChecks",
@@ -16,7 +16,7 @@
       }
    },
    {
-      "model":"taskmanager.dailytask",
+      "model":"orthos2.taskmanager.dailytask",
       "pk": null,
       "fields":{
          "name": "DailyCheckReservationExpirations",
