@@ -116,6 +116,7 @@ ln -sr %{buildroot}/usr/share/orthos2/taskmanager_migrations %{buildroot}%{pytho
 ln -sr %{buildroot}/usr/share/orthos2/frontend_migrations %{buildroot}%{python3_sitelib}/orthos2/frontend/migrations
 ln -sr %{buildroot}/usr/share/orthos2/api_migrations %{buildroot}%{python3_sitelib}/orthos2/api/migrations
 
+cp -r ansible %{buildroot}/usr/lib/orthos2/ansible
 
 %pre
 getent group orthos >/dev/null || groupadd -r orthos
