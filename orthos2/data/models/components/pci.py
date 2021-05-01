@@ -190,6 +190,9 @@ class PCIDevice(Component):
     def __str__(self):
         return self.machine.fqdn
 
+    def __hash__(self):
+        return super().__hash__()
+
     def __eq__(self, obj):
         """
         Compare two PCI devices.
