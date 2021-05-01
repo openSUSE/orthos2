@@ -1022,12 +1022,17 @@ class Machine(models.Model):
     def scan(self, action='all', user=None):
         """Start scanning/checking the machine by creating a task."""
         from orthos2.taskmanager import tasks
+        from orthos2.taskmanager.tasks.ansible import Ansible
         from orthos2.taskmanager.models import TaskManager
 
         if action.lower() not in tasks.MachineCheck.Scan.Action.as_list:
             raise Exception("Unknown scan option '{}'!".format(action))
 
         task = tasks.MachineCheck(self.fqdn, tasks.MachineCheck.Scan.to_int(action))
+        TaskManager.add(task)
+
+        #ToDo: Better wait until individual machine scans finished
+        task = Ansible([self.fqdn])
         TaskManager.add(task)
 
     @check_permission
