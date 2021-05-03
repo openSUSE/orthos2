@@ -62,14 +62,14 @@ class TaskExecuter(Thread):
             dailytask.running = False
             dailytask.save()
         except DailyTask.DoesNotExist:
-            logger.warning("Daily task not found!")
+            logger.exception("Daily task not found")
 
     def remove_single_task(self, hash):
         """Remove task from database."""
         try:
             SingleTask.objects.get(hash=hash).delete()
         except SingleTask.DoesNotExist:
-            logger.warning("Single task not found!")
+            logger.exception("Single task not found")
 
     def run(self):
         """Main thread function."""
@@ -98,15 +98,15 @@ class TaskExecuter(Thread):
                     args = json.loads(basetask.arguments)[0]
                     kwargs = json.loads(basetask.arguments)[1]
                 except ImportError:
-                    logger.error("Can't import task module '{}'!".format(basetask.module))
+                    logger.exception("Can't import task module '{}'".format(basetask.module))
                     self.remove_single_task(basetask.hash)
                     continue
                 except AttributeError:
-                    logger.error("Unknown task class '{}'!".format(basetask.name))
+                    logger.exception("Unknown task class '{}'".format(basetask.name))
                     self.remove_single_task(basetask.hash)
                     continue
                 except ValueError:
-                    logger.error("Invalid JSON arguments: {}".format(basetask.arguments))
+                    logger.exception("Invalid JSON arguments: {}".format(basetask.arguments))
                     continue
 
                 if basetask.hash not in running_threads:

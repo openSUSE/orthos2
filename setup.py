@@ -65,6 +65,7 @@ if __name__ == "__main__":
             ("/etc/logrotate.d",  ["logrotate/orthos"]),
             # orthos2 internal binaries in /usr/lib/orthos2
             ("%s" % execpath, glob("orthos2/bin/*")),
+            ("%s/ansible" % execpath, glob("ansible/*")),
             ("%s/scripts" % execpath, glob("orthos2/scripts/*")),
             # orthos2 data files in /usr/share/orthos2
             ("/etc/orthos2", ["wsgi/orthos2.ini", "wsgi/settings"]),

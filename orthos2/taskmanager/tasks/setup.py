@@ -47,12 +47,12 @@ class SetupMachine(Task):
                     machine.reboot()
                     break
             else:
-                logger.error("Setup of %s with %s failed on all cobbler servers",
+                logger.exception("Setup of %s with %s failed on all cobbler servers",
                              machine.fqdn, self.choice)
 
         except SSH.Exception as exception:
-            logger.error(exception)
+            logger.exception(exception)
         except Machine.DoesNotExist:
-            logger.error("Machine does not exist: fqdn={}".format(self.fqdn))
+            logger.exception("Machine does not exist: fqdn={}".format(self.fqdn))
         except Exception as e:
             logger.exception(e)
