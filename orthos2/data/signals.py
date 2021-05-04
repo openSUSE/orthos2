@@ -192,7 +192,7 @@ def regenerate_cobbler(sender, domain_id, *args, **kwargs):
 
 
 @receiver(signal_cobbler_machine_update)
-def update_cobbler_machine(sender, domain_id, machine_id):
+def update_cobbler_machine(sender, domain_id, machine_id, *args, **kwargs):
     """
     Create `RegenerateCobbler()` task here.
 
