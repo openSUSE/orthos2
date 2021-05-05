@@ -90,8 +90,8 @@ def get_power_options(machine):
         options += " --power-id={name}".format(name=machine.hostname)
 
     options += " --power-address={address}".format(address=remotepower.get_power_address())
-    if fence.options:
-        options += " --power-options={options}".format(options=fence.options)
+    if fence.use_options:
+        options += " --power-options={options}".format(options=remotepower.options)
     return options
 
 

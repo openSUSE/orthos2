@@ -107,6 +107,15 @@ class RemotePower(models.Model):
         blank=True
     )
 
+    options = models.CharField(
+        max_length=1024,
+        blank=True,
+        default="",
+        help_text="""Additional command line options to be passed to the fence agent.
+        E. g. "--management=<management LPAR> for lpar"""
+
+    )
+
     updated = models.DateTimeField(
         'Updated at',
         auto_now=True
@@ -169,7 +178,8 @@ class RemotePower(models.Model):
                 errors.append(ValidationError("Please provide a port!"))
         else:
             self.port = None
-
+        if not fence.use_options and self.options:
+            errors.append(ValidationError("Fence agent does not take additional parameters"))
         if errors:
             raise ValidationError(errors)
 
