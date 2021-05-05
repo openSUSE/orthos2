@@ -579,7 +579,7 @@ class Machine(models.Model):
                 assert self.dhcpv4_write == self._original.dhcpv4_write
                 assert self.dhcpv6_write == self._original.dhcpv6_write
             except AssertionError:
-                if ServerConfig.bool_by_key("orthos.cobblersync.full"):
+                if ServerConfig.objects.bool_by_key("orthos.cobblersync.full"):
                     from orthos2.data.signals import signal_cobbler_regenerate
 
                     # regenerate DHCP on all domains (deletion/registration) if domain changed
