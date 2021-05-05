@@ -80,8 +80,23 @@ class UpdateCobblerMachine(Task):
         self._domain_id = domain_id
         self._machine_id = machine_id
     def execute(self):
-        domain = Domain.objects.filter(pk=self._domain_id)
-        machine = Machine.objects.filter(pk=self._machine_id)
+        domains = Domain.objects.filter(pk=self._domain_id)
+        if not domains:
+            logger.error("No Domain with id {id}, aborting".format(self._domain_id))
+            return
+        if len(domains) > 1:
+            logger.error("Multiple Domains with id {id}, aborting".format(self._domain_id))
+            return
+        domain = domains[0]
+
+        machines = Machine.objects.filter(pk=self._machine_id)
+        if not machines:
+            logger.error("No Machine with id {id}, aborting".format(self._machine_id))
+            return
+        if len(machines) > 1:
+            logger.error("Multiple Machines with id {id}, aborting".format(self._machine_id))
+            return
+        machine = machines[0]
         try:
             logger.info("Cobbler update started")
             if domain.cobbler_server.all().count() == 0:
