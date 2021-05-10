@@ -24,7 +24,7 @@ class DailyMachineChecks(Task):
             else:
                 action = 'all'
                 ansible_scan.append(machine.fqdn)
-            task = tasks.MachineCheck(self.fqdn,
+            task = tasks.MachineCheck(machine.fqdn,
                                       tasks.MachineCheck.Scan.to_int(action))
             TaskManager.add(task)
 
