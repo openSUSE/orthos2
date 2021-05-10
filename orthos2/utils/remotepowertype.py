@@ -41,3 +41,4 @@ class RemotePowerType:
             self.use_port = options['port']
         else:
             self.use_port = False
+        self.use_options = options.get('options', False)
