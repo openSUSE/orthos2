@@ -107,7 +107,6 @@ Example:
             'serial_kernel_device',
             None,
             'power_type',
-            'power_management_bmc',
             'power_host',
             'power_port',
             'power_device',

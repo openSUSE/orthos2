@@ -71,14 +71,6 @@ class RemotePower(models.Model):
         primary_key=True
     )
 
-    management_bmc = models.OneToOneField(
-        'data.BMC',
-        verbose_name='Management BMC',
-        related_name='managed_remotepower',
-        blank=True,
-        null=True,
-        on_delete=models.CASCADE
-    )
 
     remote_power_device = models.ForeignKey(
         'data.RemotePowerDevice',
@@ -88,13 +80,6 @@ class RemotePower(models.Model):
         on_delete=models.CASCADE
     )
 
-    hypervisor = models.ForeignKey(
-        'data.Machine',
-        related_name='+',
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE
-    )
     port = models.CharField(
         max_length=255,
         null=True,
@@ -148,27 +133,21 @@ class RemotePower(models.Model):
         if fence.device == "rpower_device":
             if self.remote_power_device:
                 self.fence_name = self.remote_power_device.fence_name
-                self.management_bmc = None
-                self.hypervisor = None
             else:
                 errors.append(ValidationError("Please provide a remote power device!"))
 
         elif fence.device == "bmc":
             if self.machine.bmc:
-                self.management_bmc = self.machine.bmc
-                self.fence_name = self.management_bmc.fence_name
-                self.hypervisor = None
+                self.fence_name = self.machine.bmc.fence_name
                 self.remote_power_device = None
             else:
                 errors.append(ValidationError("The machine needs to have an associated BMC"))
 
         elif fence.device == "hypervisor":
-            if not self.machine.hypervisor:
-                errors.append(ValidationError("No hypervisor found!"))
-            else:
-                self.hypervisor = self.machine.hypervisor
-                self.management_bmc = None
+            if  self.machine.hypervisor:
                 self.remote_power_device = None
+            else:
+                errors.append(ValidationError("No hypervisor found!"))
 
         else:
             errors.append(ValidationError(
@@ -188,8 +167,8 @@ class RemotePower(models.Model):
             return self.fence_name
         if self.remote_power_device:
             return self.remote_power_device.fence_name
-        if self.management_bmc:
-            return self.management_bmc.fence_name
+        if self.machine.bmc:
+            return self.machine.bmc.fence_name
 
     @property
     def name(self):
@@ -252,8 +231,8 @@ class RemotePower(models.Model):
         username = None
         fence = RemotePowerType.from_fence(self.fence_name)
         if fence.device == "bmc":
-            username = self.management_bmc.username
-            password = self.management_bmc.password
+            username = self.machine.bmc.username
+            password = self.machine.bmc.password
         elif fence.device == "rpower_device":
             username = self.remote_power_device.username
             password = self.remote_power_device.password
@@ -275,11 +254,11 @@ class RemotePower(models.Model):
         logging.debug("getting fence object for %s in get_power_adress", self.fence_name)
         fence = RemotePowerType.from_fence(self.fence_name)
         if fence.device == "bmc":
-            return self.management_bmc.fqdn
+            return self.machine.bmc.fqdn
         if fence.device == "rpower_device":
             return self.remote_power_device.fqdn
         if fence.device == "hypervisor":
-            return self.hypervisor.fqdn
+            return self.machine.hypervisor.fqdn
 
     def __str__(self):
         logging.debug("getting fence object for %s in __str___", self.fence_name)

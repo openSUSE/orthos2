@@ -233,15 +233,15 @@ class QueryField:
         },
 
         # RemotePower
-        'rpower_management_bmc': {
-            'field': RemotePower._meta.get_field('management_bmc'),
-            'related_name': 'remotepower',
-            'verbose_name': 'Management BMC',
-            'pre': lambda x:
-                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x,
-            'post': lambda x:
-                Machine.objects.get(pk=x).fqdn
-        },
+       # 'management_bmc': {
+       #     'field': Machine._meta.get_field('management_bmc'),
+       #     'related_name': 'remotepower',
+       #     'verbose_name': 'Management BMC',
+       #     'pre': lambda x:
+       #         Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x,
+       #     'post': lambda x:
+       #         Machine.objects.get(pk=x).fqdn
+       # },
         'rpower_power_device': {
             'field': RemotePower._meta.get_field('remote_power_device'),
             'related_name': 'remotepower',

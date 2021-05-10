@@ -127,7 +127,6 @@ class MachineSerializer(serializers.ModelSerializer):
             'serial_baud_rate',
             'serial_kernel_device',
             'power_type',
-            'power_management_bmc',
             'power_host',
             'power_port',
             'power_comment',
@@ -150,9 +149,7 @@ class MachineSerializer(serializers.ModelSerializer):
     serial_kernel_device = serializers.IntegerField(source='serialconsole.kernel_device')
 
     power_type = serializers.CharField(source='remotepower.fence_name')
-    power_management_bmc = serializers.CharField(
-        source='remotepower.management_bmc'
-    )
+
     power_host = serializers.CharField(source='remotepower.remote_power_device')
     power_port = serializers.CharField(source='remotepower.port')
     power_comment = serializers.CharField(source='remotepower.comment')
