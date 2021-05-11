@@ -213,7 +213,7 @@ class MachineAdminForm(forms.ModelForm):
     def clean_use_bmc(self):
         use_bmc = self.cleaned_data['use_bmc']
         system = self.cleaned_data['system']
-        if system.virtual and use_bmc:
+        if use_bmc and not system.allowBMC:
             raise ValidationError("System {} is virtual. Virtual machines can't have a BMC"
                                   .format(system))
         return use_bmc
@@ -221,11 +221,12 @@ class MachineAdminForm(forms.ModelForm):
     def clean_hypervisor(self):
         hypervisor = self.cleaned_data['hypervisor']
         system = self.cleaned_data['system']
-        if hypervisor and not system.virtual:
-            raise ValidationError("system {} is not virtual. Only Virtual Machines may have "
-                                  "a hypervisor".format(system))
-        if hypervisor and hypervisor.is_virtual_machine():
-            raise ValidationError("{} is a Virtual Machines. Hypervisors must be physical")
+        if hypervisor:
+            if not system.virtual:
+                raise ValidationError("System type {} is not virtual. Only Virtual Machines may have "
+                                      "a hypervisor".format(system))
+            if not hypervisor.system.allowHypervisor:
+                raise ValidationError("System type {} cannot serve as a hypervisor".format(hypervisor.system.name))
         return hypervisor
 
     def clean(self):
