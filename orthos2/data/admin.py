@@ -346,6 +346,8 @@ class MachineAdmin(admin.ModelAdmin):
         'active'
     )
     list_per_page = 50
+    show_full_result_count = True
+    list_max_show_all = 10000
     search_fields = ('fqdn',)
     list_filter = (
         MachineArchitectureFilter,
