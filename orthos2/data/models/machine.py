@@ -548,8 +548,8 @@ class Machine(models.Model):
 
         if not self.system.virtual and self.hypervisor:
             raise ValidationError("Only virtuals machines may have hypervisors")
-        if self.system.virtual and self.use_bmc:
-            raise ValidationError("Virtual machines can not use a BMC")
+        if not self.system.allowBMC and self.use_bmc:
+            raise ValidationError("{} systems cannot use a BMC".format(self.system.name))
         # create & assign network domain and ensure that the FQDN always matches the fqdn_domain
         domain, created = Domain.objects.get_or_create(name=get_domain(self.fqdn))
         if created:
