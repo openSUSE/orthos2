@@ -190,7 +190,8 @@ class Machine(models.Model):
     enclosure = models.ForeignKey(
         Enclosure,
         blank=True,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        help_text="Enclosure/chassis of one or more machines"
     )
 
     fqdn = models.CharField(
@@ -199,39 +200,49 @@ class Machine(models.Model):
         blank=False,
         unique=True,
         validators=[validate_dns, validate_domain_ending],
-        db_index=True
+        db_index=True,
+        help_text="The Fully Qualified Domain Name of the main network interface of the machine"
     )
 
     system = models.ForeignKey(System, on_delete=models.CASCADE)
 
     comment = models.CharField(
         max_length=512,
-        blank=True
+        blank=True,
+        help_text="Machine specific problems or extras you want to tell others?"
     )
 
     serial_number = models.CharField(
         max_length=200,
-        blank=True
+        blank=True,
+        help_text="The serial number can be read from a sticker on the machine's chassis (e.g. GPDRDP5022003)"
     )
 
     product_code = models.CharField(
         max_length=200,
-        blank=True
+        blank=True,
+        help_text="The product code can be read from a sticker on the machine's chassis (e.g. S1DL1SEXA)"
     )
 
     architecture = models.ForeignKey(Architecture, on_delete=models.CASCADE)
 
-    fqdn_domain = models.ForeignKey(Domain, on_delete=models.CASCADE)
+    fqdn_domain = models.ForeignKey(
+        Domain,
+        on_delete=models.CASCADE,
+        help_text="The domain name of the primary NIC"
+    )
 
     cpu_model = models.CharField(
         'CPU model',
         max_length=200,
-        blank=True
+        blank=True,
+        help_text="The domain name of the primary NIC"
     )
 
     cpu_flags = models.TextField(
         'CPU flags',
-        blank=True
+        blank=True,
+        help_text="CPU feature/bug flags as exported from the kernel (/proc/cpuinfo)"
     )
 
     cpu_physical = models.IntegerField(
@@ -241,12 +252,14 @@ class Machine(models.Model):
 
     cpu_cores = models.IntegerField(
         'CPU cores',
-        default=1
+        default=1,
+        help_text="Amount of CPU cores"
     )
 
     cpu_threads = models.IntegerField(
         'CPU threads',
-        default=1
+        default=1,
+        help_text="Amount of CPU threads"
     )
 
     cpu_speed = models.DecimalField(
@@ -259,7 +272,8 @@ class Machine(models.Model):
     cpu_id = models.CharField(
         'CPU ID',
         max_length=200,
-        blank=True
+        blank=True,
+        help_text="X86 cpuid value which identifies the CPU family/model/stepping and features"
     )
 
     ram_amount = models.IntegerField(
@@ -269,44 +283,52 @@ class Machine(models.Model):
 
     efi = models.BooleanField(
         'EFI boot',
-        default=False
+        default=False,
+        help_text="Installed in EFI (aarch64/x86) mode?"
     )
 
     nda = models.BooleanField(
         'NDA hardware',
-        default=False
+        default=False,
+        help_text="This machine is under NDA and has secret (early development HW?) partner information, do not share any data to the outside world"
     )
 
     ipmi = models.BooleanField(
         'IPMI capability',
-        default=False
+        default=False,
+        help_text="IPMI service processor (BMC) detected"
     )
 
     vm_capable = models.BooleanField(
         'VM capable',
-        default=False
+        default=False,
+        help_text="Do the CPUs support native virtualization (KVM). This field is deprecated"
     )
 
     vm_max = models.IntegerField(
         'Max. VMs',
-        default=5
+        default=5,
+        help_text="Maximum amount of virtual hosts allowed to be spawned on this virtual server (ToDo: don't use yet)"
     )
 
     vm_dedicated_host = models.BooleanField(
         'Dedicated VM host',
-        default=False
+        default=False,
+        help_text="Dedicated to serve as physical host for virtual machines (users cannot reserve this machine)"
     )
 
     vm_auto_delete = models.BooleanField(
         'Delete automatically',
-        default=False
+        default=False,
+        help_text="Release and destroy virtual machine instances, once people have released (do not reserve anymore) them"
     )
 
     virtualization_api = models.SmallIntegerField(
         'Virtualization API',
         choices=VirtualizationAPI.TYPE_CHOICES,
         blank=True,
-        null=True
+        null=True,
+        help_text="Only supported API currently is libvirt"
     )
 
     reserved_by = models.ForeignKey(
@@ -323,14 +345,16 @@ class Machine(models.Model):
 
     reserved_until = models.DateTimeField(
         blank=True,
-        null=True
+        null=True,
+        help_text="Reservation expires at xx.yy.zzzz (max 90 days)"
     )
 
     reserved_reason = models.CharField(
         'Reservation reason',
         max_length=512,
         blank=True,
-        null=True
+        null=True,
+        help_text="Why do you need this machine (bug no, jira feature, what do you test/work on)?"
     )
 
     platform = models.ForeignKey(
@@ -343,12 +367,14 @@ class Machine(models.Model):
 
     bios_version = models.CharField(
         max_length=200,
-        blank=True
+        blank=True,
+        help_text="The firmware BIOS is from ... (on x86 as retrieved from dmidecode -s bios-version"
     )
 
     bios_date = models.DateTimeField(
         editable=False,
-        default='1990-10-03T10:00:00+00:00'
+        default='1990-10-03T10:00:00+00:00',
+        help_text="The firmware BIOS is from ... (on x86 as retrieved from dmidecode -s bios-version"
     )
 
     disk_primary_size = models.SmallIntegerField(
@@ -385,32 +411,37 @@ class Machine(models.Model):
         'Status IPv4',
         choices=StatusIP.CHOICE,
         editable=False,
-        default=StatusIP.UNREACHABLE
+        default=StatusIP.UNREACHABLE,
+        help_text="Does this IPv4 address respond to ping?"
     )
 
     status_ipv6 = models.SmallIntegerField(
         'Status IPv6',
         choices=StatusIP.CHOICE,
         editable=False,
-        default=StatusIP.UNREACHABLE
+        default=StatusIP.UNREACHABLE,
+        help_text="Does this IPv6 address respond to ping?"
     )
 
     status_ssh = models.BooleanField(
         'SSH',
         editable=False,
-        default=False
+        default=False,
+        help_text="Is the ssh port (22) on this host address open?"
     )
 
     status_login = models.BooleanField(
         'Login',
         editable=False,
-        default=False
+        default=False,
+        help_text="Can orthos log into this host via ssh key (if not scanned data might be outdated)?"
     )
 
     administrative = models.BooleanField(
         'Administrative machine',
         editable=True,
-        default=False
+        default=False,
+        help_text="Administrative machines cannot be reserved"
     )
 
     check_connectivity = models.SmallIntegerField(
@@ -465,7 +496,12 @@ class Machine(models.Model):
         default=DHCPRecordOption.WRITE
     )
 
-    use_bmc = models.BooleanField(verbose_name='Use BMC', default=True)
+    use_bmc = models.BooleanField(
+        verbose_name='Use BMC',
+        default=True,
+        help_text="Create and connect a networkinterace as BMC " +
+        "in a new form further down after saving"
+    )
 
     hostname = None
 

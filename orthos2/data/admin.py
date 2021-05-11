@@ -149,7 +149,8 @@ class MachineAdminForm(forms.ModelForm):
 
     mac_address = forms.CharField(
         label='MAC address',
-        validators=[validate_mac_address]
+        validators=[validate_mac_address],
+        help_text="The MAC address of the main network interface"
     )
 
     class Meta:
