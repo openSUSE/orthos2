@@ -387,7 +387,7 @@ class MachineAdmin(admin.ModelAdmin):
                 'use_bmc'
             )
         }),
-        ('VIRTUALIZATION', {
+        ('VIRTUALIZATION SERVER', {
             'fields': (
                 (
                     'vm_dedicated_host',
@@ -395,7 +395,11 @@ class MachineAdmin(admin.ModelAdmin):
                 ),
                 'vm_max',
                 'virtualization_api',
-                'hypervisor'
+            ),
+        }),
+        ('VIRTUALIZATION CLIENT', {
+            'fields': (
+                'hypervisor',
             ),
         }),
         ('MACHINE CHECKS', {
@@ -535,18 +539,19 @@ class MachineAdmin(admin.ModelAdmin):
         return super(MachineAdmin, self).add_view(request, form_url, extra_context)
 
     def get_fieldsets(self, request, machine):
-        """Do not show 'VIRTUALIZATION' fieldset for administrative systems."""
+        """Do not show 'VIRTUALIZATION' client/server forms if not appropriate"""
         fieldsets = super(MachineAdmin, self).get_fieldsets(request)
-
-        if machine and machine.system.administrative:
+        if machine:
             fieldsets_ = ()
-
             for fieldset in fieldsets:
-                if fieldset[0] != 'VIRTUALIZATION':
-                    fieldsets_ += (fieldset,)
-
+                if fieldset[0] == 'VIRTUALIZATION SERVER':
+                    if not machine.system.allowHypervisor:
+                        continue
+                if fieldset[0] == 'VIRTUALIZATION CLIENT':
+                    if not machine.system.virtual:
+                        continue
+                fieldsets_ += (fieldset,)
             fieldsets = fieldsets_
-
         return fieldsets
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
