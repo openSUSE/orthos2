@@ -108,6 +108,13 @@ def machine_pre_delete(sender, instance, *args, **kwargs):
     """Pre delete action for machine. Save deleted machine object as file for archiving.
        Also remove the machine from the cobbler Server.
     """
+    server = CobblerServer.from_machine(instance)
+    if server:
+        server.remove(instance)
+
+    if instance.is_vm_managed():
+        instance.hypervisor.virtualization_api.remove(machine)
+
     if not ServerConfig.objects.bool_by_key('serialization.execute'):
         return
 
@@ -142,10 +149,6 @@ def machine_pre_delete(sender, instance, *args, **kwargs):
         machine_description.write(serialized_data)
 
     logger.info("Machine object serialized (target: '{}')".format(filename))
-
-    server = CobblerServer.from_machine(instance)
-    if server:
-        server.remove(instance)
 
 
 @receiver(post_save, sender=SerialConsole)

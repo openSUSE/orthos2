@@ -669,8 +669,21 @@ class Machine(models.Model):
     is_cobbler_server.boolean = True
 
     def is_virtual_machine(self):
-        """Return `True` if machine is a virtual machine (system), `False` otherwise."""
+        """
+        Is this a virtualized system?
+
+        "return: `True` if machine is a virtual machine (system)
+        """
         return self.system.virtual
+
+    def is_vm_managed(self):
+        """
+        Is this a virtual machine and has a hypervisor and virt API assigned
+        through which it is managed?
+
+        :return: `True` if machine has a hypervisor and a virtualization API assgined.
+        """
+        return self.hypervisor and self.hypervisor.virtualization_api
 
     def get_cobbler_domains(self):
         if not self.is_cobbler_server():
@@ -860,20 +873,12 @@ class Machine(models.Model):
         if not self.is_reserved():
             raise ReleaseException("Machine is not reserved.")
 
-        if self.is_virtual_machine():
-            vm = self
+        if self.administrative:
+            raise Exception("Administrative machines must not be released, remove admin flag first")
 
-            if vm.hypervisor and (vm.hypervisor.virtualization_api is not None):
-                host = self.hypervisor
-
-                if host.vm_auto_delete:
-
-                    if host.virtualization_api.remove(self):
-                        self.delete()
-                    else:
-                        raise ReleaseException("VM release failed for '{}'".format(vm))
-
-                    return
+        if self.is_vm_managed() and self.hypervisor.vm_auto_delete:
+            self.delete()
+            return
 
         reservationhistory = ReservationHistory(
             machine=self,
