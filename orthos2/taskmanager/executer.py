@@ -75,14 +75,14 @@ class TaskExecuter(Thread):
     def _check_threads(self, running_threads):
         for hash, values in list(running_threads.items()):
             thread = values[0]
-            task = values[1
+            task = values[1]
             # check if thread has finished...
-            if not thread.is_alive()
+            if not thread.is_alive():
                 if task.basetask_type == BaseTask.Type.SINGLE:
                     self.remove_single_task(hash)
                 else:
-                    self.reset_daily_task(hash
-                del running_threads[hash
+                    self.reset_daily_task(hash)
+                del running_threads[hash]
                 logger.debug("Thread [{}] {} exited".format(
                     hash[:8],
                     task.__class__.__name__
