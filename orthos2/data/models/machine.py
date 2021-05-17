@@ -614,6 +614,20 @@ class Machine(models.Model):
                 assert self.dhcp_filename == self._original.dhcp_filename
                 assert self.dhcpv4_write == self._original.dhcpv4_write
                 assert self.dhcpv6_write == self._original.dhcpv6_write
+                if self.has_remotepower():
+                    assert hasattr(self._original, 'remotepower')
+                    assert self.remotepower.fence_name == self._original.remotepower.fence_name
+                    assert self.remotepower.options == self._original.remotepower.options
+                    if hasattr(self.remotepower, 'remote_power_device'):
+                        assert hasattr(self._original.remotepower, 'remote_power_device')
+                        assert self.remotepower.remote_power_device == \
+                               self._original.remotepower.remote_power_device
+                if hasattr(self, 'bmc'):
+                    assert hasattr(self._original, 'bmc')
+                    assert self.bmc.username == self._original.bmc.username
+                    assert self.bmc.password == self._original.bmc.password
+                    assert self.bmc.mac == self._original.bmc.mac
+                    assert self.bmc.fqdn == self._original.bmc.fqdn
             except AssertionError:
                 if ServerConfig.objects.bool_by_key("orthos.cobblersync.full"):
                     from orthos2.data.signals import signal_cobbler_regenerate
