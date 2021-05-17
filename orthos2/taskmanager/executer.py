@@ -2,8 +2,6 @@ import importlib
 import json
 import logging
 import time
-import traceback
-from datetime import date, datetime
 from queue import Empty as queueEmpty
 from queue import Queue
 from threading import Thread
@@ -25,7 +23,7 @@ class TaskExecuter(Thread):
     def __init__(self):
         Thread.__init__(self)
         self._stop_execution = False
-        self.daily_check_run = datetime.now()
+        self.daily_check_run = timezone.localtime()
 
         self.queue = {
             Priority.HIGH: Queue(),
@@ -35,15 +33,15 @@ class TaskExecuter(Thread):
 
     def get_daily_tasks(self):
         """Check for daily tasks and store them in the queue for processing."""
-        now = datetime.now()
-        today = date.today()
+        now = timezone.localtime()
+        logger.debug("now: %s", now)
+        today = timezone.localdate()
 
         dailytasks = DailyTask.objects.filter(enabled=True).order_by('priority')
-
         for dailytask in dailytasks:
-            if dailytask.executed_at.date() < today:
+            if timezone.localdate(dailytask.executed_at) < today:
                 if now.time() > ServerConfig.objects.get_daily_execution_time():
-                    dailytask.executed_at = timezone.now()
+                    dailytask.executed_at = timezone.localtime()
                     dailytask.running = True
                     dailytask.save()
                     self.queue[dailytask.priority].put(dailytask)
@@ -91,8 +89,8 @@ class TaskExecuter(Thread):
     def run(self):
         """Main thread function."""
         running_threads = {}
-
         while not self._stop_execution:
+            logger.debug("time in executor: " + str(timezone.localtime()))
             queue = None
             if len(running_threads) >= self.concurrency:
                 time.sleep(0.25)
