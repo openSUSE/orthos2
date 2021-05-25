@@ -738,6 +738,9 @@ class PlatformAdmin(admin.ModelAdmin):
     list_display = ('name', 'get_vendor', 'get_enclosure_count', 'is_cartridge')
     list_per_page = 50
     search_fields = ('name',)
+    show_full_result_count = True
+    list_max_show_all = 1000
+
 
 
 admin.site.register(Platform, PlatformAdmin)
