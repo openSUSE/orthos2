@@ -516,14 +516,9 @@ def setup(request, id):
         if form.is_valid():
             choice = form.cleaned_data['setup']
 
-            machinegroup = None
-            if machine.group and not machine.group.setup_use_architecture:
-                machinegroup = machine.group.name
-
             valid = machine.fqdn_domain.is_valid_setup_choice(
                 choice,
-                machine.architecture.name,
-                machinegroup=machinegroup
+                machine.architecture.name
             )
             if not valid:
                 messages.error(request, "Unknown choice '{}'!".format(choice))

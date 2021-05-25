@@ -12,7 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 from orthos2.utils.misc import DHCPRecordOption
 
 from .models import (Annotation, Architecture, BMC, Domain, Enclosure, Installation,
-                     Machine, MachineGroup, MachineGroupMembership,
+                     Machine, MachineGroup, MachineGroupMembership, DomainAdmin,
                      NetworkInterface, Platform, RemotePower, RemotePowerDevice,
                      SerialConsole, SerialConsoleType, ServerConfig, System, Vendor,
                      VirtualizationAPI, is_unique_mac_address, validate_dns,
@@ -610,49 +610,22 @@ class MachineAdmin(admin.ModelAdmin):
 
 admin.site.register(Machine, MachineAdmin)
 
+class ArchsInline(admin.TabularInline):
+    model = DomainAdmin
+    fields = ('arch', 'contact_email',)
 
 class DomainAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'cobbler_server_list',
         'tftp_server',
-        'get_machine_count',
-        'setup_support'
     )
     # enables nifty unobtrusive JavaScript “filter” interface
     filter_horizontal = (
         'cobbler_server',
-        'setup_architectures',
-        'setup_machinegroups'
+        'supported_architectures',
     )
-
-    def setup_support(self, obj):
-        """Return list of setup supported architectures/machine groups as string."""
-        architectures = 'Architectures: '
-        machinegroups = 'Machine Groups: '
-        link_pattern = '<a href="{}" class="text-muted">{}</a>, '
-
-        if obj.setup_architectures.all().count() == 0:
-            architectures += '-'
-        else:
-            for architecture in obj.setup_architectures.all():
-                architectures += link_pattern.format(
-                    reverse('admin:data_architecture_change', args=[architecture.pk]),
-                    architecture.name
-                )
-            architectures = architectures.rstrip(' ,')
-
-        if obj.setup_machinegroups.all().count() == 0:
-            machinegroups += '-'
-        else:
-            for machinegroup in obj.setup_machinegroups.all():
-                machinegroups += link_pattern.format(
-                    reverse('admin:data_machinegroup_change', args=[machinegroup.pk]),
-                    machinegroup.name
-                )
-            machinegroups = machinegroups.rstrip(' ,')
-
-        return format_html('{}<br/>{}'.format(architectures, machinegroups))
+    inlines = (ArchsInline, )
 
     def cobbler_server_list(self, obj):
         """Return DHCP server list as string."""

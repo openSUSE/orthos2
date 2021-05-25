@@ -16,7 +16,7 @@ from orthos2.utils.misc import (DHCPRecordOption, Serializer, get_domain, get_ho
                                 is_dns_resolvable)
 
 from .architecture import Architecture
-from .domain import Domain, validate_domain_ending
+from .domain import Domain, DomainAdmin, validate_domain_ending
 from .enclosure import Enclosure
 from .machinegroup import MachineGroup
 from .networkinterface import validate_mac_address
@@ -809,10 +809,7 @@ class Machine(models.Model):
         Return true if a machines network domain supports the setup capability for the respective
         machine group (if the machine belongs to one) or architecture.
         """
-        if self.group and not self.group.setup_use_architecture:
-            return self.group in self.fqdn_domain.setup_machinegroups.all()
-
-        return self.architecture in self.fqdn_domain.setup_architectures.all()
+        return self.architecture in self.fqdn_domain.supported_architectures.all()
 
     @check_permission
     def reserve(self, reason, until, user=None, reserve_for_user=None):
@@ -1129,8 +1126,10 @@ class Machine(models.Model):
             if contact:
                 return contact
 
-        if self.architecture.contact_email:
-            return self.architecture.contact_email
+        admin = DomainAdmin(domain = self.fqdn_domain, arch = self.architecture)
+        if admin and admin.contact_email:
+            logger.warning("Email admin: %s", admin.contact_email)
+            return admin.contact_email
 
         return settings.SUPPORT_CONTACT
 

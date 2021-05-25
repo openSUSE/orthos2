@@ -514,10 +514,6 @@ class SetupMachineForm(forms.Form):
         domain = machine.fqdn_domain
 
         architecture = machine.architecture.name
-        group = None
-        if machine.group and not machine.group.setup_use_architecture:
-            group = machine.group.name
-
         '''
         Change choice html field here (domain.get_setup_records(..., grouped=True)
         grouped=True
@@ -538,15 +534,15 @@ class SetupMachineForm(forms.Form):
            SLE-12-SP5-Server-LATEST:install-auto
            ...
         '''
-        records = domain.get_setup_records(architecture, machinegroup=group, grouped=True)
-        logger.debug("Setup choices for {}.{} [{}][{}]:\n{}\n".format(
-            machine, domain, architecture, group, records))
+        records = domain.get_setup_records(architecture, grouped=True)
+        logger.debug("Setup choices for {}.{} [{}]:\n{}\n".format(
+            machine, domain, architecture, records))
 
         super(SetupMachineForm, self).__init__(*args, **kwargs)
 
         self.fields['setup'].choices = self.get_setup_select_choices(records)
-        logger.debug("Setup choicen for {}.{} [{}][{}]:\n{}\n".format(
-            machine, domain, architecture, group, self.fields['setup'].choices))
+        logger.debug("Setup choicen for {}.{} [{}]:\n{}\n".format(
+            machine, domain, architecture, self.fields['setup'].choices))
 
     def get_setup_select_choices(self, records):
         setup_records = []
