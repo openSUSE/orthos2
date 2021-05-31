@@ -203,7 +203,7 @@ class QueryField:
                 SerialConsoleType.Type.to_int(x) if isinstance(x, str) else x,
             'post': lambda x:
                 SerialConsoleType.Type.to_str(x)
-            },
+        },
         'serial_baud': {
             'field': SerialConsole._meta.get_field('baud_rate'),
             'related_name': 'serialconsole',
