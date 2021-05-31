@@ -176,6 +176,7 @@ class QueryField:
         },
         'serial_type': {
             'field': SerialConsole._meta.get_field('stype'),
+<<<<<<< HEAD
             'related_name': 'serialconsole',
             'verbose_name': 'Serial console',
             'pre': lambda x:
@@ -185,6 +186,8 @@ class QueryField:
         },
         'sconsole': {
             'field': SerialConsole._meta.get_field('stype'),
+=======
+>>>>>>> ba04f86... rename SerialConsole.type to stype
             'related_name': 'serialconsole',
             'verbose_name': 'Serial console',
             'pre': lambda x:

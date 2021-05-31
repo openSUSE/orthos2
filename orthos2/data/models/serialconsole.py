@@ -146,8 +146,11 @@ class SerialConsole(models.Model):
             return
 
         if self.stype.name == 'Device':
+<<<<<<< HEAD
             if not self.kernel_device:
                 errors.append(ValidationError("Please provide a kernel device (e.g. '/dev/ttyS123')!"))
+=======
+>>>>>>> ba04f86... rename SerialConsole.type to stype
 
             if not self.baud_rate:
                 errors.append(ValidationError("Please provide a baud rate!"))
