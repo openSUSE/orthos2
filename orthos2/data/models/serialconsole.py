@@ -90,6 +90,7 @@ class SerialConsole(models.Model):
         limit_choices_to={'administrative': True},
         null=True,
         blank=True
+<<<<<<< HEAD
     )
 
     kernel_device = models.CharField(
@@ -98,6 +99,8 @@ class SerialConsole(models.Model):
         null=False,
         blank=True,
         default='ttyS'
+=======
+>>>>>>> a3a104a... Made SerialConsole.cscreen_server optional
     )
 
 <<<<<<< HEAD
