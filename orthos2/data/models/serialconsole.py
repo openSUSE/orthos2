@@ -88,8 +88,8 @@ class SerialConsole(models.Model):
         related_name='+',
         on_delete=models.CASCADE,
         limit_choices_to={'administrative': True},
-        null=False,
-        blank=False
+        null=True,
+        blank=True
     )
 
     kernel_device = models.CharField(
