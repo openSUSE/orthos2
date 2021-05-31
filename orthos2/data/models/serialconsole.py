@@ -100,6 +100,17 @@ class SerialConsole(models.Model):
         default='ttyS'
     )
 
+<<<<<<< HEAD
+=======
+    kernel_device = models.CharField(
+        verbose_name="Kernel Device",
+        max_length=255,
+        null=False,
+        blank=True,
+        default='ttyS'
+    )
+
+>>>>>>> 89a090e... Rework sconsole implementation:
     kernel_device_num = models.SmallIntegerField(
         null=False,
         validators=[
@@ -147,10 +158,15 @@ class SerialConsole(models.Model):
 
         if self.stype.name == 'Device':
 <<<<<<< HEAD
+<<<<<<< HEAD
             if not self.kernel_device:
                 errors.append(ValidationError("Please provide a kernel device (e.g. '/dev/ttyS123')!"))
 =======
 >>>>>>> ba04f86... rename SerialConsole.type to stype
+=======
+            if not self.kernel_device:
+                errors.append(ValidationError("Please provide a kernel device (e.g. '/dev/ttyS123')!"))
+>>>>>>> 89a090e... Rework sconsole implementation:
 
             if not self.baud_rate:
                 errors.append(ValidationError("Please provide a baud rate!"))
