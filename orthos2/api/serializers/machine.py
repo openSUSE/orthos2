@@ -117,7 +117,6 @@ class MachineSerializer(serializers.ModelSerializer):
             'cpu_flags',
             'ram_amount',
             'serial_type',
-            'serial_management_bmc',
             'serial_cscreen_server',
             'serial_console_server',
             'serial_device',
@@ -135,18 +134,16 @@ class MachineSerializer(serializers.ModelSerializer):
             'location_rack_position'
         )
 
-    serial_type = serializers.CharField(source='serialconsole.type.name')
+    serial_type = serializers.CharField(source='serialconsole.stype.name')
     serial_cscreen_server = serializers.CharField(source='serialconsole.cscreen_server')
-    serial_management_bmc = serializers.CharField(
-        source='serialconsole.management_bmc'
-    )
+
     serial_console_server = serializers.CharField(source='serialconsole.console_server')
-    serial_device = serializers.CharField(source='serialconsole.device')
     serial_port = serializers.IntegerField(source='serialconsole.port')
     serial_command = serializers.CharField(source='serialconsole.command')
     serial_comment = serializers.CharField(source='serialconsole.comment')
     serial_baud_rate = serializers.IntegerField(source='serialconsole.baud_rate')
-    serial_kernel_device = serializers.IntegerField(source='serialconsole.kernel_device')
+    serial_kernel_device = serializers.CharField(source='serialconsole.kernel_device')
+    serial_kernel_device_num = serializers.IntegerField(source='serialconsole.kernel_device_num')
 
     power_type = serializers.CharField(source='remotepower.fence_name')
 

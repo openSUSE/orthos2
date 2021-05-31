@@ -382,9 +382,8 @@ class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
             'cscreen_server',
             'baud_rate',
             'kernel_device',
-            'management_bmc',
+            'kernel_device_num',
             'console_server',
-            'device',
             'port',
             'command',
             'comment',
@@ -401,11 +400,9 @@ class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
         self.fields = formset.form().fields
         self.fields['type'].empty_label = None
         self.fields['cscreen_server'].empty_label = None
-        self.fields['management_bmc'].queryset = machine.bmc
-        self.fields['management_bmc'].empty_label = 'None'
         self.fields['baud_rate'].initial = 5
-        self.fields['kernel_device'].min_value = 0
-        self.fields['kernel_device'].max_value = 1024
+        self.fields['kernel_device_num'].min_value = 0
+        self.fields['kernel_device_num'].max_value = 1024
         self.fields['console_server'].empty_label = 'None'
 
     def clean(self):
