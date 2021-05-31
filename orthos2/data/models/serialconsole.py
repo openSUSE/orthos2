@@ -46,21 +46,9 @@ class SerialConsole(models.Model):
         primary_key=True
     )
 
-    management_bmc = models.ForeignKey(
-        'data.Machine',
-        verbose_name='Management BMC',
-        related_name='managed_serialconsole',
-        blank=True,
-        null=True,
-        on_delete=models.CASCADE
-    )
-
-    console_server = models.ForeignKey(
-        'data.Machine',
+    console_server = models.CharField(
+        max_length=1024,
         verbose_name='Dedicated console server',
-        related_name='console_server',
-        on_delete=models.CASCADE,
-        limit_choices_to={'administrative': True},
         blank=True,
         null=True
     )
@@ -70,12 +58,6 @@ class SerialConsole(models.Model):
         on_delete=models.CASCADE,
         null=False,
         blank=False
-    )
-
-    device = models.CharField(
-        max_length=100,
-        null=True,
-        blank=True
     )
 
     port = models.SmallIntegerField(
@@ -110,13 +92,22 @@ class SerialConsole(models.Model):
         blank=False
     )
 
-    kernel_device = models.SmallIntegerField(
+    kernel_device = models.CharField(
+        verbose_name="Kernel Device",
+        max_length=255,
+        null=False,
+        blank=True,
+        default='ttyS'
+    )
+
+    kernel_device_num = models.SmallIntegerField(
         null=False,
         validators=[
             MinValueValidator(0),
             MaxValueValidator(1024)
         ],
-        default=0
+        default=0,
+        verbose_name="Kernel Device number",
     )
 
     updated = models.DateTimeField(
@@ -155,6 +146,8 @@ class SerialConsole(models.Model):
             return
 
         if self.stype.name == 'Device':
+            if not self.kernel_device:
+                errors.append(ValidationError("Please provide a kernel device (e.g. '/dev/ttyS123')!"))
 
             if not self.baud_rate:
                 errors.append(ValidationError("Please provide a baud rate!"))
@@ -162,7 +155,6 @@ class SerialConsole(models.Model):
             # requires: device, baud_rate
             self.command = ''
             self.console_server = None
-            self.management_bmc = None
             self.port = None
 
         elif self.stype.name == 'Telnet':
@@ -174,16 +166,15 @@ class SerialConsole(models.Model):
 
             # requires: console_server, port
             self.command = ''
-            self.device = ''
-            self.management_bmc = None
+            self.kernel_device = ''
 
         elif self.stype.name == 'Command':
             if not self.command:
                 errors.append(ValidationError("Please provide a command!"))
 
             # requires: command
-            self.device = ''
-            self.console_server = None
+            self.kernel_device = ''
+            self.console_server = ''
             self.port = None
 
         elif self.stype.name == 's390':
@@ -197,14 +188,12 @@ class SerialConsole(models.Model):
 
         elif self.stype.name in {'IPMI', 'ILO', 'ILO2'}:
             if not self.machine.bmc:
-                errors.append(ValidationError("Please add at least one BMC to the enclosure!"))
+                errors.append(ValidationError("Please add a BMC to the machine!"))
 
-            if not self.management_bmc:
-                errors.append(ValidationError("Please select a management BMC!"))
 
             # requires: management interface
             self.command = ''
-            self.device = ''
+            self.kernel_device = ''
             self.console_server = None
             self.port = None
 
@@ -214,10 +203,9 @@ class SerialConsole(models.Model):
 
             # requires: -
             self.command = ''
-            self.device = ''
+            self.kernel_device = ''
             self.console_server = None
             self.port = None
-            self.management_bmc = None
 
         if errors:
             raise ValidationError(errors)
@@ -237,8 +225,10 @@ class SerialConsole(models.Model):
 
         context = Context({
             'machine': self.machine,
+            'bmc': self.machine.bmc,
             'ipmi': ipmi,
-            'device': self.device,
+            'kernel_device': self.kernel_device,
+            'kernel_device_num': self.kernel_device_num,
             'baud_rate': self.baud_rate,
             'command': self.command,
             'port': self.port,

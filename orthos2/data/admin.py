@@ -40,9 +40,8 @@ class SerialConsoleInline(admin.StackedInline):
         'cscreen_server',
         'baud_rate',
         'kernel_device',
-        'management_bmc',
+        'kernel_device_num',
         'console_server',
-        'device',
         'port',
         'command',
         'comment'
