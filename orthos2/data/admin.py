@@ -36,7 +36,7 @@ class SerialConsoleInline(admin.StackedInline):
     verbose_name = 'Serial Console'
     verbose_name_plural = 'Serial Console'
     fields = (
-        'type',
+        'stype',
         'cscreen_server',
         'baud_rate',
         'kernel_device',

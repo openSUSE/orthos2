@@ -174,26 +174,8 @@ class QueryField:
             'post': lambda x:
                 Machine.objects.get(pk=x).fqdn
         },
-        'serial_management_bmc': {
-            'field': SerialConsole._meta.get_field('management_bmc'),
-            'related_name': 'serialconsole',
-            'verbose_name': 'Management BMC',
-            'pre': lambda x:
-                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x,
-            'post': lambda x:
-                Machine.objects.get(pk=x).fqdn
-        },
         'serial_type': {
-            'field': SerialConsole._meta.get_field('type'),
-            'related_name': 'serialconsole',
-            'verbose_name': 'Serial console',
-            'pre': lambda x:
-                SerialConsoleType.Type.to_int(x) if isinstance(x, str) else x,
-            'post': lambda x:
-                SerialConsoleType.Type.to_str(x)
-        },
-        'sconsole': {
-            'field': SerialConsole._meta.get_field('type'),
+            'field': SerialConsole._meta.get_field('stype'),
             'related_name': 'serialconsole',
             'verbose_name': 'Serial console',
             'pre': lambda x:

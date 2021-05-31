@@ -135,7 +135,7 @@ class MachineSerializer(serializers.ModelSerializer):
             'location_rack_position'
         )
 
-    serial_type = serializers.CharField(source='serialconsole.type.name')
+    serial_type = serializers.CharField(source='serialconsole.stype.name')
     serial_cscreen_server = serializers.CharField(source='serialconsole.cscreen_server')
     serial_management_bmc = serializers.CharField(
         source='serialconsole.management_bmc'
