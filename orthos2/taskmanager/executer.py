@@ -10,6 +10,9 @@ from threading import Thread
 
 from orthos2.data.models import ServerConfig
 from django.utils import timezone
+from django.db.utils import InterfaceError
+from django import db
+
 
 from . import Priority
 from .models import BaseTask, DailyTask, SingleTask, Task
@@ -150,7 +153,10 @@ class TaskExecuter(Thread):
                         basetask.name,
                         basetask.arguments
                     ))
-
+            except InterfaceError as e:
+                # InterfaceError is raised when the connection is closed from the db side.
+                # Closing it in django forces the creation of a new connection for the next access.
+                db.connection.close()
             except Exception as e:
                 logger.exception(e)
             finally:
