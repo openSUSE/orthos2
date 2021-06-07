@@ -1102,7 +1102,7 @@ class Machine(models.Model):
         if self.has_serialconsole():
             signal_serialconsole_regenerate.send(
                 sender=self.__class__,
-                cscreen_server_fqdn=self.serialconsole.cscreen_server.fqdn
+                cscreen_server_fqdn=self.fqdn_domain.cscreen_server.fqdn
             )
 
     @check_permission

@@ -37,7 +37,6 @@ class SerialConsoleInline(admin.StackedInline):
     verbose_name_plural = 'Serial Console'
     fields = (
         'stype',
-        'cscreen_server',
         'baud_rate',
         'kernel_device',
         'kernel_device_num',
@@ -618,6 +617,7 @@ class DomainAdmin(admin.ModelAdmin):
         'name',
         'cobbler_server_list',
         'tftp_server',
+        'cscreen_server'
     )
     # enables nifty unobtrusive JavaScript “filter” interface
     filter_horizontal = (

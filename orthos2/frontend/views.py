@@ -5,8 +5,7 @@ import warnings
 
 from orthos2.data.exceptions import ReleaseException, ReserveException
 from orthos2.data.models import (Architecture, Domain, Machine, MachineGroup,
-                                 RemotePower, ReservationHistory, SerialConsole,
-                                 SerialConsoleType, ServerConfig)
+                                 ReservationHistory, ServerConfig)
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate

@@ -165,15 +165,6 @@ class QueryField:
             'post': lambda x:
                 Machine.objects.get(pk=x).fqdn
         },
-        'serial_cscreen_server': {
-            'field': SerialConsole._meta.get_field('cscreen_server'),
-            'related_name': 'serialconsole',
-            'verbose_name': 'CScreen server',
-            'pre': lambda x:
-                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x,
-            'post': lambda x:
-                Machine.objects.get(pk=x).fqdn
-        },
         'serial_type': {
             'field': SerialConsole._meta.get_field('stype'),
             'related_name': 'serialconsole',
