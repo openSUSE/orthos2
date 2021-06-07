@@ -135,7 +135,6 @@ class MachineSerializer(serializers.ModelSerializer):
         )
 
     serial_type = serializers.CharField(source='serialconsole.stype.name')
-    serial_cscreen_server = serializers.CharField(source='serialconsole.cscreen_server')
 
     serial_console_server = serializers.CharField(source='serialconsole.console_server')
     serial_port = serializers.IntegerField(source='serialconsole.port')

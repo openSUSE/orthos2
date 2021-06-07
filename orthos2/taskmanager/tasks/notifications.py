@@ -92,7 +92,7 @@ Or use the following commandline interface command:
 
 For a serial console, establish a SSH login on {serialconsole_fqdn} and
 follow the instructions on the screen.""".format(
-                    serialconsole_fqdn=machine.serialconsole.cscreen_server.fqdn
+                    serialconsole_fqdn=machine.fqdn_domain.cscreen_server.fqdn
                 )
 
             message += """

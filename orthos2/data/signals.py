@@ -155,15 +155,16 @@ def machine_pre_delete(sender, instance, *args, **kwargs):
 def serialconsole_post_save(sender, instance, *args, **kwargs):
     signal_serialconsole_regenerate.send(
         sender=SerialConsole,
-        cscreen_server_fqdn=instance.cscreen_server.fqdn
+        cscreen_server_fqdn=instance.machine.fqdn_domain.cscreen_server.fqdn
     )
 
 
 @receiver(post_delete, sender=SerialConsole)
 def serialconsole_post_delete(sender, instance, *args, **kwargs):
+
     signal_serialconsole_regenerate.send(
         sender=SerialConsole,
-        cscreen_server_fqdn=instance.cscreen_server.fqdn
+        cscreen_server_fqdn=instance.machine.fqdn_domain.cscreen_server.fqdn
     )
 
 

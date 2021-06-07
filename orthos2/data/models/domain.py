@@ -52,6 +52,16 @@ class Domain(models.Model):
         limit_choices_to={'administrative': True}
     )
 
+    cscreen_server = models.ForeignKey(
+        'data.Machine',
+        verbose_name='CScreen server',
+        related_name='+',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        limit_choices_to={'administrative': True},
+    )
+
     supported_architectures = models.ManyToManyField(
         'data.Architecture',
         related_name='supported_domains',
