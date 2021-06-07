@@ -15,16 +15,6 @@ from .serverconfig import ServerConfig
 logger = logging.getLogger('models')
 
 
-class CscreenManager(models.Manager):
-
-    def get(self, cscreen_server):
-        query = super(CscreenManager, self).get_queryset().filter(
-            cscreen_server=cscreen_server
-        ).order_by('machine__fqdn')
-
-        return query
-
-
 class SerialConsole(models.Model):
 
     BAUD_RATE_CHOICES = (
@@ -82,6 +72,7 @@ class SerialConsole(models.Model):
         default=57600
     )
 
+<<<<<<< HEAD
     cscreen_server = models.ForeignKey(
         'data.Machine',
         verbose_name='CScreen server',
@@ -92,6 +83,8 @@ class SerialConsole(models.Model):
         blank=True
     )
 
+=======
+>>>>>>> 1029729... Move the cscreen_server to the Domain
     kernel_device = models.CharField(
         verbose_name="Kernel Device",
         max_length=255,
@@ -121,18 +114,12 @@ class SerialConsole(models.Model):
     )
 
     objects = models.Manager()
-    cscreen = CscreenManager()
 
     def __str__(self):
         return self.stype.name
 
     def save(self, *args, **kwargs):
         self.clean()
-
-        if not self.cscreen_server.administrative:
-            raise ValidationError(
-                "CScreen server '{}' must be administrative!".format(self.cscreen_server)
-            )
 
         if self.stype:
             super(SerialConsole, self).save(*args, **kwargs)

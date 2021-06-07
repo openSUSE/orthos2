@@ -379,7 +379,6 @@ class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
 
         self._query_fields = (
             'type',
-            'cscreen_server',
             'baud_rate',
             'kernel_device',
             'kernel_device_num',
@@ -399,7 +398,6 @@ class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
 
         self.fields = formset.form().fields
         self.fields['type'].empty_label = None
-        self.fields['cscreen_server'].empty_label = None
         self.fields['baud_rate'].initial = 5
         self.fields['kernel_device_num'].min_value = 0
         self.fields['kernel_device_num'].max_value = 1024
