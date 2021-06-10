@@ -46,19 +46,6 @@ class SerialConsoleInline(admin.StackedInline):
         'comment'
     )
 
-#    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-#        """Do only show management BMC belonging to the machine itself."""
-#        if self.machine and db_field.name == 'management_bmc':
-#            if hasattr(self.machine, 'bmc'):
-#                kwargs['queryset'] = (self.machine.bmc)
-#            else:
-#                kwargs['queryset'] = set()
-#        return super(SerialConsoleInline, self).formfield_for_foreignkey(
-#            db_field,
-#            request,
-#            **kwargs
-#        )
-#
     def get_formset(self, request, obj=None, **kwargs):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
@@ -564,35 +551,19 @@ class MachineAdmin(admin.ModelAdmin):
                 extra_tags='error'
             )
 
-        if machine.system.administrative:
-            self.inlines = (NetworkInterfaceInline, BMCInline)
+        self.inlines = (NetworkInterfaceInline, SerialConsoleInline)
+
+        if machine.use_bmc:
+            if hasattr(machine, 'bmc'):
+                self.inlines += (RemotePowerInlineBMC,)
+            self.inlines += (BMCInline,)
+        elif machine.is_virtual_machine():
+            self.inlines += (RemotePowerInlineHypervisor,)
         else:
-            if machine.use_bmc:
-                if hasattr(machine, 'bmc'):
-                    self.inlines = (
-                        RemotePowerInlineBMC,
-                        NetworkInterfaceInline,
-                        AnnotationInline,
-                        BMCInline
-                    )
-                else:
-                    self.inlines = (
-                        NetworkInterfaceInline,
-                        AnnotationInline,
-                        BMCInline
-                    )
-            elif machine.is_virtual_machine():
-                self.inlines = (
-                        RemotePowerInlineHypervisor,
-                        NetworkInterfaceInline,
-                        AnnotationInline
-                    )
-            else:
-                self.inlines = (
-                        RemotePowerInlineRpower,
-                        NetworkInterfaceInline,
-                        AnnotationInline
-                    )
+            self.inlines += (RemotePowerInlineRpower,)
+
+        if not machine.system.administrative:
+            self.inlines += (AnnotationInline,)
 
         return super(MachineAdmin, self).change_view(request, object_id, form_url, extra_context)
 
