@@ -379,13 +379,13 @@ class MachineAdmin(admin.ModelAdmin):
             'fields': (
                 'check_connectivity',
                 (
-                    'collect_system_information'
+                    'collect_system_information',
                 )
             )
         }),
         ('DHCP', {
             'fields': (
-                'dhcp_filename'
+                'dhcp_filename',
             ),
         })
     )

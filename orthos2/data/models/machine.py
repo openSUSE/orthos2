@@ -447,18 +447,22 @@ class Machine(models.Model):
     check_connectivity = models.SmallIntegerField(
         choices=CONNECTIVITY_CHOICE,
         default=1,
-        blank=False
+        blank=False,
+        help_text='Nightly checks whether the machine responds to ping, ssh port is open or whether orthos can log in via ssh key. Can be triggered manually via command\
+ line client: `rescan [fqdn] status`'
     )
 
     collect_system_information = models.BooleanField(
-        default=False
+        default=False,
+        help_text='Shall the system be scanned every night? This only works if the proper ssh key is in place in authorized_keys and can be triggered manually via command line client: `rescan [fqdn]`'
     )
 
     dhcp_filename = models.CharField(
         'DHCP filename',
         max_length=64,
         null=True,
-        blank=True
+        blank=True,
+        help_text="Override bootloader binary retrieved from a tftp server (corresponds to the `filename` ISC dhcpd.conf variable)"
     )
 
     tftp_server = models.ForeignKey(
@@ -468,7 +472,8 @@ class Machine(models.Model):
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        limit_choices_to={'administrative': True}
+        limit_choices_to={'administrative': True},
+        help_text="Override tftp server used for network boot (corresponds to the `next_server` ISC dhcpd.conf variable)"
     )
 
     hypervisor = models.ForeignKey(
@@ -476,7 +481,8 @@ class Machine(models.Model):
         related_name="hypervising",
         null=True,
         blank=True,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        help_text="The physical host this virtual machine is running on"
     )
     hostname = None
 
@@ -498,12 +504,14 @@ class Machine(models.Model):
     )
 
     contact_email = models.EmailField(
-        blank=True
+        blank=True,
+        help_text="Override contact email address to whom is in charge for this machine"
     )
 
     kernel_options = models.CharField(
         max_length=4096,
-        blank=True
+        blank=True,
+        help_text="Additional kernel command line parameters to pass"
     )
 
     last_check = models.DateTimeField(
@@ -543,7 +551,7 @@ class Machine(models.Model):
     def __str__(self):
         return self.fqdn
 
-    def bmc_allowed():
+    def bmc_allowed(self):
         return self.system.allowBMC
 
     def save(self, *args, **kwargs):

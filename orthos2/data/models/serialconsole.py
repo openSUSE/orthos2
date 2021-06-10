@@ -46,7 +46,7 @@ class SerialConsole(models.Model):
 
     stype = models.ForeignKey(
         SerialConsoleType,
-        verbose_name='Serial Console Type'
+        verbose_name='Serial Console Type',
         on_delete=models.CASCADE,
         null=False,
         blank=False,
