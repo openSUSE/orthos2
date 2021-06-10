@@ -40,25 +40,30 @@ class SerialConsole(models.Model):
         max_length=1024,
         verbose_name='Dedicated console server',
         blank=True,
-        null=True
+        null=True,
+        help_text="DNS resolvable hostname (FQDN) to serial console server"
     )
 
     stype = models.ForeignKey(
         SerialConsoleType,
+        verbose_name='Serial Console Type'
         on_delete=models.CASCADE,
         null=False,
-        blank=False
+        blank=False,
+        help_text="Mechanism how to set up and retrieve serial console data"
     )
 
     port = models.SmallIntegerField(
         null=True,
-        blank=True
+        blank=True,
+        help_text="On which physical port of the Dedicated Console Server is this machine connected?"
     )
 
     command = models.CharField(
         max_length=200,
         null=True,
-        blank=True
+        blank=True,
+        help_text="Final command which is constructed using above info and synced to cscreen server /etc/cscreenrc config"
     )
 
     comment = models.CharField(
@@ -77,7 +82,8 @@ class SerialConsole(models.Model):
         max_length=255,
         null=False,
         blank=True,
-        default='ttyS'
+        default='ttyS',
+        help_text="The kernel device string as passed via kernel command line, e.g. ttyS, ttyAMA, ttyUSB,..."
     )
 
     kernel_device_num = models.SmallIntegerField(
@@ -88,6 +94,7 @@ class SerialConsole(models.Model):
         ],
         default=0,
         verbose_name="Kernel Device number",
+        help_text="The kernel device number is concatenated to the kernel device string (see above).\nA value of 1 might end up in console=ttyS1 kernel command line paramter."
     )
 
     updated = models.DateTimeField(
