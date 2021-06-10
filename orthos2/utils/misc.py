@@ -15,18 +15,6 @@ from django.conf import settings
 logger = logging.getLogger('utils')
 
 
-class DHCPRecordOption:
-    WRITE = 0
-    IGNORE = 1
-    EXCLUDE = 2
-
-    CHOICE = (
-        (WRITE, 'Write DHCP record'),
-        (IGNORE, 'Ignore DHCP requests'),
-        (EXCLUDE, 'Exclude DHCP record')
-    )
-
-
 class Serializer:
 
     class Format:

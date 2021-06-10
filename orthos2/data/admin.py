@@ -9,7 +9,6 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
-from orthos2.utils.misc import DHCPRecordOption
 
 from .models import (Annotation, Architecture, BMC, Domain, Enclosure, Installation,
                      Machine, MachineGroup, MachineGroupMembership, DomainAdmin,
@@ -319,8 +318,6 @@ class MachineAdmin(admin.ModelAdmin):
         'architecture',
         'system',
         'group',
-        'write_dhcpv4',
-        'write_dhcpv6',
         'active'
     )
     list_per_page = 50
@@ -388,95 +385,10 @@ class MachineAdmin(admin.ModelAdmin):
         }),
         ('DHCP', {
             'fields': (
-                'dhcpv4_write',
-                'dhcpv6_write',
                 'dhcp_filename'
             ),
         })
     )
-
-    def write_dhcpv4(self, machine):
-        """
-        Show whether an DHCPv4 record is being written.
-
-        The hierarchy is:
-            Machine > [Group >] Architecture
-
-        If a machine is in a machine group, the machine group setting decides whether to write a
-        DHCP group file (e.g. 'group_foo.conf').
-
-        If a machine is not in a machine group, the respective machine architecture decides whether
-        to write an architecture DHCP file (e.g. 'x86_64.conf').
-
-        If so, the machine setting decides whether the entry exists, does not exist or DHCP
-        requests are ignored for this machine.
-        """
-        from django.contrib.admin.templatetags.admin_list import _boolean_icon
-
-        reasons_disabled = []
-
-        if machine.group:
-            if not machine.group.dhcpv4_write:
-                reasons_disabled.append('excluded by group')
-
-        elif not machine.architecture.dhcpv4_write:
-            reasons_disabled.append('excluded by architecture')
-
-        if machine.dhcpv4_write == DHCPRecordOption.EXCLUDE:
-            reasons_disabled.append('excluded by machine')
-
-        elif machine.dhcpv4_write == DHCPRecordOption.IGNORE:
-            reasons_disabled.append('ignore machine')
-
-        if not reasons_disabled:
-            return _boolean_icon(True)
-
-        return '{} <span class="help">({})</span>'.format(
-            _boolean_icon(False),
-            ', '.join(reasons_disabled)
-        )
-    write_dhcpv4.allow_tags = True
-
-    def write_dhcpv6(self, machine):
-        """
-        Show whether an DHCPv6 record is being written. The hierarchy is:
-
-        Machine > [Group >] Architecture
-
-        If a machine is in a machine group, the machine group setting decides whether to write a
-        DHCP group file (e.g. 'group_foo.conf').
-
-        If a machine is not in a machine group, the respective machine architecture decides whether
-        to write an architecture DHCP file (e.g. 'x86_64.conf').
-
-        If so, the machine setting decides whether the entry exists, does not exist or DHCP
-        requests are ignored for this machine.
-        """
-        from django.contrib.admin.templatetags.admin_list import _boolean_icon
-
-        reasons_disabled = []
-
-        if machine.group:
-            if not machine.group.dhcpv6_write:
-                reasons_disabled.append('excluded by group')
-
-        elif not machine.architecture.dhcpv6_write:
-            reasons_disabled.append('excluded by architecture')
-
-        if machine.dhcpv6_write == DHCPRecordOption.EXCLUDE:
-            reasons_disabled.append('excluded by machine')
-
-        elif machine.dhcpv6_write == DHCPRecordOption.IGNORE:
-            reasons_disabled.append('ignore machine')
-
-        if not reasons_disabled:
-            return _boolean_icon(True)
-
-        return '{} <span class="help">({})</span>'.format(
-            _boolean_icon(False),
-            ', '.join(reasons_disabled)
-        )
-    write_dhcpv6.allow_tags = True
 
     def get_queryset(self, request):
         """
@@ -711,8 +623,6 @@ class ArchitectureAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'get_machine_count',
-        'dhcpv4_write',
-        'dhcpv6_write',
         'dhcp_filename'
     )
 
@@ -766,8 +676,6 @@ class MachineGroupAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'machines',
-        'dhcpv4_write',
-        'dhcpv6_write',
         'dhcp_filename'
     )
     inlines = (MachinesInline, MachineGroupMembershipInline)

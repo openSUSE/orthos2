@@ -11,7 +11,7 @@ from django.core.exceptions import (PermissionDenied, ValidationError)
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
-from orthos2.utils.misc import (DHCPRecordOption, Serializer, get_domain, get_hostname,
+from orthos2.utils.misc import (Serializer, get_domain, get_hostname,
                                 get_ipv4, get_ipv6, get_s390_hostname,
                                 is_dns_resolvable)
 
@@ -478,24 +478,6 @@ class Machine(models.Model):
         blank=True,
         on_delete=models.CASCADE
     )
-
-    dhcpv4_write = models.SmallIntegerField(
-        'DHCPv4',
-        choices=DHCPRecordOption.CHOICE,
-        null=False,
-        default=DHCPRecordOption.WRITE
-    )
-
-    dhcpv6_write = models.SmallIntegerField(
-        'DHCPv6',
-        choices=[
-            DHCPRecordOption.CHOICE[0],
-            DHCPRecordOption.CHOICE[2],
-        ],
-        null=False,
-        default=DHCPRecordOption.WRITE
-    )
-
     hostname = None
 
     __ipv4 = None
@@ -608,8 +590,6 @@ class Machine(models.Model):
                 assert self.architecture == self._original.architecture
                 assert self.group == self._original.group
                 assert self.dhcp_filename == self._original.dhcp_filename
-                assert self.dhcpv4_write == self._original.dhcpv4_write
-                assert self.dhcpv6_write == self._original.dhcpv6_write
                 if self.has_remotepower():
                     assert hasattr(self._original, 'remotepower')
                     assert self.remotepower.fence_name == self._original.remotepower.fence_name
@@ -736,50 +716,6 @@ class Machine(models.Model):
                 kernel_options[key] = value
 
         return kernel_options
-
-    def write_dhcpv4_record(self):
-        """
-        Decide whether an DHCPv4 record is being written.
-
-        The hierarchy is:
-            Machine > [Group >] Architecture
-
-        If a machine is in a machine group, the machine group setting decides whether to write a
-        DHCP group file (e.g. 'group_foo.conf').
-
-        If a machine is not in a machine group, the respective machine architecture decides whether
-        to write an architecture DHCP file (e.g. 'x86_64.conf').
-
-        If so, the machine setting decides whether an entry is written or not. Writing means to
-        add a line to the respective DHCP file. This applies to the options
-        ``DHCPRecordOption.WRITE`` and ``DHCPRecordOption.IGNORE``.
-        """
-        if self.dhcpv4_write in {DHCPRecordOption.WRITE, DHCPRecordOption.IGNORE} and \
-                (self.group and self.group.dhcpv4_write):
-            return True
-
-        elif self.dhcpv4_write in {DHCPRecordOption.WRITE, DHCPRecordOption.IGNORE} and \
-                (not self.group and self.architecture.dhcpv4_write):
-            return True
-
-        return False
-
-    def write_dhcpv6_record(self):
-        """
-        Decide whether an DHCPv6 record is being written.
-
-        The hierarchy is:
-            Machine > [Group >] Architecture
-        """
-        if self.dhcpv6_write in {DHCPRecordOption.WRITE, DHCPRecordOption.IGNORE} and\
-                (self.group and self.group.dhcpv6_write):
-            return True
-
-        elif self.dhcpv6_write in {DHCPRecordOption.WRITE, DHCPRecordOption.IGNORE} and\
-                (not self.group and self.architecture.dhcpv6_write):
-            return True
-
-        return False
 
     def get_s390_hostname(self, use_uppercase=False):
         if self.system_id in {System.Type.ZVM_VM, System.Type.ZVM_KVM}:

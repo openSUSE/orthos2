@@ -13,7 +13,6 @@ from django.forms.fields import (BooleanField, CharField, ChoiceField,
                                  DateField, DecimalField, IntegerField)
 from django.template.defaultfilters import slugify
 from orthos2.frontend.forms import ReserveMachineForm, VirtualMachineForm
-from orthos2.utils.misc import DHCPRecordOption
 from orthos2.utils.remotepowertype import get_remote_power_type_choices
 logger = logging.getLogger('api')
 
@@ -302,20 +301,6 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         initial=True,
     )
 
-    dhcpv4_write = forms.ChoiceField(
-        label='Write DHCPv4',
-        choices=DHCPRecordOption.CHOICE,
-        initial=DHCPRecordOption.WRITE,
-    )
-
-    dhcpv6_write = forms.ChoiceField(
-        label='Write DHCPv6',
-        choices=[
-            DHCPRecordOption.CHOICE[0],
-            DHCPRecordOption.CHOICE[2],
-        ],
-        initial=DHCPRecordOption.WRITE,
-    )
     hypervisor_fqdn = forms.CharField(
         label='Hypervisor',
         max_length=256,
@@ -336,8 +321,6 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
             'administrative',
             'check_connectivity',
             'collect_system_information',
-            'dhcpv4_write',
-            'dhcpv6_write',
         ]
 
 
