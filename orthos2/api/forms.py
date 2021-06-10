@@ -290,12 +290,6 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         initial=False,
     )
 
-    use_bmc = forms.BooleanField(
-        label='Use BMC',
-        required=False,
-        initial=True,
-    )
-
     check_connectivity = forms.ChoiceField(
         label='Check connectivity',
         choices=Machine.CONNECTIVITY_CHOICE,
@@ -340,7 +334,6 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
             'hypervisor_fqdn',
             'nda',
             'administrative',
-            'use_bmc',
             'check_connectivity',
             'collect_system_information',
             'dhcpv4_write',

@@ -496,13 +496,6 @@ class Machine(models.Model):
         default=DHCPRecordOption.WRITE
     )
 
-    use_bmc = models.BooleanField(
-        verbose_name='Use BMC',
-        default=True,
-        help_text="Create and connect a networkinterace as BMC " +
-        "in a new form further down after saving"
-    )
-
     hostname = None
 
     __ipv4 = None
@@ -568,6 +561,9 @@ class Machine(models.Model):
     def __str__(self):
         return self.fqdn
 
+    def bmc_allowed():
+        return self.system.allowBMC
+
     def save(self, *args, **kwargs):
         """
         Save machine object.
@@ -584,7 +580,7 @@ class Machine(models.Model):
 
         if not self.system.virtual and self.hypervisor:
             raise ValidationError("Only virtuals machines may have hypervisors")
-        if not self.system.allowBMC and self.use_bmc:
+        if not self.system.allowBMC:
             raise ValidationError("{} systems cannot use a BMC".format(self.system.name))
         # create & assign network domain and ensure that the FQDN always matches the fqdn_domain
         domain, created = Domain.objects.get_or_create(name=get_domain(self.fqdn))

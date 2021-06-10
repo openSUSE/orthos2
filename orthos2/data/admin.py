@@ -196,14 +196,6 @@ class MachineAdminForm(forms.ModelForm):
                 raise ValidationError("FQDN is already in use!")
         return fqdn
 
-    def clean_use_bmc(self):
-        use_bmc = self.cleaned_data['use_bmc']
-        system = self.cleaned_data['system']
-        if use_bmc and not system.allowBMC:
-            raise ValidationError("System {} is virtual. Virtual machines can't have a BMC"
-                                  .format(system))
-        return use_bmc
-
     def clean_hypervisor(self):
         hypervisor = self.cleaned_data['hypervisor']
         system = self.cleaned_data['system']
@@ -369,7 +361,6 @@ class MachineAdmin(admin.ModelAdmin):
                     'nda'
                 ),
                 'active',
-                'use_bmc'
             )
         }),
         ('VIRTUALIZATION SERVER', {
@@ -553,7 +544,7 @@ class MachineAdmin(admin.ModelAdmin):
 
         self.inlines = (NetworkInterfaceInline, SerialConsoleInline)
 
-        if machine.use_bmc:
+        if machine.bmc_allowed():
             if hasattr(machine, 'bmc'):
                 self.inlines += (RemotePowerInlineBMC,)
             self.inlines += (BMCInline,)
@@ -570,7 +561,7 @@ class MachineAdmin(admin.ModelAdmin):
     def save_formset(self, request, form, formset, change):
         formset.save()
         machine = form.save(commit=False)
-        if machine.use_bmc and hasattr(machine, 'bmc') and not hasattr(machine, 'remotepower'):
+        if machine.bmc_allowed() and hasattr(machine, 'bmc') and not hasattr(machine, 'remotepower'):
             machine.remotepower = RemotePower(machine.bmc.fence_name, machine, machine.bmc)
             machine.bmc.save()
             machine.remotepower.save()
