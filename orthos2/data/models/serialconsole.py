@@ -72,19 +72,6 @@ class SerialConsole(models.Model):
         default=57600
     )
 
-<<<<<<< HEAD
-    cscreen_server = models.ForeignKey(
-        'data.Machine',
-        verbose_name='CScreen server',
-        related_name='+',
-        on_delete=models.CASCADE,
-        limit_choices_to={'administrative': True},
-        null=True,
-        blank=True
-    )
-
-=======
->>>>>>> 1029729... Move the cscreen_server to the Domain
     kernel_device = models.CharField(
         verbose_name="Kernel Device",
         max_length=255,
