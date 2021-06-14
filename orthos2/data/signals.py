@@ -153,6 +153,9 @@ def machine_pre_delete(sender, instance, *args, **kwargs):
 
 @receiver(post_save, sender=SerialConsole)
 def serialconsole_post_save(sender, instance, *args, **kwargs):
+    """ Regenerate cscreen server configs if a serial console info got changed """
+    if not instance.machine.fqdn_domain.cscreen_server:
+        return
     signal_serialconsole_regenerate.send(
         sender=SerialConsole,
         cscreen_server_fqdn=instance.machine.fqdn_domain.cscreen_server.fqdn
@@ -161,7 +164,9 @@ def serialconsole_post_save(sender, instance, *args, **kwargs):
 
 @receiver(post_delete, sender=SerialConsole)
 def serialconsole_post_delete(sender, instance, *args, **kwargs):
-
+    """ Regenerate cscreen server configs if a serial console got deleted """
+    if not instance.machine.fqdn_domain.cscreen_server:
+        return
     signal_serialconsole_regenerate.send(
         sender=SerialConsole,
         cscreen_server_fqdn=instance.machine.fqdn_domain.cscreen_server.fqdn

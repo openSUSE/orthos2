@@ -588,7 +588,7 @@ class VirtualMachineForm(forms.Form):
         self.fields['system'].choices = [
             (system.pk, system.name) for system in System.objects.filter(
                 virtual=True,
-                pk=System.Type.KVM_VM
+                name="KVM"
             )
         ]
         architectures, image_list = virtualization_api.get_image_list()

@@ -570,7 +570,7 @@ class Machine(models.Model):
 
         if not self.system.virtual and self.hypervisor:
             raise ValidationError("Only virtuals machines may have hypervisors")
-        if not self.system.allowBMC:
+        if hasattr(self, 'bmc') and not self.bmc_allowed:
             raise ValidationError("{} systems cannot use a BMC".format(self.system.name))
         # create & assign network domain and ensure that the FQDN always matches the fqdn_domain
         domain, created = Domain.objects.get_or_create(name=get_domain(self.fqdn))
@@ -726,7 +726,7 @@ class Machine(models.Model):
         return kernel_options
 
     def get_s390_hostname(self, use_uppercase=False):
-        if self.system_id in {System.Type.ZVM_VM, System.Type.ZVM_KVM}:
+        if self.system.name == 'zVM':
             return get_s390_hostname(self.hostname, use_uppercase=use_uppercase)
         return None
 
