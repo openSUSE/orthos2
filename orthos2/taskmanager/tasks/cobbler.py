@@ -102,13 +102,13 @@ class UpdateCobblerMachine(Task):
             if domain.cobbler_server.all().count() == 0:
                     logger.info("Domain '{}' has no Cobbler server... aborting".format(domain.name))
                     return
-            logger.info("Generate Cobbler configuration for '{}'...".format(machine.fqdn))
+            logger.info("Generate Cobbler update configuration for '{}'...".format(machine.fqdn))
             # deploy generated DHCP files on all servers belonging to one domain
             for server in domain.cobbler_server.all():
                 cobbler_server = CobblerServer(server.fqdn, domain)
                 try:
                     logger.info("* Cobbler deployment started...")
-                    cobbler_server.update(machine)
+                    cobbler_server.update_or_add(machine)
                     logger.info("* Cobbler deployment finished successfully")
                 except Exception as e:
                     message = "* Cobbler deployment failed; {}".format(e)

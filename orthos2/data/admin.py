@@ -134,7 +134,8 @@ class MachineAdminForm(forms.ModelForm):
     mac_address = forms.CharField(
         label='MAC address',
         validators=[validate_mac_address],
-        help_text="The MAC address of the main network interface"
+        help_text="The MAC address of the main network interface",
+        required=False
     )
 
     class Meta:
@@ -172,7 +173,7 @@ class MachineAdminForm(forms.ModelForm):
         else:
             exclude = []
 
-        if not is_unique_mac_address(mac_address, exclude=exclude):
+        if mac_address and not is_unique_mac_address(mac_address, exclude=exclude):
             raise ValidationError(
                 "MAC address '{}' is already used by '{}'!".format(
                     mac_address,
@@ -195,16 +196,6 @@ class MachineAdminForm(forms.ModelForm):
                 raise ValidationError("FQDN is already in use!")
         return fqdn
 
-    def clean_hypervisor(self):
-        hypervisor = self.cleaned_data['hypervisor']
-        system = self.cleaned_data['system']
-        if hypervisor:
-            if not system.virtual:
-                raise ValidationError("System type {} is not virtual. Only Virtual Machines may have "
-                                      "a hypervisor".format(system))
-            if not hypervisor.system.allowHypervisor:
-                raise ValidationError("System type {} cannot serve as a hypervisor".format(hypervisor.system.name))
-        return hypervisor
 
     def clean(self):
         """
@@ -221,6 +212,25 @@ class MachineAdminForm(forms.ModelForm):
                 "Connectivity check must set to 'Full'!"
             )
 
+        hypervisor = self.cleaned_data.get('hypervisor')
+        if hypervisor:
+            if system and not system.virtual:
+                self.add_error('hypervisor', "System type {} is not virtual. Only Virtual Machines may have "
+                                      "a hypervisor".format(system))
+                self.add_error('system', "System type {} is not virtual. Only Virtual Machines may have "
+                                      "a hypervisor".format(system))
+            if not hypervisor.system.allowHypervisor:
+                self.add_error('hypervisor', "System type {} cannot serve as a hypervisor".format(hypervisor.system.name))
+                self.add_error('system', "System type {} cannot serve as a hypervisor".format(hypervisor.system.name))
+        mac = self.cleaned_data.get('mac_address')
+        unknown_mac = self.cleaned_data.get('unknown_mac')
+
+        if mac and unknown_mac:
+            self.add_error('unknown_mac', "MAC unknown must not be selected when a MAC is provided")
+            self.add_error('mac_address', "MAC unknown must not be selected when a MAC is provided")
+        if not mac and not unknown_mac:
+            self.add_error('unknown_mac', "Either specify a MAC, or confirm that the MAC is not yet known")
+            self.add_error('mac_address', "Either specify a MAC, or confirm that the MAC is not yet known")
         return cleaned_data
 
 
@@ -358,6 +368,7 @@ class MachineAdmin(admin.ModelAdmin):
                     'nda'
                 ),
                 'active',
+                'unknown_mac'
             )
         }),
         ('VIRTUALIZATION SERVER', {
