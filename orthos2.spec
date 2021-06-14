@@ -176,6 +176,7 @@ getent passwd orthos >/dev/null || \
 %ghost %dir /run/%{name}
 %attr(755,orthos,orthos) %dir /var/log/orthos2
 %attr(775,orthos,orthos) %dir /var/lib/orthos2
+%attr(775,orthos,orthos) %dir /usr/lib/orthos2/ansible
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/archiv
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/orthos-vm-images
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/database
