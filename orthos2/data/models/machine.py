@@ -726,7 +726,7 @@ class Machine(models.Model):
         return kernel_options
 
     def get_s390_hostname(self, use_uppercase=False):
-        if self.system_id in {System.Type.ZVM_VM, System.Type.ZVM_KVM}:
+        if self.system.name == 'zVM':
             return get_s390_hostname(self.hostname, use_uppercase=use_uppercase)
         return None
 
