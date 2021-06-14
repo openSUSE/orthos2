@@ -19,7 +19,7 @@ from .architecture import Architecture
 from .domain import Domain, DomainAdmin, validate_domain_ending
 from .enclosure import Enclosure
 from .machinegroup import MachineGroup
-from .networkinterface import validate_mac_address
+from .networkinterface import validate_mac_address, NetworkInterface
 from .platform import Platform
 from .system import System
 from .virtualizationapi import VirtualizationAPI
@@ -492,6 +492,12 @@ class Machine(models.Model):
 
     mac_address = None
 
+    unknown_mac = models.BooleanField(
+        default=False,
+        verbose_name="MAC unknwon",
+        help_text="Use this to create a BMC before the mac address of the machine is known"
+    )
+
     active = models.BooleanField(
         default=True
     )
@@ -563,10 +569,15 @@ class Machine(models.Model):
         """
         self.fqdn = self.fqdn.lower()
 
-        if not self.mac_address:
-            raise ValidationError("'{}' has no MAC address!".format(self))
+        if not self.mac_address and not self.unknown_mac:
+            raise ValidationError("'{}' You must select 'MAC Unkown' for systems without MAC".format(self))
 
-        validate_mac_address(self.mac_address)
+        if self.mac_address and self.unknown_mac:
+            raise ValidationError("'{}' You must not select 'MAC Unkown' for systems with a MAC".format(self))
+        if self.unknown_mac and not self.bmc_allowed():
+            raise ValidationError("You may only skip the MAC for systems with BMC")
+        if self.mac_address:
+            validate_mac_address(self.mac_address)
 
         if not self.system.virtual and self.hypervisor:
             raise ValidationError("Only virtuals machines may have hypervisors")
@@ -692,7 +703,12 @@ class Machine(models.Model):
         return self.installations.get(active=True)
 
     def get_primary_networkinterface(self):
-        return self.networkinterfaces.get(primary=True)
+        try:
+            interface = self.networkinterfaces.get(primary=True)
+        except NetworkInterface.DoesNotExist:
+            logger.debug("In 'get_primary_networkinterface': Machine %s has no networkinterfce", self.fqdn )
+            return None
+        return interface
 
     def get_virtual_machines(self):
         if not self.is_virtual_machine():

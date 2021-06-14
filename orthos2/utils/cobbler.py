@@ -45,8 +45,9 @@ def create_cobbler_options(machine):
     options = " --name={name} --ip-address={ipv4}".format(name=machine.fqdn, ipv4=machine.ipv4)
     if machine.ipv6:
         options += " --ipv6-address={ipv6}".format(ipv6=machine.ipv6)
-    options += " --interface=default --management=True --interface-master=True"
-    options += " --mac-address={mac} ".format(mac=machine.mac_address)
+    if machine.mac_address:
+        options += " --interface=default --management=True --interface-master=True"
+        options += " --mac-address={mac} ".format(mac=machine.mac_address)
     if get_filename(machine):
         options += " --filename={filename}".format(filename=get_filename(machine))
     if tftp_server:
@@ -178,8 +179,8 @@ class CobblerServer:
                 cobbler_commands.append(get_cobbler_update_command(machine, self._cobbler_path))
             else:
                 cobbler_commands.append(get_cobbler_add_command(machine, self._cobbler_path))
-                if hasattr(machine, 'bmc') and machine.bmc:
-                    cobbler_commands.append(get_bmc_command(machine, self._cobbler_path))
+            if hasattr(machine, 'bmc') and machine.bmc:
+                cobbler_commands.append(get_bmc_command(machine, self._cobbler_path))
 
         for command in cobbler_commands:  # TODO: Convert this to a single ssh call (performance)
             logger.debug("executing %s ", command)
@@ -190,15 +191,28 @@ class CobblerServer:
 
         self.close()
 
-    def update(self, machine: Machine):
+    def update_or_add(self, machine: Machine):
         self.connect()
         self._check()
-        command = get_cobbler_update_command(machine, self._cobbler_path)
+        if machine.fqdn in  self.get_machines():
+            command = get_cobbler_update_command(machine, self._cobbler_path)
+        else:
+            command = get_cobbler_add_command(machine, self._cobbler_path)
+        logger.debug("Executing Cobbler command %s", command)
         _, stderr, exitcode = self._conn.execute(command)
         if exitcode:
-            raise CobblerException("Updating {machine} failed with {err}".format(
-                machine.fqdn, stderr))
-
+            logger.error(
+                "Update or Add with command \n '%s'\n failed, giving \n '%s", command, stderr
+                )
+        self._conn.execute(command)
+        if hasattr(machine, 'bmc') and machine.bmc:
+            command = get_bmc_command(machine, self._cobbler_path)
+            logger.debug("Executing Cobbler command %s", command)
+            _, stderr, exitcode = self._conn.execute(command)
+            if exitcode:
+                logger.error(
+                    "writing BMC data to cobbler with \n'%s' failed, giving \n'%s'", command, stderr
+                    )
 
     def remove(self, machine: Machine):
         #ToDo: We do not remove machines from cobbler server actively in orthos2 yet
