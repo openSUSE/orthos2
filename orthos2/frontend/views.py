@@ -175,7 +175,6 @@ class VirtualMachineListView(MachineListView):
         """Filter machines which are capable to run VMs and which are dedicated VM hosts."""
         machines = super(VirtualMachineListView, self).get_queryset()
         return machines.filter(
-            vm_capable=True,
             vm_dedicated_host=True
         )
 
