@@ -1,11 +1,11 @@
 import logging
 
-from orthos2.data.models import Machine
+from orthos2.data.models import Machine, Domain, DomainAdmin
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.models import User
 from orthos2.taskmanager.models import Task
-from orthos2.utils.misc import send_email
+from orthos2.utils.misc import send_email, get_domain
 
 logger = logging.getLogger('tasks')
 
@@ -251,3 +251,42 @@ Orthos""".format(
             logger.error("User not found: id={}".format(self.user_id))
         except Exception as e:
             logger.exception(e)
+
+
+
+class CheckForPrimaryNetwork(Task):
+    """
+    Checks if a machine has a primary Network interfaces.j
+    If not a mail is sent to the administrator
+    """
+
+    def __init__(self, fqdn):
+        self.fqdn = fqdn
+
+    def send_warning_mail(self, machine: Machine):
+        domain: Domain = Domain.objects.get(name=get_domain(self.fqdn))
+        subject = "{fqdn} has no primary MAC".format(fqdn=self.fqdn)
+        domain_admin: DomainAdmin = DomainAdmin.objects.get(domain=domain, arch=machine.architecture)
+        admin_mail = domain_admin.contact_email
+
+        message = """"Hi, {admin}
+the machine {fqdn} does not have a primary Networkinterface assigned.
+This happens when the MAC address of the primary interface is omitted during machine creation.
+Omitting the MAC is only intended as a temporary solution if the MAC is unknown prior to the first boot.
+Please enter a valid MAC address as soon as possible.
+
+Regards,
+Orthos
+""".format(fqdn=self.fqdn, admin=admin_mail.split('@')[0])
+        send_email(admin_mail, subject, message)
+
+
+    def execute(self):
+        try:
+            machine = Machine.objects.get(fqdn=self.fqdn)
+            if not machine.get_primary_networkinterface():
+                logger.debug("%s has no Primary Networkinterface, sending mail", self.fqdn)
+                self.send_warning_mail(machine)
+
+        except Machine.DoesNotExist:
+            logger.error("Machine %s does not exist", self.fqdn)

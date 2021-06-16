@@ -49,3 +49,17 @@ class DailyCheckReservationExpirations(Task):
             if machine.reserved_by and not machine.is_reserved_infinite():
                 task = tasks.CheckReservationExpiration(machine.fqdn)
                 TaskManager.add(task)
+
+class DailyCheckForPrimaryNetwork(Task):
+    """ Check for machines without primary network interfaces and complain via email."""
+
+    def __init_(self):
+        pass
+
+    def execute(self):
+        """Execute the task."""
+        from orthos2.taskmanager import tasks
+
+        for machine in Machine.objects.all():
+            task = tasks.CheckForPrimaryNetwork(machine.fqdn)
+            TaskManager.add(task)
