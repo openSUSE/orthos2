@@ -34,7 +34,6 @@ class TaskExecuter(Thread):
     def get_daily_tasks(self):
         """Check for daily tasks and store them in the queue for processing."""
         now = timezone.localtime()
-        logger.debug("now: %s", now)
         today = timezone.localdate()
 
         dailytasks = DailyTask.objects.filter(enabled=True).order_by('priority')
@@ -90,7 +89,6 @@ class TaskExecuter(Thread):
         """Main thread function."""
         running_threads = {}
         while not self._stop_execution:
-            logger.debug("time in executor: " + str(timezone.localtime()))
             queue = None
             if len(running_threads) >= self.concurrency:
                 time.sleep(0.25)
