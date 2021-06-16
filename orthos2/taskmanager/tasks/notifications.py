@@ -1,8 +1,8 @@
-import datetime
 import logging
 
 from orthos2.data.models import Machine
 from django.conf import settings
+from django.utils import timezone
 from django.contrib.auth.models import User
 from orthos2.taskmanager.models import Task
 from orthos2.utils.misc import send_email
@@ -92,7 +92,7 @@ Or use the following commandline interface command:
 
 For a serial console, establish a SSH login on {serialconsole_fqdn} and
 follow the instructions on the screen.""".format(
-                    serialconsole_fqdn=machine.serialconsole.cscreen_server.fqdn
+                    serialconsole_fqdn=machine.fqdn_domain.cscreen_server.fqdn
                 )
 
             message += """
@@ -130,7 +130,7 @@ class CheckReservationExpiration(Task):
 
     def execute(self):
         """Execute the task."""
-        today = datetime.date.today()
+        today = timezone.localdate()
 
         try:
             machine = Machine.objects.get(fqdn=self.fqdn)
@@ -139,7 +139,7 @@ class CheckReservationExpiration(Task):
                 return
 
             user = machine.reserved_by
-            delta = machine.reserved_until.date() - today
+            delta = timezone.localdate(machine.reserved_until) - today
 
             if delta.days > 5 or delta.days in {4, 3}:
                 logger.debug("{}d left for {}@{}".format(

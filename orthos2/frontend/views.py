@@ -5,8 +5,7 @@ import warnings
 
 from orthos2.data.exceptions import ReleaseException, ReserveException
 from orthos2.data.models import (Architecture, Domain, Machine, MachineGroup,
-                                 RemotePower, ReservationHistory, SerialConsole,
-                                 SerialConsoleType, ServerConfig)
+                                 ReservationHistory, ServerConfig)
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate
@@ -516,14 +515,9 @@ def setup(request, id):
         if form.is_valid():
             choice = form.cleaned_data['setup']
 
-            machinegroup = None
-            if machine.group and not machine.group.setup_use_architecture:
-                machinegroup = machine.group.name
-
             valid = machine.fqdn_domain.is_valid_setup_choice(
                 choice,
-                machine.architecture.name,
-                machinegroup=machinegroup
+                machine.architecture.name
             )
             if not valid:
                 messages.error(request, "Unknown choice '{}'!".format(choice))
@@ -846,7 +840,7 @@ def _get_login_redirect_url(request, redirect_to):
 def login(request, template_name='registration/login.html',
           redirect_field_name=REDIRECT_FIELD_NAME,
           authentication_form=AuthenticationForm,
-          extra_context=None, redirect_authenticated_user=False):
+          extra_context={'account_creation' : settings.AUTH_ALLOW_USER_CREATION}, redirect_authenticated_user=False):
     """Display the login form and handles the login action."""
     redirect_to = request.POST.get(redirect_field_name, request.GET.get(redirect_field_name, ''))
 

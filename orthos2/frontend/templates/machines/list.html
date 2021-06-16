@@ -55,7 +55,7 @@
         {% if view == 'virtual' %}
         <td>
           {% if machine.vm_dedicated_host %}
-          <a href="{% url 'virtualization_add' machine.id %}"><i class="fa fa-plus" title="Add virtual machine to {{ machine.hostname }}"/></i></a>
+          <a href="{% url 'frontend:virtualization_add' machine.id %}"><i class="fa fa-plus" title="Add virtual machine to {{ machine.hostname }}"/></i></a>
           {% endif %}
         </td>
         {% endif %}

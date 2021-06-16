@@ -13,7 +13,6 @@ from django.forms.fields import (BooleanField, CharField, ChoiceField,
                                  DateField, DecimalField, IntegerField)
 from django.template.defaultfilters import slugify
 from orthos2.frontend.forms import ReserveMachineForm, VirtualMachineForm
-from orthos2.utils.misc import DHCPRecordOption
 from orthos2.utils.remotepowertype import get_remote_power_type_choices
 logger = logging.getLogger('api')
 
@@ -290,12 +289,6 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         initial=False,
     )
 
-    use_bmc = forms.BooleanField(
-        label='Use BMC',
-        required=False,
-        initial=True,
-    )
-
     check_connectivity = forms.ChoiceField(
         label='Check connectivity',
         choices=Machine.CONNECTIVITY_CHOICE,
@@ -308,20 +301,6 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         initial=True,
     )
 
-    dhcpv4_write = forms.ChoiceField(
-        label='Write DHCPv4',
-        choices=DHCPRecordOption.CHOICE,
-        initial=DHCPRecordOption.WRITE,
-    )
-
-    dhcpv6_write = forms.ChoiceField(
-        label='Write DHCPv6',
-        choices=[
-            DHCPRecordOption.CHOICE[0],
-            DHCPRecordOption.CHOICE[2],
-        ],
-        initial=DHCPRecordOption.WRITE,
-    )
     hypervisor_fqdn = forms.CharField(
         label='Hypervisor',
         max_length=256,
@@ -340,11 +319,8 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
             'hypervisor_fqdn',
             'nda',
             'administrative',
-            'use_bmc',
             'check_connectivity',
             'collect_system_information',
-            'dhcpv4_write',
-            'dhcpv6_write',
         ]
 
 
@@ -379,12 +355,10 @@ class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
 
         self._query_fields = (
             'type',
-            'cscreen_server',
             'baud_rate',
             'kernel_device',
-            'management_bmc',
+            'kernel_device_num',
             'console_server',
-            'device',
             'port',
             'command',
             'comment',
@@ -400,12 +374,9 @@ class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
 
         self.fields = formset.form().fields
         self.fields['type'].empty_label = None
-        self.fields['cscreen_server'].empty_label = None
-        self.fields['management_bmc'].queryset = machine.bmc
-        self.fields['management_bmc'].empty_label = 'None'
         self.fields['baud_rate'].initial = 5
-        self.fields['kernel_device'].min_value = 0
-        self.fields['kernel_device'].max_value = 1024
+        self.fields['kernel_device_num'].min_value = 0
+        self.fields['kernel_device_num'].max_value = 1024
         self.fields['console_server'].empty_label = 'None'
 
     def clean(self):

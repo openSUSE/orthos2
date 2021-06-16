@@ -106,7 +106,7 @@ class VirtualizationAPI:
         if self.host.has_serialconsole():
             vm.serialconsole = SerialConsole(
                 type_id=SerialConsoleType.Type.to_int('libvirt/qemu'),
-                cscreen_server=self.host.serialconsole.cscreen_server
+                cscreen_server=self.host.fqdn_domain.cscreen_server
             )
             vm.serialconsole.save()
 

@@ -56,6 +56,7 @@ Requires:  python3-validators
 Requires:  python3-netaddr
 %endif
 Requires:  nginx
+Requires:  ansible
 Requires:  uwsgi
 Requires:  uwsgi-python3
 Requires:  /sbin/service
@@ -115,6 +116,7 @@ ln -sr %{buildroot}/usr/share/orthos2/taskmanager_migrations %{buildroot}%{pytho
 ln -sr %{buildroot}/usr/share/orthos2/frontend_migrations %{buildroot}%{python3_sitelib}/orthos2/frontend/migrations
 ln -sr %{buildroot}/usr/share/orthos2/api_migrations %{buildroot}%{python3_sitelib}/orthos2/api/migrations
 
+cp -r ansible %{buildroot}/usr/lib/orthos2/ansible
 
 %pre
 getent group orthos >/dev/null || groupadd -r orthos
@@ -154,6 +156,7 @@ getent passwd orthos >/dev/null || \
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
 %dir /usr/lib/orthos2
 %dir /usr/lib/orthos2/scripts
+%dir /usr/lib/orthos2/ansible
 %dir /usr/share/orthos2
 %dir /usr/share/orthos2/fixtures
 /usr/share/orthos2/fixtures/*
@@ -173,6 +176,7 @@ getent passwd orthos >/dev/null || \
 %ghost %dir /run/%{name}
 %attr(755,orthos,orthos) %dir /var/log/orthos2
 %attr(775,orthos,orthos) %dir /var/lib/orthos2
+%attr(775,orthos,orthos) %dir /usr/lib/orthos2/ansible
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/archiv
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/orthos-vm-images
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/database

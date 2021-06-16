@@ -3,12 +3,12 @@ import logging
 from orthos2.data.models import Machine, NetworkInterface, ServerConfig
 from django.utils import timezone
 from orthos2.taskmanager.models import Task
-from orthos2.utils.machinechecks import (get_hardware_information,
-                                         get_installations, get_networkinterfaces,
-                                         get_pci_devices, get_status_ip, login_test,
+from orthos2.utils.machinechecks import (get_installations, get_networkinterfaces,
+                                         get_status_ip, login_test,
                                          nmap_check, ping_check_ipv4, ping_check_ipv6)
 from orthos2.utils.misc import sync, wrap80
 from orthos2.utils.ssh import SSH
+#from orthos2.utils.ansible import Ansible
 
 logger = logging.getLogger('tasks')
 
@@ -22,20 +22,18 @@ class MachineCheck(Task):
 
         class Action:
             STATUS = 'status'
-            MISC = 'misc'
             NETWORKINTERFACES = 'networkinterfaces'
             INSTALLATIONS = 'installations'
             ALL = 'all'
 
-            as_list = [STATUS, MISC, NETWORKINTERFACES, INSTALLATIONS, ALL]
+            as_list = [STATUS, NETWORKINTERFACES, INSTALLATIONS, ALL]
 
         STATUS = 0
-        MISC = 1
-        NETWORKINTERFACES = 2
-        INSTALLATIONS = 3
+        NETWORKINTERFACES = 1
+        INSTALLATIONS = 2
         ALL = 99
 
-        as_list = [STATUS, MISC, NETWORKINTERFACES, INSTALLATIONS, ALL]
+        as_list = [STATUS, NETWORKINTERFACES, INSTALLATIONS, ALL]
 
         @classmethod
         def to_str(cls, index):
@@ -59,7 +57,6 @@ class MachineCheck(Task):
 
     SCAN_CHOICES = (
         (Scan.STATUS, Scan.Action.STATUS),
-        (Scan.MISC, Scan.Action.MISC),
         (Scan.NETWORKINTERFACES, Scan.Action.NETWORKINTERFACES),
         (Scan.INSTALLATIONS, Scan.Action.INSTALLATIONS),
         (Scan.ALL, Scan.Action.ALL),
@@ -79,9 +76,6 @@ class MachineCheck(Task):
             self.Scan.STATUS: (
                 self.status,
             ),
-            self.Scan.MISC: (
-                self.miscellaneous,
-            ),
             self.Scan.NETWORKINTERFACES: (
                 self.network,
                 self.status_ip,
@@ -91,11 +85,9 @@ class MachineCheck(Task):
             ),
             self.Scan.ALL: (
                 self.status,
-                self.miscellaneous,
                 self.network,
                 self.status_ip,
                 self.installations,
-                self.pci_devices,
             )
         }
 
@@ -133,21 +125,6 @@ class MachineCheck(Task):
 
         self.machine.save()
 
-    def miscellaneous(self):
-        """
-        Collect miscellaneous data about CPU, RAM, EFI, VM host capability, etc.
-        """
-        if not self.machine.collect_system_information:
-            logger.debug("Miscellaneous: collecting system information disabled... skip")
-            return
-
-        if self.online is False:
-            return
-
-        machine_ = get_hardware_information(self.fqdn)
-
-        if machine_:
-            sync(self.machine, machine_)
 
     def network(self):
         """
@@ -220,28 +197,6 @@ class MachineCheck(Task):
 
         for installation in installations_:
             installation.save()
-
-    def pci_devices(self):
-        """
-        Collect all PCI devices.
-        """
-        if not self.machine.collect_system_information:
-            logger.debug("PCI devices: collecting system information disabled... skip")
-            return
-
-        if self.online is False:
-            return
-
-        pci_devices_ = get_pci_devices(self.fqdn)
-
-        if not pci_devices_:
-            return
-
-        logger.debug("Drop PCI devices for '{}'...".format(self.fqdn))
-        self.machine.pcidevice_set.all().delete()
-
-        for pci_device in pci_devices_:
-            pci_device.save()
 
     def execute(self):
         """

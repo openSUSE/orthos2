@@ -108,6 +108,13 @@ def machine_pre_delete(sender, instance, *args, **kwargs):
     """Pre delete action for machine. Save deleted machine object as file for archiving.
        Also remove the machine from the cobbler Server.
     """
+    server = CobblerServer.from_machine(instance)
+    if server:
+        server.remove(instance)
+
+    if instance.is_vm_managed():
+        instance.hypervisor.virtualization_api.remove(machine)
+
     if not ServerConfig.objects.bool_by_key('serialization.execute'):
         return
 
@@ -143,24 +150,26 @@ def machine_pre_delete(sender, instance, *args, **kwargs):
 
     logger.info("Machine object serialized (target: '{}')".format(filename))
 
-    server = CobblerServer.from_machine(instance)
-    if server:
-        server.remove(instance)
-
 
 @receiver(post_save, sender=SerialConsole)
 def serialconsole_post_save(sender, instance, *args, **kwargs):
+    """ Regenerate cscreen server configs if a serial console info got changed """
+    if not instance.machine.fqdn_domain.cscreen_server:
+        return
     signal_serialconsole_regenerate.send(
         sender=SerialConsole,
-        cscreen_server_fqdn=instance.cscreen_server.fqdn
+        cscreen_server_fqdn=instance.machine.fqdn_domain.cscreen_server.fqdn
     )
 
 
 @receiver(post_delete, sender=SerialConsole)
 def serialconsole_post_delete(sender, instance, *args, **kwargs):
+    """ Regenerate cscreen server configs if a serial console got deleted """
+    if not instance.machine.fqdn_domain.cscreen_server:
+        return
     signal_serialconsole_regenerate.send(
         sender=SerialConsole,
-        cscreen_server_fqdn=instance.cscreen_server.fqdn
+        cscreen_server_fqdn=instance.machine.fqdn_domain.cscreen_server.fqdn
     )
 
 
@@ -192,7 +201,7 @@ def regenerate_cobbler(sender, domain_id, *args, **kwargs):
 
 
 @receiver(signal_cobbler_machine_update)
-def update_cobbler_machine(sender, domain_id, machine_id):
+def update_cobbler_machine(sender, domain_id, machine_id, *args, **kwargs):
     """
     Create `RegenerateCobbler()` task here.
 

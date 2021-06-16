@@ -47,16 +47,6 @@ class MachineGroup(models.Model):
         limit_choices_to={'administrative': True}
     )
 
-    dhcpv4_write = models.BooleanField(
-        'Write DHCPv4',
-        default=True
-    )
-
-    dhcpv6_write = models.BooleanField(
-        'Write DHCPv6',
-        default=True
-    )
-
     setup_use_architecture = models.BooleanField(
         'Use machines architecture for setup',
         default=False
@@ -92,8 +82,6 @@ class MachineGroup(models.Model):
         if self._original is not None:
             try:
                 assert self.dhcp_filename == self._original.dhcp_filename
-                assert self.dhcpv4_write == self._original.dhcpv4_write
-                assert self.dhcpv6_write == self._original.dhcpv6_write
             except AssertionError:
                 from orthos2.data.signals import signal_dhcp_regenerate
 

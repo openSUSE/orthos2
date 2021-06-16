@@ -9,10 +9,9 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
-from orthos2.utils.misc import DHCPRecordOption
 
 from .models import (Annotation, Architecture, BMC, Domain, Enclosure, Installation,
-                     Machine, MachineGroup, MachineGroupMembership,
+                     Machine, MachineGroup, MachineGroupMembership, DomainAdmin,
                      NetworkInterface, Platform, RemotePower, RemotePowerDevice,
                      SerialConsole, SerialConsoleType, ServerConfig, System, Vendor,
                      VirtualizationAPI, is_unique_mac_address, validate_dns,
@@ -36,31 +35,16 @@ class SerialConsoleInline(admin.StackedInline):
     verbose_name = 'Serial Console'
     verbose_name_plural = 'Serial Console'
     fields = (
-        'type',
-        'cscreen_server',
+        'stype',
         'baud_rate',
         'kernel_device',
-        'management_bmc',
+        'kernel_device_num',
         'console_server',
-        'device',
         'port',
         'command',
         'comment'
     )
 
-#    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-#        """Do only show management BMC belonging to the machine itself."""
-#        if self.machine and db_field.name == 'management_bmc':
-#            if hasattr(self.machine, 'bmc'):
-#                kwargs['queryset'] = (self.machine.bmc)
-#            else:
-#                kwargs['queryset'] = set()
-#        return super(SerialConsoleInline, self).formfield_for_foreignkey(
-#            db_field,
-#            request,
-#            **kwargs
-#        )
-#
     def get_formset(self, request, obj=None, **kwargs):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
@@ -73,7 +57,7 @@ class RemotePowerInlineRpower(admin.StackedInline):
     fk_name = 'machine'
     verbose_name = 'Remote Power'
     verbose_name_plural = 'Remote Power'
-    fields = ["port", "comment", "remote_power_device"]
+    fields = ["port", "remote_power_device", "options"]
 
     def get_formset(self, request, obj=None, **kwargs):
         """Set machine object for `formfield_for_foreignkey` method."""
@@ -87,7 +71,7 @@ class RemotePowerInlineBMC(admin.StackedInline):
     fk_name = 'machine'
     verbose_name = 'Remote Power'
     verbose_name_plural = 'Remote Power'
-    fields = ["comment"]
+    fields = ["options"]
 
     def get_formset(self, request, obj=None, **kwargs):
         """Set machine object for `formfield_for_foreignkey` method."""
@@ -101,7 +85,7 @@ class RemotePowerInlineHypervisor(admin.StackedInline):
     fk_name = 'machine'
     verbose_name = 'Remote Power'
     verbose_name_plural = 'Remote Power'
-    fields = ["fence_name", "comment"]
+    fields = ["fence_name", "options"]
 
     def get_formset(self, request, obj=None, **kwargs):
         """Set machine object for `formfield_for_foreignkey` method."""
@@ -149,7 +133,8 @@ class MachineAdminForm(forms.ModelForm):
 
     mac_address = forms.CharField(
         label='MAC address',
-        validators=[validate_mac_address]
+        validators=[validate_mac_address],
+        help_text="The MAC address of the main network interface"
     )
 
     class Meta:
@@ -210,22 +195,15 @@ class MachineAdminForm(forms.ModelForm):
                 raise ValidationError("FQDN is already in use!")
         return fqdn
 
-    def clean_use_bmc(self):
-        use_bmc = self.cleaned_data['use_bmc']
-        system = self.cleaned_data['system']
-        if system.virtual and use_bmc:
-            raise ValidationError("System {} is virtual. Virtual machines can't have a BMC"
-                                  .format(system))
-        return use_bmc
-
     def clean_hypervisor(self):
         hypervisor = self.cleaned_data['hypervisor']
         system = self.cleaned_data['system']
-        if hypervisor and not system.virtual:
-            raise ValidationError("system {} is not virtual. Only Virtual Machines may have "
-                                  "a hypervisor".format(system))
-        if hypervisor and hypervisor.is_virtual_machine():
-            raise ValidationError("{} is a Virtual Machines. Hypervisors must be physical")
+        if hypervisor:
+            if not system.virtual:
+                raise ValidationError("System type {} is not virtual. Only Virtual Machines may have "
+                                      "a hypervisor".format(system))
+            if not hypervisor.system.allowHypervisor:
+                raise ValidationError("System type {} cannot serve as a hypervisor".format(hypervisor.system.name))
         return hypervisor
 
     def clean(self):
@@ -340,11 +318,11 @@ class MachineAdmin(admin.ModelAdmin):
         'architecture',
         'system',
         'group',
-        'write_dhcpv4',
-        'write_dhcpv6',
         'active'
     )
     list_per_page = 50
+    show_full_result_count = True
+    list_max_show_all = 10000
     search_fields = ('fqdn',)
     list_filter = (
         MachineArchitectureFilter,
@@ -380,10 +358,9 @@ class MachineAdmin(admin.ModelAdmin):
                     'nda'
                 ),
                 'active',
-                'use_bmc'
             )
         }),
-        ('VIRTUALIZATION', {
+        ('VIRTUALIZATION SERVER', {
             'fields': (
                 (
                     'vm_dedicated_host',
@@ -391,108 +368,27 @@ class MachineAdmin(admin.ModelAdmin):
                 ),
                 'vm_max',
                 'virtualization_api',
-                'hypervisor'
+            ),
+        }),
+        ('VIRTUALIZATION CLIENT', {
+            'fields': (
+                'hypervisor',
             ),
         }),
         ('MACHINE CHECKS', {
             'fields': (
                 'check_connectivity',
                 (
-                    'collect_system_information'
+                    'collect_system_information',
                 )
             )
         }),
         ('DHCP', {
             'fields': (
-                'dhcpv4_write',
-                'dhcpv6_write',
-                'dhcp_filename'
+                'dhcp_filename',
             ),
         })
     )
-
-    def write_dhcpv4(self, machine):
-        """
-        Show whether an DHCPv4 record is being written.
-
-        The hierarchy is:
-            Machine > [Group >] Architecture
-
-        If a machine is in a machine group, the machine group setting decides whether to write a
-        DHCP group file (e.g. 'group_foo.conf').
-
-        If a machine is not in a machine group, the respective machine architecture decides whether
-        to write an architecture DHCP file (e.g. 'x86_64.conf').
-
-        If so, the machine setting decides whether the entry exists, does not exist or DHCP
-        requests are ignored for this machine.
-        """
-        from django.contrib.admin.templatetags.admin_list import _boolean_icon
-
-        reasons_disabled = []
-
-        if machine.group:
-            if not machine.group.dhcpv4_write:
-                reasons_disabled.append('excluded by group')
-
-        elif not machine.architecture.dhcpv4_write:
-            reasons_disabled.append('excluded by architecture')
-
-        if machine.dhcpv4_write == DHCPRecordOption.EXCLUDE:
-            reasons_disabled.append('excluded by machine')
-
-        elif machine.dhcpv4_write == DHCPRecordOption.IGNORE:
-            reasons_disabled.append('ignore machine')
-
-        if not reasons_disabled:
-            return _boolean_icon(True)
-
-        return '{} <span class="help">({})</span>'.format(
-            _boolean_icon(False),
-            ', '.join(reasons_disabled)
-        )
-    write_dhcpv4.allow_tags = True
-
-    def write_dhcpv6(self, machine):
-        """
-        Show whether an DHCPv6 record is being written. The hierarchy is:
-
-        Machine > [Group >] Architecture
-
-        If a machine is in a machine group, the machine group setting decides whether to write a
-        DHCP group file (e.g. 'group_foo.conf').
-
-        If a machine is not in a machine group, the respective machine architecture decides whether
-        to write an architecture DHCP file (e.g. 'x86_64.conf').
-
-        If so, the machine setting decides whether the entry exists, does not exist or DHCP
-        requests are ignored for this machine.
-        """
-        from django.contrib.admin.templatetags.admin_list import _boolean_icon
-
-        reasons_disabled = []
-
-        if machine.group:
-            if not machine.group.dhcpv6_write:
-                reasons_disabled.append('excluded by group')
-
-        elif not machine.architecture.dhcpv6_write:
-            reasons_disabled.append('excluded by architecture')
-
-        if machine.dhcpv6_write == DHCPRecordOption.EXCLUDE:
-            reasons_disabled.append('excluded by machine')
-
-        elif machine.dhcpv6_write == DHCPRecordOption.IGNORE:
-            reasons_disabled.append('ignore machine')
-
-        if not reasons_disabled:
-            return _boolean_icon(True)
-
-        return '{} <span class="help">({})</span>'.format(
-            _boolean_icon(False),
-            ', '.join(reasons_disabled)
-        )
-    write_dhcpv6.allow_tags = True
 
     def get_queryset(self, request):
         """
@@ -531,18 +427,19 @@ class MachineAdmin(admin.ModelAdmin):
         return super(MachineAdmin, self).add_view(request, form_url, extra_context)
 
     def get_fieldsets(self, request, machine):
-        """Do not show 'VIRTUALIZATION' fieldset for administrative systems."""
+        """Do not show 'VIRTUALIZATION' client/server forms if not appropriate"""
         fieldsets = super(MachineAdmin, self).get_fieldsets(request)
-
-        if machine and machine.system.administrative:
+        if machine:
             fieldsets_ = ()
-
             for fieldset in fieldsets:
-                if fieldset[0] != 'VIRTUALIZATION':
-                    fieldsets_ += (fieldset,)
-
+                if fieldset[0] == 'VIRTUALIZATION SERVER':
+                    if not machine.system.allowHypervisor:
+                        continue
+                if fieldset[0] == 'VIRTUALIZATION CLIENT':
+                    if not machine.system.virtual:
+                        continue
+                fieldsets_ += (fieldset,)
             fieldsets = fieldsets_
-
         return fieldsets
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
@@ -557,42 +454,26 @@ class MachineAdmin(admin.ModelAdmin):
                 extra_tags='error'
             )
 
-        if machine.system.administrative:
-            self.inlines = (NetworkInterfaceInline, BMCInline)
+        self.inlines = (NetworkInterfaceInline, SerialConsoleInline)
+
+        if machine.bmc_allowed():
+            if hasattr(machine, 'bmc'):
+                self.inlines += (RemotePowerInlineBMC,)
+            self.inlines += (BMCInline,)
+        elif machine.is_virtual_machine():
+            self.inlines += (RemotePowerInlineHypervisor,)
         else:
-            if machine.use_bmc:
-                if hasattr(machine, 'bmc'):
-                    self.inlines = (
-                        RemotePowerInlineBMC,
-                        NetworkInterfaceInline,
-                        AnnotationInline,
-                        BMCInline
-                    )
-                else:
-                    self.inlines = (
-                        NetworkInterfaceInline,
-                        AnnotationInline,
-                        BMCInline
-                    )
-            elif machine.is_virtual_machine():
-                self.inlines = (
-                        RemotePowerInlineHypervisor,
-                        NetworkInterfaceInline,
-                        AnnotationInline
-                    )
-            else:
-                self.inlines = (
-                        RemotePowerInlineRpower,
-                        NetworkInterfaceInline,
-                        AnnotationInline
-                    )
+            self.inlines += (RemotePowerInlineRpower,)
+
+        if not machine.system.administrative:
+            self.inlines += (AnnotationInline,)
 
         return super(MachineAdmin, self).change_view(request, object_id, form_url, extra_context)
 
     def save_formset(self, request, form, formset, change):
         formset.save()
         machine = form.save(commit=False)
-        if machine.use_bmc and hasattr(machine, 'bmc') and not hasattr(machine, 'remotepower'):
+        if machine.bmc_allowed() and hasattr(machine, 'bmc') and not hasattr(machine, 'remotepower'):
             machine.remotepower = RemotePower(machine.bmc.fence_name, machine, machine.bmc)
             machine.bmc.save()
             machine.remotepower.save()
@@ -601,49 +482,23 @@ class MachineAdmin(admin.ModelAdmin):
 
 admin.site.register(Machine, MachineAdmin)
 
+class ArchsInline(admin.TabularInline):
+    model = DomainAdmin
+    fields = ('arch', 'contact_email',)
 
 class DomainAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'cobbler_server_list',
         'tftp_server',
-        'get_machine_count',
-        'setup_support'
+        'cscreen_server'
     )
     # enables nifty unobtrusive JavaScript “filter” interface
     filter_horizontal = (
         'cobbler_server',
-        'setup_architectures',
-        'setup_machinegroups'
+        'supported_architectures',
     )
-
-    def setup_support(self, obj):
-        """Return list of setup supported architectures/machine groups as string."""
-        architectures = 'Architectures: '
-        machinegroups = 'Machine Groups: '
-        link_pattern = '<a href="{}" class="text-muted">{}</a>, '
-
-        if obj.setup_architectures.all().count() == 0:
-            architectures += '-'
-        else:
-            for architecture in obj.setup_architectures.all():
-                architectures += link_pattern.format(
-                    reverse('admin:data_architecture_change', args=[architecture.pk]),
-                    architecture.name
-                )
-            architectures = architectures.rstrip(' ,')
-
-        if obj.setup_machinegroups.all().count() == 0:
-            machinegroups += '-'
-        else:
-            for machinegroup in obj.setup_machinegroups.all():
-                machinegroups += link_pattern.format(
-                    reverse('admin:data_machinegroup_change', args=[machinegroup.pk]),
-                    machinegroup.name
-                )
-            machinegroups = machinegroups.rstrip(' ,')
-
-        return format_html('{}<br/>{}'.format(architectures, machinegroups))
+    inlines = (ArchsInline, )
 
     def cobbler_server_list(self, obj):
         """Return DHCP server list as string."""
@@ -756,6 +611,9 @@ class PlatformAdmin(admin.ModelAdmin):
     list_display = ('name', 'get_vendor', 'get_enclosure_count', 'is_cartridge')
     list_per_page = 50
     search_fields = ('name',)
+    show_full_result_count = True
+    list_max_show_all = 1000
+
 
 
 admin.site.register(Platform, PlatformAdmin)
@@ -765,8 +623,6 @@ class ArchitectureAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'get_machine_count',
-        'dhcpv4_write',
-        'dhcpv6_write',
         'dhcp_filename'
     )
 
@@ -820,8 +676,6 @@ class MachineGroupAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'machines',
-        'dhcpv4_write',
-        'dhcpv6_write',
         'dhcp_filename'
     )
     inlines = (MachinesInline, MachineGroupMembershipInline)
