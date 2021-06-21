@@ -5,8 +5,6 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.template import Context, Template
-from orthos2.taskmanager import tasks
-from orthos2.taskmanager.models import TaskManager
 
 from . import validate_dns
 from .serialconsoletype import SerialConsoleType
@@ -167,9 +165,9 @@ class SerialConsole(models.Model):
             self.device = ''
             self.port = None
 
-        elif self.stype.name in {'IPMI', 'ILO', 'ILO2'}:
-            if not self.machine.bmc:
-                errors.append(ValidationError("Please add a BMC to the machine!"))
+        elif self.stype.name in {'IPMI'}:
+            if not self.machine.has_bmc():
+                errors.append(ValidationError("Please add a BMC to the machine [%s]" % self.machine.fqdn))
 
 
             # requires: management interface
@@ -180,7 +178,7 @@ class SerialConsole(models.Model):
 
         elif self.stype.name in {'libvirt/qemu', 'libvirt/lxc'}:
             if not self.machine.hypervisor:
-                errors.append(ValidationError("No hypervisor found!"))
+                errors.append(ValidationError("No hypervisor found [%s]" % self.machine.fqdn))
 
             # requires: -
             self.command = ''

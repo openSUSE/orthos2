@@ -119,7 +119,7 @@ def machine_pre_delete(sender, instance, *args, **kwargs):
         server.remove(instance)
 
     if instance.is_vm_managed():
-        instance.hypervisor.virtualization_api.remove(machine)
+        instance.hypervisor.virtualization_api.remove(instance)
 
     if not ServerConfig.objects.bool_by_key('serialization.execute'):
         return
@@ -186,9 +186,13 @@ def regenerate_serialconsole(sender, cscreen_server_fqdn, *args, **kwargs):
 
     This should be the one and only place for creating this task.
     """
+    # ToDo Disabled for now until orthos version1 is switched off to not interfere
+    # with each other
+    """
     if cscreen_server_fqdn is not None:
         task = tasks.RegenerateSerialConsole(cscreen_server_fqdn)
         TaskManager.add(task)
+    """
 
 
 @receiver(signal_cobbler_regenerate)

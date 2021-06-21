@@ -48,7 +48,7 @@
     {% if machine.is_virtual_machine and machine.hypervisor and machine.hypervisor.virtualization_api != None %}
     <tr>
       <td class="th">Hypervisor</td>
-      <td><a href="{% url 'virtualization' machine.hypervisor.pk %}">{{ machine.hypervisor }}</a> ({{ machine.hypervisor.virtualization_api }})</td>
+      <td><a href="{% url 'frontend:virtualization' machine.hypervisor.pk %}">{{ machine.hypervisor }}</a> ({{ machine.hypervisor.virtualization_api }})</td>
     </tr>
     {% endif %}
     <tr>

@@ -342,8 +342,8 @@ def virtualization_add(request, id):
 
     else:
         form = VirtualMachineForm(request.POST, virtualization_api=machine.virtualization_api)
-
         if form.is_valid():
+            vm = None
             try:
                 vm = machine.virtualization_api.create(**form.cleaned_data)
 
@@ -359,6 +359,8 @@ def virtualization_add(request, id):
             except Exception as exception:
                 logger.exception(exception)
                 messages.error(request, exception)
+                if vm:
+                    vm.delete()
                 return redirect('frontend:machines')
 
     return render(
