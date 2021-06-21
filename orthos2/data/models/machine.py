@@ -307,7 +307,7 @@ class Machine(models.Model):
 
     vm_max = models.IntegerField(
         'Max. VMs',
-        default=5,
+        default=6,
         help_text="Maximum amount of virtual hosts allowed to be spawned on this virtual server (ToDo: don't use yet)"
     )
 
@@ -371,9 +371,11 @@ class Machine(models.Model):
         help_text="The firmware BIOS is from ... (on x86 as retrieved from dmidecode -s bios-version"
     )
 
-    bios_date = models.DateTimeField(
+    bios_date = models.DateField(
         editable=False,
-        default='1990-10-03T10:00:00+00:00',
+        blank=True,
+        null=True,
+        default=None,
         help_text="The firmware BIOS is from ... (on x86 as retrieved from dmidecode -s bios-version"
     )
 
@@ -559,6 +561,9 @@ class Machine(models.Model):
 
     def bmc_allowed(self):
         return self.system.allowBMC
+
+    def has_bmc(self):
+        return hasattr(self, 'bmc')
 
     def save(self, *args, **kwargs):
         """

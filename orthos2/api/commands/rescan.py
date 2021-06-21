@@ -13,6 +13,7 @@ class RescanCommand(BaseAPIView):
     METHOD = 'GET'
     URL = '/rescan'
     ARGUMENTS = (
+        ['fqdn'],
         ['fqdn', 'option'],
     )
 

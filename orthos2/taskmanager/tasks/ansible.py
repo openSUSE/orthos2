@@ -10,6 +10,7 @@ import sys
 import threading
 import logging
 import json
+from datetime import datetime
 
 from django.template.loader import render_to_string
 
@@ -55,7 +56,6 @@ class Ansible(Task):
         files = self.get_json_filelist()
         missing = list(set(self.machines) - set(files))
         logger.debug("Json result files avail: %s", files)
-        logger.debug("Missing Json result files: %s", missing)
         for fqdn in files:
             try:
                 self.store_machine_info(fqdn)
@@ -75,7 +75,8 @@ class Ansible(Task):
                     res_files.append(jfile[:-len(".json")])
         return res_files
 
-    def store_machine_info(self, machine_fqdn: str):
+    @staticmethod
+    def store_machine_info(machine_fqdn: str):
 
         ans_file = os.path.join(Ansible.data_dir, machine_fqdn + '.json')
 
@@ -84,7 +85,7 @@ class Ansible(Task):
 
         db_machine = Machine.objects.get(fqdn=machine_fqdn)
 
-        self.write_ansible_local(db_machine, ansible_machine)
+        Ansible.write_ansible_local(db_machine, ansible_machine)
     
         db_machine.save()
     
@@ -99,7 +100,8 @@ class Ansible(Task):
    
 
     #def get_hardware_information(fqdn):
-    def write_ansible_local(self, db_machine, ansible_machine):
+    @staticmethod
+    def write_ansible_local(db_machine, ansible_machine):
         """Retrieve information of the system."""
     
         db_machine.fqdn = ansible_machine.get("fqdn", "")
@@ -114,7 +116,7 @@ class Ansible(Task):
         # db_machine.cpu_speed =
         # db_machine.cpu_id =
     
-        db_machine.ram_amount = int(ansible_machine.get("memory_mb", {}).get("total", 0)) * 1024
+        db_machine.ram_amount = int(ansible_machine.get("memtotal_mb", 0)) * 1024
     
         # db_machine.disk_primary_size = # sectors * sector_size der 1. platte (in bytes). danach hwinfo --disk entfernen.
         # db_machine.disk_type =
@@ -129,11 +131,20 @@ class Ansible(Task):
         db_machine.lsscsi = normalize_ascii("".join(ansible_machine.get("ansible_local", {}).get("lsscsi", {}).get("-s", {}).get("stdout", "")))
         db_machine.lsusb = normalize_ascii("".join(ansible_machine.get("ansible_local", {}).get("lsusb", {}).get("noargs", {}).get("stdout", "")))
         db_machine.ipmi = "IPMI" in db_machine.dmidecode
-    
-        db_machine.bios_version = ansible_machine.get("bios_version", "")
-        """ type: DateTimefield """
-        db_machine.bios_date = ansible_machine.get("bios_date", "")
 
+        try:
+            bios_date = ansible_machine.get("bios_date", "")
+            if bios_date:
+                # Django date fields must be in "%Y-%m-%d" format
+                b_date = datetime.strptime(bios_date, "%m/%d/%Y").strftime("%Y-%m-%d")
+                logger.warning(b_date)
+            else:
+                raise ValueError("No bios_date string in %s" % db_machine.fqdn)
+            db_machine.bios_date = b_date
+        except (ValueError, TypeError):
+            logger.exception("Could not parse bios date [%s]", db_machine.fqdn)
+
+        db_machine.bios_version = ansible_machine.get("bios_version", "")
     # ------------------------------
 
     # db_machine.vm_capable =  # set when nice way to do so is found

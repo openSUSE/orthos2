@@ -100,13 +100,16 @@ class VirtualizationAPI:
         for networkinterface in vm.unsaved_networkinterfaces[1:]:
             networkinterface.machine = vm
             networkinterface.save()
-        vm.remotepower = RemotePower(type=RemotePower.Type.LIBVIRTQEMU)
+        vm.remotepower = RemotePower(fence_name="virsh")
         vm.remotepower.save()
 
         if self.host.has_serialconsole():
+            stype = SerialConsoleType.objects.get(name='libvirt/qemu')
+            if not stype:
+                raise Exception("Bug: SerialConsoleType not found")
             vm.serialconsole = SerialConsole(
-                type_id=SerialConsoleType.Type.to_int('libvirt/qemu'),
-                cscreen_server=self.host.fqdn_domain.cscreen_server
+                stype=stype,
+                baud_rate=115200
             )
             vm.serialconsole.save()
 
@@ -441,6 +444,7 @@ class Libvirt(VirtualizationAPI):
         self.check_memory(kwargs['ram_amount'])
 
         vm.hostname = self.generate_hostname()
+        vm.hypervisor = self.host
         vm.fqdn = '{}.{}'.format(vm.hostname, self.host.fqdn_domain.name)
 
         vnc_port = 5900 + int(vm.hostname.split('-')[1])
@@ -481,6 +485,17 @@ class Libvirt(VirtualizationAPI):
         parameters += '--noautoconsole '
         parameters += '--autostart '
         parameters += kwargs['parameters']
+
+        self.execute_virt_install(
+            hostname=vm.hostname,
+            vcpu=vm.cpu_cores,
+            memory=vm.ram_amount,
+            disk=disk,
+            networkinterfaces=networkinterfaces,
+            boot=boot,
+            vnc=vm.vnc,
+            parameters=parameters,
+        )
 
         self.execute_virt_install(
             hostname=vm.hostname,
