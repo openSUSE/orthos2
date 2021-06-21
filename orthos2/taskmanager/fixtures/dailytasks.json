@@ -30,5 +30,21 @@
          "created": "2016-01-01T10:00:00+00:00",
          "executed_at": "2016-01-01T10:00:00+00:00"
       }
+   },
+   {
+      "model": "taskmanager.dailytask",
+      "pk": null,
+      "fields":{
+         "name": "DailyCheckForPrimaryNetwork",
+         "module": "orthos2.taskmanager.tasks.daily",
+         "arguments": "[[], {}]",
+         "hash": "6e91ec1bc8ee9a0022d79a6fd9e85c79ce6a6521",
+         "priority": 10,
+         "running": false,
+         "updated": "2021-06-23T22:11:14.523Z",
+         "created": "2021-06-21T12:25:40.031Z",
+         "executed_at": "2021-06-23T22:01:10.967Z",
+         "enabled": true
+      }
    }
 ]
