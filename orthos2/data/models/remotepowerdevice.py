@@ -7,8 +7,8 @@ from django.conf import settings
 class RemotePowerDevice(models.Model):
     username = models.CharField(max_length=256, blank=True, null=True)
     password = models.CharField(max_length=256, blank=True, null=True)
-    fqdn = models.CharField(max_length=256)
-    mac = models.CharField(max_length=17)
+    fqdn = models.CharField(max_length=256, unique=True)
+    mac = models.CharField(max_length=17, unique=True)
 
     remotepower_type_choices = get_remote_power_type_choices("rpower_device")
 
