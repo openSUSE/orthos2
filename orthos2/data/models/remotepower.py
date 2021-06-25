@@ -68,7 +68,6 @@ class RemotePower(models.Model):
     machine = models.OneToOneField(
         'data.Machine',
         on_delete=models.CASCADE,
-        primary_key=True
     )
 
 
