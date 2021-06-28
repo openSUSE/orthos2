@@ -19,8 +19,11 @@ class RemotePowerType:
     def from_fence(cls, fence: str):
         if not fence:
             raise ValueError("Empty Argument")
-        obj = [cls(x) for x in settings.REMOTEPOWER_TYPES if x['fence'] == fence][0]
-        return obj
+        objs = [cls(x) for x in settings.REMOTEPOWER_TYPES if x['fence'] == fence]
+        if not objs:
+            logging.error("no fence agent named %s found", fence)
+            return None
+        return objs[0]
 
     def __init__(self, options: dict):
         self.fence = options.get('fence')
