@@ -439,7 +439,7 @@ class Libvirt(VirtualizationAPI):
                 raise Exception("OVMF file not found: '{}'!".format(ovmf))
             boot = '--boot loader={},network'.format(ovmf)
         else:
-            boot = '--boot network,hd,menu=off'
+            boot = '--boot network,hd,menu=off,bios.useserial=on'
 
         self.check_memory(kwargs['ram_amount'])
 
