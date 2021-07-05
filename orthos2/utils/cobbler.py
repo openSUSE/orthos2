@@ -56,6 +56,8 @@ def create_cobbler_options(machine):
             options += " --next-server={server}".format(server=ipv4[0])
     if machine.has_remotepower():
         options += get_power_options(machine)
+    if machine.has_serialconsole():
+        options += get_serial_options(machine)
     return options
 
 
@@ -95,6 +97,11 @@ def get_power_options(machine):
         options += " --power-options={options}".format(options=remotepower.options)
     return options
 
+def get_serial_options(machine):
+    console = machine.SerialConsole
+    options = """ --serial-device="{device}" """.format(device=console.kernel_device_num)
+    options +=  """--serial-baud-rate="{baud}" """.format(baud=console.baud_rate)
+    return options
 
 def get_cobbler_add_command(machine, cobber_path):
     profile = get_default_profile(machine)

@@ -628,6 +628,11 @@ class Machine(models.Model):
                     assert self.bmc.password == self._original.bmc.password
                     assert self.bmc.mac == self._original.bmc.mac
                     assert self.bmc.fqdn == self._original.bmc.fqdn
+                if self.has_serialconsole():
+                    assert hasattr(self._original, 'serialconsole')
+                    assert self.serialconsole.baud_rate == self._original.serialconsole.baud_rate
+                    assert self.serialconsole.kernel_device_num == \
+                        self._original.serialconsole.kernel_device_num
             except AssertionError:
                 if ServerConfig.objects.bool_by_key("orthos.cobblersync.full"):
                     from orthos2.data.signals import signal_cobbler_regenerate
