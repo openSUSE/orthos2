@@ -614,6 +614,7 @@ class Machine(models.Model):
                 assert self.architecture == self._original.architecture
                 assert self.group == self._original.group
                 assert self.dhcp_filename == self._original.dhcp_filename
+                assert self.kernel_options == self._original.kernel_options
                 if self.has_remotepower():
                     assert hasattr(self._original, 'remotepower')
                     assert self.remotepower.fence_name == self._original.remotepower.fence_name
