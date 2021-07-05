@@ -43,6 +43,7 @@ def create_cobbler_options(machine):
     from orthos2.utils.misc import get_ip
     tftp_server = get_tftp_server(machine)
     options = " --name={name} --ip-address={ipv4}".format(name=machine.fqdn, ipv4=machine.ipv4)
+    kernel_options = machine.kernel_options if machine.kernel_options else ""
     if machine.ipv6:
         options += " --ipv6-address={ipv6}".format(ipv6=machine.ipv6)
     if machine.mac_address:
@@ -57,7 +58,10 @@ def create_cobbler_options(machine):
     if machine.has_remotepower():
         options += get_power_options(machine)
     if machine.has_serialconsole():
-        options += get_serial_options(machine)
+        serial_options, serial_kernel_option = get_serial_options(machine)
+        options += serial_options
+        kernel_options += serial_kernel_option
+    options += """ --kernel-options="{options}" """.format(options=kernel_options)
     return options
 
 
@@ -98,10 +102,12 @@ def get_power_options(machine):
     return options
 
 def get_serial_options(machine):
-    console = machine.SerialConsole
+    console = machine.serialconsole
     options = """ --serial-device="{device}" """.format(device=console.kernel_device_num)
     options +=  """--serial-baud-rate="{baud}" """.format(baud=console.baud_rate)
-    return options
+    kernel_option =" console={device}{num} ".format(device=console.kernel_device,
+                                                    num=console.kernel_device_num)
+    return (options, kernel_option)
 
 def get_cobbler_add_command(machine, cobber_path):
     profile = get_default_profile(machine)
