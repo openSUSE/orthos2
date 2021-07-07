@@ -25,6 +25,14 @@ class SerialConsole(models.Model):
         (115200, '115200')
     )
 
+    # Predefine some and add more if needed
+    TTY_CHOICES = (
+        ('ttyS', 'ttyS'),
+        ('ttyUSB', 'ttyUSB'),
+        ('ttyAMA', 'ttyAMA'),
+        ('tty', 'tty'),
+    )
+
     class Meta:
         verbose_name = 'Serial Console'
 
@@ -76,10 +84,10 @@ class SerialConsole(models.Model):
     )
 
     kernel_device = models.CharField(
+        choices=TTY_CHOICES,
         verbose_name="Kernel Device",
-        max_length=255,
+        max_length=64,
         null=False,
-        blank=True,
         default='ttyS',
         help_text="The kernel device string as passed via kernel command line, e.g. ttyS, ttyAMA, ttyUSB,..."
     )
