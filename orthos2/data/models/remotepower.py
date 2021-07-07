@@ -68,8 +68,8 @@ class RemotePower(models.Model):
     machine = models.OneToOneField(
         'data.Machine',
         on_delete=models.CASCADE,
+        primary_key=True
     )
-
 
     remote_power_device = models.ForeignKey(
         'data.RemotePowerDevice',
