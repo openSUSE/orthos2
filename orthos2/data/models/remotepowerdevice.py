@@ -19,4 +19,4 @@ class RemotePowerDevice(models.Model):
                                   )
 
     def __str__(self):
-        return self.fqdn
+        return self.fqdn + "[" + self.fence_name + "]"
