@@ -10,6 +10,8 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
+from orthos2.utils.remotepowertype import RemotePowerType
+
 from .models import (Annotation, Architecture, BMC, Domain, Enclosure, Installation,
                      Machine, MachineGroup, MachineGroupMembership, DomainAdmin,
                      NetworkInterface, Platform, RemotePower, RemotePowerDevice,
@@ -20,8 +22,7 @@ from .models import (Annotation, Architecture, BMC, Domain, Enclosure, Installat
 
 class BMCInline(admin.StackedInline):
     model = BMC
-    extra = 1
-
+    extra = 0
     def get_formset(self, request, obj=None, **kwargs):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
@@ -55,8 +56,8 @@ class RemotePowerInlineRpower(admin.StackedInline):
     model = RemotePower
     extra = 0
     fk_name = 'machine'
-    verbose_name = 'Remote Power'
-    verbose_name_plural = 'Remote Power'
+    verbose_name = 'Remote Power via PowerSwitch Device'
+    verbose_name_plural = 'Remote Power via PowerSwitch Device'
     fields = ["port", "remote_power_device", "options"]
 
     def get_formset(self, request, obj=None, **kwargs):
@@ -69,8 +70,8 @@ class RemotePowerInlineBMC(admin.StackedInline):
     model = RemotePower
     extra = 0
     fk_name = 'machine'
-    verbose_name = 'Remote Power'
-    verbose_name_plural = 'Remote Power'
+    verbose_name = 'Remote Power via BMC'
+    verbose_name_plural = 'Remote Power via BMC'
     fields = ["options"]
 
     def get_formset(self, request, obj=None, **kwargs):
@@ -83,8 +84,8 @@ class RemotePowerInlineHypervisor(admin.StackedInline):
     model = RemotePower
     extra = 0
     fk_name = 'machine'
-    verbose_name = 'Remote Power'
-    verbose_name_plural = 'Remote Power'
+    verbose_name = 'Remote Power via Hypervisor'
+    verbose_name_plural = 'Remote Power via Hypervisor'
     fields = ["fence_name", "options"]
 
     def get_formset(self, request, obj=None, **kwargs):
@@ -196,6 +197,21 @@ class MachineAdminForm(forms.ModelForm):
                 raise ValidationError("FQDN is already in use!")
         return fqdn
 
+    def clean_vm_dedicated_host(self):
+        vm_dedicated_host = self.cleaned_data.get('vm_dedicated_host')
+        if not self.machine.system.allowHypervisor:
+            raise("System type {} cannot serve as a hypervisor".format(self.machine.system.name))
+        return vm_dedicated_host
+
+    def clean_hypervisor(self):
+        hypervisor = self.cleaned_data.get('hypervisor')
+        if not self.machine.system.virtual:
+            raise ValidationError(
+                "System type {} is not virtual. Only Virtual Machines may have a hypervisor".format(
+                    self.machine.system))
+        if Machine.objects.filter(fqdn=hypervisor, system__allowHypervisor=False):
+            raise ValidationError("System type cannot serve as hypervisor")
+        return hypervisor
 
     def clean(self):
         """
@@ -213,15 +229,13 @@ class MachineAdminForm(forms.ModelForm):
             )
 
         hypervisor = self.cleaned_data.get('hypervisor')
+        system = self.cleaned_data.get('system')
         if hypervisor:
-            if system and not system.virtual:
-                self.add_error('hypervisor', "System type {} is not virtual. Only Virtual Machines may have "
-                                      "a hypervisor".format(system))
-                self.add_error('system', "System type {} is not virtual. Only Virtual Machines may have "
-                                      "a hypervisor".format(system))
-            if not hypervisor.system.allowHypervisor:
-                self.add_error('hypervisor', "System type {} cannot serve as a hypervisor".format(hypervisor.system.name))
-                self.add_error('system', "System type {} cannot serve as a hypervisor".format(hypervisor.system.name))
+            if System.objects.filter(name=system, virtual=False):
+                self.add_error('system', "System type is not virtual. Only Virtual Machines may have a hypervisor")
+                self.add_error('hypervisor', "System type {} is not virtual. Only Virtual Machines may have " \
+                               "a hypervisor".format(system))
+
         mac = self.cleaned_data.get('mac_address')
         unknown_mac = self.cleaned_data.get('unknown_mac')
 
@@ -232,7 +246,6 @@ class MachineAdminForm(forms.ModelForm):
             self.add_error('unknown_mac', "Either specify a MAC, or confirm that the MAC is not yet known")
             self.add_error('mac_address', "Either specify a MAC, or confirm that the MAC is not yet known")
         return cleaned_data
-
 
 class MachineArchitectureFilter(admin.SimpleListFilter):
     title = 'Architecture'
@@ -327,8 +340,9 @@ class MachineAdmin(admin.ModelAdmin):
         'enclosure',
         'architecture',
         'system',
-        'group',
-        'active'
+        'reserved_by',
+#        'group',
+#        'active'
     )
     list_per_page = 50
     show_full_result_count = True
@@ -456,6 +470,9 @@ class MachineAdmin(admin.ModelAdmin):
     def change_view(self, request, object_id, form_url='', extra_context=None):
         """Return changes view with inlines for non-administrative systems."""
         machine = Machine.objects.get(pk=object_id)
+        fence = None
+        if machine.has_remotepower():
+            fence = RemotePowerType.from_fence(machine.remotepower.fence_name)
 
         if not self.get_object(request, object_id):
             messages.add_message(
@@ -468,13 +485,17 @@ class MachineAdmin(admin.ModelAdmin):
         self.inlines = (NetworkInterfaceInline, SerialConsoleInline)
 
         if machine.bmc_allowed():
-            if hasattr(machine, 'bmc'):
-                self.inlines += (RemotePowerInlineBMC,)
             self.inlines += (BMCInline,)
-        elif machine.is_virtual_machine():
+            if hasattr(machine, 'bmc'):
+                if not fence or fence.device == "bmc":
+                    self.inlines += (RemotePowerInlineBMC,)
+        if machine.is_virtual_machine():
             self.inlines += (RemotePowerInlineHypervisor,)
         else:
-            self.inlines += (RemotePowerInlineRpower,)
+            # Only show rpower device to add/modify if we do not
+            # have one yet or if it's a rpower_device already
+            if not fence or fence.device == "rpower_device":
+                self.inlines += (RemotePowerInlineRpower,)
 
         if not machine.system.administrative:
             self.inlines += (AnnotationInline,)
