@@ -448,14 +448,14 @@ class Machine(models.Model):
 
     check_connectivity = models.SmallIntegerField(
         choices=CONNECTIVITY_CHOICE,
-        default=1,
+        default=Connectivity.ALL,
         blank=False,
         help_text='Nightly checks whether the machine responds to ping, ssh port is open or whether orthos can log in via ssh key. Can be triggered manually via command\
  line client: `rescan [fqdn] status`'
     )
 
     collect_system_information = models.BooleanField(
-        default=False,
+        default=True,
         help_text='Shall the system be scanned every night? This only works if the proper ssh key is in place in authorized_keys and can be triggered manually via command line client: `rescan [fqdn]`'
     )
 
