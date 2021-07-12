@@ -120,7 +120,7 @@ Example:
 
         # regenerate serial console entries iterating over all cscreen servers
         elif service.lower() == RegenerateCommand.SERIALCONSOLE:
-            machines = SerialConsole.objects.all().values_list(
+            machines = Domain.objects.all().values_list(
                 'cscreen_server__fqdn', flat=True
             )
             if fqdn:
