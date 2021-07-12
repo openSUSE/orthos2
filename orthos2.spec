@@ -54,6 +54,7 @@ Requires:  python3-paramiko
 Requires:  python3-djangorestframework
 Requires:  python3-validators
 Requires:  python3-netaddr
+Requires:  python3-psycopg2
 %endif
 Requires:  nginx
 Requires:  ansible
