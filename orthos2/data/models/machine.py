@@ -483,7 +483,7 @@ class Machine(models.Model):
         related_name="hypervising",
         null=True,
         blank=True,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         help_text="The physical host this virtual machine is running on"
     )
     hostname = None
@@ -585,7 +585,7 @@ class Machine(models.Model):
             validate_mac_address(self.mac_address)
 
         if not self.system.virtual and self.hypervisor:
-            raise ValidationError("Only virtuals machines may have hypervisors")
+            raise ValidationError("Only virtual machines may have hypervisors")
         if hasattr(self, 'bmc') and not self.bmc_allowed():
             raise ValidationError("{} systems cannot use a BMC".format(self.system.name))
         # create & assign network domain and ensure that the FQDN always matches the fqdn_domain

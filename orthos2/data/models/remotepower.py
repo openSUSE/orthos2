@@ -68,8 +68,8 @@ class RemotePower(models.Model):
     machine = models.OneToOneField(
         'data.Machine',
         on_delete=models.CASCADE,
+        primary_key=True
     )
-
 
     remote_power_device = models.ForeignKey(
         'data.RemotePowerDevice',
@@ -96,7 +96,7 @@ class RemotePower(models.Model):
         blank=True,
         default="",
         help_text="""Additional command line options to be passed to the fence agent.
-        E. g. "--management=<management LPAR> for lpar"""
+        E. g. "managed=<management LPAR> for lpar"""
 
     )
 
