@@ -147,10 +147,6 @@ class MachineAdminForm(forms.ModelForm):
         """Set primary MAC address and virtualization API type in the form fields."""
         instance = kwargs.get('instance', None)
 
-        if instance:
-            if isinstance(instance.virtualization_api, VirtualizationAPI):
-                instance.virt_api_int = instance.virtualization_api.get_type()
-
         super(MachineAdminForm, self).__init__(*args, **kwargs)
 
         if instance:

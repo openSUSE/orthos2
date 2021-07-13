@@ -116,7 +116,7 @@ class Ansible(Task):
         # db_machine.cpu_speed =
         # db_machine.cpu_id =
     
-        db_machine.ram_amount = int(ansible_machine.get("memtotal_mb", 0)) * 1024
+        db_machine.ram_amount = int(ansible_machine.get("memtotal_mb", 0))
     
         # db_machine.disk_primary_size = # sectors * sector_size der 1. platte (in bytes). danach hwinfo --disk entfernen.
         # db_machine.disk_type =
@@ -133,14 +133,12 @@ class Ansible(Task):
         db_machine.ipmi = "IPMI" in db_machine.dmidecode
 
         try:
-            bios_date = ansible_machine.get("bios_date", "")
+            bios_date = ansible_machine.get("bios_date", None)
+            if bios_date == "NA":
+                bios_date = None
             if bios_date:
                 # Django date fields must be in "%Y-%m-%d" format
-                b_date = datetime.strptime(bios_date, "%m/%d/%Y").strftime("%Y-%m-%d")
-                logger.warning(b_date)
-            else:
-                raise ValueError("No bios_date string in %s" % db_machine.fqdn)
-            db_machine.bios_date = b_date
+                db_machine.bios_date = datetime.strptime(bios_date, "%m/%d/%Y").strftime("%Y-%m-%d")
         except (ValueError, TypeError):
             logger.exception("Could not parse bios date [%s]", db_machine.fqdn)
 
