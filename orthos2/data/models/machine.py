@@ -323,7 +323,7 @@ class Machine(models.Model):
         help_text="Release and destroy virtual machine instances, once people have released (do not reserve anymore) them"
     )
 
-    virtualization_api = models.SmallIntegerField(
+    virt_api_int = models.SmallIntegerField(
         'Virtualization API',
         choices=VirtualizationAPI.TYPE_CHOICES,
         blank=True,
@@ -494,6 +494,9 @@ class Machine(models.Model):
 
     mac_address = None
 
+    # Runtime object created on virt_api_int in init()
+    virtualization_api = None
+
     unknown_mac = models.BooleanField(
         default=False,
         verbose_name="MAC unknwon",
@@ -553,8 +556,8 @@ class Machine(models.Model):
         else:
             self._original = None
 
-        if self.virtualization_api is not None:
-            self.virtualization_api = VirtualizationAPI(self.virtualization_api, self)
+        if self.virt_api_int is not None:
+            self.virtualization_api = VirtualizationAPI(self.virt_api_int, self)
 
     def __str__(self):
         return self.fqdn
@@ -599,9 +602,6 @@ class Machine(models.Model):
             name = re.split(r'-(\d|sp)+$', get_hostname(self.fqdn))[0]
             enclosure, created = Enclosure.objects.get_or_create(name=name)
             self.enclosure = enclosure
-
-        if isinstance(self.virtualization_api, VirtualizationAPI):
-            self.virtualization_api = self.virtualization_api.get_type()
 
         super(Machine, self).save(*args, **kwargs)
 
