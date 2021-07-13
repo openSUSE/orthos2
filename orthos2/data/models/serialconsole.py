@@ -103,16 +103,6 @@ class SerialConsole(models.Model):
         help_text="The kernel device number is concatenated to the kernel device string (see above).\nA value of 1 might end up in console=ttyS1 kernel command line paramter."
     )
 
-    updated = models.DateTimeField(
-        'Updated at',
-        auto_now=True
-    )
-
-    created = models.DateTimeField(
-        'Created at',
-        auto_now_add=True
-    )
-
     objects = models.Manager()
 
     def __str__(self):
