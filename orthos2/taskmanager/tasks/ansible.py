@@ -116,7 +116,7 @@ class Ansible(Task):
         # db_machine.cpu_speed =
         # db_machine.cpu_id =
     
-        db_machine.ram_amount = int(ansible_machine.get("memtotal_mb", 0)) * 1024
+        db_machine.ram_amount = int(ansible_machine.get("memtotal_mb", 0))
     
         # db_machine.disk_primary_size = # sectors * sector_size der 1. platte (in bytes). danach hwinfo --disk entfernen.
         # db_machine.disk_type =
