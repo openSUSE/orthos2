@@ -133,14 +133,12 @@ class Ansible(Task):
         db_machine.ipmi = "IPMI" in db_machine.dmidecode
 
         try:
-            bios_date = ansible_machine.get("bios_date", "")
+            bios_date = ansible_machine.get("bios_date", None)
+            if bios_date == "NA":
+                bios_date = None
             if bios_date:
                 # Django date fields must be in "%Y-%m-%d" format
-                b_date = datetime.strptime(bios_date, "%m/%d/%Y").strftime("%Y-%m-%d")
-                logger.warning(b_date)
-            else:
-                raise ValueError("No bios_date string in %s" % db_machine.fqdn)
-            db_machine.bios_date = b_date
+                db_machine.bios_date = datetime.strptime(bios_date, "%m/%d/%Y").strftime("%Y-%m-%d")
         except (ValueError, TypeError):
             logger.exception("Could not parse bios date [%s]", db_machine.fqdn)
 
