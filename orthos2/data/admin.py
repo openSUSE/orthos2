@@ -149,7 +149,7 @@ class MachineAdminForm(forms.ModelForm):
 
         if instance:
             if isinstance(instance.virtualization_api, VirtualizationAPI):
-                instance.virtualization_api = instance.virtualization_api.get_type()
+                instance.virt_api_int = instance.virtualization_api.get_type()
 
         super(MachineAdminForm, self).__init__(*args, **kwargs)
 
@@ -392,7 +392,7 @@ class MachineAdmin(admin.ModelAdmin):
                     'vm_auto_delete'
                 ),
                 'vm_max',
-                'virtualization_api',
+                'virt_api_int',
             ),
         }),
         ('VIRTUALIZATION CLIENT', {
