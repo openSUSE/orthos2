@@ -52,16 +52,6 @@ class MachineGroup(models.Model):
         default=False
     )
 
-    updated = models.DateTimeField(
-        'Updated at',
-        auto_now=True
-    )
-
-    created = models.DateTimeField(
-        'Created at',
-        auto_now_add=True
-    )
-
     def __init__(self, *args, **kwargs):
         """Deep copy object for comparison in `save()`."""
         super(MachineGroup, self).__init__(*args, **kwargs)

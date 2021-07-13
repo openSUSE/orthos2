@@ -167,8 +167,6 @@ class ServerConfig(models.Model):
         blank=True
     )
 
-    created = models.DateTimeField('created at', auto_now=True)
-
     objects = BaseManager()
     ssh = SSHManager()
 

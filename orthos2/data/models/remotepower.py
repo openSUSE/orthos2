@@ -100,16 +100,6 @@ class RemotePower(models.Model):
 
     )
 
-    updated = models.DateTimeField(
-        'Updated at',
-        auto_now=True
-    )
-
-    created = models.DateTimeField(
-        'Created at',
-        auto_now_add=True
-    )
-
     def save(self, *args, **kwargs):
         """Check values before saving the remote power object. Do only save if type is set."""
         self.clean()
