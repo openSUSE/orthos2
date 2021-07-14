@@ -256,9 +256,14 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         required=False,
     )
 
+    unknown_mac = forms.BooleanField(
+        label='MAC address currently unknown',
+        initial=False
+    )
     mac_address = forms.CharField(
         label='MAC address',
-        validators=[validate_mac_address]
+        validators=[validate_mac_address],
+        required=False
     )
 
     architecture_id = forms.ChoiceField(
@@ -312,6 +317,7 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         return [
             'fqdn',
             'enclosure',
+            'unknown_mac',
             'mac_address',
             'architecture_id',
             'system_id',
