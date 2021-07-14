@@ -88,7 +88,7 @@ class Ansible(Task):
         try:
             with open(ans_file, 'r') as json_file:
                 ansible_machine = json.load(json_file)
-        except Execption as e:
+        except Exception as e:
             logger.exception("Could not load ansible json file %s" % ans_file)
             return None
 
