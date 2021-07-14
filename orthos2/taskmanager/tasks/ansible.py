@@ -46,7 +46,6 @@ class Ansible(Task):
             i_file.write(rendered)
 
     def execute(self):
-
         logger.debug("Ansible scan of: %s", self.machines)
         self.render_inventory()
         command = '/usr/bin/ansible-playbook -i {dir}/inventory.yml {dir}/site.yml --private-key /home/orthos/.ssh/master'.format(dir=Ansible.facts_dir)
@@ -55,14 +54,22 @@ class Ansible(Task):
         logger.debug("ansible: %s - %s - %s" % (stdout, stderr, returncode))
         files = self.get_json_filelist()
         missing = list(set(self.machines) - set(files))
-        logger.debug("Json result files avail: %s", files)
-        for fqdn in files:
+        if missing:
+            logger.warning("Cannot scan machines {0} via ansible, missing json file in {1}".format(self.machines, Ansible.facts_dir))
+        success = []
+        fail    = []
+        for fqdn in self.machines:
             try:
-                self.store_machine_info(fqdn)
+                Ansible.store_machine_info(fqdn)
+                success.append(fqdn)
             except Exception:
                 logger.exception("Could not store ansible data of host %s", fqdn)
+                fail.append(fqdn)
+        logger.info("Successfully scanned via ansible: %s", success)
+        if fail:
+            logger.warning("Exceptions caught during scan for these hosts: %s", fail)
 
-    def get_json_filelist(self) -> list:
+            def get_json_filelist(self) -> list:
         """
         Returns the list of machines for which json files have been
         created via ansible scan (.json suffix removed)
@@ -71,56 +78,95 @@ class Ansible(Task):
         for subdir, dirs, files in os.walk(Ansible.data_dir):
             for jfile in files:
                 if jfile.endswith(".json"):
-                    logger.debug("Adding: %s - %s", jfile[:-len(".json")], jfile)
                     res_files.append(jfile[:-len(".json")])
         return res_files
 
     @staticmethod
-    def store_machine_info(machine_fqdn: str):
+    def get_ansible_data(machine_fqdn: str):
 
         ans_file = os.path.join(Ansible.data_dir, machine_fqdn + '.json')
+        try:
+            with open(ans_file, 'r') as json_file:
+                ansible_machine = json.load(json_file)
+        except Execption as e:
+            logger.exception("Could not load ansible json file %s" % ans_file)
+            return None
 
-        with open(ans_file, 'r') as json_file:
-            ansible_machine = json.load(json_file)
+        return ansible_machine
 
+    @staticmethod
+    def store_machine_info(machine_fqdn: str):
+
+        ansible_machine = Ansible.get_ansible_data(machine_fqdn)
+        if not ansible_machine:
+            return
         db_machine = Machine.objects.get(fqdn=machine_fqdn)
 
         Ansible.write_ansible_local(db_machine, ansible_machine)
-    
         db_machine.save()
-    
-    # # prints all non magic attributes of a machine
-    # db_machine_attributes = [attribute for attribute in dir(db_machine) if not attribute.startswith('_')]
-    # for db_machine_attribute in db_machine_attributes:
-    #     try:
-    #         attribute_value = getattr(db_machine, db_machine_attribute)
-    #         print(f"db_machine.{db_machine_attribute} = {getattr(db_machine, db_machine_attribute)}")
-    #     except Exception:
-    #         continue
-   
+
+    @staticmethod
+    def print_machine_info(machine_fqdn: str):
+        """
+        This is only a debug function which can be used via runscript interface
+        Example:
+        manage runscript show_machine_info --script-args lammermuir.arch.suse.de  |less
+        """
+        db_machine = Machine.objects.get(fqdn=machine_fqdn)
+        if not db_machine:
+            print("Machine: %s does not exist" % machine_fqdn)
+            return
+        # # prints all non magic attributes of a machine
+        db_machine_attributes = [attribute for attribute in dir(db_machine) if not attribute.startswith('_')]
+        for db_machine_attribute in db_machine_attributes:
+            try:
+                attribute_value = getattr(db_machine, db_machine_attribute)
+                print(f"db_machine.{db_machine_attribute} = {getattr(db_machine, db_machine_attribute)}")
+            except Exception:
+                continue
+
+    @staticmethod
+    def print_ansible_info(machine_fqdn :str):
+        """
+        This is only a debug function which can be used via runscript interface
+        Example:
+        manage runscript show_ansible_info --script-args lammermuir.arch.suse.de  |less
+        """
+
+        ansible_machine = Ansible.get_ansible_data(machine_fqdn)
+        if not ansible_machine:
+            return
+        exclude_keys = [ "_ansible_facts_gathered", "ansible_local" ]
+        for key in ansible_machine:
+            if key in exclude_keys:
+                continue
+            print(key, '->', ansible_machine[key])
+        return
 
     #def get_hardware_information(fqdn):
     @staticmethod
     def write_ansible_local(db_machine, ansible_machine):
-        """Retrieve information of the system."""
-    
+        """
+        Write ansible information retrieved from a json file to the system.
+        For developing/debugging this interface can directly be use
+        (without doing a rescan of the remote machine) via e.g.
+        manage runscript store_machine_info --script-args lammermuir.arch.suse.de
+        This can be useful if one wants to assign data which was already via ansible
+        to the correct database fields here.
+        """
+
         db_machine.fqdn = ansible_machine.get("fqdn", "")
-    
-        # db_machine.cpu_physical =  
-    
-        db_machine.cpu_cores = 5 #ansible_machine.get("processor_cores", 0)
-    
-        db_machine.cpu_threads = ansible_machine.get("processor_cores", 0) * ansible_machine.get("processor_threads_per_core", 0)
+        db_machine.cpu_physical = ansible_machine.get("processor_count", 0)
+        db_machine.cpu_cores = ansible_machine.get("processor_cores", 0)
+        db_machine.cpu_threads = ansible_machine.get("processor_threads_per_core", 0)
         # db_machine.cpu_model =
         # db_machine.cpu_flags = # --> check if in ansible, else create facts file
         # db_machine.cpu_speed =
         # db_machine.cpu_id =
-    
-        db_machine.ram_amount = int(ansible_machine.get("memtotal_mb", 0))
-    
+        db_machine.ram_amount = int(ansible_machine.get("memtotal_mb", 0)) * 1024
         # db_machine.disk_primary_size = # sectors * sector_size der 1. platte (in bytes). danach hwinfo --disk entfernen.
         # db_machine.disk_type =
-    
+
         db_machine.lsmod = normalize_ascii("".join(ansible_machine.get("ansible_local", {}).get("lsmod", {}).get("noargs", {}).get("stdout", "")))
         db_machine.lspci = normalize_ascii("".join(ansible_machine.get("lspci", {}).get("-vvv -nn", {}).get("stdout", "")))
         last = ansible_machine.get("ansible_local", {}).get("last", {}).get("latest", {}).get("stdout", "")
@@ -147,7 +193,7 @@ class Ansible(Task):
 
     # db_machine.vm_capable =  # set when nice way to do so is found
     # db_machine.efi =  # set when nice way to do so is found
-    
+
     # db_machine.serial_number # do not set
     # db_machine.architecture # do not set
     # db_machine.mac_address #  do not set
@@ -158,45 +204,22 @@ class Ansible(Task):
 
     '''
     attributes that can probaby be mapped easily/directly:
-    
-    db_machine.ram_amount =
     db_machine.architecture = ansible_machine.get("architecture")                    
-    db_machine.cpu_cores =
     db_machine.efi
     db_machine.cpu_id
     db_machine.cpu_model
- 
+
     attributes where its values probably need to be edited before assigning:
- 
-    db_machine.bios_version =
+
     db_machine.disk_primary_size =
     db_machine.disk_type = 
     db_machine.vm_capable = 
     db_machine.cpu_flags = 
-    db_machine.cpu_physical =
-    db_machine.cpu_physical.cpu_cores =
-    db_machine.cpu_physical.cpu_threads =
     db_machine.cpu_physical.cpu_speed = 
-     
-    attributes where its values may need more complex parsing before assigning, like program outputs:
- 
-    db_machine.lsmod = 
-    db_machine.last = 
+
     db_machine.efi = 
     db_machine.ipmi =
     db_machine.hwinfo =
     db_machine.dmidecode =
-    db_machine.dmesg =
-    db_machine.lsscsi =
-    db_machine.lsusb =
     db_machine.lspci =
     '''
-
-# call python3 ansible.py for testing
-def run(*args):
-    machines = [ "trick.arch.suse.de", "ampere3.arch.suse.de" ]
-    ansible = Ansible()
-    ansible.render_inventory(machines)
-    
-if __name__ == "__main__":
-    run(sys.argv)
