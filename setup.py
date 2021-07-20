@@ -81,6 +81,7 @@ if __name__ == "__main__":
             ("%s" % tmpfilespath, ["service/tmpfiles.d/orthos2.conf"]),
             ("%s" % unitpath, ["service/orthos2.service",
                                "service/orthos2_taskmanager.service",
+                               "service/orthos2_debug.service",
                                "service/orthos2.socket"]),
             # Empty directory creation
             ("%s" % logpath, []),

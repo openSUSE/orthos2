@@ -125,6 +125,7 @@ cp -r docs/_build/html/* %{buildroot}%{orthos_web_docs}
 mkdir -p %{buildroot}%{_sbindir}
 ln -sf service %{buildroot}%{_sbindir}/rcorthos2_taskmanager
 ln -sf service %{buildroot}%{_sbindir}/rcorthos2
+ln -sf service %{buildroot}%{_sbindir}/rcorthos2_debug
 %endif
 # This should go into setup.py - but copying tons of non *.py files recursively
 # is cumbersome...
@@ -148,24 +149,25 @@ getent group orthos >/dev/null || groupadd -r orthos
 getent passwd orthos >/dev/null || \
     useradd -r -g orthos -d /var/lib/orthos2 -s /bin/bash \
     -c "Useful comment about the purpose of this account" orthos
-%service_add_pre orthos2.service orthos2_taskmanager.service orthos2.socket
+%service_add_pre orthos2.service orthos2_taskmanager.service orthos2.socket orthos2_debug.service
 
 %post
 %tmpfiles_create %{_tmpfilesdir}/%{name}.conf
-%service_add_post orthos2.service orthos2_taskmanager.service orthos2.socket
+%service_add_post orthos2.service orthos2_taskmanager.service orthos2.socket orthos2_debug.service
 
 
 %preun
-%service_del_preun  orthos2.service orthos2_taskmanager.service orthos2.socket
+%service_del_preun  orthos2.service orthos2_taskmanager.service orthos2.socket orthos2_debug.service
 
 %postun
-%service_del_postun  orthos2.service orthos2_taskmanager.service orthos2.socket
+%service_del_postun  orthos2.service orthos2_taskmanager.service orthos2.socket orthos2_debug.service
 
 
 %files
 %{python3_sitelib}/orthos2-*
 %_unitdir/orthos2_taskmanager.service
 %_unitdir/orthos2.service
+%_unitdir/orthos2_debug.service
 %_unitdir/orthos2.socket
 %if 0%{?suse_version}
 %{_sbindir}/rcorthos2_taskmanager
