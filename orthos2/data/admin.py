@@ -193,22 +193,6 @@ class MachineAdminForm(forms.ModelForm):
                 raise ValidationError("FQDN is already in use!")
         return fqdn
 
-    def clean_vm_dedicated_host(self):
-        vm_dedicated_host = self.cleaned_data.get('vm_dedicated_host')
-        if not self.machine.system.allowHypervisor:
-            raise("System type {} cannot serve as a hypervisor".format(self.machine.system.name))
-        return vm_dedicated_host
-
-    def clean_hypervisor(self):
-        hypervisor = self.cleaned_data.get('hypervisor')
-        if not self.machine.system.virtual:
-            raise ValidationError(
-                "System type {} is not virtual. Only Virtual Machines may have a hypervisor".format(
-                    self.machine.system))
-        if Machine.objects.filter(fqdn=hypervisor, system__allowHypervisor=False):
-            raise ValidationError("System type cannot serve as hypervisor")
-        return hypervisor
-
     def clean(self):
         """
         Only collect system information if connectivity is set to `Full`.
@@ -226,11 +210,15 @@ class MachineAdminForm(forms.ModelForm):
 
         hypervisor = self.cleaned_data.get('hypervisor')
         system = self.cleaned_data.get('system')
-        if hypervisor:
-            if System.objects.filter(name=system, virtual=False):
-                self.add_error('system', "System type is not virtual. Only Virtual Machines may have a hypervisor")
-                self.add_error('hypervisor', "System type {} is not virtual. Only Virtual Machines may have " \
-                               "a hypervisor".format(system))
+        if hypervisor and System.objects.filter(name=system, virtual=False):
+            self.add_error('system', "System type is not virtual. Only Virtual Machines may have a hypervisor")
+            self.add_error('hypervisor', "System type {} is not virtual. Only Virtual Machines may have " \
+                           "a hypervisor".format(system))
+
+        vm_dedicated_host = self.cleaned_data.get('vm_dedicated_host')
+        if vm_dedicated_host and System.objects.filter(name=system, allowHypervisor=False):
+            self.add_error('system', "System type cannot serve as a hypervisor")
+            self.add_error('vm_dedicated_host', "System cannot be set as dedicated VM host")
 
         mac = self.cleaned_data.get('mac_address')
         unknown_mac = self.cleaned_data.get('unknown_mac')
