@@ -30,8 +30,6 @@ BuildRequires:  systemd-rpm-macros
 BuildRequires:  nginx
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-devel
-# Needed to install /etc/logrotate.d/orthos
-BuildRequires:  logrotate
 %if 0%{?suse_version}
 BuildRequires:  python-rpm-macros
 %endif
@@ -57,6 +55,8 @@ Requires:  python3-validators
 Requires:  python3-netaddr
 Requires:  python3-psycopg2
 %endif
+# Needed to install /etc/logrotate.d/orthos2
+Requires:  logrotate
 Requires:  nginx
 Requires:  ansible
 Requires:  uwsgi
@@ -175,10 +175,10 @@ getent passwd orthos >/dev/null || \
 %config %{_sysconfdir}/orthos2/orthos2.ini
 %config %{_sysconfdir}/orthos2/settings
 %config %{_sysconfdir}/logrotate.d/orthos2
+%config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_docs_nginx.conf
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
 %dir /usr/lib/orthos2
 %dir /usr/lib/orthos2/scripts
-%dir /usr/lib/orthos2/ansible
 %dir /usr/share/orthos2
 %dir /usr/share/orthos2/fixtures
 /usr/share/orthos2/fixtures/*
@@ -192,14 +192,18 @@ getent passwd orthos >/dev/null || \
 %attr(755,orthos,orthos) /usr/share/orthos2/taskmanager_migrations
 %attr(755,orthos,orthos) /usr/share/orthos2/frontend_migrations
 %attr(755,orthos,orthos) /usr/share/orthos2/api_migrations
+%attr(644,orthos,orthos) /usr/lib/orthos2/ansible/ansible.cfg
+%attr(644,orthos,orthos) /usr/lib/orthos2/ansible/inventory.template
+%attr(644,orthos,orthos) /usr/lib/orthos2/ansible/roles
+%attr(644,orthos,orthos) /usr/lib/orthos2/ansible/site.yml
 
 /usr/lib/orthos2/*
 %attr(755,orthos,orthos) %dir /srv/www/orthos2
 %ghost %dir /run/%{name}
 %ghost %dir /run/%{name}/ansible
+%attr(775,orthos,orthos) %dir /usr/lib/orthos2/ansible
 %attr(755,orthos,orthos) %dir /var/log/orthos2
 %attr(775,orthos,orthos) %dir /var/lib/orthos2
-%attr(775,orthos,orthos) %dir /usr/lib/orthos2/ansible
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/archiv
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/orthos-vm-images
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/database

@@ -1,4 +1,4 @@
-/var/log/orthos/*.log {
+/var/log/orthos2/*.log {
     compress
     dateext
     maxage 365
