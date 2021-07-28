@@ -22,6 +22,10 @@
       <td>{{ machine.bios_version }}</td>
     </tr>
     <tr>
+      <td class="th">BIOS Date</td>
+      <td>{{ machine.bios_date }}</td>
+    </tr>
+    <tr>
       <td class="th">IPMI Supported</td>
       <td>{{ machine.ipmi|boolean_image:15|safe }}</td>
     </tr>
@@ -44,7 +48,7 @@
     {% if machine.is_virtual_machine and machine.hypervisor and machine.hypervisor.virtualization_api != None %}
     <tr>
       <td class="th">Hypervisor</td>
-      <td><a href="{% url 'virtualization' machine.hypervisor.pk %}">{{ machine.hypervisor }}</a> ({{ machine.hypervisor.virtualization_api }})</td>
+      <td><a href="{% url 'frontend:virtualization' machine.hypervisor.pk %}">{{ machine.hypervisor }}</a> ({{ machine.hypervisor.virtualization_api }})</td>
     </tr>
     {% endif %}
     <tr>

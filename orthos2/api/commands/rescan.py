@@ -3,6 +3,9 @@ from orthos2.api.serializers.misc import ErrorMessage, InfoMessage, Message, Ser
 from django.conf.urls import re_path
 from django.http import HttpResponseRedirect
 from orthos2.taskmanager.tasks.machinetasks import MachineCheck
+from orthos2.taskmanager.tasks.ansible import Ansible
+from orthos2.taskmanager import tasks
+from orthos2.taskmanager.models import TaskManager
 
 
 class RescanCommand(BaseAPIView):
@@ -10,6 +13,7 @@ class RescanCommand(BaseAPIView):
     METHOD = 'GET'
     URL = '/rescan'
     ARGUMENTS = (
+        ['fqdn'],
         ['fqdn', 'option'],
     )
 
@@ -48,7 +52,7 @@ Example:
     def get(self, request, *args, **kwargs):
         """Return reservation history of machine."""
         fqdn = request.GET.get('fqdn', None)
-        option = request.GET.get('option', None)
+        option = request.GET.get('option', 'all')
 
         try:
             result = get_machine(
@@ -64,16 +68,24 @@ Example:
         except Exception as e:
             return ErrorMessage(str(e)).as_json
 
-        if option not in MachineCheck.Scan.Action.as_list:
-            return ErrorMessage("Unknown option '{}'!".format(option)).as_json
+        if option == 'ansible':
+            task = Ansible([fqdn])
+            TaskManager.add(task)
+            return Message("OK.").as_json
+
+        elif option not in MachineCheck.Scan.Action.as_list:
+            return ErrorMessage("Unknown option '{}'".format(option)).as_json
 
         try:
             machine.scan(option)
+#            task = MachineCheck(fqdn, tasks.MachineCheck.Scan.to_int(option))
+#            TaskManager.add(task)
 
             if not machine.collect_system_information:
                 return InfoMessage(
                     "Collecting system information is disabled for this machine."
                 ).as_json
+
 
         except Exception as e:
             return ErrorMessage(str(e)).as_json

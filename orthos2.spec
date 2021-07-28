@@ -12,7 +12,7 @@
 # Please submit bugfixes or comments via https://bugs.opensuse.org/
 
 Name:           orthos2
-Version:        0.1
+Version:        0.1+git20210714.216cadb
 Release:        0
 Summary:        Machine administration
 Url:            https://github.com/openSUSE/orthos2
@@ -24,6 +24,7 @@ License:        GPL-2.0-or-later
 Source:         orthos2-%{version}.tar.gz
 BuildArch:      noarch
 
+BuildRequires:  fdupes
 BuildRequires:  systemd-rpm-macros
 # For /etc/nginx{,/conf.d} creation
 BuildRequires:  nginx
@@ -52,8 +53,12 @@ Requires:  python3-paramiko
 Requires:  python3-djangorestframework
 Requires:  python3-validators
 Requires:  python3-netaddr
+Requires:  python3-psycopg2
 %endif
+# Needed to install /etc/logrotate.d/orthos2
+Requires:  logrotate
 Requires:  nginx
+Requires:  ansible
 Requires:  uwsgi
 Requires:  uwsgi-python3
 Requires:  /sbin/service
@@ -80,16 +85,37 @@ Requires:       python3-pytz
 Command line client that provides a shell like command
 line interface based on readline.
 
+%package docs
+Summary:        HTML documentation for orthos2
+BuildRequires:  python3-django >= 3.2
+BuildRequires:  python3-django-extensions
+BuildRequires:  python3-paramiko
+BuildRequires:  python3-djangorestframework
+BuildRequires:  python3-validators
+BuildRequires:  python3-netaddr
+BuildRequires:  python3-sphinx_rtd_theme
+
+%define orthos_web_docs /srv/www/orthos2/docs
+
+%description docs
+HTML documentation that can be put into a web servers htdocs directory for publishing.
+
 %prep
 %setup
 
 %build
 %py3_build
+cd docs
+make html
 
 
 %install
 %py3_install
 
+# docs
+mkdir -p %{buildroot}%{orthos_web_docs}
+cp -r docs/_build/html/* %{buildroot}%{orthos_web_docs}
+%fdupes %{buildroot}/%{orthos_web_docs}
 
 #systemd
 %if 0%{?suse_version}
@@ -97,7 +123,6 @@ mkdir -p %{buildroot}%{_sbindir}
 ln -sf service %{buildroot}%{_sbindir}/rcorthos2_taskmanager
 ln -sf service %{buildroot}%{_sbindir}/rcorthos2
 %endif
-mkdir -p /%{buildroot}/srv/www/orthos2
 # This should go into setup.py - but copying tons of non *.py files recursively
 # is cumbersome...
 cp -r orthos2/frontend/static /%{buildroot}/%{python3_sitelib}/orthos2/frontend
@@ -113,11 +138,12 @@ ln -sr %{buildroot}/usr/share/orthos2/taskmanager_migrations %{buildroot}%{pytho
 ln -sr %{buildroot}/usr/share/orthos2/frontend_migrations %{buildroot}%{python3_sitelib}/orthos2/frontend/migrations
 ln -sr %{buildroot}/usr/share/orthos2/api_migrations %{buildroot}%{python3_sitelib}/orthos2/api/migrations
 
+cp -r ansible %{buildroot}/usr/lib/orthos2/ansible
 
 %pre
 getent group orthos >/dev/null || groupadd -r orthos
 getent passwd orthos >/dev/null || \
-    useradd -r -g orthos -d /home/orthos -s /sbin/nologin \
+    useradd -r -g orthos -d /var/lib/orthos2 -s /bin/bash \
     -c "Useful comment about the purpose of this account" orthos
 %service_add_pre orthos2.service orthos2_taskmanager.service orthos2.socket
 
@@ -148,6 +174,8 @@ getent passwd orthos >/dev/null || \
 %dir %{_sysconfdir}/orthos2
 %config %{_sysconfdir}/orthos2/orthos2.ini
 %config %{_sysconfdir}/orthos2/settings
+%config %{_sysconfdir}/logrotate.d/orthos2
+%config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_docs_nginx.conf
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
 %dir /usr/lib/orthos2
 %dir /usr/lib/orthos2/scripts
@@ -164,18 +192,29 @@ getent passwd orthos >/dev/null || \
 %attr(755,orthos,orthos) /usr/share/orthos2/taskmanager_migrations
 %attr(755,orthos,orthos) /usr/share/orthos2/frontend_migrations
 %attr(755,orthos,orthos) /usr/share/orthos2/api_migrations
+%attr(644,orthos,orthos) /usr/lib/orthos2/ansible/ansible.cfg
+%attr(644,orthos,orthos) /usr/lib/orthos2/ansible/inventory.template
+%attr(644,orthos,orthos) /usr/lib/orthos2/ansible/roles
+%attr(644,orthos,orthos) /usr/lib/orthos2/ansible/site.yml
 
 /usr/lib/orthos2/*
 %attr(755,orthos,orthos) %dir /srv/www/orthos2
 %ghost %dir /run/%{name}
+%ghost %dir /run/%{name}/ansible
+%attr(775,orthos,orthos) %dir /usr/lib/orthos2/ansible
 %attr(755,orthos,orthos) %dir /var/log/orthos2
 %attr(775,orthos,orthos) %dir /var/lib/orthos2
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/archiv
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/orthos-vm-images
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/database
+%attr(700,orthos,orthos) %dir /var/lib/orthos2/.ssh
 
 %files client
 %attr(755, root, root) /usr/bin/orthos2
+
+%files docs
+%dir %{orthos_web_docs}
+%{orthos_web_docs}/*
 
 %changelog
 * Tue Sep 15 00:26:20 UTC 2020 - Thomas Renninger <trenn@suse.de>

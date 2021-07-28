@@ -15,7 +15,7 @@ class BaseManager(models.Manager):
             obj = ServerConfig.objects.get(key=key)
             return obj.value
         except Exception as e:
-            logger.error("Key '{}': {}".format(key, e))
+            logger.exception("Key '{}': {}".format(key, e))
         return None
 
     def bool_by_key(self, key):
@@ -31,7 +31,7 @@ class BaseManager(models.Manager):
             if obj.value.lower() == 'bool:true':
                 return True
         except Exception as e:
-            logger.error("Key '{}': {}".format(key, e))
+            logger.exception("Key '{}': {}".format(key, e))
         return False
 
     def list_by_key(self, key, delimiter=','):
@@ -44,7 +44,7 @@ class BaseManager(models.Manager):
             else:
                 return []
         except Exception as e:
-            logger.error("Key '{}': {}".format(key, e))
+            logger.exception("Key '{}': {}".format(key, e))
         return None
 
     def get_smtp_relay(self):
@@ -121,7 +121,7 @@ class SSHManager(BaseManager):
         except ServerConfig.DoesNotExist:
             logger.warning("No SSH timeout entry found")
         except ValueError:
-            logger.error("SSH timeout value is no number/integer")
+            logger.exception("SSH timeout value is no number/integer")
         return None
 
     def get_remote_scripts_directory(self):
@@ -166,8 +166,6 @@ class ServerConfig(models.Model):
         max_length=512,
         blank=True
     )
-
-    created = models.DateTimeField('created at', auto_now=True)
 
     objects = BaseManager()
     ssh = SSHManager()

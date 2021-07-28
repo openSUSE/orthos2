@@ -589,10 +589,10 @@ The Orthos Client has many objects that you can query from the machine objects i
 self-explanatory and can be used for queries as described above under the QUERY command.
 
 - A: active, administrative, annotation_created, annotation_reporter, annotation_text, architecture
-- B: bios_version
+- B: bios_version, bios_date
 - C: check_connectivity, collect_system_information, comment, contact_email, cpu_cores, cpu_flags, cpu_id,
   cpu_model, cpu_physical, cpu_speed, cpu_threads, created
-- D: dhcp_filename, dhcpv4_write, dhcpv6_write, disk_primary_size, disk_type, dmesg, dmidecode, domain
+- D: dhcp_filename, disk_primary_size, disk_type, dmesg, dmidecode, domain
 - E: efi, enclosure, enclosure_platform, enclosure_vendor
 - F: fqdn, fqdn_domain
 - G: group

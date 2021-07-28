@@ -17,37 +17,42 @@ class System(models.Model):
                 'pk',
                 -1
             )
-            cls.REMOTEPOWER = safe_get_or_default(
-                System,
-                'name',
-                'RemotePower',
-                'pk',
-                -1
-            )
-            cls.BMC = safe_get_or_default(
-                System,
-                'name',
-                'BMC',
-                'pk',
-                -1
-            )
+
+    help_text="Describes the system type of a machine"
 
     name = models.CharField(
         max_length=200,
         blank=False,
-        unique=True
+        unique=True,
+        help_text="What kind of system are these machines?"
     )
 
     virtual = models.BooleanField(
         default=False,
         null=False,
-        blank=False
+        blank=False,
+        help_text="Are these machines virtual systems (can have a hypervisor)?"
+    )
+
+    allowBMC = models.BooleanField(
+        default=False,
+        null=False,
+        blank=False,
+        help_text="Can a network interface be assigned to such a system serving as BMC?"
+    )
+
+    allowHypervisor = models.BooleanField(
+        default=False,
+        null=False,
+        blank=False,
+        help_text="Can such systems host virtual machines?"
     )
 
     administrative = models.BooleanField(
         default=False,
         null=False,
-        blank=False
+        blank=False,
+        help_text="Are these machines administrative systems (cannot be installed or reserved)?"
     )
 
     created = models.DateTimeField('created at', auto_now=True)

@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'orthos2.frontend.apps.FrontendConfig',
     'orthos2.taskmanager.apps.TaskManagerConfig',
     'orthos2.utils.apps.UtilsConfig',
-    'django.contrib.admin',
+    #  'django.contrib.admin',
+    'orthos2.admin.apps.AdminConfig',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -74,7 +75,7 @@ ROOT_URLCONF = 'orthos2.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'), "/usr/lib/orthos2/ansible"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -105,7 +106,7 @@ if os.getenv('ORTHOS_DEV'):
 
 if CUR_USER != RUN_AS_USER:
     logging.error("You must run as user: {}, not as user: {}".
-                 format(RUN_AS_USER, CUR_USER))
+                  format(RUN_AS_USER, CUR_USER))
     exit(1)
 
 # Password validation
@@ -160,8 +161,6 @@ AUTH_LDAP_USER_SEARCH = LDAPSearch(
 )
 AUTH_LDAP_USER_ATTR_MAP = {
     'username': 'uid',
-    'first_name': 'givenName',
-    'last_name': 'sn',
     'email': 'mail',
 }
 AUTH_LDAP_ALWAYS_UPDATE_USER = True
@@ -288,6 +287,26 @@ SUPPORT_CONTACT = 'tbd@domain.tld'
 VERSION = '2.0.0'
 SYSTEM_USER = 'orthos'
 
+REMOTEPOWER_TYPES = [
+                        {
+                            'fence': 'virsh',
+                            'device': 'hypervisor',
+                            'username': 'root',
+                            'identity_file': '/var/lib/orthos2/.ssh/master'
+                        },
+                        {
+                            'fence': 'ipmitool',
+                            'device': 'bmc',
+                            'username': 'xxx',
+                            'password': 'XXX',
+                        },
+                        {
+                            'fence': 'raritan',
+                            'device': 'rpower_device',
+                            'username': 'xxx',
+                            'password': 'XXX',
+                            'port': True
+                        }]
 
 # Check for alternative settings file. If this file exists, we use it and evaluate the code.
 # This is intended to be used for production mode.

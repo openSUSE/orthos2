@@ -1,0 +1,5 @@
+- hosts: all
+  any_errors_fatal: true
+  roles:
+    - add_custom_facts
+    - get_machine_information

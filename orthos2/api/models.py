@@ -165,26 +165,8 @@ class QueryField:
             'post': lambda x:
                 Machine.objects.get(pk=x).fqdn
         },
-        'serial_cscreen_server': {
-            'field': SerialConsole._meta.get_field('cscreen_server'),
-            'related_name': 'serialconsole',
-            'verbose_name': 'CScreen server',
-            'pre': lambda x:
-                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x,
-            'post': lambda x:
-                Machine.objects.get(pk=x).fqdn
-        },
-        'serial_management_bmc': {
-            'field': SerialConsole._meta.get_field('management_bmc'),
-            'related_name': 'serialconsole',
-            'verbose_name': 'Management BMC',
-            'pre': lambda x:
-                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x,
-            'post': lambda x:
-                Machine.objects.get(pk=x).fqdn
-        },
         'serial_type': {
-            'field': SerialConsole._meta.get_field('type'),
+            'field': SerialConsole._meta.get_field('stype'),
             'related_name': 'serialconsole',
             'verbose_name': 'Serial console',
             'pre': lambda x:
@@ -193,7 +175,7 @@ class QueryField:
                 SerialConsoleType.Type.to_str(x)
         },
         'sconsole': {
-            'field': SerialConsole._meta.get_field('type'),
+            'field': SerialConsole._meta.get_field('stype'),
             'related_name': 'serialconsole',
             'verbose_name': 'Serial console',
             'pre': lambda x:
@@ -211,15 +193,15 @@ class QueryField:
             'related_name': 'serialconsole',
             'verbose_name': 'Command',
         },
-        'serial_device': {
-            'field': SerialConsole._meta.get_field('device'),
-            'related_name': 'serialconsole',
-            'verbose_name': 'Device',
-        },
         'serial_kernel_device': {
             'field': SerialConsole._meta.get_field('kernel_device'),
             'related_name': 'serialconsole',
-            'verbose_name': 'Device',
+            'verbose_name': 'Kernel Device',
+        },
+        'serial_kernel_device_num': {
+            'field': SerialConsole._meta.get_field('kernel_device_num'),
+            'related_name': 'serialconsole',
+            'verbose_name': 'Kernel Device number',
         },
         'serial_port': {
             'field': SerialConsole._meta.get_field('port'),
@@ -233,15 +215,15 @@ class QueryField:
         },
 
         # RemotePower
-        'rpower_management_bmc': {
-            'field': RemotePower._meta.get_field('management_bmc'),
-            'related_name': 'remotepower',
-            'verbose_name': 'Management BMC',
-            'pre': lambda x:
-                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x,
-            'post': lambda x:
-                Machine.objects.get(pk=x).fqdn
-        },
+       # 'management_bmc': {
+       #     'field': Machine._meta.get_field('management_bmc'),
+       #     'related_name': 'remotepower',
+       #     'verbose_name': 'Management BMC',
+       #     'pre': lambda x:
+       #         Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x,
+       #     'post': lambda x:
+       #         Machine.objects.get(pk=x).fqdn
+       # },
         'rpower_power_device': {
             'field': RemotePower._meta.get_field('remote_power_device'),
             'related_name': 'remotepower',
@@ -251,34 +233,31 @@ class QueryField:
             'post': lambda x:
                 Machine.objects.get(pk=x).fqdn
         },
-        'rpower_device': {
-            'field': RemotePower._meta.get_field('device'),
-            'related_name': 'remotepower',
-            'verbose_name': 'Device',
-        },
         'rpower_port': {
             'field': RemotePower._meta.get_field('port'),
             'related_name': 'remotepower',
             'verbose_name': 'Port',
         },
-        'rpower_type': {
-            'field': RemotePower._meta.get_field('type'),
-            'related_name': 'remotepower',
-            'verbose_name': 'Remotepower',
-            'pre': lambda x:
-                RemotePower.Type.to_int(x) if isinstance(x, str) else x,
-            'post': lambda x:
-                RemotePower.Type.to_str(x)
-        },
-        'rpower': {
-            'field': RemotePower._meta.get_field('type'),
-            'related_name': 'remotepower',
-            'verbose_name': 'Remotepower',
-            'pre': lambda x:
-                RemotePower.Type.to_int(x) if isinstance(x, str) else x,
-            'post': lambda x:
-                RemotePower.Type.to_str(x)
-        },
+# TODO: adapt this to new implementation
+
+#        'rpower_type': {   # noqa
+#            'field': RemotePower._meta.get_field('type'),
+#            'related_name': 'remotepower',
+#            'verbose_name': 'Remotepower',
+#            'pre': lambda x:
+#                RemotePower.Type.to_int(x) if isinstance(x, str) else x,
+#            'post': lambda x:
+#                RemotePower.Type.to_str(x)
+#        },
+#        'rpower': {
+#            'field': RemotePower._meta.get_field('type'),
+#            'related_name': 'remotepower',
+#            'verbose_name': 'Remotepower',
+#            'pre': lambda x:
+#                RemotePower.Type.to_int(x) if isinstance(x, str) else x,
+#            'post': lambda x:
+#                RemotePower.Type.to_str(x)
+#        },
 
         # Installation
         'inst_active': {

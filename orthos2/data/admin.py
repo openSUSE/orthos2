@@ -9,14 +9,24 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
-from orthos2.utils.misc import DHCPRecordOption
 
-from .models import (Annotation, Architecture, Domain, Enclosure, Installation,
-                     Machine, MachineGroup, MachineGroupMembership,
-                     NetworkInterface, Platform, RemotePower, SerialConsole,
-                     SerialConsoleType, ServerConfig, System, Vendor,
+from orthos2.utils.remotepowertype import RemotePowerType
+
+from .models import (Annotation, Architecture, BMC, Domain, Enclosure, Installation,
+                     Machine, MachineGroup, MachineGroupMembership, DomainAdmin,
+                     NetworkInterface, Platform, RemotePower, RemotePowerDevice,
+                     SerialConsole, SerialConsoleType, ServerConfig, System, Vendor,
                      VirtualizationAPI, is_unique_mac_address, validate_dns,
                      validate_mac_address)
+
+
+class BMCInline(admin.StackedInline):
+    model = BMC
+    extra = 0
+    def get_formset(self, request, obj=None, **kwargs):
+        """Set machine object for `formfield_for_foreignkey` method."""
+        self.machine = obj
+        return super(BMCInline, self).get_formset(request, obj, **kwargs)
 
 
 class SerialConsoleInline(admin.StackedInline):
@@ -26,27 +36,15 @@ class SerialConsoleInline(admin.StackedInline):
     verbose_name = 'Serial Console'
     verbose_name_plural = 'Serial Console'
     fields = (
-        'type',
-        'cscreen_server',
+        'stype',
         'baud_rate',
         'kernel_device',
-        'management_bmc',
+        'kernel_device_num',
         'console_server',
-        'device',
         'port',
         'command',
         'comment'
     )
-
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        """Do only show management BMC belonging to the machine itself."""
-        if self.machine and db_field.name == 'management_bmc':
-            kwargs['queryset'] = self.machine.enclosure.get_bmc_list()
-        return super(SerialConsoleInline, self).formfield_for_foreignkey(
-            db_field,
-            request,
-            **kwargs
-        )
 
     def get_formset(self, request, obj=None, **kwargs):
         """Set machine object for `formfield_for_foreignkey` method."""
@@ -54,27 +52,46 @@ class SerialConsoleInline(admin.StackedInline):
         return super(SerialConsoleInline, self).get_formset(request, obj, **kwargs)
 
 
-class RemotePowerInline(admin.StackedInline):
+class RemotePowerInlineRpower(admin.StackedInline):
     model = RemotePower
     extra = 0
     fk_name = 'machine'
-    verbose_name = 'Remote Power'
-    verbose_name_plural = 'Remote Power'
-
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        """Do only show management BMC belonging to the machine itself."""
-        if self.machine and db_field.name == 'management_bmc':
-            kwargs['queryset'] = self.machine.enclosure.get_bmc_list()
-        return super(RemotePowerInline, self).formfield_for_foreignkey(
-            db_field,
-            request,
-            **kwargs
-        )
+    verbose_name = 'Remote Power via PowerSwitch Device'
+    verbose_name_plural = 'Remote Power via PowerSwitch Device'
+    fields = ["port", "remote_power_device", "options"]
 
     def get_formset(self, request, obj=None, **kwargs):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
-        return super(RemotePowerInline, self).get_formset(request, obj, **kwargs)
+        return super(RemotePowerInlineRpower, self).get_formset(request, obj, **kwargs)
+
+
+class RemotePowerInlineBMC(admin.StackedInline):
+    model = RemotePower
+    extra = 0
+    fk_name = 'machine'
+    verbose_name = 'Remote Power via BMC'
+    verbose_name_plural = 'Remote Power via BMC'
+    fields = ["options"]
+
+    def get_formset(self, request, obj=None, **kwargs):
+        """Set machine object for `formfield_for_foreignkey` method."""
+        self.machine = obj
+        return super(RemotePowerInlineBMC, self).get_formset(request, obj, **kwargs)
+
+
+class RemotePowerInlineHypervisor(admin.StackedInline):
+    model = RemotePower
+    extra = 0
+    fk_name = 'machine'
+    verbose_name = 'Remote Power via Hypervisor'
+    verbose_name_plural = 'Remote Power via Hypervisor'
+    fields = ["fence_name", "options"]
+
+    def get_formset(self, request, obj=None, **kwargs):
+        """Set machine object for `formfield_for_foreignkey` method."""
+        self.machine = obj
+        return super(RemotePowerInlineHypervisor, self).get_formset(request, obj, **kwargs)
 
 
 class NetworkInterfaceInline(admin.TabularInline):
@@ -117,7 +134,9 @@ class MachineAdminForm(forms.ModelForm):
 
     mac_address = forms.CharField(
         label='MAC address',
-        validators=[validate_mac_address]
+        validators=[validate_mac_address],
+        help_text="The MAC address of the main network interface",
+        required=False
     )
 
     class Meta:
@@ -127,10 +146,6 @@ class MachineAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         """Set primary MAC address and virtualization API type in the form fields."""
         instance = kwargs.get('instance', None)
-
-        if instance:
-            if isinstance(instance.virtualization_api, VirtualizationAPI):
-                instance.virtualization_api = instance.virtualization_api.get_type()
 
         super(MachineAdminForm, self).__init__(*args, **kwargs)
 
@@ -142,7 +157,6 @@ class MachineAdminForm(forms.ModelForm):
     def save(self, commit=True):
         machine = super(MachineAdminForm, self).save(commit=False)
         machine.mac_address = self.cleaned_data['mac_address']
-
         if commit:
             machine.save()
         return machine
@@ -156,7 +170,7 @@ class MachineAdminForm(forms.ModelForm):
         else:
             exclude = []
 
-        if not is_unique_mac_address(mac_address, exclude=exclude):
+        if mac_address and not is_unique_mac_address(mac_address, exclude=exclude):
             raise ValidationError(
                 "MAC address '{}' is already used by '{}'!".format(
                     mac_address,
@@ -177,7 +191,6 @@ class MachineAdminForm(forms.ModelForm):
             # new machine
             if Machine.objects.filter(fqdn=fqdn):
                 raise ValidationError("FQDN is already in use!")
-
         return fqdn
 
     def clean(self):
@@ -195,8 +208,28 @@ class MachineAdminForm(forms.ModelForm):
                 "Connectivity check must set to 'Full'!"
             )
 
-        return cleaned_data
+        hypervisor = self.cleaned_data.get('hypervisor')
+        system = self.cleaned_data.get('system')
+        if hypervisor and System.objects.filter(name=system, virtual=False):
+            self.add_error('system', "System type is not virtual. Only Virtual Machines may have a hypervisor")
+            self.add_error('hypervisor', "System type {} is not virtual. Only Virtual Machines may have " \
+                           "a hypervisor".format(system))
 
+        vm_dedicated_host = self.cleaned_data.get('vm_dedicated_host')
+        if vm_dedicated_host and System.objects.filter(name=system, allowHypervisor=False):
+            self.add_error('system', "System type cannot serve as a hypervisor")
+            self.add_error('vm_dedicated_host', "System cannot be set as dedicated VM host")
+
+        mac = self.cleaned_data.get('mac_address')
+        unknown_mac = self.cleaned_data.get('unknown_mac')
+
+        if mac and unknown_mac:
+            self.add_error('unknown_mac', "MAC unknown must not be selected when a MAC is provided")
+            self.add_error('mac_address', "MAC unknown must not be selected when a MAC is provided")
+        if not mac and not unknown_mac:
+            self.add_error('unknown_mac', "Either specify a MAC, or confirm that the MAC is not yet known")
+            self.add_error('mac_address', "Either specify a MAC, or confirm that the MAC is not yet known")
+        return cleaned_data
 
 class MachineArchitectureFilter(admin.SimpleListFilter):
     title = 'Architecture'
@@ -291,12 +324,13 @@ class MachineAdmin(admin.ModelAdmin):
         'enclosure',
         'architecture',
         'system',
-        'group',
-        'write_dhcpv4',
-        'write_dhcpv6',
-        'active'
+        'reserved_by',
+#        'group',
+#        'active'
     )
     list_per_page = 50
+    show_full_result_count = True
+    list_max_show_all = 10000
     search_fields = ('fqdn',)
     list_filter = (
         MachineArchitectureFilter,
@@ -331,118 +365,39 @@ class MachineAdmin(admin.ModelAdmin):
                     'administrative',
                     'nda'
                 ),
-                'active'
+                'active',
+                'unknown_mac'
             )
         }),
-        ('VIRTUALIZATION', {
+        ('VIRTUALIZATION SERVER', {
             'fields': (
                 (
                     'vm_dedicated_host',
                     'vm_auto_delete'
                 ),
                 'vm_max',
-                'virtualization_api'
-            )
+                'virt_api_int',
+            ),
+        }),
+        ('VIRTUALIZATION CLIENT', {
+            'fields': (
+                'hypervisor',
+            ),
         }),
         ('MACHINE CHECKS', {
             'fields': (
                 'check_connectivity',
                 (
-                    'collect_system_information'
+                    'collect_system_information',
                 )
             )
         }),
         ('DHCP', {
             'fields': (
-                'dhcpv4_write',
-                'dhcpv6_write',
-                'dhcp_filename'
+                'dhcp_filename',
             ),
         })
     )
-
-    def write_dhcpv4(self, machine):
-        """
-        Show whether an DHCPv4 record is being written.
-
-        The hierarchy is:
-            Machine > [Group >] Architecture
-
-        If a machine is in a machine group, the machine group setting decides whether to write a
-        DHCP group file (e.g. 'group_foo.conf').
-
-        If a machine is not in a machine group, the respective machine architecture decides whether
-        to write an architecture DHCP file (e.g. 'x86_64.conf').
-
-        If so, the machine setting decides whether the entry exists, does not exist or DHCP
-        requests are ignored for this machine.
-        """
-        from django.contrib.admin.templatetags.admin_list import _boolean_icon
-
-        reasons_disabled = []
-
-        if machine.group:
-            if not machine.group.dhcpv4_write:
-                reasons_disabled.append('excluded by group')
-
-        elif not machine.architecture.dhcpv4_write:
-            reasons_disabled.append('excluded by architecture')
-
-        if machine.dhcpv4_write == DHCPRecordOption.EXCLUDE:
-            reasons_disabled.append('excluded by machine')
-
-        elif machine.dhcpv4_write == DHCPRecordOption.IGNORE:
-            reasons_disabled.append('ignore machine')
-
-        if not reasons_disabled:
-            return _boolean_icon(True)
-
-        return '{} <span class="help">({})</span>'.format(
-            _boolean_icon(False),
-            ', '.join(reasons_disabled)
-        )
-    write_dhcpv4.allow_tags = True
-
-    def write_dhcpv6(self, machine):
-        """
-        Show whether an DHCPv6 record is being written. The hierarchy is:
-
-        Machine > [Group >] Architecture
-
-        If a machine is in a machine group, the machine group setting decides whether to write a
-        DHCP group file (e.g. 'group_foo.conf').
-
-        If a machine is not in a machine group, the respective machine architecture decides whether
-        to write an architecture DHCP file (e.g. 'x86_64.conf').
-
-        If so, the machine setting decides whether the entry exists, does not exist or DHCP
-        requests are ignored for this machine.
-        """
-        from django.contrib.admin.templatetags.admin_list import _boolean_icon
-
-        reasons_disabled = []
-
-        if machine.group:
-            if not machine.group.dhcpv6_write:
-                reasons_disabled.append('excluded by group')
-
-        elif not machine.architecture.dhcpv6_write:
-            reasons_disabled.append('excluded by architecture')
-
-        if machine.dhcpv6_write == DHCPRecordOption.EXCLUDE:
-            reasons_disabled.append('excluded by machine')
-
-        elif machine.dhcpv6_write == DHCPRecordOption.IGNORE:
-            reasons_disabled.append('ignore machine')
-
-        if not reasons_disabled:
-            return _boolean_icon(True)
-
-        return '{} <span class="help">({})</span>'.format(
-            _boolean_icon(False),
-            ', '.join(reasons_disabled)
-        )
-    write_dhcpv6.allow_tags = True
 
     def get_queryset(self, request):
         """
@@ -481,23 +436,27 @@ class MachineAdmin(admin.ModelAdmin):
         return super(MachineAdmin, self).add_view(request, form_url, extra_context)
 
     def get_fieldsets(self, request, machine):
-        """Do not show 'VIRTUALIZATION' fieldset for administrative systems."""
+        """Do not show 'VIRTUALIZATION' client/server forms if not appropriate"""
         fieldsets = super(MachineAdmin, self).get_fieldsets(request)
-
-        if machine and machine.system.administrative:
+        if machine:
             fieldsets_ = ()
-
             for fieldset in fieldsets:
-                if fieldset[0] != 'VIRTUALIZATION':
-                    fieldsets_ += (fieldset,)
-
+                if fieldset[0] == 'VIRTUALIZATION SERVER':
+                    if not machine.system.allowHypervisor:
+                        continue
+                if fieldset[0] == 'VIRTUALIZATION CLIENT':
+                    if not machine.system.virtual:
+                        continue
+                fieldsets_ += (fieldset,)
             fieldsets = fieldsets_
-
         return fieldsets
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         """Return changes view with inlines for non-administrative systems."""
         machine = Machine.objects.get(pk=object_id)
+        fence = None
+        if machine.has_remotepower():
+            fence = RemotePowerType.from_fence(machine.remotepower.fence_name)
 
         if not self.get_object(request, object_id):
             messages.add_message(
@@ -507,64 +466,55 @@ class MachineAdmin(admin.ModelAdmin):
                 extra_tags='error'
             )
 
-        if machine.system.administrative:
-            self.inlines = (NetworkInterfaceInline,)
+        self.inlines = (NetworkInterfaceInline, SerialConsoleInline)
+
+        if machine.bmc_allowed():
+            self.inlines += (BMCInline,)
+            if hasattr(machine, 'bmc'):
+                if not fence or fence.device == "bmc":
+                    self.inlines += (RemotePowerInlineBMC,)
+        if machine.is_virtual_machine():
+            self.inlines += (RemotePowerInlineHypervisor,)
         else:
-            self.inlines = (
-                SerialConsoleInline,
-                RemotePowerInline,
-                NetworkInterfaceInline,
-                AnnotationInline
-            )
+            # Only show rpower device to add/modify if we do not
+            # have one yet or if it's a rpower_device already
+            if not fence or fence.device == "rpower_device":
+                self.inlines += (RemotePowerInlineRpower,)
+
+        if not machine.system.administrative:
+            self.inlines += (AnnotationInline,)
 
         return super(MachineAdmin, self).change_view(request, object_id, form_url, extra_context)
+
+    def save_formset(self, request, form, formset, change):
+        formset.save()
+        machine = form.save(commit=False)
+        if machine.bmc_allowed() and hasattr(machine, 'bmc') and not hasattr(machine, 'remotepower'):
+            machine.remotepower = RemotePower(machine.bmc.fence_name, machine, machine.bmc)
+            machine.bmc.save()
+            machine.remotepower.save()
+            machine.save()
 
 
 admin.site.register(Machine, MachineAdmin)
 
+class ArchsInline(admin.TabularInline):
+    model = DomainAdmin
+    fields = ('arch', 'contact_email',)
 
 class DomainAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'cobbler_server_list',
         'tftp_server',
-        'get_machine_count',
-        'setup_support'
+        'cscreen_server'
     )
     # enables nifty unobtrusive JavaScript “filter” interface
     filter_horizontal = (
         'cobbler_server',
-        'setup_architectures',
-        'setup_machinegroups'
+        'supported_architectures',
     )
-
-    def setup_support(self, obj):
-        """Return list of setup supported architectures/machine groups as string."""
-        architectures = 'Architectures: '
-        machinegroups = 'Machine Groups: '
-        link_pattern = '<a href="{}" class="text-muted">{}</a>, '
-
-        if obj.setup_architectures.all().count() == 0:
-            architectures += '-'
-        else:
-            for architecture in obj.setup_architectures.all():
-                architectures += link_pattern.format(
-                    reverse('admin:data_architecture_change', args=[architecture.pk]),
-                    architecture.name
-                )
-            architectures = architectures.rstrip(' ,')
-
-        if obj.setup_machinegroups.all().count() == 0:
-            machinegroups += '-'
-        else:
-            for machinegroup in obj.setup_machinegroups.all():
-                machinegroups += link_pattern.format(
-                    reverse('admin:data_machinegroup_change', args=[machinegroup.pk]),
-                    machinegroup.name
-                )
-            machinegroups = machinegroups.rstrip(' ,')
-
-        return format_html('{}<br/>{}'.format(architectures, machinegroups))
+    inlines = (ArchsInline, )
 
     def cobbler_server_list(self, obj):
         """Return DHCP server list as string."""
@@ -593,7 +543,7 @@ class EnclosureAdmin(admin.ModelAdmin):
         'location_rack',
         'location_rack_position'
     )
-    list_display = ('name', 'machine_count', 'platform_name', 'bmc_list')
+    list_display = ('name', 'machine_count', 'platform_name')
     search_fields = ('name',)
 
     def machine_count(self, obj):
@@ -607,12 +557,15 @@ class EnclosureAdmin(admin.ModelAdmin):
             return platform.name
         return None
 
-    def bmc_list(self, obj):
-        """Return string with comma seperated list of all BMC FQDNs."""
-        return ', '.join([bmc.fqdn for bmc in obj.get_bmc_list()])
-
 
 admin.site.register(Enclosure, EnclosureAdmin)
+
+
+class RemotePowerDeviceAdmin(admin.ModelAdmin):
+    list_display = ['fqdn']
+
+
+admin.site.register(RemotePowerDevice, RemotePowerDeviceAdmin)
 
 
 class ServerConfigAdmin(admin.ModelAdmin):
@@ -674,6 +627,9 @@ class PlatformAdmin(admin.ModelAdmin):
     list_display = ('name', 'get_vendor', 'get_enclosure_count', 'is_cartridge')
     list_per_page = 50
     search_fields = ('name',)
+    show_full_result_count = True
+    list_max_show_all = 1000
+
 
 
 admin.site.register(Platform, PlatformAdmin)
@@ -683,8 +639,6 @@ class ArchitectureAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'get_machine_count',
-        'dhcpv4_write',
-        'dhcpv6_write',
         'dhcp_filename'
     )
 
@@ -738,8 +692,6 @@ class MachineGroupAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'machines',
-        'dhcpv4_write',
-        'dhcpv6_write',
         'dhcp_filename'
     )
     inlines = (MachinesInline, MachineGroupMembershipInline)

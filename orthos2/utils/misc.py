@@ -15,18 +15,6 @@ from django.conf import settings
 logger = logging.getLogger('utils')
 
 
-class DHCPRecordOption:
-    WRITE = 0
-    IGNORE = 1
-    EXCLUDE = 2
-
-    CHOICE = (
-        (WRITE, 'Write DHCP record'),
-        (IGNORE, 'Ignore DHCP requests'),
-        (EXCLUDE, 'Exclude DHCP record')
-    )
-
-
 class Serializer:
 
     class Format:
@@ -78,7 +66,7 @@ def get_ip(fqdn, ip_version=4):
             elif address_family[0] == socket.AF_INET6:
                 ipv6.append(address_family[4][0])
     except (IndexError, socket.gaierror) as e:
-        logger.error("DNS lookup for '{}': NXDOMAIN (non-existing domain)".format(fqdn, str(e)))
+        logger.exception("DNS lookup for '{}': NXDOMAIN (non-existing domain)".format(fqdn, str(e)))
         return None
 
     if not ipv4:
@@ -127,12 +115,16 @@ def is_dns_resolvable(fqdn):
 
 def has_valid_domain_ending(fqdn, valid_endings):
     """
-    Check if FQDN has valid domain ending.
+    Check if FQDN has valid domain ending. This check can be bypassed if no
+    valid domain endings are given.
 
     Example:
         example.de
         example.com
     """
+    if valid_endings is None:
+        return True
+
     if isinstance(valid_endings, str):
         valid_endings = [valid_endings]
 
@@ -201,7 +193,7 @@ def send_email(to_addr, subject, message, from_addr=None):
         s.sendmail(msg['From'], [to_addr], msg.as_string())
         s.quit()
     except Exception:
-        logger.error("Something went wrong while sending E-Mail!")
+        logger.exception("Something went wrong while sending E-Mail!")
 
 
 def execute(command):
@@ -225,7 +217,7 @@ def execute(command):
         # stdout, stderr, exitcode
         result = data[0].decode('utf-8'), data[1].decode('utf-8'), process.returncode
     except FileNotFoundError:
-        logger.error("No such file or directory: {}".format(command))
+        logger.exception("No such file or directory: {}".format(command))
     except Exception as e:
         logger.exception(e)
 

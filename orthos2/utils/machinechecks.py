@@ -238,7 +238,7 @@ def get_hardware_information(fqdn):
         return machine_
 
     except Exception as e:
-        logger.error("{} ({})".format(fqdn, e))
+        logger.exception("{} ({})".format(fqdn, e))
         return False
     finally:
         if conn:
@@ -323,7 +323,7 @@ def get_networkinterfaces(fqdn):
         return interfaces
 
     except Exception as e:
-        logger.error("{} ({})".format(fqdn, e))
+        logger.exception("{} ({})".format(fqdn, e))
         return False
     finally:
         if conn:
@@ -435,7 +435,7 @@ def get_status_ip(fqdn):
         return machine_
 
     except Exception as e:
-        logger.error("{} ({})".format(fqdn, e))
+        logger.exception("{} ({})".format(fqdn, e))
         return False
     finally:
         if conn:
@@ -486,7 +486,7 @@ def get_installations(fqdn):
         return installations
 
     except Exception as e:
-        logger.error("{} ({})".format(fqdn, e))
+        logger.exception("{} ({})".format(fqdn, e))
         return False
     finally:
         if conn:

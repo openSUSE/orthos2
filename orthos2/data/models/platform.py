@@ -30,16 +30,6 @@ class Platform(models.Model):
         blank=True
     )
 
-    updated = models.DateTimeField(
-        'Updated at',
-        auto_now=True
-    )
-
-    created = models.DateTimeField(
-        'Created at',
-        auto_now_add=True
-    )
-
     def __str__(self):
         return self.name
 

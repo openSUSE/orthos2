@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+
+import json
+import subprocess
+import sys
+
+
+data = dict()
+
+command = ["hwinfo"]
+process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+data.update({"noargs":{"stdout": process.stdout.read(), "stderr":process.stderr.read()}})
+
+command = ["hwinfo", "--disk"]
+process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+data.update({"--disk":{"stdout": process.stdout.read(), "stderr":process.stderr.read()}})
+
+command = ["hwinfo", "--network"]
+process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+data.update({"--network":{"stdout": process.stdout.read(), "stderr":process.stderr.read()}})
+
+command = ["hwinfo", "--bios", "--block", "--bridge", "--cdrom", "--cpu",
+    "--disk", "--floppy", "--framebuffer", "--gfxcard" , "--hub", "--ide",
+    "--isapnp", "--isdn", "--keyboard", "--memory", "--monitor", "--mouse",
+    "--netcard", "--network", "--partition", "--pci", "--pcmcia", "--scsi",
+    "--smp", "--sound", "--sys", "--tape", "--tv", "--usb", "--usb-ctrl",
+    "--wlan"]
+process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+data.update({"full":{"stdout": process.stdout.read(), "stderr":process.stderr.read()}})
+
+json_string = json.dumps(data)
+sys.stdout.write(json_string)

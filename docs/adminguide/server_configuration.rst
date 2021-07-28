@@ -101,6 +101,8 @@ Activate/deactivate DHCPv6 server.
 List of valid network domain endings. All FQDN's must match at least one of these.
 Multiple endings can be separated by a comma.
 
+Leave empty if all domains should be accepted.
+
 Default: ``example.de, example.com``
 
 Example: ``example.de, example.com, example.bayern``

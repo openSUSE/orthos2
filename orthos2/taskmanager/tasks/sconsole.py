@@ -37,7 +37,9 @@ class RegenerateSerialConsole(Task):
                 raise Exception("Couldn't lock cscreen ('touch /dev/shm/.cscreenrc_allow_update')")
 
             new_content = ''
-            for serialconsole in SerialConsole.cscreen.get(cscreen_server):
+            machines = cscreen_server.fqdn_domain.machine_set.all()
+            consoles = [machine.serialconsole for machine in machines if hasattr(machine, 'serialconsole')]
+            for serialconsole in consoles:
                 new_content += serialconsole.get_comment_record() + '\n'
                 new_content += serialconsole.get_command_record() + '\n'
 
@@ -75,7 +77,7 @@ class RegenerateSerialConsole(Task):
                 if _errno == errno.ENOENT:
                     file_found = False
                     logging.warning("{}:{} not found - creating...".format(cscreen_server.fqdn,
-                                                                         screenrc_file))
+                                                                           screenrc_file))
                 else:
                     raise(e)
 

@@ -1,11 +1,11 @@
-import datetime
 import logging
 
-from orthos2.data.models import Machine
+from orthos2.data.models import Machine, Domain, DomainAdmin
 from django.conf import settings
+from django.utils import timezone
 from django.contrib.auth.models import User
 from orthos2.taskmanager.models import Task
-from orthos2.utils.misc import send_email
+from orthos2.utils.misc import send_email, get_domain
 
 logger = logging.getLogger('tasks')
 
@@ -92,7 +92,7 @@ Or use the following commandline interface command:
 
 For a serial console, establish a SSH login on {serialconsole_fqdn} and
 follow the instructions on the screen.""".format(
-                    serialconsole_fqdn=machine.serialconsole.cscreen_server.fqdn
+                    serialconsole_fqdn=machine.fqdn_domain.cscreen_server.fqdn
                 )
 
             message += """
@@ -130,7 +130,7 @@ class CheckReservationExpiration(Task):
 
     def execute(self):
         """Execute the task."""
-        today = datetime.date.today()
+        today = timezone.localdate()
 
         try:
             machine = Machine.objects.get(fqdn=self.fqdn)
@@ -139,7 +139,7 @@ class CheckReservationExpiration(Task):
                 return
 
             user = machine.reserved_by
-            delta = machine.reserved_until.date() - today
+            delta = timezone.localdate(machine.reserved_until) - today
 
             if delta.days > 5 or delta.days in {4, 3}:
                 logger.debug("{}d left for {}@{}".format(
@@ -251,3 +251,42 @@ Orthos""".format(
             logger.error("User not found: id={}".format(self.user_id))
         except Exception as e:
             logger.exception(e)
+
+
+
+class CheckForPrimaryNetwork(Task):
+    """
+    Checks if a machine has a primary Network interfaces.j
+    If not a mail is sent to the administrator
+    """
+
+    def __init__(self, fqdn):
+        self.fqdn = fqdn
+
+    def send_warning_mail(self, machine: Machine):
+        domain: Domain = Domain.objects.get(name=get_domain(self.fqdn))
+        subject = "{fqdn} has no primary MAC".format(fqdn=self.fqdn)
+        domain_admin: DomainAdmin = DomainAdmin.objects.get(domain=domain, arch=machine.architecture)
+        admin_mail = domain_admin.contact_email
+
+        message = """"Hi, {admin}
+the machine {fqdn} does not have a primary Networkinterface assigned.
+This happens when the MAC address of the primary interface is omitted during machine creation.
+Omitting the MAC is only intended as a temporary solution if the MAC is unknown prior to the first boot.
+Please enter a valid MAC address as soon as possible.
+
+Regards,
+Orthos
+""".format(fqdn=self.fqdn, admin=admin_mail.split('@')[0])
+        send_email(admin_mail, subject, message)
+
+
+    def execute(self):
+        try:
+            machine = Machine.objects.get(fqdn=self.fqdn)
+            if not machine.get_primary_networkinterface():
+                logger.debug("%s has no Primary Networkinterface, sending mail", self.fqdn)
+                self.send_warning_mail(machine)
+
+        except Machine.DoesNotExist:
+            logger.error("Machine %s does not exist", self.fqdn)

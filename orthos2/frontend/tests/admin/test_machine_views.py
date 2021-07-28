@@ -23,7 +23,6 @@ class ChangeView(WebTest):
         m1.fqdn = 'machine1.foo.bar.de'
         m1.mac_address = '01:AB:22:33:44:55'
         m1.architecture_id = Architecture.Type.X86_64
-        m1.system_id = System.Type.BAREMETAL
 
         m1.save()
 
@@ -32,7 +31,6 @@ class ChangeView(WebTest):
         m2.fqdn = 'machine2.foo.bar.de'
         m2.mac_address = '02:AB:22:33:44:55'
         m2.architecture_id = Architecture.Type.X86_64
-        m2.system_id = System.Type.BMC
 
         m2.save()
 

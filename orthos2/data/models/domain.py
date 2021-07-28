@@ -52,28 +52,22 @@ class Domain(models.Model):
         limit_choices_to={'administrative': True}
     )
 
-    setup_architectures = models.ManyToManyField(
+    cscreen_server = models.ForeignKey(
+        'data.Machine',
+        verbose_name='CScreen server',
+        related_name='+',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        limit_choices_to={'administrative': True},
+    )
+
+    supported_architectures = models.ManyToManyField(
         'data.Architecture',
-        related_name='setup_domains',
-        verbose_name='Setup architectures',
-        blank=True
-    )
-
-    setup_machinegroups = models.ManyToManyField(
-        'data.MachineGroup',
-        related_name='setup_domains',
-        verbose_name='Setup machine groups',
-        blank=True
-    )
-
-    updated = models.DateTimeField(
-        'Updated at',
-        auto_now=True
-    )
-
-    created = models.DateTimeField(
-        'Created at',
-        auto_now_add=True
+        related_name='supported_domains',
+        verbose_name='Supported architectures',
+        through='DomainAdmin',
+        blank=False
     )
 
     def __str__(self):
@@ -94,7 +88,7 @@ class Domain(models.Model):
         return self.machine_set.count()
     get_machine_count.short_description = 'Machines'
 
-    def get_setup_records(self, architecture, machinegroup=None, grouped=True, delimiter=':'):
+    def get_setup_records(self, architecture, grouped=True, delimiter=':'):
         """
         Collect domain and architecture or machine group specific setup records.
 
@@ -157,7 +151,6 @@ class Domain(models.Model):
         def grouping(records):
             """Group records for HTML form."""
 
-            
         if not self.tftp_server:
             logger.warning("No TFTP server available for '{}'".format(self.name))
             return {}
@@ -165,8 +158,7 @@ class Domain(models.Model):
         list_command_template = ServerConfig.objects.by_key('setup.list.command')
 
         context = Context({
-            'architecture': architecture,
-            'machinegroup': machinegroup
+            'architecture': architecture
         })
         list_command = Template(list_command_template).render(context)
 
@@ -223,13 +215,22 @@ class Domain(models.Model):
 
         return records
 
-    def is_valid_setup_choice(self, choice, architecture, machinegroup=None):
+    def is_valid_setup_choice(self, choice, architecture):
         """Check if `choice` is a valid setup record."""
         choices = self.get_setup_records(
             architecture,
-            machinegroup=machinegroup,
             grouped=False
         )
         result = choice in choices
         logger.debug(result)
         return result
+
+
+class DomainAdmin(models.Model):
+
+    domain = models.ForeignKey(Domain, on_delete=models.CASCADE)
+    arch = models.ForeignKey(Architecture, on_delete=models.CASCADE)
+
+    contact_email = models.EmailField(
+        blank=False
+    )

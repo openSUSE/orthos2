@@ -1,0 +1,15 @@
+- name: Create ansible directory
+  ansible.builtin.file:
+    path: /etc/ansible
+    recurse: yes
+    state: directory
+
+- name: Copy custom fact scripts to remote host
+  ansible.builtin.copy:
+    src: files/facts.d/
+    dest: /etc/ansible/facts.d
+    mode: 0755
+
+- name: Re-read facts after adding custom fact
+  ansible.builtin.setup:
+    filter: ansible_local

@@ -10,19 +10,19 @@ from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.misc import (Serializer, get_hostname, is_dns_resolvable,
                                 is_valid_mac_address)
+from orthos2.utils.cobbler import CobblerServer
 
 from .exceptions import HostnameNotDnsResolvable
 from .models import (Enclosure, Machine, NetworkInterface, RemotePower,
                      SerialConsole, ServerConfig, System,
                      is_unique_mac_address, validate_dns, validate_mac_address)
-
 logger = logging.getLogger('orthos')
 
 
 signal_cobbler_regenerate = Signal(providing_args=['domain_id'])
+signal_cobbler_machine_update = Signal(providing_args=['domain_id', 'machine_id'])
 signal_serialconsole_regenerate = Signal(providing_args=['cscreen_server_fqdn'])
 signal_motd_regenerate = Signal(providing_args=['fqdn'])
-
 
 @receiver(pre_save, sender=Machine)
 def machine_pre_save(sender, instance, *args, **kwargs):
@@ -52,20 +52,14 @@ def machine_post_save(sender, instance, *args, **kwargs):
 
     Systems with 'administrative' flag set do only get one single network interface.
     """
-    if kwargs['created']:
-        instance.networkinterfaces.create(
-            machine=instance,
-            primary=True,
-            mac_address=instance.mac_address
-        )
+    if not instance.mac_address:
+        return
 
-        # create Cobbler entry
-        signal_cobbler_regenerate.send(sender=None, domain_id=instance.fqdn_domain.pk)
-
-        instance.scan()
-    else:
+    try:
         primary_networkinterface = NetworkInterface.objects.get(machine=instance, primary=True)
-
+    except ObjectDoesNotExist:
+        primary_networkinterface = None
+    if primary_networkinterface:
         if primary_networkinterface.mac_address.upper() != instance.mac_address.upper():
 
             networkinterface, created = instance.networkinterfaces.get_or_create(
@@ -88,6 +82,18 @@ def machine_post_save(sender, instance, *args, **kwargs):
                 instance.scan('networkinterfaces')
                 # regenerate Cobbler entry
                 signal_cobbler_regenerate.send(sender=None, domain_id=instance.fqdn_domain.pk)
+    else:
+        instance.networkinterfaces.create(
+            machine=instance,
+            primary=True,
+            mac_address=instance.mac_address
+        )
+        instance.scan('networkinterfaces')
+          # create Cobbler entry
+        signal_cobbler_regenerate.send(sender=None, domain_id=instance.fqdn_domain.pk)
+
+
+
 
 
 @receiver(post_init, sender=Machine)
@@ -105,7 +111,16 @@ def machine_post_init(sender, instance, *args, **kwargs):
 
 @receiver(pre_delete, sender=Machine)
 def machine_pre_delete(sender, instance, *args, **kwargs):
-    """Pre delete action for machine. Save deleted machine object as file for archiving."""
+    """Pre delete action for machine. Save deleted machine object as file for archiving.
+       Also remove the machine from the cobbler Server.
+    """
+    server = CobblerServer.from_machine(instance)
+    if server:
+        server.remove(instance)
+
+    if instance.is_vm_managed():
+        instance.hypervisor.virtualization_api.remove(instance)
+
     if not ServerConfig.objects.bool_by_key('serialization.execute'):
         return
 
@@ -144,17 +159,23 @@ def machine_pre_delete(sender, instance, *args, **kwargs):
 
 @receiver(post_save, sender=SerialConsole)
 def serialconsole_post_save(sender, instance, *args, **kwargs):
+    """ Regenerate cscreen server configs if a serial console info got changed """
+    if not instance.machine.fqdn_domain.cscreen_server:
+        return
     signal_serialconsole_regenerate.send(
         sender=SerialConsole,
-        cscreen_server_fqdn=instance.cscreen_server.fqdn
+        cscreen_server_fqdn=instance.machine.fqdn_domain.cscreen_server.fqdn
     )
 
 
 @receiver(post_delete, sender=SerialConsole)
 def serialconsole_post_delete(sender, instance, *args, **kwargs):
+    """ Regenerate cscreen server configs if a serial console got deleted """
+    if not instance.machine.fqdn_domain.cscreen_server:
+        return
     signal_serialconsole_regenerate.send(
         sender=SerialConsole,
-        cscreen_server_fqdn=instance.cscreen_server.fqdn
+        cscreen_server_fqdn=instance.machine.fqdn_domain.cscreen_server.fqdn
     )
 
 
@@ -182,6 +203,17 @@ def regenerate_cobbler(sender, domain_id, *args, **kwargs):
     else:
         task = tasks.RegenerateCobbler(domain_id)
 
+    TaskManager.add(task)
+
+
+@receiver(signal_cobbler_machine_update)
+def update_cobbler_machine(sender, domain_id, machine_id, *args, **kwargs):
+    """
+    Create `RegenerateCobbler()` task here.
+
+    This should be the one and only place for creating this task.
+    """
+    task = tasks.UpdateCobblerMachine(domain_id, machine_id)
     TaskManager.add(task)
 
 

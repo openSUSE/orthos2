@@ -36,16 +36,6 @@ class Enclosure(models.Model):
 
     location_rack_position = 'unknown'
 
-    updated = models.DateTimeField(
-        'Updated at',
-        auto_now=True
-    )
-
-    created = models.DateTimeField(
-        'Created at',
-        auto_now_add=True
-    )
-
     def __str__(self):
         return self.name
 
@@ -65,13 +55,7 @@ class Enclosure(models.Model):
             BMC
         """
         machines = self.get_machines().filter(system__virtual=False)
-        machines = machines.exclude(system=System.Type.REMOTEPOWER)
-        machines = machines.exclude(system=System.Type.BMC)
         return machines
-
-    def get_bmc_list(self):
-        """Return all baseboard management controller (BMC) of the enclosure."""
-        return self.get_machines().filter(system=System.Type.BMC)
 
     def fetch_location(self, pk=None):
         """

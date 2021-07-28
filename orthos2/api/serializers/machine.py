@@ -4,6 +4,7 @@ from rest_framework import serializers
 from .annotation import AnnotationSerializer
 from .installation import InstallationSerializer
 from .networkinterface import NetworkInterfaceSerializer
+from .bmc import BMCSerializer
 
 
 class NetworkInterfaceListingField(NetworkInterfaceSerializer):
@@ -47,6 +48,17 @@ class AnnotationListingField(AnnotationSerializer):
         return result
 
 
+class BMCListingField(BMCSerializer):
+
+    def to_representation(self, bmc):
+        result = {}
+
+        for name, field in self.fields.items():
+            value = getattr(bmc, str(name))
+            result[name] = {'label': field.label, 'value': value}
+        return result
+
+
 class MachineSerializer(serializers.ModelSerializer):
 
     enclosure = serializers.StringRelatedField()
@@ -65,6 +77,7 @@ class MachineSerializer(serializers.ModelSerializer):
 
     status_ipv4 = serializers.SerializerMethodField()
     status_ipv6 = serializers.SerializerMethodField()
+    bmc = BMCListingField()
 
     class Meta:
         model = Machine
@@ -79,6 +92,11 @@ class MachineSerializer(serializers.ModelSerializer):
             'enclosure',
             'nda',
             'system',
+            'bmc',
+            'bmc_fqdn',
+            'bmc_mac',
+            'bmc_password',
+            'bmc_username',
             'architecture',
             'networkinterfaces',
             'installations',
@@ -99,47 +117,48 @@ class MachineSerializer(serializers.ModelSerializer):
             'cpu_flags',
             'ram_amount',
             'serial_type',
-            'serial_management_bmc',
-            'serial_cscreen_server',
             'serial_console_server',
-            'serial_device',
             'serial_port',
             'serial_command',
             'serial_comment',
             'serial_baud_rate',
             'serial_kernel_device',
+            'serial_kernel_device_num',
             'power_type',
-            'power_management_bmc',
             'power_host',
             'power_port',
-            'power_device',
             'power_comment',
             'location_room',
             'location_rack',
             'location_rack_position'
         )
 
-    serial_type = serializers.CharField(source='serialconsole.type.name')
-    serial_cscreen_server = serializers.CharField(source='serialconsole.cscreen_server')
-    serial_management_bmc = serializers.CharField(
-        source='serialconsole.management_bmc'
-    )
+    serial_type = serializers.CharField(source='serialconsole.stype.name')
+
     serial_console_server = serializers.CharField(source='serialconsole.console_server')
-    serial_device = serializers.CharField(source='serialconsole.device')
     serial_port = serializers.IntegerField(source='serialconsole.port')
     serial_command = serializers.CharField(source='serialconsole.command')
     serial_comment = serializers.CharField(source='serialconsole.comment')
     serial_baud_rate = serializers.IntegerField(source='serialconsole.baud_rate')
-    serial_kernel_device = serializers.IntegerField(source='serialconsole.kernel_device')
+    serial_kernel_device = serializers.CharField(source='serialconsole.kernel_device')
+    serial_kernel_device_num = serializers.IntegerField(source='serialconsole.kernel_device_num')
 
-    power_type = serializers.CharField(source='remotepower.type')
-    power_management_bmc = serializers.CharField(
-        source='remotepower.management_bmc'
-    )
+    power_type = serializers.CharField(source='remotepower.fence_name')
+
     power_host = serializers.CharField(source='remotepower.remote_power_device')
-    power_port = serializers.IntegerField(source='remotepower.port')
-    power_device = serializers.CharField(source='remotepower.device')
+    power_port = serializers.CharField(source='remotepower.port')
     power_comment = serializers.CharField(source='remotepower.comment')
+
+    bmc_fqdn = serializers.CharField(source='bmc.fqdn')
+    bmc_mac = serializers.CharField(source='bmc.mac')
+    bmc_username = serializers.CharField(source='bmc.username')
+    bmc_password = serializers.SerializerMethodField()
+
+    def get_bmc_password(self, obj):
+        if hasattr(self, 'bmc') and self.bmc:
+            if self.bmc_password:
+                return "***"
+        return "-"
 
     location_room = serializers.CharField(source='enclosure.location_room')
     location_rack = serializers.CharField(source='enclosure.location_rack')
@@ -149,7 +168,7 @@ class MachineSerializer(serializers.ModelSerializer):
 
     def __init__(self, machine, *args, **kwargs):
         super(MachineSerializer, self).__init__(machine, *args, **kwargs)
-        if  not hasattr(machine, 'group') or not machine.group:
+        if not hasattr(machine, 'group') or not machine.group:
             self.fields.pop('group')
 
     @property
@@ -177,9 +196,9 @@ class MachineSerializer(serializers.ModelSerializer):
                 field.label = 'Status IPv4'
             if name == 'status_ipv6':
                 field.label = 'Status IPv6'
-            if name == 'power_type' and data[name]:
-                data[name] = RemotePower.Type.to_str(data[name])
-
+            # TODO: Adapt this to the new implementation
+            # if name == 'power_type' and data[name]:
+            #    data[name] = RemotePower.Type.to_str(data[name])
             # ... do not add label/values if in exclude list
             if (name in exclude) and (data[name] is None):
                 continue
