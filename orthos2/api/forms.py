@@ -258,7 +258,8 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
 
     unknown_mac = forms.BooleanField(
         label='MAC address currently unknown',
-        initial=False
+        initial=False,
+        required=False
     )
     mac_address = forms.CharField(
         label='MAC address',
