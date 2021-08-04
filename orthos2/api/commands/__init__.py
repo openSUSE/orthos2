@@ -14,7 +14,8 @@ from orthos2.api.commands.add import (AddCommand, AddVMCommand, AddMachineComman
                                       AddRemotePowerCommand, AddBMCCommand,
                                       AddRemotePowerDeviceCommand)
 from orthos2.api.commands.delete import (DeleteCommand, DeleteMachineCommand,
-                                         DeleteSerialConsoleCommand, DeleteRemotePowerCommand)
+                                         DeleteSerialConsoleCommand, DeleteRemotePowerCommand,
+                                         DeleteRemotePowerDeviceCommand)
 
 
 __all__ = [
@@ -38,6 +39,7 @@ __all__ = [
     'DeleteMachineCommand',
     'DeleteSerialConsoleCommand',
     'DeleteRemotePowerCommand',
+    'DeleteRemotePowerDeviceCommand',
     'AddBMCCommand',
     'AddRemotePowerDeviceCommand'
 ]
