@@ -685,7 +685,8 @@ class AddRemotePowerDeviceCommand(BaseAPIView):
             new_device = RemotePowerDevice(username=cleaned_data['username'],
                                            password=cleaned_data['password'],
                                            mac=cleaned_data['mac'],
-                                           fqdn=cleaned_data['fqdn'])
+                                           fqdn=cleaned_data['fqdn'],
+                                           fence_name=cleaned_data['fence_name'])
 
             try:
                 new_device.save()
