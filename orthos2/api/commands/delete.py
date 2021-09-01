@@ -47,7 +47,7 @@ Arguments:
                                     (superusers only).
              remotepower        : Delete remote power of a specifc machine
                                     (superusers only).
-             remotepowerdevice  :Delete a remotepower device (superusers only).
+             remotepowerdevice  : Delete a remotepower device (superusers only).
 
 Example:
     DELETE machine
