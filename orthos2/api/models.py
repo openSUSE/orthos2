@@ -224,7 +224,7 @@ class QueryField:
        #     'post': lambda x:
        #         Machine.objects.get(pk=x).fqdn
        # },
-        'rpower_power_device': {
+        'rpower_device': {
             'field': RemotePower._meta.get_field('remote_power_device'),
             'related_name': 'remotepower',
             'verbose_name': 'Remote power device',

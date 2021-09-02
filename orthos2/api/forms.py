@@ -2,8 +2,9 @@ import logging
 
 from orthos2.data.models import (Architecture, Enclosure, Machine, MachineGroup,
                                  NetworkInterface, RemotePower, SerialConsole,
-                                 SerialConsoleType, System, is_unique_mac_address,
-                                 validate_dns, validate_mac_address)
+                                 SerialConsoleType, System, RemotePowerDevice,
+                                 is_unique_mac_address, validate_dns,
+                                 validate_mac_address)
 from orthos2.data.models.domain import validate_domain_ending
 from django import forms
 from django.forms.models import ModelChoiceIteratorValue
@@ -548,6 +549,27 @@ class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):
     fqdn = forms.CharField(
         label='FQDN',
         max_length=200,
+    )
+
+    def get_order(self):
+        """Return input order."""
+        return [
+            'fqdn',
+        ]
+
+
+class DeleteRemotePowerDeviceAPIForm(forms.Form, BaseAPIForm):
+
+    def clean_fqdn(self):
+        """Check whether `fqdn` already exists."""
+        fqdn = self.cleaned_data['fqdn']
+        if RemotePowerDevice.objects.filter(fqdn__iexact=fqdn).count() == 0:
+            self.add_error('fqdn', "No remotepowerdevice with this FQDN")
+        return fqdn
+
+    fqdn = forms.CharField(
+        label='FQDN',
+        max_length=255,
     )
 
     def get_order(self):

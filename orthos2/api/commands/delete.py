@@ -3,10 +3,10 @@ import logging
 
 from orthos2.api.commands import BaseAPIView, get_machine
 from orthos2.api.forms import (DeleteMachineAPIForm, DeleteRemotePowerAPIForm,
-                               DeleteSerialConsoleAPIForm)
+                               DeleteRemotePowerDeviceAPIForm, DeleteSerialConsoleAPIForm)
 from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                           InputSerializer, Message)
-from orthos2.data.models import Machine
+from orthos2.data.models import (Machine, RemotePowerDevice)
 from django.conf.urls import re_path
 from django.contrib.auth.models import AnonymousUser, User
 from django.http import JsonResponse
@@ -20,8 +20,9 @@ class Delete:
     MACHINE = 'machine'
     SERIALCONSOLE = 'serialconsole'
     REMOTEPOWER = 'remotepower'
+    REMOTEPOWERDEVICE = 'remotepowerdevice'
 
-    as_list = [MACHINE, SERIALCONSOLE, REMOTEPOWER]
+    as_list = [MACHINE, SERIALCONSOLE, REMOTEPOWER, REMOTEPOWERDEVICE]
 
 
 class DeleteCommand(BaseAPIView):
@@ -41,11 +42,12 @@ Usage:
 Arguments:
     item - Specify the item which should be deleted. Items are:
 
-             machine       : Delete a machine (superusers only).
-             serialconsole : Delete serial console of a specifc machine
-                             (superusers only).
-             remotepower   : Delete remote power of a specifc machine
-                             (superusers only).
+             machine            : Delete a machine (superusers only).
+             serialconsole      : Delete serial console of a specifc machine
+                                    (superusers only).
+             remotepower        : Delete remote power of a specifc machine
+                                    (superusers only).
+             remotepowerdevice  : Delete a remotepower device (superusers only).
 
 Example:
     DELETE machine
@@ -89,6 +91,12 @@ Example:
                 return ErrorMessage("Invalid number of arguments for 'remotepower'!").as_json
 
             return redirect(reverse('api:remotepower_delete'))
+
+        elif item == Delete.REMOTEPOWERDEVICE:
+            if sub_arguments:
+                return ErrorMessage("Invalid number of arguments for 'remotepowerdevice'!").as_json
+
+            return redirect(reverse('api:remotepowerdevice_delete'))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -292,6 +300,80 @@ class DeleteRemotePowerCommand(BaseAPIView):
                     return ErrorMessage("Machine has no remote power!").as_json
 
                 result = machine.remotepower.delete()
+
+                theader = [
+                    {'objects': 'Deleted objects'},
+                    {'count': '#'},
+                ]
+
+                response = {
+                    'header': {'type': 'TABLE', 'theader': theader},
+                    'data': [],
+                }
+                for key, value in result[1].items():
+                    response['data'].append(
+                        {
+                            'objects': key.replace('data.', ''),
+                            'count': value
+                        }
+                    )
+                return JsonResponse(response)
+
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
+
+
+class DeleteRemotePowerDeviceCommand(BaseAPIView):
+
+    URL_POST = '/remotepowerdevice/delete'
+
+    @staticmethod
+    def get_urls():
+        return [
+            re_path(
+                r'^remotepowerdevice/delete',
+                DeleteRemotePowerDeviceCommand.as_view(),
+                name='remotepowerdevice_delete'
+            ),
+        ]
+
+    def get(self, request, *args, **kwargs):
+        """Return form for deleting a remote power."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:
+            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+
+        form = DeleteRemotePowerDeviceAPIForm()
+
+        input = InputSerializer(
+            form.as_dict(),
+            self.URL_POST,
+            form.get_order()
+        )
+        return input.as_json
+
+    def post(self, request, *args, **kwargs):
+        """Delete remote power."""
+        if not request.user.is_superuser:
+            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+
+        data = json.loads(request.body.decode('utf-8'))['form']
+        form = DeleteRemotePowerDeviceAPIForm(data)
+
+        if form.is_valid():
+
+            try:
+                cleaned_data = form.cleaned_data
+
+                device = RemotePowerDevice.objects.get(fqdn__iexact=cleaned_data['fqdn'])
+
+
+                result = device.delete()
 
                 theader = [
                     {'objects': 'Deleted objects'},
