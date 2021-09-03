@@ -22,6 +22,9 @@ Group:          Productivity/Networking/Boot/Servers
 
 License:        GPL-2.0-or-later
 Source:         orthos2-%{version}.tar.gz
+%if 0%{?suse_version}
+Source1:        orthos2.rpmlintrc
+%endif
 BuildArch:      noarch
 
 BuildRequires:  fdupes
