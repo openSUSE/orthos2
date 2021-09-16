@@ -31,6 +31,7 @@ class SerialConsole(models.Model):
         ('ttyUSB', 'ttyUSB'),
         ('ttyAMA', 'ttyAMA'),
         ('tty', 'tty'),
+        ('None', 'None'),
     )
 
     class Meta:
@@ -89,7 +90,7 @@ class SerialConsole(models.Model):
         max_length=64,
         null=False,
         default='ttyS',
-        help_text="The kernel device string as passed via kernel command line, e.g. ttyS, ttyAMA, ttyUSB,..."
+        help_text="The kernel device string as passed via kernel command line, e.g. ttyS, ttyAMA, ttyUSB,... \"None\" will remove console= kernel paramter"
     )
 
     kernel_device_num = models.SmallIntegerField(
@@ -123,7 +124,7 @@ class SerialConsole(models.Model):
             return
 
         if self.stype.name == 'Device':
-            if not self.kernel_device:
+            if self.kernel_device == 'None':
                 errors.append(ValidationError("Please provide a kernel device (e.g. '/dev/ttyS123')!"))
 
             if not self.baud_rate:
@@ -143,14 +144,12 @@ class SerialConsole(models.Model):
 
             # requires: console_server, port
             self.command = ''
-            self.kernel_device = ''
 
         elif self.stype.name == 'Command':
             if not self.command:
                 errors.append(ValidationError("Please provide a command!"))
 
             # requires: command
-            self.kernel_device = ''
             self.console_server = ''
             self.port = None
 
@@ -170,7 +169,6 @@ class SerialConsole(models.Model):
 
             # requires: management interface
             self.command = ''
-            self.kernel_device = ''
             self.console_server = None
             self.port = None
 
@@ -180,7 +178,6 @@ class SerialConsole(models.Model):
 
             # requires: -
             self.command = ''
-            self.kernel_device = ''
             self.console_server = None
             self.port = None
 
