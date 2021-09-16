@@ -197,9 +197,13 @@ class SerialConsole(models.Model):
 
         ipmi = {'user': username, 'password': password}
 
+        bmc = None
+        if hasattr(self.machine, 'bmc'):
+            bmc = self.machine.bmc
+
         context = Context({
             'machine': self.machine,
-            'bmc': self.machine.bmc,
+            'bmc': bmc,
             'ipmi': ipmi,
             'kernel_device': self.kernel_device,
             'kernel_device_num': self.kernel_device_num,
