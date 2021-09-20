@@ -608,6 +608,8 @@ class Machine(models.Model):
         # check if DHCP needs to be regenerated
         if self._original is not None:
             try:
+                sync_dhcp = False
+                update_machine = False
                 assert self.mac_address == self._original.mac_address
                 assert self.fqdn == self._original.fqdn
                 assert self.fqdn_domain == self._original.fqdn_domain
@@ -615,6 +617,17 @@ class Machine(models.Model):
                 assert self.group == self._original.group
                 assert self.dhcp_filename == self._original.dhcp_filename
                 assert self.kernel_options == self._original.kernel_options
+                if hasattr(self, 'bmc'):
+                    assert hasattr(self._original, 'bmc')
+                    assert self.bmc.username == self._original.bmc.username
+                    assert self.bmc.password == self._original.bmc.password
+                    assert self.bmc.mac == self._original.bmc.mac
+                    assert self.bmc.fqdn == self._original.bmc.fqdn
+            except AssertionError:
+                sync_dhcp = True
+                update_machine = True
+                
+            try:
                 if self.has_remotepower():
                     assert hasattr(self._original, 'remotepower')
                     assert self.remotepower.fence_name == self._original.remotepower.fence_name
@@ -623,39 +636,35 @@ class Machine(models.Model):
                         assert hasattr(self._original.remotepower, 'remote_power_device')
                         assert self.remotepower.remote_power_device == \
                                self._original.remotepower.remote_power_device
-                if hasattr(self, 'bmc'):
-                    assert hasattr(self._original, 'bmc')
-                    assert self.bmc.username == self._original.bmc.username
-                    assert self.bmc.password == self._original.bmc.password
-                    assert self.bmc.mac == self._original.bmc.mac
-                    assert self.bmc.fqdn == self._original.bmc.fqdn
                 if self.has_serialconsole():
                     assert hasattr(self._original, 'serialconsole')
                     assert self.serialconsole.baud_rate == self._original.serialconsole.baud_rate
                     assert self.serialconsole.kernel_device_num == \
                         self._original.serialconsole.kernel_device_num
             except AssertionError:
-                if ServerConfig.objects.bool_by_key("orthos.cobblersync.full"):
-                    from orthos2.data.signals import signal_cobbler_regenerate
-
-                    # regenerate DHCP on all domains (deletion/registration) if domain changed
-                    if self.fqdn_domain == self._original.fqdn_domain:
-                        domain_id = self.fqdn_domain.pk
-                    else:
-                        domain_id = None
-
-                    signal_cobbler_regenerate.send(sender=self.__class__, domain_id=domain_id)
+                    update_machine = True
+            if update_machine:
+                from orthos2.data.signals import signal_cobbler_machine_update
+                if self.fqdn_domain == self._original.fqdn_domain:
+                    domain_id = self.fqdn_domain.pk
+                    machine_id = self.pk
+                    signal_cobbler_machine_update.send(
+                        sender=self.__class__, domain_id=domain_id, machine_id=machine_id)
                 else:
-                    from orthos2.data.signals import signal_cobbler_machine_update
-                    if self.fqdn_domain == self._original.fqdn_domain:
-                        domain_id = self.fqdn_domain.pk
-                        machine_id = self.pk
-                        signal_cobbler_machine_update.send(
-                            sender=self.__class__, domain_id=domain_id, machine_id=machine_id)
-                    else:
-                        raise NotImplementedError(
-                            "Moving machines between domains with quick cobbler synchronization "
-                            "is not implemented yet")
+                    raise NotImplementedError(
+                        "Moving machines between domains is not implemented yet")
+            if sync_dhcp:
+                from orthos2.data.signals import signal_cobbler_sync_dhcp
+
+                # regenerate DHCP on all domains (deletion/registration) if domain changed
+                if self.fqdn_domain == self._original.fqdn_domain:
+                    domain_id = self.fqdn_domain.pk
+                else:
+                    raise NotImplementedError(
+                        "Moving machines between domains is not implemented yet")
+                signal_cobbler_sync_dhcp.send(sender=self.__class__, domain_id=domain_id)
+
+
 
     @property
     def ipv4(self):
