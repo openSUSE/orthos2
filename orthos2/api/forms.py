@@ -362,7 +362,7 @@ class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
         super(SerialConsoleAPIForm, self).__init__(*args, **kwargs)
 
         self._query_fields = (
-            'type',
+            'stype',
             'baud_rate',
             'kernel_device',
             'kernel_device_num',
@@ -381,7 +381,7 @@ class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
         formset = SerialConsoleFormSet(instance=machine)
 
         self.fields = formset.form().fields
-        self.fields['type'].empty_label = None
+        self.fields['stype'].empty_label = None
         self.fields['baud_rate'].initial = 5
         self.fields['kernel_device_num'].min_value = 0
         self.fields['kernel_device_num'].max_value = 1024
