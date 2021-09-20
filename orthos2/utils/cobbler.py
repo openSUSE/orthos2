@@ -105,8 +105,11 @@ def get_serial_options(machine):
     console = machine.serialconsole
     options = """ --serial-device="{device}" """.format(device=console.kernel_device_num)
     options +=  """--serial-baud-rate="{baud}" """.format(baud=console.baud_rate)
-    kernel_option =" console={device}{num} ".format(device=console.kernel_device,
-                                                    num=console.kernel_device_num)
+    kernel_option = ""
+    if console.kernel_device != "None":
+        kernel_option += " console={device}{num},{baud} ".format(device=console.kernel_device,
+                                                                num=console.kernel_device_num,
+                                                                baud=console.baud_rate)
     return (options, kernel_option)
 
 def get_cobbler_add_command(machine, cobber_path):
