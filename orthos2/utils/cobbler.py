@@ -42,19 +42,21 @@ def get_tftp_server(machine: Machine):
 def create_cobbler_options(machine):
     from orthos2.utils.misc import get_ip
     tftp_server = get_tftp_server(machine)
-    options = " --name={name} --ip-address={ipv4}".format(name=machine.fqdn, ipv4=machine.ipv4)
     kernel_options = machine.kernel_options if machine.kernel_options else ""
+    options = " --name={name} --ip-address={ipv4}".format(name=machine.fqdn, ipv4=machine.ipv4)
+    options += " --hostname={host} ".format(host=get_hostname(machine.fqdn))
     if machine.ipv6:
         options += " --ipv6-address={ipv6}".format(ipv6=machine.ipv6)
     if machine.mac_address:
         options += " --interface=default --management=True --interface-master=True"
+        options += " --dns-name={dns} ".format(dns=machine.fqdn)
         options += " --mac-address={mac} ".format(mac=machine.mac_address)
     if get_filename(machine):
         options += " --filename={filename}".format(filename=get_filename(machine))
     if tftp_server:
         ipv4 = get_ip(tftp_server)
         if ipv4:
-            options += " --next-server={server}".format(server=ipv4[0])
+            options += " --next-server-v4={server}".format(server=ipv4[0])
     if machine.has_remotepower():
         options += get_power_options(machine)
     if machine.has_serialconsole():
