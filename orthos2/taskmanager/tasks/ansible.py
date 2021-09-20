@@ -69,7 +69,7 @@ class Ansible(Task):
         if fail:
             logger.warning("Exceptions caught during scan for these hosts: %s", fail)
 
-            def get_json_filelist(self) -> list:
+    def get_json_filelist(self) -> list:
         """
         Returns the list of machines for which json files have been
         created via ansible scan (.json suffix removed)
@@ -156,9 +156,10 @@ class Ansible(Task):
         """
 
         db_machine.fqdn = ansible_machine.get("fqdn", "")
+
         db_machine.cpu_physical = ansible_machine.get("processor_count", 0)
         db_machine.cpu_cores = ansible_machine.get("processor_cores", 0)
-        db_machine.cpu_threads = ansible_machine.get("processor_threads_per_core", 0)
+        db_machine.cpu_threads = ansible_machine.get("processor_cores", 0) * ansible_machine.get("processor_threads_per_core", 0)
         # db_machine.cpu_model =
         # db_machine.cpu_flags = # --> check if in ansible, else create facts file
         # db_machine.cpu_speed =
