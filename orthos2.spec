@@ -172,6 +172,7 @@ getent passwd orthos >/dev/null || \
 %if 0%{?suse_version}
 %{_sbindir}/rcorthos2_taskmanager
 %{_sbindir}/rcorthos2
+%{_sbindir}/rcorthos2_debug
 %endif
 %{_tmpfilesdir}/orthos2.conf
 %dir %{python3_sitelib}/orthos2/
