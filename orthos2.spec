@@ -49,7 +49,7 @@ BuildRequires:  python-rpm-macros
 %endif
 %{?python_enable_dependency_generator}
 %if ! (%{defined python_enable_dependency_generator} || %{defined python_disable_dependency_generator})
-Requires:  python3-django >= 3.1
+Requires:  python3-django >= 3.2
 Requires:  python3-django-extensions
 Requires:  python3-django-auth-ldap
 Requires:  python3-paramiko
@@ -90,7 +90,7 @@ line interface based on readline.
 
 %package docs
 Summary:        HTML documentation for orthos2
-BuildRequires:  python3-django >= 3.2
+#BuildRequires:  python3-django >= 3.2
 BuildRequires:  python3-django-extensions
 BuildRequires:  python3-paramiko
 BuildRequires:  python3-djangorestframework
