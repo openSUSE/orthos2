@@ -97,6 +97,7 @@ BuildRequires:  python3-djangorestframework
 BuildRequires:  python3-validators
 BuildRequires:  python3-netaddr
 BuildRequires:  python3-sphinx_rtd_theme
+BuildRequires:  python3-Sphinx
 
 %define orthos_web_docs /srv/www/orthos2/docs
 
