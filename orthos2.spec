@@ -203,6 +203,7 @@ getent passwd orthos >/dev/null || \
 %attr(644,orthos,orthos) /usr/lib/orthos2/ansible/roles
 %attr(644,orthos,orthos) /usr/lib/orthos2/ansible/site.yml
 
+/usr/lib/orthos2/*
 %attr(755,orthos,orthos) %dir /srv/www/orthos2
 %ghost %dir /run/%{name}
 %ghost %dir /run/%{name}/ansible
