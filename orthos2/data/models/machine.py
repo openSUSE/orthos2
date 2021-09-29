@@ -1102,9 +1102,8 @@ class Machine(models.Model):
             if contact:
                 return contact
 
-        admin = DomainAdmin(domain = self.fqdn_domain, arch = self.architecture)
+        admin = DomainAdmin.objects.get(domain = self.fqdn_domain, arch = self.architecture)
         if admin and admin.contact_email:
-            logger.warning("Email admin: %s", admin.contact_email)
             return admin.contact_email
 
         return settings.SUPPORT_CONTACT
