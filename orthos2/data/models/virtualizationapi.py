@@ -515,13 +515,21 @@ class Libvirt(VirtualizationAPI):
 
         return True
 
-    def _remove(self, vm):
-        """Wrapper function for removing a VM (destroy domain > undefine domain)."""
-        if not self.check_connection():
-            raise Exception("Host system not reachable!")
+    def _remove(self, vm) -> bool:
+        """Wrapper function for removing a VM (destroy domain > undefine domain).
 
-        self.destroy(vm)
-        self.undefine(vm)
+        :return: Bool whether the VM could successfully be removed via virsh from Hypervisor
+        """
+        try:
+            if not self.check_connection():
+                raise Exception("Host system not reachable!")
+
+            self.destroy(vm)
+            self.undefine(vm)
+        except Exception as e:
+            logger.warning("Could not remove VM {vm} via from Hypervisor {hyper}"
+                           .format(vm=vm.hostname, hyper=self.host.fqdn))
+            return False
         return True
 
     def destroy(self, vm):
