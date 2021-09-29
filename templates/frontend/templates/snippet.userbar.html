@@ -16,11 +16,11 @@
   <a href="{% url 'admin:index' %}"><i class="fa fa-sliders fa-lg"></i> Administration</a><span class="spacer-20"/>
   {% endif %}
 
-  <a href="{% get_bugreport_url %}"><i class="fa fa-bug fa-lg"></i> Bugreport</a><span class="spacer-20"/>
+  <a href="{% get_bugreport_url %}" target="_blank"><i class="fa fa-bug fa-lg"></i> Bugreport</a><span class="spacer-20"/>
 
-  <a href="{% get_cli_url %}"><i class="fa fa-download fa-lg"></i> Download CLI</a><span class="spacer-20"/>
+  <a href="{% get_cli_url %}" target="_blank"><i class="fa fa-download fa-lg"></i> Download CLI</a><span class="spacer-20"/>
 
-  <a href="{% get_documentation_url %}"><i class="fa fa-info-circle fa-lg"></i> Documentation</a>
+  <a href="{% get_documentation_url %}" target="_blank"><i class="fa fa-info-circle fa-lg"></i> Documentation</a>
 
   {% if user.is_authenticated %}
   <span class="spacer-20"/><a href="{% url 'frontend:logout' %}"><i class="fa fa-sign-out fa-lg"></i> Logout</a></p>
