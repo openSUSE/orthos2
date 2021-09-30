@@ -69,5 +69,5 @@
 <hr/>
 
 <div class="btn-group-vertical d-flex">
-  <a class="btn btn-danger btn-sm" href="mailto:{{ machine.get_support_contact }}?subject=[Orthos Problem Report] {{ machine.hostname }} ({{ machine.architecture.name }})&body=Orthos user {{ user.username }} reported the following problem with machine {{machine.hostname }}:%0A%0A(Describe your problem here)%0A%0A-----------------------------------%0AMachine name    : {{ machine.fqdn }}%0AMachine arch    : {{ machine.architecture.name }}%0AMachine comment : {{ machine.comment|default:'-' }}%0AOrthos username : {{ user.username }}%0AE-Mail address  : {{ user.email }}" role="button">Report Problem...</a>
+  <a class="btn btn-danger btn-sm" href="mailto:{{ machine.get_support_contact }}?subject=[Orthos Problem Report] {{ machine.hostname }} ({{ machine.architecture.name }})&body=Orthos user {{ user.username }} reported the following problem with machine {{machine.hostname }}:%0A%0A(Describe your problem here)%0A%0A-----------------------------------%0AMachine name    : {{ machine.fqdn }}%0AMachine arch    : {{ machine.architecture.name }}%0AMachine comment : {{ machine.comment|default:'-' }}%0AOrthos username : {{ user.username }}%0AE-Mail address  : {{ user.email }}%0AArchitecture contact  : {{ machine.architecture.contact_email }}" role="button">Report Problem...</a>
 </div>
