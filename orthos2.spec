@@ -79,15 +79,6 @@ Orthos is the machine administration tool of the development network at SUSE. It
     reboot the machines remotely
     managing remote (serial) consoles
 
-%package client
-Summary:        Command line client for orthos2
-Requires:       python3-base
-Requires:       python3-pytz
-
-%description client
-Command line client that provides a shell like command
-line interface based on readline.
-
 %package docs
 Summary:        HTML documentation for orthos2
 #BuildRequires:  python3-django >= 3.2
@@ -118,6 +109,10 @@ make html
 
 # docs
 mkdir -p %{buildroot}%{orthos_web_docs}
+
+# client is built via separate spec file to reduce build dependencies
+rm %{buildroot}/usr/bin/orthos2
+
 cp -r docs/_build/html/* %{buildroot}%{orthos_web_docs}
 %fdupes %{buildroot}/%{orthos_web_docs}
 
@@ -213,9 +208,6 @@ getent passwd orthos >/dev/null || \
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/orthos-vm-images
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/database
 %attr(700,orthos,orthos) %dir /var/lib/orthos2/.ssh
-
-%files client
-%attr(755, root, root) /usr/bin/orthos2
 
 %files docs
 %dir %{orthos_web_docs}
