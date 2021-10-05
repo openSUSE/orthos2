@@ -860,16 +860,16 @@ def login(request, template_name='registration/login.html',
             auth_login(request, form.get_user())
             return redirect('frontend:machines')
         else:
-            # active users without password
-            try:
-                user = User.objects.get(username=request.POST['username'])
-                if user.is_active and not user.password:
-                    messages.info(request, "Please receive your inital password.")
-                    url = reverse('frontend:password_restore')
-                    return redirect('{}?user_id={}'.format(url, user.pk))
-            except Exception:
-                pass
-
+            # active users without password (don't ask in ldap case)
+            if settings.AUTH_ALLOW_USER_CREATION:
+                try:
+                    user = User.objects.get(username=request.POST['username'])
+                    if user.is_active and not user.password:
+                        messages.info(request, "Please receive your inital password.")
+                        url = reverse('frontend:password_restore')
+                        return redirect('{}?user_id={}'.format(url, user.pk))
+                except Exception:
+                    pass
             messages.error(request, "Unknown login/password!")
 
             form = authentication_form(request)
