@@ -33,6 +33,7 @@ BuildRequires:  systemd-rpm-macros
 BuildRequires:  nginx
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-devel
+Requires(post): sudo
 %if 0%{?suse_version}
 BuildRequires:  python-rpm-macros
 %endif
@@ -150,6 +151,10 @@ getent passwd orthos >/dev/null || \
 %post
 %tmpfiles_create %{_tmpfilesdir}/%{name}.conf
 %service_add_post orthos2.service orthos2_taskmanager.service orthos2.socket orthos2_debug.service
+
+sudo -i -u orthos /usr/lib/orthos2/manage.py makemigrations
+sudo -i -u orthos /usr/lib/orthos2/manage.py migrate
+sudo -i -u orthos /usr/lib/orthos2/manage.py collectstatic --noinput
 
 
 %preun
