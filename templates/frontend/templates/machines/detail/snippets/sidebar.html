@@ -1,0 +1,73 @@
+{% load filters %}
+<div class="title">
+  <h5>Actions</h5>
+</div>
+
+<div class="btn-group-vertical d-flex">
+  {% if machine.reserved_by and user.username == machine.reserved_by.username %}
+  <a class="btn btn-secondary btn-sm" href="{% url 'frontend:reserve_machine' machine.id %}" role="button">Extend Reservation</a>
+  <a class="btn btn-warning btn-sm" href="{% url 'frontend:release_machine' machine.id %}" role="button">Release Machine</a>
+  {% elif machine.reserved_by and user.username != machine.reserved_by.username %}
+    {% if user.is_superuser %}
+    <a class="btn btn-danger btn-sm" href="{% url 'frontend:reserve_machine' machine.id %}" role="button">Reserve Machine (owned by {{ machine.reserved_by.username }})</a>
+    {% else %}
+    <a class="btn btn-success btn-sm disabled" href="#" role="button">Reserve Machine</a>
+    {% endif %}
+  {% else %}
+  <a class="btn btn-success btn-sm" href="{% url 'frontend:reserve_machine' machine.id %}" role="button">Reserve Machine</a>
+  {% endif %}
+</div>
+
+
+{% if user.is_superuser or machine.reserved_by and user.username == machine.reserved_by.username %}
+<br/>
+<div class="btn-group-vertical d-flex">
+  <a class="btn btn-secondary btn-sm" href="{% url 'frontend:rescan' machine.id %}?action=status" role="button">Rescan Status</a>
+  <a class="btn btn-secondary btn-sm {% if not machine.collect_system_information %}disabled{% endif %}" href="{% url 'frontend:rescan' machine.id %}?action=all" role="button">Rescan All</a>
+  <a class="btn btn-secondary btn-sm {% if not machine.collect_system_information %}disabled{% endif %}" href="{% url 'frontend:rescan' machine.id %}?action=installations" role="button">Rescan Installations</a>
+  <a class="btn btn-secondary btn-sm {% if not machine.collect_system_information %}disabled{% endif %}" href="{% url 'frontend:rescan' machine.id %}?action=networkinterfaces" role="button">Rescan Network Interfaces</a>
+</div>
+
+{% if machine.remotepower %}
+<br/>
+<div class="btn-group-vertical d-flex power-btn-group">
+  <a class="btn btn-secondary btn-sm" href="javascript:void(0);" onclick="powercycle('on')" role="button">Power On</a>
+  <div class="btn-group power-btn-group" role="group">
+    <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle btn-sm" data-toggle="dropdown">
+      Power Off
+    </button>
+    <div class="dropdown-menu power-btn-group">
+      <a class="dropdown-item btn-sm" href="javascript:void(0);" onClick="powercycle('off')">SSH &#9654; RemotePower</a>
+      <a class="dropdown-item btn-sm" href="javascript:void(0);" onClick="powercycle('off-ssh')">SSH only</a>
+      <a class="dropdown-item btn-sm" href="javascript:void(0);" onClick="powercycle('off-remotepower')">RemotePower only</a>
+    </div>
+  </div>
+  <div class="btn-group power-btn-group" role="group">
+    <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle btn-sm" data-toggle="dropdown">
+      Reboot
+    </button>
+    <div class="dropdown-menu power-btn-group">
+      <a class="dropdown-item btn-sm" href="javascript:void(0);" onClick="powercycle('reboot')">SSH &#9654; RemotePower</a>
+      <a class="dropdown-item btn-sm" href="javascript:void(0);" onClick="powercycle('reboot-ssh')">SSH only</a>
+      <a class="dropdown-item btn-sm" href="javascript:void(0);" onClick="powercycle('reboot-remotepower')">RemotePower only</a>
+    </div>
+  </div>
+  <a class="btn btn-secondary btn-sm" href="javascript:void(0);" onclick="powercycle('status')" role="button">Check Power Status</a>
+</div>
+{% endif %}
+
+<br/>
+<div class="btn-group-vertical d-flex">
+  {% if machine.has_setup_capability %}
+  <a class="btn btn-secondary btn-sm" href="{% url 'frontend:setup' machine.id %}" role="button">Setup Machine</a>
+  {% else %}
+  <a class="btn btn-secondary btn-sm disabled" href="#" role="button">Setup Machine</a>
+  {% endif %}
+</div>
+{% endif %}
+
+<hr/>
+
+<div class="btn-group-vertical d-flex">
+  <a class="btn btn-danger btn-sm" href="mailto:{{ machine.get_support_contact }}?subject=[Orthos Problem Report] {{ machine.hostname }} ({{ machine.architecture.name }})&body=Orthos user {{ user.username }} reported the following problem with machine {{machine.hostname }}:%0A%0A(Describe your problem here)%0A%0A-----------------------------------%0AMachine name    : {{ machine.fqdn }}%0AMachine arch    : {{ machine.architecture.name }}%0AMachine comment : {{ machine.comment|default:'-' }}%0AOrthos username : {{ user.username }}%0AE-Mail address  : {{ user.email }}%0AArchitecture contact  : {{ machine.architecture.contact_email }}" role="button">Report Problem...</a>
+</div>

@@ -1,0 +1,26 @@
+{% load filters %}
+<div class="title">
+  <h5>Platform</h5>Enclosure &gt; System
+</div>
+
+<table class="table small table-bordered">
+  <thead class="thead-default">
+    <tr>
+      <th/>
+      <th>Enclosure</th>
+      <th>System</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="th">Vendor</td>
+      <td width="50%">{{ machine.enclosure.platform.vendor.name }}</td>
+      <td width="50%">{{ machine.platform.vendor }}</td>
+    </tr>
+    <tr>
+      <td class="th">Platform</td>
+      <td>{{ machine.enclosure.platform }}</td>
+      <td>{{ machine.platform|default_if_none:"" }}</td>
+    </tr>
+  </tbody>
+</table>

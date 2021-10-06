@@ -1,0 +1,59 @@
+{% load filters %}
+<div class="title">
+  <h5>System Information</h5>Abstract
+</div>
+
+<table class="table table-striped small" style="border: 1px solid #ddd">
+  <tbody class="thead-default">
+    <tr>
+      <td class="th" width="150px">MAC Address</td>
+      <td>{{ machine.mac_address }}</td>
+    </tr>
+    <tr>
+      <td class="th">CPU Cores / Threads</td>
+      <td>{{ machine.cpu_cores }} / {{ machine.cpu_threads }}</td>
+    </tr>
+    <tr>
+      <td class="th">RAM (GB)</td>
+      <td>{{ machine.ram_amount|divide:1024 }}</td>
+    </tr>
+    <tr>
+      <td class="th">BIOS Version</td>
+      <td>{{ machine.bios_version }}</td>
+    </tr>
+    <tr>
+      <td class="th">BIOS Date</td>
+      <td>{{ machine.bios_date }}</td>
+    </tr>
+    <tr>
+      <td class="th">IPMI Supported</td>
+      <td>{{ machine.ipmi|boolean_image:15|safe }}</td>
+    </tr>
+    <tr>
+      <td class="th">EFI Booted</td>
+      <td>{{ machine.efi|boolean_image:15|safe }}</td>
+    </tr>
+    <tr>
+      <td class="th">VM Capable</td>
+      <td>{{ machine.vm_capable|boolean_image:15|safe }}</td>
+    </tr>
+    <tr>
+      <td class="th">Dedicated VM Host</td>
+      <td>{{ machine.vm_dedicated_host|boolean_image:15|safe }}</td>
+    </tr>
+    <tr>
+      <td class="th">Installed Distribution</td>
+      <td>{{ machine.get_active_distribution.distribution }}</td>
+    </tr>
+    {% if machine.is_virtual_machine and machine.hypervisor and machine.hypervisor.virtualization_api != None %}
+    <tr>
+      <td class="th">Hypervisor</td>
+      <td><a href="{% url 'frontend:virtualization' machine.hypervisor.pk %}">{{ machine.hypervisor }}</a> ({{ machine.hypervisor.virtualization_api }})</td>
+    </tr>
+    {% endif %}
+    <tr>
+      <td class="th">Kernel Options</td>
+      <td><code>{{ machine.kernel_options }}</code></td>
+    </tr>
+  </tbody>
+</table>

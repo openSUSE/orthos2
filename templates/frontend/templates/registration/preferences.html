@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load filters %}
+
+{% block navbar %}
+{% include 'snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-6">
+
+      <div class="title">
+        <h5>Preferences</h5>
+      </div>
+
+      <table class="table table-bordered small">
+        <thead class="thead-default">
+          <th colspan="2">User Information</th>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="th" width="100px">Login</td>
+            <td>{{ user.username }}</td>
+          </tr>
+          <tr>
+            <td class="th">E-Mail</td>
+            <td>{{ user.email }}</td>
+          </tr>
+          <tr>
+            <td class="th">Superuser</td>
+            <td>{{ user.is_superuser|boolean_image:15|safe }}</td>
+          </tr>
+          <tr>
+            <td class="th">Groups</td>
+            <td>
+            {% for membership in user.memberships.all %}
+              {% if membership.is_privileged %}
+              <a href="{% url 'admin:data_machine_changelist' %}">{{ membership.group.name }} (privileged)</a>
+              {% else %}
+              {{ membership.group.name }}
+              {% endif %}
+              {% if not forloop.last %}, {% endif %}
+            {% endfor %}
+            </td>
+          </tr>
+          <tr>
+            <td class="th">Registration date</td>
+            <td>{{ user.date_joined }}</td>
+          </tr>
+          <tr>
+            <td class="th">API token</td>
+            {% if user.auth_token.key %}
+            <td><code>{{ user.auth_token.key }}</code> (created: {{ user.auth_token.created }})</td>
+            {% else %}
+            <td>-</td>
+            {% endif %}
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="title">
+        <h5>Change Password</h5>
+      </div>
+
+      {{ form.non_field_errors }}
+      <form method="post" action="{% url 'frontend:preferences_user' %}" class="form-createacc">
+        {% csrf_token %}
+
+        {{ form.old_password.errors }}
+        <div class="row" style="margin-bottom: 5px;">
+          <div class="col-2">
+            <label for="{{ form.old_password.id_for_label }}">Current password:</label>
+          </div>
+          <div class="col-4">
+            {{ form.old_password }}
+          </div>
+        </div>
+
+        {{ form.new_password.errors }}
+        <div class="row" style="margin-bottom: 5px;">
+          <div class="col-2">
+            <label for="{{ form.new_password.id_for_label }}">New password:</label>
+          </div>
+          <div class="col-4">
+            {{ form.new_password }}
+          </div>
+        </div>
+
+        {{ form.new_password2.errors }}
+        <div class="row" style="margin-bottom: 5px;">
+          <div class="col-2">
+            <label for="{{ form.new_password2.id_for_label }}">Confirmation:</label>
+          </div>
+          <div class="col-4">
+            {{ form.new_password2 }}
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-danger btn-default">Change Password</button>
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
