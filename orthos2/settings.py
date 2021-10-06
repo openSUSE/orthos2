@@ -279,6 +279,7 @@ CONTACT = 'tbd@domain.tld'
 SUPPORT_CONTACT = 'tbd@domain.tld'
 VERSION = '2.0.0'
 SYSTEM_USER = 'orthos'
+AUTH_ALLOW_USER_CREATION = False
 
 REMOTEPOWER_TYPES = [
                         {

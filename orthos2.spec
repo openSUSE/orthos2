@@ -33,6 +33,7 @@ BuildRequires:  systemd-rpm-macros
 BuildRequires:  nginx
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-devel
+Requires(post): sudo
 %if 0%{?suse_version}
 BuildRequires:  python-rpm-macros
 %endif
@@ -52,11 +53,13 @@ BuildRequires:  python-rpm-macros
 Requires:  python3-django >= 3.2
 Requires:  python3-django-extensions
 Requires:  python3-django-auth-ldap
-Requires:  python3-paramiko
 Requires:  python3-djangorestframework
-Requires:  python3-validators
 Requires:  python3-netaddr
+Requires:  python3-paramiko
 Requires:  python3-psycopg2
+Requires:  python3-ldap
+Requires:  python3-validators
+
 %endif
 # Needed to install /etc/logrotate.d/orthos2
 Requires:  logrotate
@@ -82,11 +85,13 @@ Orthos is the machine administration tool of the development network at SUSE. It
 %package docs
 Summary:        HTML documentation for orthos2
 #BuildRequires:  python3-django >= 3.2
+BuildRequires:  python3-django-auth-ldap
 BuildRequires:  python3-django-extensions
 BuildRequires:  python3-paramiko
 BuildRequires:  python3-djangorestframework
 BuildRequires:  python3-validators
 BuildRequires:  python3-netaddr
+BuildRequires:  python3-ldap
 BuildRequires:  python3-sphinx_rtd_theme
 BuildRequires:  python3-Sphinx
 
@@ -150,6 +155,10 @@ getent passwd orthos >/dev/null || \
 %post
 %tmpfiles_create %{_tmpfilesdir}/%{name}.conf
 %service_add_post orthos2.service orthos2_taskmanager.service orthos2.socket orthos2_debug.service
+
+sudo -i -u orthos /usr/lib/orthos2/manage.py makemigrations
+sudo -i -u orthos /usr/lib/orthos2/manage.py migrate
+sudo -i -u orthos /usr/lib/orthos2/manage.py collectstatic --noinput
 
 
 %preun
