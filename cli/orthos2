@@ -32,9 +32,9 @@ else:
     sys.exit(1)
 
 VERSION = '2.0.0'
-DEFAULT_PROTOCOL = 'http'
+DEFAULT_PROTOCOL = 'https'
 DEFAULT_SERVERNAME = 'localhost'
-DEFAULT_PORT = '80'
+DEFAULT_PORT = '443'
 API_URL_FORMAT = '{0}://{1}:{2}/api'
 
 USER_CONFIGFILE = '~/.orthosrc'
@@ -1063,6 +1063,8 @@ class Orthos:
         """Collect available commands from server and print welcome message."""
         global API_URL
 
+        if orthos.config.get_protocol() != "https":
+            logging.warning("No secure ssl connection, try -H https://<host> or -P 443")
         API_URL = API_URL_FORMAT.format(
             orthos.config.get_protocol(),
             orthos.config.get_server(),
@@ -1481,7 +1483,12 @@ def main():
             orthos.config.set_server(servername[0].lower())
 
     if options.port:
-        orthos.config.set_port(int(options.port))
+        port = int(options.port)
+        orthos.config.set_port(port)
+        if port == 443:
+            orthos.config.set_protocol("https")
+        else:
+            orthos.config.set_protocol("http")
 
     if options.user:
         orthos.config.set_user(options.user)
