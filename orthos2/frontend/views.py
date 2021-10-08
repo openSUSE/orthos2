@@ -162,7 +162,8 @@ class FreeMachineListView(MachineListView):
         machines = super(FreeMachineListView, self).get_queryset()
         return machines.filter(
             reserved_by=None,
-            vm_dedicated_host=False
+            vm_dedicated_host=False,
+            administrative=False
         )
 
     def render_to_response(self, context, **response_kwargs):
