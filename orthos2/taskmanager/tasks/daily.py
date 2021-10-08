@@ -11,11 +11,15 @@ logger = logging.getLogger('tasks')
 class DailyMachineChecks(Task):
     """Trigger full machine check/scan for all qualified machines."""
 
-    def __init__(self):
-        pass
+    is_running = False
 
-    def execute(self):
-        """Execute the task."""
+    def __init__(self):
+        if DailyMachineChecks.is_running:
+            raise Exception("Scan via already running")
+        DailyMachineChecks.is_running = True
+
+    @staticmethod
+    def do_scan_all():
         ansible_scan = []
         for machine in Machine.objects.all():
             # only status check for administrative machines
@@ -27,10 +31,19 @@ class DailyMachineChecks(Task):
             task = tasks.MachineCheck(machine.fqdn,
                                       tasks.MachineCheck.Scan.to_int(action))
             TaskManager.add(task)
-
-        #ToDo: Better wait until individual machine scans finished
+        """
+        for machine in Machine.objects.all():
+            if machine.administrative or machine.system.administrative:
+                continue
+            ansible_scan.append(machine.fqdn)
+        """
         task = Ansible(ansible_scan)
         TaskManager.add(task)
+        DailyMachineChecks.is_running = False
+
+    def execute(self):
+        """Execute the task."""
+        DailyMachineChecks.do_scan_all()
 
 class DailyCheckReservationExpirations(Task):
     """Check for expiring reservations for reserved machines."""
