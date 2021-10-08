@@ -3,6 +3,7 @@ from orthos2.api.serializers.misc import ErrorMessage, InfoMessage, Message, Ser
 from django.conf.urls import re_path
 from django.http import HttpResponseRedirect
 from orthos2.taskmanager.tasks.machinetasks import MachineCheck
+from orthos2.taskmanager.tasks.daily import DailyMachineChecks
 from orthos2.taskmanager.tasks.ansible import Ansible
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
@@ -26,7 +27,7 @@ Usage:
     RESCAN <fqdn> <option>
 
 Arguments:
-    fqdn   - FQDN or hostname of the machine.
+    fqdn   - FQDN or hostname of the machine ("all" without option will simulate daily machine check).
     option - Specify what should be rescanned. Options are:
 
                status            : Check machine status (ping, SSH, login).
@@ -55,6 +56,10 @@ Example:
         option = request.GET.get('option', 'all')
 
         try:
+            if fqdn == "all":
+                DailyMachineChecks.do_scan_all()
+                return Message("OK.").as_json
+
             result = get_machine(
                 fqdn,
                 redirect_to='api:rescan',
@@ -68,18 +73,11 @@ Example:
         except Exception as e:
             return ErrorMessage(str(e)).as_json
 
-        if option == 'ansible':
-            task = Ansible([fqdn])
-            TaskManager.add(task)
-            return Message("OK.").as_json
-
-        elif option not in MachineCheck.Scan.Action.as_list:
+        if option not in MachineCheck.Scan.Action.as_list:
             return ErrorMessage("Unknown option '{}'".format(option)).as_json
 
         try:
             machine.scan(option)
-#            task = MachineCheck(fqdn, tasks.MachineCheck.Scan.to_int(option))
-#            TaskManager.add(task)
 
             if not machine.collect_system_information:
                 return InfoMessage(
