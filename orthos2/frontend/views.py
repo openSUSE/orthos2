@@ -30,6 +30,9 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import ListView
+
+from rest_framework.authtoken.models import Token
+
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.misc import add_offset_to_date, get_random_mac_address
@@ -653,6 +656,12 @@ def users_password_restore(request):
 @login_required
 def users_preferences(request):
     if request.method == 'GET':
+        if request.GET.get('action') == "generate_token":
+            user = User.objects.get(pk=request.user.id)
+            token = Token.objects.get(user=user)
+            if token:
+                token.delete()
+            token = Token.objects.create(user=user)
         form = PreferencesForm()
     else:
         form = PreferencesForm(request.POST)
