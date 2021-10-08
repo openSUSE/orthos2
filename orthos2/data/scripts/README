@@ -1,0 +1,1 @@
+manage runscript show_ansible_info --script-args <fqdn>
