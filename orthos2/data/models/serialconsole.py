@@ -149,10 +149,6 @@ class SerialConsole(models.Model):
             if not self.command:
                 errors.append(ValidationError("Please provide a command!"))
 
-            # requires: command
-            self.console_server = ''
-            self.port = None
-
         elif self.stype.name == 's390':
             if not self.console_server:
                 errors.append(ValidationError("Please provide a dedicated console server!"))
