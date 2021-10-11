@@ -93,10 +93,9 @@ class SerialConsole(models.Model):
         help_text="The kernel device string as passed via kernel command line, e.g. ttyS, ttyAMA, ttyUSB,... \"None\" will remove console= kernel paramter"
     )
 
-    kernel_device_num = models.SmallIntegerField(
+    kernel_device_num = models.PositiveSmallIntegerField(
         null=False,
         validators=[
-            MinValueValidator(0),
             MaxValueValidator(1024)
         ],
         default=0,
