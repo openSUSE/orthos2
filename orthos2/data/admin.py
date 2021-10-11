@@ -43,7 +43,11 @@ class SerialConsoleInline(admin.StackedInline):
         'console_server',
         'port',
         'command',
-        'comment'
+        'comment',
+        'rendered_command',
+    )
+    readonly_fields = (
+        'rendered_command',
     )
 
     def get_formset(self, request, obj=None, **kwargs):

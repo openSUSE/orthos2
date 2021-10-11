@@ -70,8 +70,17 @@ class SerialConsole(models.Model):
         max_length=200,
         null=True,
         blank=True,
-        help_text="Final command which is constructed using above info and synced to cscreen server /etc/cscreenrc config"
+        help_text="Use this with the 'command' type. Template matching applies."
     )
+
+    rendered_command = models.CharField(
+        max_length=1024,
+        null=True,
+        blank=True,
+        help_text="Final command which is constructed using above info and synced to cscreen server /etc/cscreenrc config"
+
+    )
+
 
     comment = models.CharField(
         max_length=200,
@@ -110,7 +119,7 @@ class SerialConsole(models.Model):
 
     def save(self, *args, **kwargs):
         self.clean()
-
+        self.rendered_command = self.get_command_record()
         if self.stype:
             super(SerialConsole, self).save(*args, **kwargs)
         else:
@@ -207,8 +216,9 @@ class SerialConsole(models.Model):
             'port': self.port,
             'console_server': self.console_server
         })
-
-        return Template(prefix + template).render(context)
+        # Render the template twice, to support templates in the command string, which
+        # is a template argument itself
+        return Template(Template(prefix + template).render(context)).render(context)
 
     def get_comment_record(self):
         """Return cscreen comment for serial console."""
