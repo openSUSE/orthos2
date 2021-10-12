@@ -63,3 +63,9 @@ html_static_path = ['_static']
 
 # So we don't need to install the ldap auth
 autodoc_mock_imports = ["django-auth-ldap", "ldap"]
+
+# One entry per manual page. List of tuples
+# (source start file, name, description, authors, manual section).
+man_pages = [
+    ('commandline', 'orthos2', u'Orthos Command Line Client Documenation', [u'Thomas Renninger'], 1),
+]
