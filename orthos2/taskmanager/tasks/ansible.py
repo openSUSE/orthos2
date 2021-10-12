@@ -6,6 +6,8 @@ passing ansible collected data instead of self called functions
 '''
 
 import os
+import shutil
+import glob
 import sys
 import threading
 import logging
@@ -24,12 +26,21 @@ logger = logging.getLogger('tasks')
 class Ansible(Task):
 
     data_dir = "/run/orthos2/ansible"
+    data_dir_lastrun = "/run/orthos2/ansible_lastrun"
+    data_dir_archive = "/run/orthos2/ansible_archive"
     facts_dir = "/usr/lib/orthos2/ansible"
+    is_running = False
 
     def __init__(self, machines: dict):
         """
         param machines: List of machines (strings) to scan via ansible
         """
+        # Already set is_running here to, so be quick to run the task after creating
+        # this object
+        if Ansible.is_running:
+            raise Exception("Machine scan via ansible already running")
+        Ansible.is_running = True
+
         self.machines = machines
 
         self.thread_id = threading.current_thread().ident
@@ -46,28 +57,37 @@ class Ansible(Task):
             i_file.write(rendered)
 
     def execute(self):
-        logger.debug("Ansible scan of: %s", self.machines)
-        self.render_inventory()
-        command = '/usr/bin/ansible-playbook -i {dir}/inventory.yml {dir}/site.yml --private-key /home/orthos/.ssh/master'.format(dir=Ansible.facts_dir)
-        stdout, stderr, returncode = execute(command)
-        logger.debug("Calling: %s - %d", command, returncode)
-        logger.debug("ansible: %s - %s - %s" % (stdout, stderr, returncode))
-        files = self.get_json_filelist()
-        missing = list(set(self.machines) - set(files))
-        if missing:
-            logger.warning("Cannot scan machines {0} via ansible, missing json file in {1}".format(self.machines, Ansible.facts_dir))
-        success = []
-        fail    = []
-        for fqdn in self.machines:
-            try:
-                Ansible.store_machine_info(fqdn)
-                success.append(fqdn)
-            except Exception:
-                logger.exception("Could not store ansible data of host %s", fqdn)
-                fail.append(fqdn)
-        logger.info("Successfully scanned via ansible: %s", success)
-        if fail:
-            logger.warning("Exceptions caught during scan for these hosts: %s", fail)
+        try:
+            self.render_inventory()
+            command = '/usr/bin/ansible-playbook -i {dir}/inventory.yml {dir}/site.yml --private-key /home/orthos/.ssh/master'.format(dir=Ansible.facts_dir)
+            stdout, stderr, returncode = execute(command)
+            logger.debug("Calling: %s - %d", command, returncode)
+            logger.debug("ansible: %s - %s - %s" % (stdout, stderr, returncode))
+            files = self.get_json_filelist()
+            missing = list(set(self.machines) - set(files))
+            if missing:
+                logger.warning("Cannot scan machines {0} via ansible, missing json file in {1}".format(self.machines, Ansible.facts_dir))
+            success = []
+            fail    = []
+            for fqdn in files:
+                try:
+                    Ansible.store_machine_info(fqdn)
+                    success.append(fqdn)
+                except Exception:
+                    logger.exception("Could not store ansible data of host %s", fqdn)
+                    fail.append(fqdn)
+                logger.info("Successfully scanned via ansible: %s", success)
+            if fail:
+                logger.warning("Exceptions caught during scan for these hosts: %s", fail)
+            # Copy json files from ../ansible to ../ansible_archive
+            for file in glob.glob(Ansible.data_dir + "/*.json"):
+                shutil.copy(file, Ansible.data_dir_archive)
+            # Move ../ansible to ../ansible_lastrun
+            shutil.rmtree(Ansible.data_dir_lastrun)
+            shutil.move(Ansible.data_dir, Ansible.data_dir_lastrun)
+            os.mkdir(Ansible.data_dir)
+        finally:
+            Ansible.is_running = False
 
     def get_json_filelist(self) -> list:
         """
@@ -82,9 +102,20 @@ class Ansible(Task):
         return res_files
 
     @staticmethod
-    def get_ansible_data(machine_fqdn: str):
+    def get_ansible_data(machine_fqdn: str, try_lastruns = False):
 
         ans_file = os.path.join(Ansible.data_dir, machine_fqdn + '.json')
+        if not os.path.isfile(ans_file):
+            if not try_lastruns:
+                logger.exception("json file %s does not exist" % ans_file)
+                return None
+            else:
+                ans_file = os.path.join(Ansible.data_dir_lastrun, machine_fqdn + '.json')
+                if not os.path.isfile(ans_file):
+                    ans_file = os.path.join(Ansible.data_dir_archive, machine_fqdn + '.json')
+                    if not os.path.isfile(ans_file):
+                        logger.exception("json file %s does not exist" % ans_file)
+                        return None
         try:
             with open(ans_file, 'r') as json_file:
                 ansible_machine = json.load(json_file)
@@ -133,7 +164,7 @@ class Ansible(Task):
         manage runscript show_ansible_info --script-args lammermuir.arch.suse.de  |less
         """
 
-        ansible_machine = Ansible.get_ansible_data(machine_fqdn)
+        ansible_machine = Ansible.get_ansible_data(machine_fqdn, try_lastruns = True)
         if not ansible_machine:
             return
         exclude_keys = [ "_ansible_facts_gathered", "ansible_local" ]

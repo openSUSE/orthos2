@@ -203,22 +203,22 @@ sudo -i -u orthos /usr/lib/orthos2/manage.py collectstatic --noinput
 %attr(755,orthos,orthos) /usr/share/orthos2/taskmanager_migrations
 %attr(755,orthos,orthos) /usr/share/orthos2/frontend_migrations
 %attr(755,orthos,orthos) /usr/share/orthos2/api_migrations
-%attr(644,orthos,orthos) /usr/lib/orthos2/ansible/ansible.cfg
-%attr(644,orthos,orthos) /usr/lib/orthos2/ansible/inventory.template
-%attr(644,orthos,orthos) /usr/lib/orthos2/ansible/roles
-%attr(644,orthos,orthos) /usr/lib/orthos2/ansible/site.yml
-
 /usr/lib/orthos2/*
 %attr(755,orthos,orthos) %dir /srv/www/orthos2
 %ghost %dir /run/%{name}
 %ghost %dir /run/%{name}/ansible
-%attr(775,orthos,orthos) %dir /usr/lib/orthos2/ansible
 %attr(755,orthos,orthos) %dir /var/log/orthos2
 %attr(775,orthos,orthos) %dir /var/lib/orthos2
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/archiv
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/orthos-vm-images
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/database
 %attr(700,orthos,orthos) %dir /var/lib/orthos2/.ssh
+
+# defattr(fileattr, user, group, dirattr)
+# Add whole ansible directory with correct attr for dirs and files
+# Always keep this at the end with defattr
+%defattr(664, orthos, orthos, 775)
+%attr(664,orthos,orthos,775) /usr/lib/orthos2/ansible
 
 %files docs
 %dir %{orthos_web_docs}
