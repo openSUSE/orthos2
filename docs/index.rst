@@ -12,6 +12,7 @@ Welcome to Orthos2's documentation!
 
    Adminstrator Guide <adminguide>
    User Guide <userguide>
+   Command Line Client <commandline>
 
 
 
