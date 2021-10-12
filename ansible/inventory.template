@@ -1,9 +1,9 @@
 all:
   hosts:
 {% for machine in machine_list %}
-    {{ machine }} 
+    {{ machine }}:
 {% endfor %}
   vars:
     ansible_connection: ssh
     ansible_user: root
-
+    ansible_ssh_extra_args: -o ConnectionAttempts=1 -o ConnectTimeout=5 -o StrictHostKeyChecking=no
