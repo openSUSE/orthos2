@@ -958,6 +958,9 @@ class Config:
         with open(os.path.expanduser(USER_CONFIGFILE), 'w') as f:
             self.__cp.write(f)
 
+    def read_config(self, f: str):
+        self.__cp.read(f)
+
 
 class Orthos:
 
@@ -1194,7 +1197,6 @@ Example:
 
         if password is not None:
             self.API.request_token(self.username, password)
-
             if not self.API.get_token():
                 print("ERROR: Authorization error!")
 
@@ -1202,7 +1204,6 @@ Example:
                     self.recent_command = None
 
                 return None
-
         else:
             password = self.get_password()
 
@@ -1351,6 +1352,13 @@ def main():
     )
 
     parser.add_argument(
+        '-c',
+        '--config',
+        dest='config_file',
+        help='Additionally read this file as config file after reading %s and %s' % (SYSTEM_CONFIGFILE, USER_CONFIGFILE)
+    )
+
+    parser.add_argument(
         '-P',
         '--port',
         dest='port',
@@ -1455,6 +1463,9 @@ def main():
     )
 
     options = parser.parse_args()
+
+    if options.config_file:
+        orthos.config.read_config(options.config_file)
 
     if options.debug:
         if options.logfile:
