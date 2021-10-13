@@ -169,21 +169,21 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
     def get_architectures():
         """Return architectures choice tuple."""
         architectures = []
-        for architecture in Architecture.objects.all().values('id', 'name'):
+        for architecture in Architecture.objects.all().values('id', 'name').order_by('name'):
             architectures.append((architecture['id'], architecture['name']))
         return (architectures)
 
     def get_systems():
         """Return systems choice tuple."""
         systems = []
-        for system in System.objects.all().values('id', 'name'):
+        for system in System.objects.all().values('id', 'name').order_by('name'):
             systems.append((system['id'], system['name']))
         return (systems)
 
     def get_machinegroups():
         """Return machine group choice tuple."""
         groups = [('none', 'None')]
-        for group in MachineGroup.objects.all().values('id', 'name'):
+        for group in MachineGroup.objects.all().values('id', 'name').order_by('name'):
             groups.append((group['id'], group['name']))
         return (groups)
 
