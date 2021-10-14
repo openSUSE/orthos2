@@ -40,7 +40,7 @@ API_URL_FORMAT = '{0}://{1}:{2}/api'
 USER_CONFIGFILE = '~/.config/orthosrc'
 SYSTEM_CONFIGFILE = '/etc/orthosrc'
 USER_HISTORYFILE = '~/.orthos_history'
-PROMPT = '(orthos {0})'.format(VERSION)
+PROMPT = '(orthos {0}:{1})'
 PROMPT_LOADING = 'Please wait...'
 
 LEFT_MARGIN = 30
@@ -150,6 +150,8 @@ def format_value(value):
 
     return value
 
+def get_prompt(user):
+    return PROMPT.format(VERSION, user)
 
 class Command:
 
@@ -792,6 +794,7 @@ class Config:
         self.__port = None
         self.__server = None
         self.__user = None
+        self.__auth_user = None
         self.__password = None
         self.__use_pager = None
         self.__timezone = None
@@ -874,6 +877,14 @@ class Config:
             return self.__cp.get('global', 'username')
         else:
             return pwd.getpwuid(os.getuid())[0]
+
+    def set_auth_user(self, user):
+        self.__auth_user = user
+
+    def get_auth_user(self):
+        if not self.__auth_user:
+            return "Anonymous"
+        return self.__auth_user
 
     def set_use_pager(self, use_pager):
         values = [
@@ -1075,6 +1086,7 @@ class Orthos:
         )
 
         header, data = self.API.request('GET', API_URL)
+        orthos.config.set_auth_user(data.get('user'))
 
         self._commands = [
             Command(command, values) for command, values in data['commands'].items()
@@ -1216,6 +1228,10 @@ Example:
 
             if not self.API.get_token():
                 print("ERROR: Authorization error!")
+                return
+
+        self.config.set_auth_user(self.username)
+        self.LineReader.set_prompt(get_prompt(self.config.get_auth_user()))
 
     def is_authenticated(self):
         """Check if the user is already authenticated (token set)."""
@@ -1248,7 +1264,7 @@ Example:
         )
 
         if sys.stdin.isatty():
-            self.LineReader.set_prompt(PROMPT)
+            self.LineReader.set_prompt(get_prompt(self.config.get_auth_user()))
 
         while True:
             try:
