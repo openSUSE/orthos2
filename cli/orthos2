@@ -11,7 +11,6 @@ import getpass
 import json
 import logging
 import os
-import pwd
 import re
 import readline
 import struct
@@ -355,7 +354,7 @@ class Input(APIResponse):
             elif input_value.lower() in {'0', 'n', 'no', 'false'}:
                 value = False
             else:
-                raise ValueError("Value is not a boolean; use 'y' or 'n'!".format(str(input_value)))
+                raise ValueError("Value {0} is not a boolean; use 'y' or 'n'!".format(str(input_value)))
 
         return value
 
