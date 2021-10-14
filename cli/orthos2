@@ -1118,11 +1118,8 @@ Example:
             [str(command) for command in self._commands],
             help='Provides help.'
         )
-
+        
         self.username = self.config.get_user()
-        if not self.username:
-            print("Empty username - Use -u/--user or check %s or %s" % (USER_CONFIGFILE, SYSTEM_CONFIGFILE))
-            exit(1)
         self.recent_command = None
 
         commands = {}
