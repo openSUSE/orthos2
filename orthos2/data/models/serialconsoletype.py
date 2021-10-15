@@ -27,7 +27,8 @@ class SerialConsoleType(models.Model):
     name = models.CharField(
         max_length=100,
         null=False,
-        blank=False
+        blank=False,
+        unique=True
     )
 
     command = models.CharField(
@@ -41,6 +42,9 @@ class SerialConsoleType(models.Model):
         null=True,
         blank=True
     )
+
+    def natural_key(self):
+        return self.name
 
     def __str__(self):
         return self.name

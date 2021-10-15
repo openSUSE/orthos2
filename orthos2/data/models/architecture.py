@@ -60,6 +60,9 @@ class Architecture(models.Model):
         blank=True
     )
 
+    def natural_key(self):
+        return self.name
+
     def __init__(self, *args, **kwargs):
         """Deep copy object for comparison in `save()`."""
         super(Architecture, self).__init__(*args, **kwargs)

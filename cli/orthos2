@@ -421,7 +421,7 @@ class Input(APIResponse):
 
         response = orthos.API.request('POST', API_URL + self._target_url, {'form': data})
 
-        if response:
+        if response[0]:
             apiresponse = APIResponse(*response)
             apiresponse.process()
 
@@ -1031,8 +1031,10 @@ class Orthos:
 
                 response = urllib_request.urlopen(request)
             except Exception as e:
-                if not login:
-                    logging.error(e)
+                logging.debug(e)
+                print("\nERROR: Internal server Error, please double check submitted data and report:")
+                print("Bad Data:\n{0}\nURL:{1}\n".format(json_data, API_URL))
+                sys.exit(1)
 
             return response
 

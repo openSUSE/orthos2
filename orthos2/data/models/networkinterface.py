@@ -81,6 +81,9 @@ class NetworkInterface(models.Model):
         auto_now_add=True
     )
 
+    def natural_key(self):
+        return self.mac_address
+
     def __str__(self):
         if self.primary:
             return "{} ({}/{})".format(self.mac_address, self.name, 'primary')

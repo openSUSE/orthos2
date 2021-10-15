@@ -18,5 +18,8 @@ class RemotePowerDevice(models.Model):
                                   verbose_name="Fence Agent"
                                   )
 
+    def natural_key(self):
+        return self.fqdn
+
     def __str__(self):
         return self.fqdn + "[" + self.fence_name + "]"

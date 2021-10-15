@@ -547,6 +547,9 @@ class Machine(models.Model):
     search = SearchManager()
     view = ViewManager()
 
+    def natural_key(self):
+        return self.fqdn
+
     def __init__(self, *args, **kwargs):
         """Deep copy object for comparison in `save()`."""
         super(Machine, self).__init__(*args, **kwargs)

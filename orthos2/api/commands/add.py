@@ -279,7 +279,11 @@ class AddMachineCommand(BaseAPIView):
             del cleaned_data['mac_address']
             hypervisor = None
             if cleaned_data['hypervisor_fqdn']:
-                hypervisor = Machine.objects.get(fqdn=cleaned_data['hypervisor_fqdn'])
+                try:
+                    hypervisor = Machine.objects.get(fqdn=cleaned_data['hypervisor_fqdn'])
+                except Machine.DoesNotExist:
+                    return ErrorMessage("Hypervisor [%s] does not exist" % \
+                                        cleaned_data['hypervisor_fqdn']).as_json
             del cleaned_data['hypervisor_fqdn']
             new_machine = Machine(**cleaned_data)
             new_machine.hypervisor = hypervisor

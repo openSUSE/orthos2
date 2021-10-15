@@ -70,6 +70,9 @@ class Domain(models.Model):
         blank=False
     )
 
+    def natural_key(self):
+        return self.name
+
     def __str__(self):
         return self.name
 
