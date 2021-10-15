@@ -57,5 +57,8 @@ class System(models.Model):
 
     created = models.DateTimeField('created at', auto_now=True)
 
+    def natural_key(self):
+        return self.name
+
     def __str__(self):
         return self.name

@@ -12,5 +12,8 @@ class Vendor(models.Model):
         unique=True
     )
 
+    def natural_key(self):
+        return self.name
+
     def __str__(self):
         return self.name

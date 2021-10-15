@@ -32,5 +32,8 @@ class Annotation(models.Model):
         auto_now_add=True
     )
 
+    def natural_key(self):
+        return self.created
+
     def __str__(self):
         return self.machine.fqdn
