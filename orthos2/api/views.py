@@ -13,6 +13,7 @@ def root(request):
     data = {
         'version': settings.VERSION,
         'contact': settings.CONTACT,
+        'user': request.user.username,
         'api': request.build_absolute_uri(reverse('api:root')),
         'web': request.build_absolute_uri(reverse('frontend:root')),
         'message': ServerConfig.objects.by_key('orthos.api.welcomemessage'),

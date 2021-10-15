@@ -11,7 +11,6 @@ import getpass
 import json
 import logging
 import os
-import pwd
 import re
 import readline
 import struct
@@ -40,7 +39,7 @@ API_URL_FORMAT = '{0}://{1}:{2}/api'
 USER_CONFIGFILE = '~/.config/orthosrc'
 SYSTEM_CONFIGFILE = '/etc/orthosrc'
 USER_HISTORYFILE = '~/.orthos_history'
-PROMPT = '(orthos {0})'.format(VERSION)
+PROMPT = '(orthos {0}:{1})'
 PROMPT_LOADING = 'Please wait...'
 
 LEFT_MARGIN = 30
@@ -150,6 +149,8 @@ def format_value(value):
 
     return value
 
+def get_prompt(user):
+    return PROMPT.format(VERSION, user)
 
 class Command:
 
@@ -353,7 +354,7 @@ class Input(APIResponse):
             elif input_value.lower() in {'0', 'n', 'no', 'false'}:
                 value = False
             else:
-                raise ValueError("Value is not a boolean; use 'y' or 'n'!".format(str(input_value)))
+                raise ValueError("Value {0} is not a boolean; use 'y' or 'n'!".format(str(input_value)))
 
         return value
 
@@ -792,6 +793,7 @@ class Config:
         self.__port = None
         self.__server = None
         self.__user = None
+        self.__auth_user = None
         self.__password = None
         self.__use_pager = None
         self.__timezone = None
@@ -875,6 +877,14 @@ class Config:
         else:
             return pwd.getpwuid(os.getuid())[0]
 
+    def set_auth_user(self, user):
+        self.__auth_user = user
+
+    def get_auth_user(self):
+        if not self.__auth_user:
+            return "Anonymous"
+        return self.__auth_user
+
     def set_use_pager(self, use_pager):
         values = [
             'always',
@@ -957,6 +967,9 @@ class Config:
     def write_config(self):
         with open(os.path.expanduser(USER_CONFIGFILE), 'w') as f:
             self.__cp.write(f)
+
+    def read_config(self, f: str):
+        self.__cp.read(f)
 
 
 class Orthos:
@@ -1072,6 +1085,7 @@ class Orthos:
         )
 
         header, data = self.API.request('GET', API_URL)
+        orthos.config.set_auth_user(data.get('user'))
 
         self._commands = [
             Command(command, values) for command, values in data['commands'].items()
@@ -1115,7 +1129,7 @@ Example:
             [str(command) for command in self._commands],
             help='Provides help.'
         )
-
+        
         self.username = self.config.get_user()
         if not self.username:
             print("Empty username - Use -u/--user or check %s or %s" % (USER_CONFIGFILE, SYSTEM_CONFIGFILE))
@@ -1194,7 +1208,6 @@ Example:
 
         if password is not None:
             self.API.request_token(self.username, password)
-
             if not self.API.get_token():
                 print("ERROR: Authorization error!")
 
@@ -1202,7 +1215,6 @@ Example:
                     self.recent_command = None
 
                 return None
-
         else:
             password = self.get_password()
 
@@ -1218,6 +1230,10 @@ Example:
 
             if not self.API.get_token():
                 print("ERROR: Authorization error!")
+                return
+
+        self.config.set_auth_user(self.username)
+        self.LineReader.set_prompt(get_prompt(self.config.get_auth_user()))
 
     def is_authenticated(self):
         """Check if the user is already authenticated (token set)."""
@@ -1250,7 +1266,7 @@ Example:
         )
 
         if sys.stdin.isatty():
-            self.LineReader.set_prompt(PROMPT)
+            self.LineReader.set_prompt(get_prompt(self.config.get_auth_user()))
 
         while True:
             try:
@@ -1348,6 +1364,13 @@ def main():
         dest='servername',
         metavar='HOST',
         help='use the hostname specified on the command line instead of the one in the config file'
+    )
+
+    parser.add_argument(
+        '-c',
+        '--config',
+        dest='config_file',
+        help='Additionally read this file as config file after reading %s and %s' % (SYSTEM_CONFIGFILE, USER_CONFIGFILE)
     )
 
     parser.add_argument(
@@ -1455,6 +1478,9 @@ def main():
     )
 
     options = parser.parse_args()
+
+    if options.config_file:
+        orthos.config.read_config(options.config_file)
 
     if options.debug:
         if options.logfile:

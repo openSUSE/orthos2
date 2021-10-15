@@ -218,7 +218,7 @@ sudo -i -u orthos /usr/lib/orthos2/manage.py collectstatic --noinput
 # Add whole ansible directory with correct attr for dirs and files
 # Always keep this at the end with defattr
 %defattr(664, orthos, orthos, 775)
-%attr(664,orthos,orthos,775) /usr/lib/orthos2/ansible
+%attr(664,orthos,orthos) /usr/lib/orthos2/ansible
 
 %files docs
 %dir %{orthos_web_docs}
