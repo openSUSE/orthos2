@@ -7,6 +7,10 @@ from orthos2.utils.misc import safe_get_or_default
 
 class Architecture(models.Model):
 
+    class Manager(models.Manager):
+        def get_by_natural_key(self, fqdn):
+            return self.get(fqdn=fqdn)
+
     class Type:
 
         @classmethod
@@ -60,8 +64,10 @@ class Architecture(models.Model):
         blank=True
     )
 
+    objects = Manager()
+
     def natural_key(self):
-        return self.name
+        return (self.name,)
 
     def __init__(self, *args, **kwargs):
         """Deep copy object for comparison in `save()`."""

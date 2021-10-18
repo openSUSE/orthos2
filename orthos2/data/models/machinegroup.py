@@ -53,7 +53,7 @@ class MachineGroup(models.Model):
     )
 
     def natural_key(self):
-        return self.name
+        return (self.name,)
 
     def __init__(self, *args, **kwargs):
         """Deep copy object for comparison in `save()`."""

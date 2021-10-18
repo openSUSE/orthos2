@@ -37,7 +37,7 @@ class Enclosure(models.Model):
     location_rack_position = 'unknown'
 
     def natural_key(self):
-        return self.name
+        return (self.name,)
 
     def __str__(self):
         return self.name

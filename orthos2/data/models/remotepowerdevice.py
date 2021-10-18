@@ -19,7 +19,7 @@ class RemotePowerDevice(models.Model):
                                   )
 
     def natural_key(self):
-        return self.fqdn
+        return (self.fqdn,)
 
     def __str__(self):
         return self.fqdn + "[" + self.fence_name + "]"
