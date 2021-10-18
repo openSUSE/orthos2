@@ -152,6 +152,10 @@ class SearchManager(ViewManager):
 
 class Machine(models.Model):
 
+    class Manager(models.Manager):
+        def get_by_natural_key(self, fqdn):
+            return self.get(fqdn=fqdn)
+
     class Meta:
         ordering = ['fqdn']
 
@@ -541,14 +545,14 @@ class Machine(models.Model):
         auto_now_add=True
     )
 
-    objects = models.Manager()
+    objects = Manager()
     api = RootManager()
     active_machines = RootManager()
     search = SearchManager()
     view = ViewManager()
 
     def natural_key(self):
-        return self.fqdn
+        return (self.fqdn,)
 
     def __init__(self, *args, **kwargs):
         """Deep copy object for comparison in `save()`."""

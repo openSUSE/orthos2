@@ -5,6 +5,10 @@ from orthos2.utils.misc import safe_get_or_default
 
 class System(models.Model):
 
+    class Manager(models.Manager):
+        def get_by_natural_key(self, name):
+            return self.get(name=name)
+
     class Type:
 
         @classmethod
@@ -57,8 +61,10 @@ class System(models.Model):
 
     created = models.DateTimeField('created at', auto_now=True)
 
+    objects = Manager()
+
     def natural_key(self):
-        return self.name
+        return (self.name,)
 
     def __str__(self):
         return self.name

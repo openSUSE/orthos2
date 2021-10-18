@@ -27,6 +27,11 @@ def validate_domain_ending(value):
 
 
 class Domain(models.Model):
+
+    class Manager(models.Manager):
+        def get_by_natural_key(self, name):
+            return self.get(name=name)
+
     name = models.CharField(
         max_length=200,
         blank=False,
@@ -70,8 +75,10 @@ class Domain(models.Model):
         blank=False
     )
 
+    objects = Manager()
+
     def natural_key(self):
-        return self.name
+        return (self.name,)
 
     def __str__(self):
         return self.name
@@ -231,9 +238,14 @@ class Domain(models.Model):
 
 class DomainAdmin(models.Model):
 
-    domain = models.ForeignKey(Domain, on_delete=models.CASCADE)
-    arch = models.ForeignKey(Architecture, on_delete=models.CASCADE)
+    domain = models.ForeignKey(Domain, on_delete=models.CASCADE, blank=False)
+    arch = models.ForeignKey(Architecture, on_delete=models.CASCADE, blank=False)
 
     contact_email = models.EmailField(
         blank=False
     )
+
+    def natural_key(self):
+        return (self.domain.name,self.arch.name)
+
+

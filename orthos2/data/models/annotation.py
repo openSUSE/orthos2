@@ -11,6 +11,7 @@ class Annotation(models.Model):
         'data.Machine',
         related_name='annotations',
         editable=False,
+        blank=False,
         on_delete=models.CASCADE
     )
 
@@ -33,7 +34,7 @@ class Annotation(models.Model):
     )
 
     def natural_key(self):
-        return self.created
+        return (self.machine.fqdn, self.created)
 
     def __str__(self):
         return self.machine.fqdn
