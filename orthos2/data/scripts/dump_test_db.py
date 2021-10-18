@@ -3,13 +3,23 @@
 import os
 
 from django.apps import apps
-from django.core import serializers
-from orthos2.data import models
-from django.db import DEFAULT_DB_ALIAS
-from rest_framework.serializers import ModelSerializer
-import rest_framework
+from orthos2.data.models.domain import Domain, DomainAdmin
+from orthos2.data.models.machine import Machine
 
-      
+"""
+Usage:
+First Parameters: Tables to dump [general|<domain>|...]
+Second Paramter: "natural" Use natural primary/foreign keys (default)
+
+                 "pk" to dump Primary/Foreign keys with numbers
+                 (only works if loaded into a freshly installed database)
+
+Examples:
+manage runscript dump_test_db  --script-args general
+manage runscript dump_test_db  --script-args test-30.arch.suse.de
+
+Also see: https://docs.djangoproject.com/en/3.2/topics/serialization
+"""
 
 Modules = {}
 
@@ -21,9 +31,11 @@ Modules['remote' ] = ( "Remotepower", "Bmc", "Remotepowerdevice", "Serialconsole
 
 queries = []
 
+added_machines = []
+
 config = apps.get_app_config("data")
 
-def help():
+def show_help():
     print("Use --script-args to specify what you want to dump:")
     print("")
     print("\tgeneral \t-- Dump general DB data [ %s ] " % ", ".join(Modules['general']))
@@ -31,40 +43,75 @@ def help():
     print("\tremote  \t-- Dump remote management HW DB data [ %s ] " % ", ".join(Modules['remote']))
     print("")
     print("\t<domain>\t-- Dump data of a specific domain [ %s ] " % ", ".join(Modules['domain']))
+    print()
+    print("Examples:")
+    print("manage runscript dump_test_db  --script-args=general")
+    print("manage runscript dump_test_db  --script-args=test-30.arch.suse.de")
+    print()
+    print("First Parameters: Tables to dump [general|<domain>|...]")
+    print("Second Paramter: \"natural\" Use natural primary/foreign keys (default)")
+    print("                 \"pk\" to dump Primary/Foreign keys with numbers")
+    print("                  (only works if loaded into a freshly installed database)")
+
     exit(1)
+
+def add_machine(fqdn: str, queries: list):
+
+    if fqdn in added_machines:
+        # already added
+        print("Machine already added: %s" % fqdn)
+        return
+    try:
+        machine = Machine.objects.get(fqdn=fqdn)
+        query = Machine.objects.filter(fqdn=fqdn)
+        queries.extend(query)
+        if machine.hypervisor:
+            add_machine(machine.hypervisor.fqdn, queries)
+    except Machine.DoesNotExist:
+        print("%s - Machine does not exist" % fqdn)
+        show_help()
+    added_machines.append(fqdn)
 
 def add_domain(domain :str, queries : list):
 
     try:
-        domain = config.get_model("Domain").objects.get(name=domain)
-        query = config.get_model("Domain").objects.filter(name=domain)
+        domain = Domain.objects.get(name=domain)
+        query = Domain.objects.filter(name=domain)
         queries.extend(query)
-        if domain.tftp_server:
-            query = config.get_model("Machine").objects.filter(pk=domain.tftp_server.pk)
-            queries.extend(query)
-        if domain.cscreen_server:
-            query = config.get_model("Machine").objects.filter(pk=domain.cscreen_server.pk)
-            queries.extend(query)
-        if domain.cobbler_server:
-            query = domain.cobbler_server.all()
-            queries.extend(query)
-            
-    except models.domain.Domain.DoesNotExist:
+        query = DomainAdmin.objects.filter(domain=domain)
+        queries.extend(query)
+    except Domain.DoesNotExist:
         print("%s - Domain does not exist" % domain)
-        help()
+        show_help()
 
-    if domain:
-        print(domain)
-    else:
-        print("No domain found")
-        help()
+    if domain.tftp_server:
+        add_machine(domain.tftp_server.fqdn, queries)
+    if domain.cscreen_server:
+        add_machine(domain.cscreen_server.fqdn, queries)
+    if domain.cobbler_server and len(domain.cobbler_server.all()):
+        add_machine(domain.cobbler_server.all()[0].fqdn, queries)
 
+    print("Adding domain %s" % domain)
+    print("Adding %d machines related machines: %s" % (len(added_machines), added_machines))
 
     
 def run(*args):
-    
-    if not args or args[0] == "help":
-        help()
+
+    natural = True
+
+    if not args or args[0] == "help" or len(args) > 2:
+        show_help()
+
+    if len(args) == 2:
+        if args[1] == "pk":
+            print("Using numbers as Primary/Foreign keys")
+            natural = False
+        elif args[1] == "natural":
+            print("Using natural keys as Primary/Foreign keys")
+            natural = True
+        else:
+            show_help()
+
     param = args[0]
     tables = Modules.get(param)
 
@@ -77,10 +124,8 @@ def run(*args):
             queries.extend(model)
 
     file = param + ".json"
-    print("Dumping to file: %s" % os.path.abspath(file))
     print(queries)
-    out = open(file, "w")
-    from django.core import serializers
-    serializers.serialize("json", queries, indent=2, stream=out)
-    out.close()
-
+    with open(file, "w") as out:
+        from django.core import serializers
+        serializers.serialize("json", queries, indent=2, stream=out, use_natural_foreign_keys=natural,use_natural_primary_keys=natural)
+        print("File dumped: %s" % os.path.abspath(file))
