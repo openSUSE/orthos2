@@ -1,6 +1,5 @@
-import collections
 import logging
-import os
+
 
 from orthos2.data.models import Domain, Machine, ServerConfig
 from django.conf import settings

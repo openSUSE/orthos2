@@ -6,7 +6,6 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.html import format_html
 
-from . import Priority
 from .models import DailyTask, SingleTask
 
 

@@ -4,10 +4,6 @@ from django.conf.urls import re_path
 from django.http import HttpResponseRedirect
 from orthos2.taskmanager.tasks.machinetasks import MachineCheck
 from orthos2.taskmanager.tasks.daily import DailyMachineChecks
-from orthos2.taskmanager.tasks.ansible import Ansible
-from orthos2.taskmanager import tasks
-from orthos2.taskmanager.models import TaskManager
-
 
 class RescanCommand(BaseAPIView):
 

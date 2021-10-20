@@ -13,7 +13,7 @@ from django import db
 
 
 from . import Priority
-from .models import BaseTask, DailyTask, SingleTask, Task
+from .models import BaseTask, DailyTask, SingleTask
 
 logger = logging.getLogger('tasks')
 

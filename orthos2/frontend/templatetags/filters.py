@@ -1,6 +1,5 @@
 import re
 
-from orthos2.data.models import Machine
 from django import template
 from django.templatetags.static import static
 from django.utils.html import escape, mark_safe

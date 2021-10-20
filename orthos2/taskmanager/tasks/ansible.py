@@ -8,7 +8,6 @@ passing ansible collected data instead of self called functions
 import os
 import shutil
 import glob
-import sys
 import threading
 import logging
 import json

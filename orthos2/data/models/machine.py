@@ -23,7 +23,6 @@ from .networkinterface import validate_mac_address, NetworkInterface
 from .platform import Platform
 from .system import System
 from .virtualizationapi import VirtualizationAPI
-from .serverconfig import ServerConfig
 
 logger = logging.getLogger('models')
 

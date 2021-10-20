@@ -2,7 +2,6 @@ import logging
 import re
 
 from orthos2.data.models import Component
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 logger = logging.getLogger('models')
