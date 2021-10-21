@@ -1128,11 +1128,14 @@ Example:
             help='Exit program.'
         )
         self._add_client_command(
+            'config',
+            help='Show connection/shell configurations.'
+        )
+        self._add_client_command(
             'help',
             [str(command) for command in self._commands],
             help='Provides help.'
         )
-        
         self.username = self.config.get_user()
         if not self.username:
             print("Empty username - Use -u/--user or check %s or %s" % (USER_CONFIGFILE, SYSTEM_CONFIGFILE))
@@ -1262,6 +1265,16 @@ Example:
 
             print()
 
+    def print_config(self):
+
+        print("")
+        print("User:\t\t%s" % self.config.get_auth_user())
+        print("Server:\t\t%s" % self.config.get_server())
+        print("Port:\t\t%s" % self.config.get_port())
+        print("Protocol:\t%s" % self.config.get_protocol())
+        print("Timezone:\t%s" % self.config.get_timezone())
+        print("")
+
     def run(self):
         self.LineReader = OrthosLineReader(
             self,
@@ -1304,6 +1317,10 @@ Example:
 
                 elif command in {'QUIT', 'EXIT'}:
                     return
+
+                elif command in {'CONFIG'}:
+                    self.print_config()
+                    continue
 
                 elif command == 'ALIAS':
                     if arguments_length == 0:
