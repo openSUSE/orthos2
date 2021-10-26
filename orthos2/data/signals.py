@@ -20,6 +20,7 @@ logger = logging.getLogger('orthos')
 
 
 signal_cobbler_regenerate = Signal(providing_args=['domain_id'])
+signal_cobbler_sync_dhcp = Signal(providing_args=['domain_id'])
 signal_cobbler_machine_update = Signal(providing_args=['domain_id', 'machine_id'])
 signal_serialconsole_regenerate = Signal(providing_args=['cscreen_server_fqdn'])
 signal_motd_regenerate = Signal(providing_args=['fqdn'])
@@ -205,6 +206,16 @@ def regenerate_cobbler(sender, domain_id, *args, **kwargs):
 
     TaskManager.add(task)
 
+
+@receiver(signal_cobbler_sync_dhcp)
+def cobbler_sync_dhcp(sender, domain_id, *args, **kwargs):
+    """
+    Create `RegenerateCobbler()` task here.
+
+    This should be the one and only place for creating this task.
+    """
+    task = tasks.cobbler.SyncCobblerDHCP(domain_id)
+    TaskManager.add(task)
 
 @receiver(signal_cobbler_machine_update)
 def update_cobbler_machine(sender, domain_id, machine_id, *args, **kwargs):
