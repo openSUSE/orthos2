@@ -1,7 +1,7 @@
 import logging
 import os
 
-from orthos2.data.models import ServerConfig
+from orthos2.data.models import ServerConfig, Domain
 from orthos2.taskmanager.models import Task
 from orthos2.utils.ssh import SSH
 
@@ -29,7 +29,7 @@ class RegenerateSerialConsole(Task):
 
         conn = None
         try:
-            conn = SSH(cscreen_server.fqdn)
+            conn = SSH(self.fqdn)
             conn.connect(user='_cscreen')
 
             stdout, stderr, exitstatus = conn.execute('touch /dev/shm/.cscreenrc_allow_update')
@@ -37,7 +37,13 @@ class RegenerateSerialConsole(Task):
                 raise Exception("Couldn't lock cscreen ('touch /dev/shm/.cscreenrc_allow_update')")
 
             new_content = ''
-            machines = cscreen_server.fqdn_domain.machine_set.all()
+            # domains served by this cscreen server:
+            domains = Domain.objects.filter(cscreen_server__fqdn=self.fqdn)
+            machines = []
+            for domain in domains:
+                machines += domain.machine_set.all()
+
+            #logger.debug("Creating serial console for %s" % machines)
             consoles = [machine.serialconsole for machine in machines if hasattr(machine, 'serialconsole')]
             for serialconsole in consoles:
                 new_content += serialconsole.get_comment_record() + '\n'
@@ -76,7 +82,7 @@ class RegenerateSerialConsole(Task):
                 import errno
                 if _errno == errno.ENOENT:
                     file_found = False
-                    logging.warning("{}:{} not found - creating...".format(cscreen_server.fqdn,
+                    logging.warning("{}:{} not found - creating...".format(self.fqdn,
                                                                            screenrc_file))
                 else:
                     raise(e)
@@ -111,7 +117,7 @@ class RegenerateSerialConsole(Task):
 
             if exitstatus != 0:
                 raise Exception("Couldn't unlock CScreen ('rm /dev/shm/.cscreenrc_allow_update)")
-            logger.info("CScreen update for %s finished", cscreen_server.fqdn)
+            logger.info("CScreen update for %s finished", self.fqdn)
 
         except SSH.Exception as exception:
             logger.exception(exception)
