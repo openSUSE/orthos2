@@ -210,7 +210,7 @@ def cobbler_sync_dhcp(sender, domain_id, *args, **kwargs):
 
     This should be the one and only place for creating this task.
     """
-    task = tasks.cobbler.SyncCobblerDHCP(domain_id)
+    task = tasks.SyncCobblerDHCP(domain_id)
     TaskManager.add(task)
 
 @receiver(signal_cobbler_machine_update)
