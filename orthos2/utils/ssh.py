@@ -121,7 +121,7 @@ class SSH(object):
         Return a tuple containing stdout (list), stderr (list) and exit status (int).
         """
         try:
-            stdin, stdout, stderr = self._client.exec_command(command)
+            _stdin, stdout, stderr = self._client.exec_command(command)
             exitstatus = stdout.channel.recv_exit_status()
 
             stdout = stdout.readlines()
@@ -234,7 +234,7 @@ class SSH(object):
             self._sftp = self._client.open_sftp()
 
         try:
-            directory, filename = os.path.split(remotefile)
+            directory, _filename = os.path.split(remotefile)
             self._sftp.chdir(directory)
         except FileNotFoundError as e:
             if not parents:
@@ -242,7 +242,7 @@ class SSH(object):
 
             directories = directory.lstrip('/').split('/')
 
-            for i, part in enumerate(directories):
+            for i, _part in enumerate(directories):
                 directory = '/' + '/'.join(directories[0:i + 1])
                 try:
                     self._sftp.chdir(directory)
@@ -260,7 +260,7 @@ class SSH(object):
 
     def check_path(self, path, test):
         """Check if the file/directory exists remotely."""
-        stdout, stderr, exitstatus = self.execute('test {} "{}"'.format(test, path))
+        _stdout, _stderr, exitstatus = self.execute('test {} "{}"'.format(test, path))
 
         if exitstatus != 0:
             return False

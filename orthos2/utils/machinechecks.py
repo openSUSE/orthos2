@@ -20,9 +20,9 @@ def ping_check(fqdn, timeout=None, ip_version=4):
         command = '/usr/bin/ping6'
 
     if timeout is None:
-        stdout, stderr, returncode = execute('{} -c1 -q {}'.format(command, fqdn))
+        _stdout, _stderr, returncode = execute('{} -c1 -q {}'.format(command, fqdn))
     else:
-        stdout, stderr, returncode = execute('{} -W{} -c1 -q {}'.format(command, timeout, fqdn))
+        _stdout, _stderr, returncode = execute('{} -W{} -c1 -q {}'.format(command, timeout, fqdn))
 
     return returncode == 0
 
@@ -92,7 +92,7 @@ def get_hardware_information(fqdn):
 
         # CPUs
         logger.debug("Get CPU number...")
-        output, stderr, exitstatus = conn.execute_script_remote('machine_get_cpu_number.sh')
+        output, _stderr, _exitstatus = conn.execute_script_remote('machine_get_cpu_number.sh')
         if output:
             for line in output:
                 if line.startswith('SOCKETS'):
@@ -103,22 +103,22 @@ def get_hardware_information(fqdn):
                     machine_.cpu_threads = int(line.split('=')[1])
 
         logger.debug("Get CPU type...")
-        output, stderr, exitstatus = conn.execute_script_remote('machine_get_cpu_type.sh')
+        output, _stderr, _exitstatus = conn.execute_script_remote('machine_get_cpu_type.sh')
         if output and output[0]:
             machine_.cpu_model = output[0].strip()
 
         logger.debug("Get CPU flags...")
-        output, stderr, exitstatus = conn.execute_script_remote('machine_get_cpu_flags.sh')
+        output, _stderr, _exitstatus = conn.execute_script_remote('machine_get_cpu_flags.sh')
         if output and output[0]:
             machine_.cpu_flags = output[0].strip()
 
         logger.debug("Get CPU speed...")
-        output, stderr, exitstatus = conn.execute_script_remote('machine_get_cpu_speed.sh')
+        output, _stderr, _exitstatus = conn.execute_script_remote('machine_get_cpu_speed.sh')
         if output and output[0]:
             machine_.cpu_speed = Decimal(int(output[0].strip()) / 1000000)
 
         logger.debug("Get CPU ID...")
-        output, stderr, exitstatus = conn.execute_script_remote('machine_get_cpu_id.sh')
+        output, _stderr, _exitstatus = conn.execute_script_remote('machine_get_cpu_id.sh')
         if output and output[0]:
             machine_.cpu_id = output[0].strip()
 
@@ -159,7 +159,7 @@ def get_hardware_information(fqdn):
 
         # Disk
         logger.debug("Get disk information...")
-        stdout, stderr, exitstatus = conn.execute('hwinfo --disk')
+        stdout, _stderr, _exitstatus = conn.execute('hwinfo --disk')
         for line in stdout:
             line = line.strip()
             if line.startswith('Size:'):
@@ -175,24 +175,24 @@ def get_hardware_information(fqdn):
 
         # lsmod
         logger.debug("Get 'lsmod'...")
-        stdout, stderr, exitstatus = conn.execute('lsmod')
+        stdout, _stderr, _exitstatus = conn.execute('lsmod')
         machine_.lsmod = normalize_ascii("".join(stdout))
 
         # lspci
         logger.debug("Get 'lspci'...")
-        stdout, stderr, exitstatus = conn.execute('lspci -vvv -nn')
+        stdout, _stderr, _exitstatus = conn.execute('lspci -vvv -nn')
         machine_.lspci = normalize_ascii("".join(stdout))
 
         # last
         logger.debug("Get 'last'...")
-        output, stderr, exitstatus = conn.execute('last | grep -v reboot | head -n 1')
+        output, _stderr, _exitstatus = conn.execute('last | grep -v reboot | head -n 1')
         string = ''.join(output)
         result = string[0:8] + string[38:49]
         machine_.last = normalize_ascii("".join(result))
 
         # hwinfo
         logger.debug("Get 'hwinfo' (full)...")
-        stdout, stderr, exitstatus = conn.execute(
+        stdout, _stderr, _exitstatus = conn.execute(
             'hwinfo --bios ' +
             '--block --bridge --cdrom --cpu --disk --floppy --framebuffer ' +
             '--gfxcard --hub --ide --isapnp --isdn --keyboard --memory ' +
@@ -203,12 +203,12 @@ def get_hardware_information(fqdn):
 
         # dmidecode
         logger.debug("Get 'dmidecode'...")
-        stdout, stderr, exitstatus = conn.execute('dmidecode')
+        stdout, _stderr, _exitstatus = conn.execute('dmidecode')
         machine_.dmidecode = normalize_ascii("".join(stdout))
 
         # dmesg
         logger.debug("Get 'dmesg'...")
-        stdout, stderr, exitstatus = conn.execute(
+        stdout, _stderr, _exitstatus = conn.execute(
             'if [ -e /var/log/boot.msg ]; then ' +
             'cat /var/log/boot.msg; else journalctl -xl | head -n200; ' +
             'fi'
@@ -217,12 +217,12 @@ def get_hardware_information(fqdn):
 
         # lsscsi
         logger.debug("Get 'lsscsi'...")
-        stdout, stderr, exitstatus = conn.execute('lsscsi -s')
+        stdout, _stderr, _exitstatus = conn.execute('lsscsi -s')
         machine_.lsscsi = normalize_ascii("".join(stdout))
 
         # lsusb
         logger.debug("Get 'lsusb'...")
-        stdout, stderr, exitstatus = conn.execute('lsusb')
+        stdout, _stderr, _exitstatus = conn.execute('lsusb')
         machine_.lsusb = normalize_ascii("".join(stdout))
 
         # IPMI
@@ -231,7 +231,7 @@ def get_hardware_information(fqdn):
 
         # Firmware script
         logger.debug("Get BIOS version...")
-        output, stderr, exitstatus = conn.execute_script_remote('machine_get_firmware.sh')
+        output, _stderr, _exitstatus = conn.execute_script_remote('machine_get_firmware.sh')
         if output and output[0]:
             machine_.bios_version = output[0].strip()
 
@@ -267,7 +267,7 @@ def get_networkinterfaces(fqdn):
 
         # Network interfaces
         logger.debug("Collect network interfaces...")
-        stdout, stderr, exitstatus = conn.execute('hwinfo --network')
+        stdout, _stderr, _exitstatus = conn.execute('hwinfo --network')
         interfaces = []
         interface = None
 
@@ -314,7 +314,7 @@ def get_networkinterfaces(fqdn):
             if arp_type == ARPHRD_IEEE80211:
                 continue
 
-            stdout, stderr, exitstatus = conn.execute('ethtool {}'.format(interface.name))
+            stdout, _stderr, _exitstatus = conn.execute('ethtool {}'.format(interface.name))
             for line in stdout:
                 match = re.match(r'\s+Port: (.+)', line)
                 if match:
@@ -353,7 +353,7 @@ def get_status_ip(fqdn):
         timer.start()
 
         logger.debug("Check IPv4/IPv6 status...")
-        stdout, stderr, exitstatus = conn.execute('/sbin/ip a')
+        stdout, _stderr, _exitstatus = conn.execute('/sbin/ip a')
 
         devices = {}
         current_device = None
@@ -392,7 +392,7 @@ def get_status_ip(fqdn):
             if match:
                 devices[current_device]['mac_address'] = match.group(1).upper()
 
-        for device, values in devices.items():
+        for _device, values in devices.items():
             if values['mac_address'] is None:
                 continue
 
@@ -466,7 +466,7 @@ def get_installations(fqdn):
         logger.debug("Collect installations...")
 
         installations = []
-        output, stderr, exitstatus = conn.execute_script_remote('machine_get_installations.sh')
+        output, _stderr, _exitstatus = conn.execute_script_remote('machine_get_installations.sh')
         if output:
             for line in output:
                 if line.startswith('--'):
@@ -535,7 +535,7 @@ def get_pci_devices(fqdn):
         logger.debug("Collect PCI devices for '{}'...".format(machine.fqdn))
         pci_devices = []
         chunk = ''
-        stdout, stderr, exitstatus = conn.execute('lspci -mmvn')
+        stdout, _stderr, _exitstatus = conn.execute('lspci -mmvn')
         for line in stdout:
             if line.strip():
                 chunk += line

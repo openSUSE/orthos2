@@ -94,7 +94,7 @@ class Ansible(Task):
         created via ansible scan (.json suffix removed)
         """
         res_files = []
-        for subdir, dirs, files in os.walk(Ansible.data_dir):
+        for _subdir, _dirs, files in os.walk(Ansible.data_dir):
             for jfile in files:
                 if jfile.endswith(".json"):
                     res_files.append(jfile[:-len(".json")])
@@ -119,7 +119,7 @@ class Ansible(Task):
             with open(ans_file, 'r') as json_file:
                 ansible_machine = json.load(json_file)
         except Exception as e:
-            logger.exception("Could not load ansible json file %s" % ans_file)
+            logger.exception("Could not load ansible json file %s - %s", ans_file, repr(e))
             return None
 
         return ansible_machine
@@ -150,7 +150,6 @@ class Ansible(Task):
         db_machine_attributes = [attribute for attribute in dir(db_machine) if not attribute.startswith('_')]
         for db_machine_attribute in db_machine_attributes:
             try:
-                attribute_value = getattr(db_machine, db_machine_attribute)
                 print(f"db_machine.{db_machine_attribute} = {getattr(db_machine, db_machine_attribute)}")
             except Exception:
                 continue

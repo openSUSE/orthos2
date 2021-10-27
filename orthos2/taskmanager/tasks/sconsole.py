@@ -15,14 +15,14 @@ class RegenerateSerialConsole(Task):
 
     def execute(self):
         """Execute the task."""
-        from orthos2.data.models import Machine, SerialConsole
+        from orthos2.data.models import Machine
 
         if not ServerConfig.objects.bool_by_key('orthos.debug.serialconsole.write'):
             logger.warning("Disabled: set 'orthos.debug.serialconsole.write' to 'true'")
             return
 
         try:
-            cscreen_server = Machine.objects.get(fqdn=self.fqdn)
+            _cscreen_server = Machine.objects.get(fqdn=self.fqdn)
         except Machine.DoesNotExist:
             logger.warning("Serial console server does not exist: {}".format(self.fqdn))
 
@@ -31,7 +31,7 @@ class RegenerateSerialConsole(Task):
             conn = SSH(self.fqdn)
             conn.connect(user='_cscreen')
 
-            stdout, stderr, exitstatus = conn.execute('touch /dev/shm/.cscreenrc_allow_update')
+            _stdout, stderr, exitstatus = conn.execute('touch /dev/shm/.cscreenrc_allow_update')
             if exitstatus != 0:
                 raise Exception("Couldn't lock cscreen ('touch /dev/shm/.cscreenrc_allow_update')")
 
@@ -99,7 +99,7 @@ class RegenerateSerialConsole(Task):
             # Save backup file which is used later by an invoked script
             # to determine the changes and update the running screen
             # session (add, remove or restart modified entries).
-            stdout, stderr, exitstatus = conn.execute(
+            _stdout, stderr, exitstatus = conn.execute(
                 'cp {} {}.old'.format(screenrc_file, screenrc_file)
             )
 
@@ -108,11 +108,11 @@ class RegenerateSerialConsole(Task):
             print(buffer, file=cscreen)
             cscreen.close()
 
-            stdout, stderr, exitstatus = conn.execute('/usr/bin/cscreen -u')
+            _stdout, stderr, exitstatus = conn.execute('/usr/bin/cscreen -u')
             if exitstatus != 0:
                 logger.warning(stderr)
 
-            stdout, stderr, exitstatus = conn.execute('rm -f /dev/shm/.cscreenrc_allow_update')
+            _stdout, stderr, exitstatus = conn.execute('rm -f /dev/shm/.cscreenrc_allow_update')
 
             if exitstatus != 0:
                 raise Exception("Couldn't unlock CScreen ('rm /dev/shm/.cscreenrc_allow_update)")

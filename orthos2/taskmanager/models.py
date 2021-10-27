@@ -139,7 +139,7 @@ class TaskManager:
             ))
             return
 
-        task, created = SingleTask.objects.get_or_create(
+        task, _created = SingleTask.objects.get_or_create(
             name=task.__class__.__name__,
             module=task.__class__.__module__,
             arguments=arguments

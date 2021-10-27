@@ -81,10 +81,6 @@ Example:
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
-        machinegroup = None
-        if machine.group and not machine.group.setup_use_architecture:
-            machinegroup = machine.group.name
-
         valid = machine.fqdn_domain.is_valid_setup_choice(
             distribution,
             machine.architecture.name

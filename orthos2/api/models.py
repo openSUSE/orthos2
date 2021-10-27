@@ -915,7 +915,7 @@ class APIQuery:
         the primary key. If the primary key wasn't requested, remove it.
         """
         for machine in rows:
-            for dynamic_field, values in QueryField.DYNAMIC_FIELDS.items():
+            for dynamic_field, _values in QueryField.DYNAMIC_FIELDS.items():
                 field = QueryField(dynamic_field)
                 if field.db_field_name in self._fields:
                     machine[field.db_field_name] = field.dynamic_field_function(machine['pk'])

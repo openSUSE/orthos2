@@ -59,7 +59,7 @@ def machine_post_save(sender, instance, *args, **kwargs):
     if primary_networkinterface:
         if primary_networkinterface.mac_address.upper() != instance.mac_address.upper():
 
-            networkinterface, created = instance.networkinterfaces.get_or_create(
+            networkinterface, _created = instance.networkinterfaces.get_or_create(
                 machine=instance,
                 mac_address=instance.mac_address
             )

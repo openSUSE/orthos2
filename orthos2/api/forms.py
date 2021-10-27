@@ -232,7 +232,7 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         enclosure = cleaned_data['enclosure']
         if enclosure:
             try:
-                enclosure, created = Enclosure.objects.get_or_create(name=enclosure)
+                enclosure, _created = Enclosure.objects.get_or_create(name=enclosure)
             except Exception as e:
                 logger.exception(e)
                 self.add_error('enclosure', "Something went wrong!")

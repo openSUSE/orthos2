@@ -155,9 +155,6 @@ class Domain(models.Model):
         """
         from orthos2.utils.ssh import SSH
 
-        def grouping(records):
-            """Group records for HTML form."""
-
         if not self.tftp_server:
             logger.warning("No TFTP server available for '{}'".format(self.name))
             return {}
@@ -199,7 +196,7 @@ class Domain(models.Model):
                     (distro, profile) = record.split(delimiter)
                 # <arch>:<distro>:<profile>
                 elif delim_c == 2:
-                    (arch, distro, profile) = record.split(delimiter)
+                    (_arch, distro, profile) = record.split(delimiter)
                 else:
                     logger.debug("Setup record has invalid format: '{}'".format(record))
                     continue
