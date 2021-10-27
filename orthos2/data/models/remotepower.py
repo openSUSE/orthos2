@@ -1,18 +1,7 @@
 import logging
-import os
-import re
-import socket
-import sys
-import telnetlib
-import time
-from urllib import request
 
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.template import Context, Template
-from orthos2.utils.misc import execute, get_s390_hostname
-from orthos2.utils.ssh import SSH
 from . import ServerConfig
 from orthos2.utils.remotepowertype import RemotePowerType, get_remote_power_type_choices
 

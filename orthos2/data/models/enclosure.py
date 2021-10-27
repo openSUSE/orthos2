@@ -3,13 +3,11 @@ import logging
 import ssl
 import urllib.request
 
-from django.conf import settings
 from django.db import models
 from django.template import Context, Template
 
 from .platform import Platform
 from .serverconfig import ServerConfig
-from .system import System
 
 logger = logging.getLogger('models')
 

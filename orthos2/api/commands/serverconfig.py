@@ -1,9 +1,9 @@
-from orthos2.api.commands import BaseAPIView, get_machine
+from orthos2.api.commands import BaseAPIView
 from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                           InfoMessage)
 from orthos2.data.models import ServerConfig
 from django.conf.urls import re_path
-from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.auth.models import AnonymousUser
 from django.http import JsonResponse
 
 

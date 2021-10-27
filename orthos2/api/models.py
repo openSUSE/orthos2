@@ -6,7 +6,7 @@ from orthos2.data.models import (Annotation, Architecture, Domain, Enclosure,
                                  Installation, Machine, MachineGroup, NetworkInterface,
                                  PCIDevice, Platform, RemotePower, SerialConsole,
                                  SerialConsoleType, System, User, Vendor)
-from django.core.exceptions import (FieldDoesNotExist, FieldError,
+from django.core.exceptions import (FieldDoesNotExist,
                                     MultipleObjectsReturned)
 from django.db.models import Field, Q
 from django.db.models.functions import Length
@@ -915,7 +915,7 @@ class APIQuery:
         the primary key. If the primary key wasn't requested, remove it.
         """
         for machine in rows:
-            for dynamic_field, values in QueryField.DYNAMIC_FIELDS.items():
+            for dynamic_field, _values in QueryField.DYNAMIC_FIELDS.items():
                 field = QueryField(dynamic_field)
                 if field.db_field_name in self._fields:
                     machine[field.db_field_name] = field.dynamic_field_function(machine['pk'])

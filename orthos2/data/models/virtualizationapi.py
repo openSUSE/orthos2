@@ -207,14 +207,14 @@ class Libvirt(VirtualizationAPI):
 
     def check_connection(self):
         """Check libvirt connection (running libvirt)."""
-        stdout, stderr, exitstatus = self._execute('{} version'.format(self.VIRSH))
+        _stdout, _stderr, exitstatus = self._execute('{} version'.format(self.VIRSH))
         if exitstatus == 0:
             return True
         return False
 
     def get_list(self, parameters='--all'):
         """Return `virsh list` output."""
-        stdout, stderr, exitstatus = self._execute('{} list {}'.format(self.VIRSH, parameters))
+        stdout, _stderr, exitstatus = self._execute('{} list {}'.format(self.VIRSH, parameters))
 
         if exitstatus == 0:
             return ''.join(stdout)
@@ -277,7 +277,7 @@ class Libvirt(VirtualizationAPI):
         from orthos2.data.models import NetworkInterface
 
         networkinterfaces = []
-        for i in range(amount):
+        for _i in range(amount):
             mac_address = get_random_mac_address()
             while NetworkInterface.objects.filter(mac_address=mac_address).count() != 0:
                 mac_address = get_random_mac_address()
@@ -292,17 +292,17 @@ class Libvirt(VirtualizationAPI):
 
     def copy_image(self, image, disk_image):
         """Copy and allocate disk image."""
-        stdout, stderr, exitstatus = self.conn.execute('cp {} {}.tmp'.format(image, disk_image))
+        _stdout, _stderr, exitstatus = self.conn.execute('cp {} {}.tmp'.format(image, disk_image))
 
         if exitstatus != 0:
             return False
 
-        stdout, stderr, exitstatus = self.conn.execute(self.QEMU_IMG_CONVERT.format(disk_image))
+        _stdout, _stderr, exitstatus = self.conn.execute(self.QEMU_IMG_CONVERT.format(disk_image))
 
         if exitstatus != 0:
             return False
 
-        stdout, stderr, exitstatus = self.conn.execute('rm -rf {}.tmp'.format(disk_image))
+        _stdout, _stderr, exitstatus = self.conn.execute('rm -rf {}.tmp'.format(disk_image))
 
         if exitstatus != 0:
             return False
@@ -311,7 +311,7 @@ class Libvirt(VirtualizationAPI):
 
     def delete_disk_image(self, disk_image):
         """Delete the old disk image."""
-        stdout, stderr, exitstatus = self.conn.execute('rm -rf {}'.format(disk_image))
+        _stdout, _stderr, exitstatus = self.conn.execute('rm -rf {}'.format(disk_image))
 
         if exitstatus != 0:
             return False
@@ -380,7 +380,7 @@ class Libvirt(VirtualizationAPI):
 
         command = command.format(**kwargs)
         logger.debug(command)
-        stdout, stderr, exitstatus = self.conn.execute(command)
+        _stdout, _stderr, exitstatus = self.conn.execute(command)
 
         if exitstatus != 0:
             raise Exception(''.join(stderr))
@@ -403,7 +403,7 @@ class Libvirt(VirtualizationAPI):
             - run `virt-install`
         """
 
-        from orthos2.data.models import NetworkInterface, ServerConfig
+        from orthos2.data.models import ServerConfig
 
         bridge = ServerConfig.objects.by_key('virtualization.libvirt.bridge')
         image_directory = ServerConfig.objects.by_key('virtualization.libvirt.images.directory')
@@ -526,7 +526,7 @@ class Libvirt(VirtualizationAPI):
 
             self.destroy(vm)
             self.undefine(vm)
-        except Exception as e:
+        except Exception:
             logger.warning("Could not remove VM {vm} via from Hypervisor {hyper}"
                            .format(vm=vm.hostname, hyper=self.host.fqdn))
             return False
@@ -534,7 +534,7 @@ class Libvirt(VirtualizationAPI):
 
     def destroy(self, vm):
         """Destroy VM on host system. Ignore `domain is not running` error and proceed."""
-        stdout, stderr, exitstatus = self._execute('{} destroy {}'.format(self.VIRSH, vm.hostname))
+        _stdout, stderr, exitstatus = self._execute('{} destroy {}'.format(self.VIRSH, vm.hostname))
         if exitstatus != 0:
             stderr = ''.join(stderr)
 
@@ -545,7 +545,7 @@ class Libvirt(VirtualizationAPI):
 
     def undefine(self, vm):
         """Undefine VM on host system."""
-        stdout, stderr, exitstatus = self._execute('{} undefine {}'.format(self.VIRSH, vm.hostname))
+        _stdout, stderr, exitstatus = self._execute('{} undefine {}'.format(self.VIRSH, vm.hostname))
         if exitstatus != 0:
             stderr = ''.join(stderr)
 

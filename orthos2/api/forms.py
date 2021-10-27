@@ -2,13 +2,13 @@ import logging
 
 from orthos2.data.models import (Architecture, Enclosure, Machine, MachineGroup,
                                  NetworkInterface, RemotePower, SerialConsole,
-                                 SerialConsoleType, System, RemotePowerDevice,
+                                 System, RemotePowerDevice,
                                  is_unique_mac_address, validate_dns,
                                  validate_mac_address)
 from orthos2.data.models.domain import validate_domain_ending
 from django import forms
 from django.forms.models import ModelChoiceIteratorValue
-from django.core.validators import MaxValueValidator, MinValueValidator
+
 from django.forms import inlineformset_factory
 from django.forms.fields import (BooleanField, CharField, ChoiceField,
                                  DateField, DecimalField, IntegerField)
@@ -232,7 +232,7 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         enclosure = cleaned_data['enclosure']
         if enclosure:
             try:
-                enclosure, created = Enclosure.objects.get_or_create(name=enclosure)
+                enclosure, _created = Enclosure.objects.get_or_create(name=enclosure)
             except Exception as e:
                 logger.exception(e)
                 self.add_error('enclosure', "Something went wrong!")

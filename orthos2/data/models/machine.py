@@ -23,7 +23,6 @@ from .networkinterface import validate_mac_address, NetworkInterface
 from .platform import Platform
 from .system import System
 from .virtualizationapi import VirtualizationAPI
-from .serverconfig import ServerConfig
 
 logger = logging.getLogger('models')
 
@@ -946,7 +945,7 @@ class Machine(models.Model):
         machine = SSH(self.fqdn)
         machine.connect()
         command = 'shutdown {} now'.format(option)
-        stdout, stderr, exitstatus = machine.execute(command, retry=False)
+        _stdout, _stderr, exitstatus = machine.execute(command, retry=False)
         machine.close()
 
         if exitstatus != 0:
@@ -1127,13 +1126,6 @@ class Machine(models.Model):
             logger.warning("Unknown serialize format! Continues with JSON...")
             output_format = Serializer.Format.JSON
 
-        if output_format == Serializer.Format.YAML:
-            try:
-                import yaml
-            except ImportError:
-                logger.warning("YAML module not available! Continues with JSON...")
-                output_format = Serializer.Format.JSON
-
         querysets = [
             [self],
             self.networkinterfaces.all(),
@@ -1146,7 +1138,7 @@ class Machine(models.Model):
         serializer = serializers.get_serializer(output_format)()
         chunks = []
 
-        for i, queryset in enumerate(querysets):
+        for _i, queryset in enumerate(querysets):
 
             if queryset is None:
                 continue

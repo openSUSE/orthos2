@@ -1,7 +1,6 @@
 from orthos2.api.commands import BaseAPIView, get_machine
 from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                           Message, Serializer)
-from orthos2.data.models import SerialConsole
 from orthos2.data.signals import (signal_cobbler_regenerate,
                                   signal_serialconsole_regenerate)
 from orthos2.utils.misc import get_domain

@@ -1,9 +1,7 @@
-import os
 import sys
-from urllib.parse import urlparse
 
 from orthos2.data.models import ServerConfig
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 try:
     from ptyprocess import PtyProcessUnicode

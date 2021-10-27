@@ -1,18 +1,12 @@
-import datetime
 import json
 import logging
-import sys
-import threading
-import time
+
 from hashlib import sha1
-from queue import Queue
 
-from orthos2.data.models import ServerConfig
-from django.db import IntegrityError, models
+from django.db import models
 from django.utils import timezone
-from orthos2.utils.misc import str_time_to_datetime
 
-from . import Priority, TaskType
+from . import Priority
 
 logger = logging.getLogger('tasks')
 
@@ -145,7 +139,7 @@ class TaskManager:
             ))
             return
 
-        task, created = SingleTask.objects.get_or_create(
+        task, _created = SingleTask.objects.get_or_create(
             name=task.__class__.__name__,
             module=task.__class__.__module__,
             arguments=arguments

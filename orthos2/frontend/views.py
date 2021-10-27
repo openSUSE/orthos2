@@ -3,7 +3,6 @@ import functools
 import logging
 import warnings
 
-from orthos2.data.exceptions import ReleaseException, ReserveException
 from orthos2.data.models import (Architecture, Domain, Machine, MachineGroup,
                                  ReservationHistory, ServerConfig)
 from django.conf import settings
@@ -15,13 +14,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
-from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render, resolve_url, reverse
 from django.template.response import TemplateResponse
-from django.urls import resolve
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.http import is_safe_url
@@ -35,7 +32,7 @@ from rest_framework.authtoken.models import Token
 
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
-from orthos2.utils.misc import add_offset_to_date, get_random_mac_address
+from orthos2.utils.misc import add_offset_to_date
 
 from .decorators import check_permissions
 from .forms import (NewUserForm, PasswordRestoreForm, PreferencesForm,

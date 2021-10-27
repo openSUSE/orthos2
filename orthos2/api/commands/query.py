@@ -1,6 +1,6 @@
 import json
 
-from orthos2.api.commands import BaseAPIView, get_machine
+from orthos2.api.commands import BaseAPIView
 from orthos2.api.models import APIQuery
 from orthos2.api.serializers.misc import ErrorMessage, InfoMessage
 from django.conf.urls import re_path

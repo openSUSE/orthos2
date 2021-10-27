@@ -1,7 +1,6 @@
 import logging
 
 from orthos2.data.models import Machine, ServerConfig
-from orthos2.data.models.serverconfig import SSHManager
 from django.template import Context, Template
 from orthos2.utils.ssh import SSH
 from orthos2.utils.misc import get_hostname, get_ip
@@ -292,7 +291,7 @@ class CobblerServer:
         logger.debug("command for setup: %s", command)
         self.connect()
         try:
-            stdout, stderr, exitstatus = self._conn.execute(command)
+            _stdout, stderr, exitstatus = self._conn.execute(command)
             if exitstatus:
                 logger.warning("setup of  %s with %s failed on %s with %s", machine.fqdn,
                                cobbler_profile, self._fqdn, stderr)

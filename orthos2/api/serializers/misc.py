@@ -1,4 +1,4 @@
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 
 
 class Serializer:

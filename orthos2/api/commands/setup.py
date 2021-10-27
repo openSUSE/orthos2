@@ -2,7 +2,7 @@ from orthos2.api.commands import BaseAPIView, get_machine
 from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                           InfoMessage, Message, Serializer)
 from django.conf.urls import re_path
-from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponseRedirect, JsonResponse
 
 import logging
@@ -80,10 +80,6 @@ Example:
         """Trigger machine setup for `machine` with `distribution`."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
-
-        machinegroup = None
-        if machine.group and not machine.group.setup_use_architecture:
-            machinegroup = machine.group.name
 
         valid = machine.fqdn_domain.is_valid_setup_choice(
             distribution,

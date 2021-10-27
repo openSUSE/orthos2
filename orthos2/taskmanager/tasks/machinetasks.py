@@ -143,7 +143,7 @@ class MachineCheck(Task):
             return None
 
         for interface in networkinterfaces_:
-            networkinterface, created = NetworkInterface.objects.get_or_create(
+            networkinterface, _created = NetworkInterface.objects.get_or_create(
                 machine=self.machine,
                 mac_address=interface.mac_address
             )
@@ -272,7 +272,7 @@ class RegenerateMOTD(Task):
                 print(wrap80(machine.reserved_reason), file=motd)
             print(END, file=motd)
             motd.close()
-            stdout, stderr, exitstatus = conn.execute_script_remote('machine_sync_motd.sh')
+            _stdout, stderr, exitstatus = conn.execute_script_remote('machine_sync_motd.sh')
 
             if exitstatus != 0:
                 logger.exception("({}) {}".format(machine.fqdn, stderr))
