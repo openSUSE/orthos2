@@ -149,7 +149,7 @@ class TaskExecuter(Thread):
                         basetask.name,
                         basetask.arguments
                     ))
-            except InterfaceError as e:
+            except InterfaceError:
                 # InterfaceError is raised when the connection is closed from the db side.
                 # Closing it in django forces the creation of a new connection for the next access.
                 db.connection.close()
