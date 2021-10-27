@@ -14,13 +14,12 @@ import logging
 import logging.config
 import os
 import sys
-from logging.handlers import SysLogHandler
-from socket import getfqdn, gethostbyname, gethostname
+from socket import getfqdn, gethostname
 from pwd import getpwuid
 
 import ldap
 from django.contrib.messages import constants as messages
-from django_auth_ldap.config import GroupOfNamesType, LDAPSearch
+from django_auth_ldap.config import LDAPSearch
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.abspath('/var/lib/orthos2')

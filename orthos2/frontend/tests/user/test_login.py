@@ -1,6 +1,5 @@
 from orthos2.data.models import ServerConfig
 from django.contrib.auth.models import User
-from django.test import Client, TestCase
 from django.urls import reverse
 from django_webtest import WebTest
 from orthos2.taskmanager.models import SingleTask

@@ -1,4 +1,3 @@
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from orthos2.utils.misc import safe_get_or_default
 

@@ -1,13 +1,12 @@
 import collections
 import datetime
 
-from orthos2.data.models import (Architecture, Installation, Machine, Platform,
-                                 ServerConfig, System, Vendor, VirtualizationAPI)
+from orthos2.data.models import (Installation, Machine, Platform,
+                                 ServerConfig, System, Vendor)
 from django import forms
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.forms.fields import (BooleanField, CharField, ChoiceField,
-                                 DateField, DecimalField)
+
 from django.utils import timezone
 from django.utils.formats import date_format
 

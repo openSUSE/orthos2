@@ -8,14 +8,10 @@ from django.db.models.signals import (post_delete, post_init, post_save,
 from django.dispatch import Signal, receiver
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
-from orthos2.utils.misc import (Serializer, get_hostname, is_dns_resolvable,
-                                is_valid_mac_address)
+from orthos2.utils.misc import (Serializer, get_hostname)
 from orthos2.utils.cobbler import CobblerServer
 
-from .exceptions import HostnameNotDnsResolvable
-from .models import (Enclosure, Machine, NetworkInterface, RemotePower,
-                     SerialConsole, ServerConfig, System,
-                     is_unique_mac_address, validate_dns, validate_mac_address)
+from .models import (Machine, NetworkInterface, SerialConsole, ServerConfig, is_unique_mac_address)
 logger = logging.getLogger('orthos')
 
 

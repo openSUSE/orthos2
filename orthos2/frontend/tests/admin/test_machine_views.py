@@ -1,5 +1,5 @@
 import mock
-from orthos2.data.models import Architecture, Machine, ServerConfig, System
+from orthos2.data.models import Architecture, Machine, ServerConfig
 from django.urls import reverse
 from django_webtest import WebTest
 

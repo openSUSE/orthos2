@@ -8,11 +8,10 @@ from orthos2.api.forms import (AnnotationAPIForm, BMCAPIForm, MachineAPIForm, Re
 from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                           InfoMessage, InputSerializer, Message,
                                           Serializer)
-from orthos2.data.models import (Annotation, BMC, Enclosure, Machine, RemotePower,
+from orthos2.data.models import (Annotation, BMC, Machine, RemotePower,
                                  RemotePowerDevice, SerialConsole)
 from django.conf.urls import re_path
-from django.contrib.auth.models import AnonymousUser, User
-from django.core.exceptions import ValidationError
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, reverse
 from orthos2.utils.misc import add_offset_to_date, format_cli_form_errors

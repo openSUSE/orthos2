@@ -1,12 +1,10 @@
 import logging
 
-from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxValueValidator
 from django.db import models
 from django.template import Context, Template
 
-from . import validate_dns
 from .serialconsoletype import SerialConsoleType
 from .serverconfig import ServerConfig
 

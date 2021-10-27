@@ -1,5 +1,4 @@
 import logging
-import os
 
 from orthos2.data.models import ServerConfig, Domain
 from orthos2.taskmanager.models import Task

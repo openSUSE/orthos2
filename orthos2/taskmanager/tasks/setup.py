@@ -1,7 +1,6 @@
 import logging
 
 from orthos2.data.models import Machine, ServerConfig
-from django.template import Context, Template
 from orthos2.taskmanager.models import Task
 from orthos2.utils.ssh import SSH
 from orthos2.utils.cobbler import CobblerServer, CobblerException

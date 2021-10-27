@@ -3,7 +3,6 @@ from django.conf.urls import re_path
 from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_list import _boolean_icon
 from django.core.exceptions import ValidationError
-from django.db import models
 from django.db.models import Q
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -12,12 +11,11 @@ from django.utils.translation import ugettext_lazy as _
 
 from orthos2.utils.remotepowertype import RemotePowerType
 
-from .models import (Annotation, Architecture, BMC, Domain, Enclosure, Installation,
+from .models import (Annotation, Architecture, BMC, Domain, Enclosure,
                      Machine, MachineGroup, MachineGroupMembership, DomainAdmin,
                      NetworkInterface, Platform, RemotePower, RemotePowerDevice,
                      SerialConsole, SerialConsoleType, ServerConfig, System, Vendor,
-                     VirtualizationAPI, is_unique_mac_address, validate_dns,
-                     validate_mac_address)
+                     is_unique_mac_address, validate_mac_address)
 
 
 class BMCInline(admin.StackedInline):
