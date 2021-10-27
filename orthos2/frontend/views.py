@@ -659,9 +659,12 @@ def users_preferences(request):
     if request.method == 'GET':
         if request.GET.get('action') == "generate_token":
             user = User.objects.get(pk=request.user.id)
-            token = Token.objects.get(user=user)
-            if token:
-                token.delete()
+            try:
+                token = Token.objects.get(user=user)
+                if token:
+                    token.delete()
+            except Token.DoesNotExist:
+                pass
             token = Token.objects.create(user=user)
         form = PreferencesForm()
     else:
