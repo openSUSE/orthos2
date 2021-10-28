@@ -280,6 +280,10 @@ VERSION = '2.0.0'
 SYSTEM_USER = 'orthos'
 AUTH_ALLOW_USER_CREATION = False
 
+# Use 32 bit primary keys by default and eleminate django 3.2 upgrade warnings:
+# HINT: Configure the DEFAULT_AUTO_FIELD setting ...
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 REMOTEPOWER_TYPES = [
                         {
                             'fence': 'virsh',
