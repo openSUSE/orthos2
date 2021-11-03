@@ -142,8 +142,6 @@ disable=all,
         deprecated-urllib-function,
         xreadlines-attribute,
         deprecated-sys-function,
-        exception-escape,
-        comprehension-escape
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -151,7 +149,9 @@ disable=all,
 # it should appear only once). See also the "--disable" option for examples.
 enable=c-extension-no-member,
 	unused-import,
-	unused-variable
+	unused-variable,
+      comprehension-escape,
+      exception-escape,
 
 
 [REPORTS]

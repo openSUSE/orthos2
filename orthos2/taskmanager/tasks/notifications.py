@@ -240,7 +240,7 @@ Regards,
 Orthos""".format(
                 username=user.username,
                 usernames="\n".join(
-                    ['  {} ({})'.format(user['username'], user['email']) for user in usernames]
+                    ['  {} ({})'.format(user_['username'], user_['email']) for user_ in usernames] # user woudl
                 ),
                 contact=settings.CONTACT
             )
