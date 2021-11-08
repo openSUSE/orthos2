@@ -84,8 +84,8 @@ class UpdateCobblerMachine(Task):
             machine = Machine.objects.get(pk=self._machine_id)
             logger.info("Cobbler update started")
             if domain.cobbler_server.all().count() == 0:
-                    logger.info("Domain '%s' has no Cobbler server... aborting", domain.name)
-                    return
+                logger.info("Domain '%s' has no Cobbler server... aborting", domain.name)
+                return
             logger.info("Generate Cobbler update configuration for '%s'...", machine.fqdn)
             # deploy generated DHCP files on all servers belonging to one domain
             for server in domain.cobbler_server.all():
@@ -125,8 +125,8 @@ class SyncCobblerDHCP(Task):
         try:
             domain = Domain.objects.get(pk=self._domain_id)
             if domain.cobbler_server.all().count() == 0:
-                    logger.info("Domain '%s' has no Cobbler server... aborting", domain.name)
-                    return
+                logger.info("Domain '%s' has no Cobbler server... aborting", domain.name)
+                return
             for server in domain.cobbler_server.all():
                 server.sync_dhcp()
         except Domain.DoesNotExist:

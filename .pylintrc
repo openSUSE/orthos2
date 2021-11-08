@@ -157,6 +157,7 @@ enable=c-extension-no-member,
       superfluous-parens,
       logging-not-lazy,
       missing-format-argument-key,
+      bad-indentation,
 
 
 [REPORTS]

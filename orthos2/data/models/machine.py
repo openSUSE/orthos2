@@ -650,7 +650,7 @@ class Machine(models.Model):
                     assert self.serialconsole.kernel_device_num == \
                         self._original.serialconsole.kernel_device_num
             except AssertionError:
-                    update_machine = True
+                update_machine = True
             if update_machine:
                 from orthos2.data.signals import signal_cobbler_machine_update
                 if self.fqdn_domain == self._original.fqdn_domain:

@@ -105,17 +105,17 @@ def add_domain(domain :str, queries : list):
     
 
 def add_arch_relations(queries: list):
-        """
-        We always need arch.suse.de domain and markeb.arch.suse.de
-        We delete unneeded machine references
-        """
-        query = Domain.objects.filter(name="arch.suse.de")
-        for item in query:
-            item.tftp_server = None
-            item.cscreen_server = None
-            item.cobbler_server.set([])
-        queries.extend(query)
-        add_machine("markeb.arch.suse.de", queries)
+    """
+    We always need arch.suse.de domain and markeb.arch.suse.de
+    We delete unneeded machine references
+    """
+    query = Domain.objects.filter(name="arch.suse.de")
+    for item in query:
+        item.tftp_server = None
+        item.cscreen_server = None
+        item.cobbler_server.set([])
+    queries.extend(query)
+    add_machine("markeb.arch.suse.de", queries)
     
 def run(*args):
 
