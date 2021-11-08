@@ -244,14 +244,14 @@ class CobblerServer:
         command = "{cobbler} system remove --name {fqdn}".format(
             cobbler=self._cobbler_path, fqdn=machine.fqdn)
         _, stderr, exitcode = self._conn.execute(command)
-        if(exitcode):
+        if exitcode:
             logging.error("Removing %s failed with '%s'", machine.fqdn, stderr)
 
     def sync_dhcp(self):
         self.connect()
         self._check()
         _, stderr, exitcode =self._conn.execute("{cobbler} sync --dhcp".format(cobbler=self._cobbler_path))
-        if(exitcode):
+        if exitcode:
             logging.error("Dhcp sync on %s failed with '%s'", self._fqdn, stderr)
 
     def is_installed(self):

@@ -83,7 +83,7 @@ class RegenerateSerialConsole(Task):
                     file_found = False
                     logging.warning("%s:%s not found - creating...", self.fqdn, screenrc_file)
                 else:
-                    raise(e)
+                    raise e
 
             # Create an empty file with just markers, this will get the .old file
             # to diff against for new entries via cscreen -u

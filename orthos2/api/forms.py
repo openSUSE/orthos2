@@ -172,21 +172,21 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         architectures = []
         for architecture in Architecture.objects.all().values('id', 'name').order_by('name'):
             architectures.append((architecture['id'], architecture['name']))
-        return (architectures)
+        return architectures
 
     def get_systems():
         """Return systems choice tuple."""
         systems = []
         for system in System.objects.all().values('id', 'name').order_by('name'):
             systems.append((system['id'], system['name']))
-        return (systems)
+        return systems
 
     def get_machinegroups():
         """Return machine group choice tuple."""
         groups = [('none', 'None')]
         for group in MachineGroup.objects.all().values('id', 'name').order_by('name'):
             groups.append((group['id'], group['name']))
-        return (groups)
+        return groups
 
     def clean_fqdn(self):
         """Check whether `fqdn` already exists."""

@@ -154,6 +154,7 @@ enable=c-extension-no-member,
       logging-format-interpolation,
       wrong-import-order,
       line-too-long,
+      superfluous-parens,
 
 
 [REPORTS]
