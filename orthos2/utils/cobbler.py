@@ -298,7 +298,7 @@ class CobblerServer:
                                cobbler_profile, self._fqdn, stderr)
                 raise CobblerException(
                     "setup of {machine} with {profile} failed on {server} with {error}".format(
-                        machine=machine.fqdn, arch=cobbler_profile, server=self._fqdn))
+                        machine=machine.fqdn, profile=cobbler_profile, server=self._fqdn, error=stderr))
         except:
             pass
         finally:
@@ -322,7 +322,7 @@ class CobblerServer:
                            command, self._fqdn, stderr)
             raise CobblerException(
                 "Powerswitching of {machine} with {command} failed on {server} with {error}".format(
-                    machine=machine.fqdn, command=command, server=self._fqdn))
+                    machine=machine.fqdn, command=command, server=self._fqdn, error=stderr))
         return out
 
     def _check(self):

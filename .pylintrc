@@ -156,6 +156,7 @@ enable=c-extension-no-member,
       line-too-long,
       superfluous-parens,
       logging-not-lazy,
+      missing-format-argument-key,
 
 
 [REPORTS]
