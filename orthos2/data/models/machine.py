@@ -290,7 +290,8 @@ class Machine(models.Model):
     nda = models.BooleanField(
         'NDA hardware',
         default=False,
-        help_text="This machine is under NDA and has secret (early development HW?) partner information, do not share any data to the outside world"
+        help_text="This machine is under NDA and has secret (early development HW?) partner information,"\
+                  " do not share any data to the outside world"
     )
 
     ipmi = models.BooleanField(
@@ -320,7 +321,8 @@ class Machine(models.Model):
     vm_auto_delete = models.BooleanField(
         'Delete automatically',
         default=False,
-        help_text="Release and destroy virtual machine instances, once people have released (do not reserve anymore) them"
+        help_text="Release and destroy virtual machine instances, once people have released"\
+        "(do not reserve anymore) them"
     )
 
     virt_api_int = models.SmallIntegerField(
@@ -450,13 +452,14 @@ class Machine(models.Model):
         choices=CONNECTIVITY_CHOICE,
         default=Connectivity.ALL,
         blank=False,
-        help_text='Nightly checks whether the machine responds to ping, ssh port is open or whether orthos can log in via ssh key. Can be triggered manually via command\
- line client: `rescan [fqdn] status`'
+        help_text='Nightly checks whether the machine responds to ping, ssh port is open or whether orthos can'\
+                  'log in via ssh key. Can be triggered manually via command line client: `rescan [fqdn] status`'
     )
 
     collect_system_information = models.BooleanField(
         default=True,
-        help_text='Shall the system be scanned every night? This only works if the proper ssh key is in place in authorized_keys and can be triggered manually via command line client: `rescan [fqdn]`'
+        help_text='Shall the system be scanned every night? This only works if the proper ssh key is in place in'\
+                  ' authorized_keys and can be triggered manually via command line client: `rescan [fqdn]`'
     )
 
     dhcp_filename = models.CharField(
@@ -464,7 +467,8 @@ class Machine(models.Model):
         max_length=64,
         null=True,
         blank=True,
-        help_text="Override bootloader binary retrieved from a tftp server (corresponds to the `filename` ISC dhcpd.conf variable)"
+        help_text="Override bootloader binary retrieved from a tftp server (corresponds to the `filename`"\
+                  " ISC dhcpd.conf variable)"
     )
 
     tftp_server = models.ForeignKey(
@@ -475,7 +479,8 @@ class Machine(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         limit_choices_to={'administrative': True},
-        help_text="Override tftp server used for network boot (corresponds to the `next_server` ISC dhcpd.conf variable)"
+        help_text="Override tftp server used for network boot (corresponds to the `next_server` ISC"\
+                  " dhcpd.conf variable)"
     )
 
     hypervisor = models.ForeignKey(

@@ -14,7 +14,7 @@ ignore=CVS
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
-ignore-patterns=
+ignore-patterns=^\d{4}_.*.py
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
@@ -153,6 +153,7 @@ enable=c-extension-no-member,
       long-builtin,
       logging-format-interpolation,
       wrong-import-order,
+      line-too-long,
 
 
 [REPORTS]

@@ -58,14 +58,16 @@ class Ansible(Task):
     def execute(self):
         try:
             self.render_inventory()
-            command = '/usr/bin/ansible-playbook -i {dir}/inventory.yml {dir}/site.yml --private-key /home/orthos/.ssh/master'.format(dir=Ansible.facts_dir)
+            command = '/usr/bin/ansible-playbook -i {dir}/inventory.yml {dir}/site.yml' \
+                      ' --private-key /home/orthos/.ssh/master'.format(dir=Ansible.facts_dir)
             stdout, stderr, returncode = execute(command)
             logger.debug("Calling: %s - %d", command, returncode)
             logger.debug("ansible: %s - %s - %s" % (stdout, stderr, returncode))
             files = self.get_json_filelist()
             missing = list(set(self.machines) - set(files))
             if missing:
-                logger.warning("Cannot scan machines %s via ansible, missing json file in %s", self.machines, Ansible.facts_dir)
+                logger.warning("Cannot scan machines %s via ansible, missing json file in %s",
+                               self.machines, Ansible.facts_dir)
             success = []
             fail    = []
             for fqdn in files:
@@ -147,7 +149,8 @@ class Ansible(Task):
             print("Machine: %s does not exist" % machine_fqdn)
             return
         # # prints all non magic attributes of a machine
-        db_machine_attributes = [attribute for attribute in dir(db_machine) if not attribute.startswith('_')]
+        db_machine_attributes = [attribute for attribute in dir(db_machine)
+                                 if not attribute.startswith('_')]
         for db_machine_attribute in db_machine_attributes:
             try:
                 print(f"db_machine.{db_machine_attribute} = {getattr(db_machine, db_machine_attribute)}")
@@ -188,24 +191,33 @@ class Ansible(Task):
 
         db_machine.cpu_physical = ansible_machine.get("processor_count", 0)
         db_machine.cpu_cores = ansible_machine.get("processor_cores", 0)
-        db_machine.cpu_threads = ansible_machine.get("processor_cores", 0) * ansible_machine.get("processor_threads_per_core", 0)
+        db_machine.cpu_threads = ansible_machine.get("processor_cores", 0) \
+                                 * ansible_machine.get("processor_threads_per_core", 0)
         # db_machine.cpu_model =
         # db_machine.cpu_flags = # --> check if in ansible, else create facts file
         # db_machine.cpu_speed =
         # db_machine.cpu_id =
         db_machine.ram_amount = int(ansible_machine.get("memtotal_mb", 0)) * 1024
-        # db_machine.disk_primary_size = # sectors * sector_size der 1. platte (in bytes). danach hwinfo --disk entfernen.
+        # db_machine.disk_primary_size = # sectors * sector_size der 1. platte (in bytes).
+        # danach hwinfo --disk entfernen.
         # db_machine.disk_type =
 
-        db_machine.lsmod = normalize_ascii("".join(ansible_machine.get("ansible_local", {}).get("lsmod", {}).get("noargs", {}).get("stdout", "")))
-        db_machine.lspci = normalize_ascii("".join(ansible_machine.get("lspci", {}).get("-vvv -nn", {}).get("stdout", "")))
+        db_machine.lsmod = normalize_ascii("".join(ansible_machine.get("ansible_local", {}).get("lsmod", {}).get(
+                                           "noargs", {}).get("stdout", "")))
+        db_machine.lspci = normalize_ascii("".join(ansible_machine.get("lspci", {}).get("-vvv -nn", {}).get(
+                                           "stdout", "")))
         last = ansible_machine.get("ansible_local", {}).get("last", {}).get("latest", {}).get("stdout", "")
         db_machine.last = last[0:8] + last[38:49] if len(last) > 49 else ""
-        db_machine.hwinfo = normalize_ascii("".join(ansible_machine.get("ansible_local", {}).get("hwinfo", {}).get("full", {}).get("stdout", "")))
-        db_machine.dmidecode = normalize_ascii("".join(ansible_machine.get("ansible_local", {}).get("dmidecode", {}).get("noargs", {}).get("stdout", "")))
-        db_machine.dmesg = normalize_ascii("".join(ansible_machine.get("ansible_local", {}).get("dmesg", {}).get("-xl", {}).get("stdout", "")))
-        db_machine.lsscsi = normalize_ascii("".join(ansible_machine.get("ansible_local", {}).get("lsscsi", {}).get("-s", {}).get("stdout", "")))
-        db_machine.lsusb = normalize_ascii("".join(ansible_machine.get("ansible_local", {}).get("lsusb", {}).get("noargs", {}).get("stdout", "")))
+        db_machine.hwinfo = normalize_ascii("".join(ansible_machine.get("ansible_local", {}).get("hwinfo", {}).get(
+                                            "full", {}).get("stdout", "")))
+        db_machine.dmidecode = normalize_ascii("".join(ansible_machine.get("ansible_local", {}).get(
+                                               "dmidecode", {}).get("noargs", {}).get("stdout", "")))
+        db_machine.dmesg = normalize_ascii("".join(ansible_machine.get("ansible_local", {}).get("dmesg", {}).get(
+                                           "-xl", {}).get("stdout", "")))
+        db_machine.lsscsi = normalize_ascii("".join(ansible_machine.get("ansible_local", {}).get(
+                                            "lsscsi", {}).get("-s", {}).get("stdout", "")))
+        db_machine.lsusb = normalize_ascii("".join(ansible_machine.get("ansible_local", {}).get(
+                                           "lsusb", {}).get("noargs", {}).get("stdout", "")))
         db_machine.ipmi = "IPMI" in db_machine.dmidecode
 
         try:

@@ -153,5 +153,6 @@ def run(*args):
     # print(queries)
     with open(file, "w") as out:
         from django.core import serializers
-        serializers.serialize("json", queries, indent=2, stream=out, use_natural_foreign_keys=natural,use_natural_primary_keys=natural)
+        serializers.serialize("json", queries, indent=2, stream=out,
+                              use_natural_foreign_keys=natural,use_natural_primary_keys=natural)
         print("File dumped: %s" % os.path.abspath(file))

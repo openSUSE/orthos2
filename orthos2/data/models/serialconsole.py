@@ -75,8 +75,8 @@ class SerialConsole(models.Model):
         max_length=1024,
         null=True,
         blank=True,
-        help_text="Final command which is constructed using above info and synced to cscreen server /etc/cscreenrc config"
-
+        help_text="Final command which is constructed using above info and synced to cscreen server"\
+                  " /etc/cscreenrc config"
     )
 
 
@@ -97,7 +97,8 @@ class SerialConsole(models.Model):
         max_length=64,
         null=False,
         default='ttyS',
-        help_text="The kernel device string as passed via kernel command line, e.g. ttyS, ttyAMA, ttyUSB,... \"None\" will remove console= kernel paramter"
+        help_text='The kernel device string as passed via kernel command line, e.g. ttyS, ttyAMA, ttyUSB,...'\
+                  ' "None" will remove console= kernel paramter'
     )
 
     kernel_device_num = models.PositiveSmallIntegerField(
@@ -107,7 +108,8 @@ class SerialConsole(models.Model):
         ],
         default=0,
         verbose_name="Kernel Device number",
-        help_text="The kernel device number is concatenated to the kernel device string (see above).\nA value of 1 might end up in console=ttyS1 kernel command line paramter."
+        help_text="""The kernel device number is concatenated to the kernel device string (see above).
+A value of 1 might end up in console=ttyS1 kernel command line paramter."""
     )
 
     objects = models.Manager()
