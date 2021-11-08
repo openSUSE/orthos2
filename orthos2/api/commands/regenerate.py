@@ -1,3 +1,7 @@
+from django.conf.urls import re_path
+from django.contrib.auth.models import AnonymousUser
+from django.http import HttpResponseRedirect
+
 from orthos2.api.commands import BaseAPIView, get_machine
 from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                           Message, Serializer)
@@ -6,9 +10,6 @@ from orthos2.data.signals import (signal_cobbler_regenerate,
 from orthos2.utils.misc import get_domain
 from orthos2.data.models import Domain
 
-from django.conf.urls import re_path
-from django.contrib.auth.models import AnonymousUser
-from django.http import HttpResponseRedirect
 
 
 class RegenerateCommand(BaseAPIView):

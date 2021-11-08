@@ -151,7 +151,8 @@ enable=c-extension-no-member,
       execfile-builtin,
       file-builtin,
       long-builtin,
-      logging-format-interpolation
+      logging-format-interpolation,
+      wrong-import-order,
 
 
 [REPORTS]

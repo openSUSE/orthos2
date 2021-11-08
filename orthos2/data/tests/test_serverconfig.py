@@ -1,5 +1,6 @@
-from orthos2.data.models import ServerConfig
 from django.test import TestCase
+
+from orthos2.data.models import ServerConfig
 
 SSH_KEYS = 'ssh.keys.paths'
 SSH_TIMEOUT = 'ssh.timeout.seconds'

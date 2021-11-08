@@ -1,16 +1,16 @@
 import collections
 import datetime
+import logging
 
-from orthos2.data.models import (Installation, Machine, Platform,
-                                 ServerConfig, System, Vendor)
 from django import forms
 from django.conf import settings
 from django.contrib.auth.models import User
-
 from django.utils import timezone
 from django.utils.formats import date_format
 
-import logging
+from orthos2.data.models import (Installation, Machine, Platform,
+                                 ServerConfig, System, Vendor)
+
 logger = logging.getLogger('views')
 
 

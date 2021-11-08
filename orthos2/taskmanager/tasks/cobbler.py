@@ -1,8 +1,8 @@
 import logging
 
+from django.conf import settings
 
 from orthos2.data.models import Domain, Machine, ServerConfig
-from django.conf import settings
 from orthos2.taskmanager.models import Task
 from orthos2.utils.cobbler import CobblerServer
 from orthos2.utils.ssh import SSH

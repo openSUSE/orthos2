@@ -1,9 +1,10 @@
+from django.conf.urls import re_path
+from django.http import HttpResponseRedirect, JsonResponse
+
 from orthos2.api.commands import BaseAPIView, get_machine
 from orthos2.api.serializers.machine import MachineSerializer
 from orthos2.api.serializers.misc import ErrorMessage, Serializer
 from orthos2.data.models import Machine
-from django.conf.urls import re_path
-from django.http import HttpResponseRedirect, JsonResponse
 
 
 class InfoCommand(BaseAPIView):

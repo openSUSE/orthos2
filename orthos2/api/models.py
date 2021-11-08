@@ -1,15 +1,16 @@
 import logging
 import re
 
+from django.core.exceptions import (FieldDoesNotExist,
+                                    MultipleObjectsReturned)
+from django.db.models import Field, Q
+from django.db.models.functions import Length
+
 from orthos2.api.lookups import NotEqual
 from orthos2.data.models import (Annotation, Architecture, Domain, Enclosure,
                                  Installation, Machine, MachineGroup, NetworkInterface,
                                  PCIDevice, Platform, RemotePower, SerialConsole,
                                  SerialConsoleType, System, User, Vendor)
-from django.core.exceptions import (FieldDoesNotExist,
-                                    MultipleObjectsReturned)
-from django.db.models import Field, Q
-from django.db.models.functions import Length
 
 logger = logging.getLogger('api')
 

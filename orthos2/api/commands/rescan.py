@@ -1,7 +1,8 @@
-from orthos2.api.commands import BaseAPIView, get_machine
-from orthos2.api.serializers.misc import ErrorMessage, InfoMessage, Message, Serializer
 from django.conf.urls import re_path
 from django.http import HttpResponseRedirect
+
+from orthos2.api.commands import BaseAPIView, get_machine
+from orthos2.api.serializers.misc import ErrorMessage, InfoMessage, Message, Serializer
 from orthos2.taskmanager.tasks.machinetasks import MachineCheck
 from orthos2.taskmanager.tasks.daily import DailyMachineChecks
 

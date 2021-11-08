@@ -1,5 +1,6 @@
-from orthos2.data.models import Annotation
 from rest_framework import serializers
+
+from orthos2.data.models import Annotation
 
 
 class AnnotationSerializer(serializers.ModelSerializer):

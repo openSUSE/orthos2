@@ -1,8 +1,4 @@
 import sys
-
-from orthos2.data.models import ServerConfig
-from django.core.management.base import BaseCommand
-
 try:
     from ptyprocess import PtyProcessUnicode
     from terminado import TermSocket, UniqueTermManager
@@ -20,6 +16,9 @@ except ImportError:
     print("'tornado' module needed! Run 'pip install tornado'...")
     sys.exit(1)
 
+from django.core.management.base import BaseCommand
+
+from orthos2.data.models import ServerConfig
 
 class TermSocketHandler(TermSocket):
 

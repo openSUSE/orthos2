@@ -1,10 +1,11 @@
 import logging
 import os
 import socket
-
 import paramiko
-from orthos2.data.models import Machine, ServerConfig
+
 from django.conf import settings
+
+from orthos2.data.models import Machine, ServerConfig
 
 logger = logging.getLogger('utils')
 

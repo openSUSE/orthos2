@@ -1,8 +1,9 @@
 import logging
 import re
 
-from orthos2.data.models import Component
 from django.db import models
+
+from orthos2.data.models import Component
 
 logger = logging.getLogger('models')
 

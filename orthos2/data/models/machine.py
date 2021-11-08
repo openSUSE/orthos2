@@ -3,7 +3,6 @@ import logging
 import re
 from copy import deepcopy
 
-from orthos2.data.exceptions import ReleaseException, ReserveException
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import serializers
@@ -15,6 +14,8 @@ from orthos2.utils.misc import (Serializer, get_domain, get_hostname,
                                 get_ipv4, get_ipv6, get_s390_hostname,
                                 is_dns_resolvable)
 
+
+from orthos2.data.exceptions import ReleaseException, ReserveException
 from .architecture import Architecture
 from .domain import Domain, DomainAdmin, validate_domain_ending
 from .enclosure import Enclosure
