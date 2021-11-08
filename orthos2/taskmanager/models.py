@@ -134,9 +134,7 @@ class TaskManager:
         try:
             arguments = json.dumps(task._Task__arguments)
         except TypeError:
-            logger.exception("{}: arguments are not JSON serializable".format(
-                task.__class__.__name__,
-            ))
+            logger.exception("%s: arguments are not JSON serializable", task.__class__.__name__)
             return
 
         task, _created = SingleTask.objects.get_or_create(

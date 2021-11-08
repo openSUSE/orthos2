@@ -37,13 +37,11 @@ class Command(BaseCommand):
         run_as_user = pwd.getpwuid(os.getuid())[0]
         if (not settings.DEBUG) and (run_as_user != settings.RUN_AS_USER):
             logger.error(
-                "TaskManager needs to be run as user '{}', not '{}'! Exit.".format(
-                    settings.RUN_AS_USER,
-                    run_as_user
-                )
+                "TaskManager needs to be run as user '%s', not '%s'! Exit.",
+                settings.RUN_AS_USER, run_as_user
             )
             sys.exit(1)
-        logger.info("TaskManager runs as '{}'...".format(run_as_user))
+        logger.info("TaskManager runs as '%s'...", run_as_user)
 
         if options['start']:
             signal.signal(signal.SIGTERM, handler)

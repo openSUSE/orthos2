@@ -309,7 +309,7 @@ class PCIDatabase(object):
 
                         # add to the list
                         if not current_vendorid:
-                            logger.warning("pci.ids format invalid at line {}".format(linecount))
+                            logger.warning("pci.ids format invalid at line %s", linecount)
                             continue
                         vendordeviceid = '{}:{}'.format(
                             current_vendorid,
@@ -327,7 +327,7 @@ class PCIDatabase(object):
                         sdevicename = match.group(3)
 
                         if not current_vendorid or not current_deviceid:
-                            logger.warning("pci.ids format invalid at line {}".format(linecount))
+                            logger.warning("pci.ids format invalid at line %s", linecount)
                             continue
 
                         key = '{}:{}:{}:{}'.format(
@@ -363,9 +363,9 @@ class PCIDatabase(object):
 
                 f.close()
             except IOError as e:
-                logger.warning("Unable to read pciids file: {}".format(str(e)))
+                logger.warning("Unable to read pciids file: %s", str(e))
                 logger.exception(e)
-            logger.debug("Reading '{}' finished".format(filename))
+            logger.debug("Reading '%s' finished", filename)
 
     # storage for the instance reference
     __instance = None

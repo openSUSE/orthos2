@@ -96,6 +96,4 @@ class Enclosure(models.Model):
                 self.location_rack_position = rack_position
 
         except Exception as e:
-            logger.warning(
-                "Couldn't fetch location information for enclosure '{}': {}".format(self, e)
-            )
+            logger.warning("Couldn't fetch location information for enclosure '%s': %s", self, e)

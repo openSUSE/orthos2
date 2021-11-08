@@ -24,7 +24,7 @@ class RegenerateSerialConsole(Task):
         try:
             _cscreen_server = Machine.objects.get(fqdn=self.fqdn)
         except Machine.DoesNotExist:
-            logger.warning("Serial console server does not exist: {}".format(self.fqdn))
+            logger.warning("Serial console server does not exist: %s", self.fqdn)
 
         conn = None
         try:
@@ -81,8 +81,7 @@ class RegenerateSerialConsole(Task):
                 import errno
                 if _errno == errno.ENOENT:
                     file_found = False
-                    logging.warning("{}:{} not found - creating...".format(self.fqdn,
-                                                                           screenrc_file))
+                    logging.warning("%s:%s not found - creating...", self.fqdn, screenrc_file)
                 else:
                     raise(e)
 

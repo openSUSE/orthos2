@@ -883,7 +883,7 @@ class APIQuery:
 
         query = self._get_query()
 
-        logger.debug("Execute query: {}".format(query))
+        logger.debug("Execute query: %s", query)
 
         # set `user` in order to prevent search results including administrative systems
         queryset = Machine.search.get_queryset(user=user)

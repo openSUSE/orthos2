@@ -39,10 +39,10 @@ class SSH(object):
     def get_system_user_configuration(self):
         """Return SSH configuration of system user as Paramiko dict for `connect()`."""
         ssh_configuration = paramiko.SSHConfig()
-        user_configuration_file = '{}/.ssh/config'.format(os.getenv('HOME'))
+        user_configuration_file = '%s/.ssh/config', os.getenv('HOME')
 
         if not os.path.exists(user_configuration_file):
-            logger.warning("Couldn't read SSH configuration: {}".format(user_configuration_file))
+            logger.warning("Couldn't read SSH configuration: %s", user_configuration_file)
             return None
 
         with open(user_configuration_file) as f:
@@ -50,7 +50,7 @@ class SSH(object):
                 ssh_configuration.parse(f)
             except Exception:
                 logger.warning(
-                    "Couldn't parse SSH configuration: {}".format(user_configuration_file)
+                    "Couldn't parse SSH configuration: %s", user_configuration_file
                 )
                 return None
 
@@ -190,11 +190,7 @@ class SSH(object):
         try:
             retval = self.execute("{} {}".format(remotescript, arguments))
         except SSH.Exception as e:
-            logger.warning("Error while executing command {} on {}: {}".format(
-                script,
-                self._fqdn,
-                str(e)
-            ))
+            logger.warning("Error while executing command %s on %s: %s", script, self._fqdn, str(e))
 
         try:
             for f in self._sftp.listdir(remotescript_directory):
@@ -202,25 +198,13 @@ class SSH(object):
             self._sftp.rmdir(remotescript_directory)
         except paramiko.SSHException as e:
             logger.exception(e)
-            logger.warning("Error while executing command {} on {}: {}".format(
-                script,
-                self._fqdn,
-                str(e)
-            ))
+            logger.warning("Error while executing command %s on %s: %s", script, self._fqdn, str(e))
         except paramiko.SFTPError as e:
             logger.exception(e)
-            logger.warning("Error while executing command {} on {}: {}".format(
-                script,
-                self._fqdn,
-                str(e)
-            ))
+            logger.warning("Error while executing command %s on %s: %s", script, self._fqdn, str(e))
         except IOError as e:
             logger.exception(e)
-            logger.warning("Error while executing command {} on {}: {}".format(
-                script,
-                self._fqdn,
-                str(e)
-            ))
+            logger.warning("Error while executing command %s on %s: %s", script, self._fqdn, str(e))
 
         return retval
 

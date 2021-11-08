@@ -534,14 +534,13 @@ class SetupMachineForm(forms.Form):
            ...
         '''
         records = domain.get_setup_records(architecture, grouped=True)
-        logger.debug("Setup choices for {}.{} [{}]:\n{}\n".format(
-            machine, domain, architecture, records))
+        logger.debug("Setup choices for %s.%s [%s]:\n%s\n", machine, domain, architecture, records)
 
         super(SetupMachineForm, self).__init__(*args, **kwargs)
 
         self.fields['setup'].choices = self.get_setup_select_choices(records)
-        logger.debug("Setup choicen for {}.{} [{}]:\n{}\n".format(
-            machine, domain, architecture, self.fields['setup'].choices))
+        logger.debug("Setup choicen for %s.%s [%s]:\n%s\n",
+                     machine, domain, architecture, self.fields['setup'].choices)
 
     def get_setup_select_choices(self, records):
         setup_records = []

@@ -60,7 +60,7 @@ def login_test(fqdn):
         conn = SSH(fqdn)
         conn.connect()
     except Exception as e:
-        logger.warning("SSH login failed for '{}': {}".format(fqdn, e))
+        logger.warning("SSH login failed for '%s': %s", fqdn, e)
         return False
     finally:
         if conn:
@@ -74,7 +74,7 @@ def get_hardware_information(fqdn):
     try:
         machine = Machine.objects.get(fqdn=fqdn)
     except Machine.DoesNotExist:
-        logger.warning("Machine '{}' does not exist".format(fqdn))
+        logger.warning("Machine '%s' does not exist", fqdn)
         return
 
     # set needed values for several checks from original machine
@@ -238,7 +238,7 @@ def get_hardware_information(fqdn):
         return machine_
 
     except Exception as e:
-        logger.exception("{} ({})".format(fqdn, e))
+        logger.exception("%s (%s)", fqdn, e)
         return False
     finally:
         if conn:
@@ -254,7 +254,7 @@ def get_networkinterfaces(fqdn):
     try:
         machine = Machine.objects.get(fqdn=fqdn)
     except Machine.DoesNotExist:
-        logger.warning("Machine '{}' does not exist".format(fqdn))
+        logger.warning("Machine '%s' does not exist", fqdn)
         return False
 
     conn = None
@@ -323,7 +323,7 @@ def get_networkinterfaces(fqdn):
         return interfaces
 
     except Exception as e:
-        logger.exception("{} ({})".format(fqdn, e))
+        logger.exception("%s (%s)", fqdn, e)
         return False
     finally:
         if conn:
@@ -339,7 +339,7 @@ def get_status_ip(fqdn):
     try:
         machine = Machine.objects.get(fqdn=fqdn)
     except Machine.DoesNotExist:
-        logger.warning("Machine '{}' does not exist".format(fqdn))
+        logger.warning("Machine '%s' does not exist", fqdn)
         return False
 
     machine_ = Machine()
@@ -435,7 +435,7 @@ def get_status_ip(fqdn):
         return machine_
 
     except Exception as e:
-        logger.exception("{} ({})".format(fqdn, e))
+        logger.exception("%s (%s)",fqdn, e)
         return False
     finally:
         if conn:
@@ -451,7 +451,7 @@ def get_installations(fqdn):
     try:
         machine = Machine.objects.get(fqdn=fqdn)
     except Machine.DoesNotExist:
-        logger.warning("Machine '{}' does not exist".format(fqdn))
+        logger.warning("Machine '%s' does not exist", fqdn)
         return False
 
     conn = None
@@ -486,7 +486,7 @@ def get_installations(fqdn):
         return installations
 
     except Exception as e:
-        logger.exception("{} ({})".format(fqdn, e))
+        logger.exception("%s (%s)", fqdn, e)
         return False
     finally:
         if conn:
@@ -521,7 +521,7 @@ def get_pci_devices(fqdn):
     try:
         machine = Machine.objects.get(fqdn=fqdn)
     except Machine.DoesNotExist:
-        logger.warning("Machine '{}' does not exist".format(fqdn))
+        logger.warning("Machine '%s' does not exist", fqdn)
         return False
 
     conn = None
@@ -532,7 +532,7 @@ def get_pci_devices(fqdn):
         timer = threading.Timer(5 * 60, conn.close)
         timer.start()
 
-        logger.debug("Collect PCI devices for '{}'...".format(machine.fqdn))
+        logger.debug("Collect PCI devices for '%s'...", machine.fqdn)
         pci_devices = []
         chunk = ''
         stdout, _stderr, _exitstatus = conn.execute('lspci -mmvn')
@@ -575,12 +575,12 @@ def get_pci_devices(fqdn):
         for pci_device in pci_devices:
             pci_device.machine = machine
 
-        logger.debug("Collected {} PCI devices for '{}'".format(len(pci_devices), machine.fqdn))
+        logger.debug("Collected %s PCI devices for '%s'", len(pci_devices), machine.fqdn)
 
         return pci_devices
 
     except Exception as e:
-        logger.exception("{} ({})".format(fqdn, e))
+        logger.exception("%s (%s)",fqdn, e)
         return False
     finally:
         if conn:

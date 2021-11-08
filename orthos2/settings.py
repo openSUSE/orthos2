@@ -97,8 +97,7 @@ DATABASES = {
 RUN_AS_USER = 'orthos'
 CUR_USER = getpwuid(os.getuid())[0]
 if CUR_USER != RUN_AS_USER:
-    logging.error("You must run as user: {}, not as user: {}".
-                  format(RUN_AS_USER, CUR_USER))
+    logging.error("You must run as user: %s, not as user: %s", RUN_AS_USER, CUR_USER)
     exit(1)
 
 # Password validation
@@ -310,12 +309,12 @@ REMOTEPOWER_TYPES = [
 SETTINGS_FILE = '/etc/orthos2/settings'
 
 if os.access(SETTINGS_FILE, os.R_OK):
-    logger.info("Found alternative settings: {}".format(SETTINGS_FILE))
+    logger.info("Found alternative settings: %s", SETTINGS_FILE)
     with open(SETTINGS_FILE, 'r') as f:
         settings = f.read()
     try:
         exec(settings, globals())
     except Exception as e:
-        logger.exception("Error while parsing alternative settings: {}".format(e))
-        logger.error("File content:\n{}".format(settings))
+        logger.exception("Error while parsing alternative settings: %s", e)
+        logger.error("File content:\n %s", settings)
         sys.exit(1)

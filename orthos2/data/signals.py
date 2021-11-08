@@ -103,7 +103,7 @@ def machine_post_init(sender, instance, *args, **kwargs):
             if instance.get_primary_networkinterface():
                 instance.mac_address = instance.get_primary_networkinterface().mac_address
         except Exception as e:
-            logger.warning("Errors occurred during machine init: '{}': {}".format(instance, e))
+            logger.warning("Errors occurred during machine init: '%s': %s", instance, e)
 
 
 @receiver(pre_delete, sender=Machine)
@@ -134,9 +134,7 @@ def machine_pre_delete(sender, instance, *args, **kwargs):
         output_directory = '/tmp'
 
     if not os.access(output_directory, os.W_OK):
-        logger.warning("Target directory '{}' does not exist/is not writeable!".format(
-            output_directory
-        ))
+        logger.warning("Target directory '%s' does not exist/is not writeable!", output_directory)
         output_directory = '/tmp'
 
     serialized_data, output_format = instance.serialize(output_format=output_format)
@@ -151,7 +149,7 @@ def machine_pre_delete(sender, instance, *args, **kwargs):
     with open(filename, 'w') as machine_description:
         machine_description.write(serialized_data)
 
-    logger.info("Machine object serialized (target: '{}')".format(filename))
+    logger.info("Machine object serialized (target: '%s')", filename)
 
 
 @receiver(post_save, sender=SerialConsole)

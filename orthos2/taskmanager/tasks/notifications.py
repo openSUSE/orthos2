@@ -40,7 +40,7 @@ Orthos""".format(
             send_email(user.email, subject, message)
 
         except User.DoesNotExist:
-            logger.error("User not found: id={}".format(self.user_id))
+            logger.error("User not found: id=%s", self.user_id)
         except Exception as e:
             logger.exception(e)
 
@@ -110,9 +110,9 @@ Orthos""".format(
             send_email(user.email, subject, message)
 
         except User.DoesNotExist:
-            logger.error("User not found: id={}".format(self.user_id))
+            logger.error("User not found: id=%s", self.user_id)
         except Machine.DoesNotExist:
-            logger.error("Machine does not exist: fqdn={}".format(self.fqdn))
+            logger.error("Machine does not exist: fqdn=%s", self.fqdn)
         except Exception as e:
             logger.exception(e)
 
@@ -142,11 +142,7 @@ class CheckReservationExpiration(Task):
             delta = timezone.localdate(machine.reserved_until) - today
 
             if delta.days > 5 or delta.days in {4, 3}:
-                logger.debug("{}d left for {}@{}".format(
-                    delta.days,
-                    user.username,
-                    machine.fqdn
-                ))
+                logger.debug("%sd left for %s@%s", delta.days, user.username, machine.fqdn)
                 return
 
             if delta.days < 0:
@@ -191,9 +187,9 @@ Orthos""".format(
             send_email(user.email, subject, message)
 
         except User.DoesNotExist:
-            logger.error("User not found: id={}".format(self.user_id))
+            logger.error("User not found: id=%s", self.user_id)
         except Machine.DoesNotExist:
-            logger.error("Machine does not exist: fqdn={}".format(self.fqdn))
+            logger.error("Machine does not exist: fqdn=%s", self.fqdn)
         except Exception as e:
             logger.exception(e)
 
@@ -248,7 +244,7 @@ Orthos""".format(
             send_email(user.email, subject, message)
 
         except User.DoesNotExist:
-            logger.error("User not found: id={}".format(self.user_id))
+            logger.error("User not found: id={}", self.user_id)
         except Exception as e:
             logger.exception(e)
 

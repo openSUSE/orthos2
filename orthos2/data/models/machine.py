@@ -56,41 +56,37 @@ def check_permission(function):
 
         elif user.is_superuser:
             logger.debug(
-                "Allow {} of {} by {} (superuser)".format(function.__name__, machine, user)
+                "Allow %s of %s by %s (superuser)", function.__name__, machine, user
             )
             return function(machine, *args, **kwargs)
 
         elif user in User.objects.filter(memberships__group__name=machine.group,
                                          memberships__is_privileged=True):
             logger.debug(
-                "Allow {} of {} by {} (privileged user)".format(function.__name__, machine, user)
+                "Allow %s of %s by %s (privileged user)", function.__name__, machine, user
             )
             return function(machine, *args, **kwargs)
 
         elif machine.reserved_by == user:
             logger.debug(
-                "Allow {} of {} by {} (reservation owner)".format(function.__name__, machine, user)
+                "Allow %s of %s by %s (reservation owner)", function.__name__, machine, user
             )
             return function(machine, *args, **kwargs)
 
         elif function.__qualname__ == 'Machine.reserve' and not machine.reserved_by and\
                 not machine.administrative:
             logger.debug(
-                "Allow {} of {} by {} (not reserved)".format(function.__name__, machine, user)
+                "Allow %s of %s by %s (not reserved)", function.__name__, machine, user
             )
             return function(machine, *args, **kwargs)
 
         elif function.__qualname__ == 'Machine.release' and not machine.reserved_by and\
                 not machine.administrative:
-            logger.debug(
-                "Allow {} of {} by {} (not reserved)".format(function.__name__, machine, user)
-            )
+            logger.debug("Allow %s of %s by %s (not reserved)", function.__name__, machine, user)
             return function(machine, *args, **kwargs)
 
         else:
-            logger.debug(
-                "Deny {} of {} by {}".format(function.__name__, machine, user)
-            )
+            logger.debug("Deny %s of %s by %s", function.__name__, machine, user)
             raise PermissionDenied("You are not allowed to perform this action!")
 
     return decorator

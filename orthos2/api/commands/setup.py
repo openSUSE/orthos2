@@ -66,7 +66,7 @@ Example:
         }
 
         for distribution, records in grouped_records.items():
-            logger.info("Distros: {} - records: {}".format(distribution, records))
+            logger.info("Distros: %s - records: %s",distribution, records)
             for record in records:
                 response['data'].append(
                     {
