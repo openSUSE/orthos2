@@ -155,6 +155,7 @@ enable=c-extension-no-member,
       wrong-import-order,
       line-too-long,
       superfluous-parens,
+      logging-not-lazy,
 
 
 [REPORTS]

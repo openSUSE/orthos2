@@ -62,7 +62,7 @@ class Ansible(Task):
                       ' --private-key /home/orthos/.ssh/master'.format(dir=Ansible.facts_dir)
             stdout, stderr, returncode = execute(command)
             logger.debug("Calling: %s - %d", command, returncode)
-            logger.debug("ansible: %s - %s - %s" % (stdout, stderr, returncode))
+            logger.debug("ansible: %s - %s - %s", stdout, stderr, returncode)
             files = self.get_json_filelist()
             missing = list(set(self.machines) - set(files))
             if missing:
@@ -108,14 +108,14 @@ class Ansible(Task):
         ans_file = os.path.join(Ansible.data_dir, machine_fqdn + '.json')
         if not os.path.isfile(ans_file):
             if not try_lastruns:
-                logger.exception("json file %s does not exist" % ans_file)
+                logger.exception("json file %s does not exist", ans_file)
                 return None
             else:
                 ans_file = os.path.join(Ansible.data_dir_lastrun, machine_fqdn + '.json')
                 if not os.path.isfile(ans_file):
                     ans_file = os.path.join(Ansible.data_dir_archive, machine_fqdn + '.json')
                     if not os.path.isfile(ans_file):
-                        logger.exception("json file %s does not exist" % ans_file)
+                        logger.exception("json file %s does not exist", ans_file)
                         return None
         try:
             with open(ans_file, 'r') as json_file:
