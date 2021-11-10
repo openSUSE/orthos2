@@ -29,18 +29,11 @@ class Ansible(Task):
     data_dir_lastrun = "/run/orthos2/ansible_lastrun"
     data_dir_archive = "/run/orthos2/ansible_archive"
     facts_dir = "/usr/lib/orthos2/ansible"
-    is_running = False
 
     def __init__(self, machines: dict):
         """
         param machines: List of machines (strings) to scan via ansible
         """
-        # Already set is_running here to, so be quick to run the task after creating
-        # this object
-        if Ansible.is_running:
-            raise Exception("Machine scan via ansible already running")
-        Ansible.is_running = True
-
         self.machines = machines
 
         self.thread_id = threading.current_thread().ident
@@ -86,8 +79,6 @@ class Ansible(Task):
             shutil.rmtree(Ansible.data_dir_lastrun)
             shutil.move(Ansible.data_dir, Ansible.data_dir_lastrun)
             os.mkdir(Ansible.data_dir)
-        finally:
-            Ansible.is_running = False
 
     def get_json_filelist(self) -> list:
         """
