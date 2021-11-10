@@ -3,7 +3,6 @@ import logging
 import re
 from copy import deepcopy
 
-from orthos2.data.exceptions import ReleaseException, ReserveException
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import serializers
@@ -15,6 +14,8 @@ from orthos2.utils.misc import (Serializer, get_domain, get_hostname,
                                 get_ipv4, get_ipv6, get_s390_hostname,
                                 is_dns_resolvable)
 
+
+from orthos2.data.exceptions import ReleaseException, ReserveException
 from .architecture import Architecture
 from .domain import Domain, DomainAdmin, validate_domain_ending
 from .enclosure import Enclosure
@@ -56,41 +57,37 @@ def check_permission(function):
 
         elif user.is_superuser:
             logger.debug(
-                "Allow {} of {} by {} (superuser)".format(function.__name__, machine, user)
+                "Allow %s of %s by %s (superuser)", function.__name__, machine, user
             )
             return function(machine, *args, **kwargs)
 
         elif user in User.objects.filter(memberships__group__name=machine.group,
                                          memberships__is_privileged=True):
             logger.debug(
-                "Allow {} of {} by {} (privileged user)".format(function.__name__, machine, user)
+                "Allow %s of %s by %s (privileged user)", function.__name__, machine, user
             )
             return function(machine, *args, **kwargs)
 
         elif machine.reserved_by == user:
             logger.debug(
-                "Allow {} of {} by {} (reservation owner)".format(function.__name__, machine, user)
+                "Allow %s of %s by %s (reservation owner)", function.__name__, machine, user
             )
             return function(machine, *args, **kwargs)
 
         elif function.__qualname__ == 'Machine.reserve' and not machine.reserved_by and\
                 not machine.administrative:
             logger.debug(
-                "Allow {} of {} by {} (not reserved)".format(function.__name__, machine, user)
+                "Allow %s of %s by %s (not reserved)", function.__name__, machine, user
             )
             return function(machine, *args, **kwargs)
 
         elif function.__qualname__ == 'Machine.release' and not machine.reserved_by and\
                 not machine.administrative:
-            logger.debug(
-                "Allow {} of {} by {} (not reserved)".format(function.__name__, machine, user)
-            )
+            logger.debug("Allow %s of %s by %s (not reserved)", function.__name__, machine, user)
             return function(machine, *args, **kwargs)
 
         else:
-            logger.debug(
-                "Deny {} of {} by {}".format(function.__name__, machine, user)
-            )
+            logger.debug("Deny %s of %s by %s", function.__name__, machine, user)
             raise PermissionDenied("You are not allowed to perform this action!")
 
     return decorator
@@ -293,7 +290,8 @@ class Machine(models.Model):
     nda = models.BooleanField(
         'NDA hardware',
         default=False,
-        help_text="This machine is under NDA and has secret (early development HW?) partner information, do not share any data to the outside world"
+        help_text="This machine is under NDA and has secret (early development HW?) partner information,"\
+                  " do not share any data to the outside world"
     )
 
     ipmi = models.BooleanField(
@@ -323,7 +321,8 @@ class Machine(models.Model):
     vm_auto_delete = models.BooleanField(
         'Delete automatically',
         default=False,
-        help_text="Release and destroy virtual machine instances, once people have released (do not reserve anymore) them"
+        help_text="Release and destroy virtual machine instances, once people have released"\
+        "(do not reserve anymore) them"
     )
 
     virt_api_int = models.SmallIntegerField(
@@ -453,13 +452,14 @@ class Machine(models.Model):
         choices=CONNECTIVITY_CHOICE,
         default=Connectivity.ALL,
         blank=False,
-        help_text='Nightly checks whether the machine responds to ping, ssh port is open or whether orthos can log in via ssh key. Can be triggered manually via command\
- line client: `rescan [fqdn] status`'
+        help_text='Nightly checks whether the machine responds to ping, ssh port is open or whether orthos can'\
+                  'log in via ssh key. Can be triggered manually via command line client: `rescan [fqdn] status`'
     )
 
     collect_system_information = models.BooleanField(
         default=True,
-        help_text='Shall the system be scanned every night? This only works if the proper ssh key is in place in authorized_keys and can be triggered manually via command line client: `rescan [fqdn]`'
+        help_text='Shall the system be scanned every night? This only works if the proper ssh key is in place in'\
+                  ' authorized_keys and can be triggered manually via command line client: `rescan [fqdn]`'
     )
 
     dhcp_filename = models.CharField(
@@ -467,7 +467,8 @@ class Machine(models.Model):
         max_length=64,
         null=True,
         blank=True,
-        help_text="Override bootloader binary retrieved from a tftp server (corresponds to the `filename` ISC dhcpd.conf variable)"
+        help_text="Override bootloader binary retrieved from a tftp server (corresponds to the `filename`"\
+                  " ISC dhcpd.conf variable)"
     )
 
     tftp_server = models.ForeignKey(
@@ -478,7 +479,8 @@ class Machine(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         limit_choices_to={'administrative': True},
-        help_text="Override tftp server used for network boot (corresponds to the `next_server` ISC dhcpd.conf variable)"
+        help_text="Override tftp server used for network boot (corresponds to the `next_server` ISC"\
+                  " dhcpd.conf variable)"
     )
 
     hypervisor = models.ForeignKey(
@@ -648,7 +650,7 @@ class Machine(models.Model):
                     assert self.serialconsole.kernel_device_num == \
                         self._original.serialconsole.kernel_device_num
             except AssertionError:
-                    update_machine = True
+                update_machine = True
             if update_machine:
                 from orthos2.data.signals import signal_cobbler_machine_update
                 if self.fqdn_domain == self._original.fqdn_domain:

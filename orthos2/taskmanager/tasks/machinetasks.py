@@ -1,7 +1,8 @@
 import logging
 
-from orthos2.data.models import Machine, NetworkInterface, ServerConfig
 from django.utils import timezone
+
+from orthos2.data.models import Machine, NetworkInterface, ServerConfig
 from orthos2.taskmanager.models import Task
 from orthos2.utils.machinechecks import (get_installations, get_networkinterfaces,
                                          get_status_ip, login_test,
@@ -192,7 +193,7 @@ class MachineCheck(Task):
         if not installations_:
             return
 
-        logger.debug("Drop installations for '{}'...".format(self.fqdn))
+        logger.debug("Drop installations for '%s'...", self.fqdn)
         self.machine.installations.all().delete()
 
         for installation in installations_:
@@ -205,7 +206,7 @@ class MachineCheck(Task):
         try:
             self.machine = Machine.objects.get(fqdn=self.fqdn)
         except Machine.DoesNotExist:
-            logger.error("Machine does not exist: fqdn={}".format(self.fqdn))
+            logger.error("Machine does not exist: fqdn=%s", self.fqdn)
             return
 
         for func in self._get_methods():
@@ -238,7 +239,7 @@ class RegenerateMOTD(Task):
         try:
             machine = Machine.objects.get(fqdn=self.fqdn)
         except Machine.DoesNotExist:
-            logger.error("Machine does not exist: fqdn={}".format(self.fqdn))
+            logger.error("Machine does not exist: fqdn=%s", self.fqdn)
             return
 
         conn = None
@@ -275,14 +276,14 @@ class RegenerateMOTD(Task):
             _stdout, stderr, exitstatus = conn.execute_script_remote('machine_sync_motd.sh')
 
             if exitstatus != 0:
-                logger.exception("({}) {}".format(machine.fqdn, stderr))
+                logger.exception("(%s) %s", machine.fqdn, stderr)
                 raise Exception(stderr)
 
         except SSH.Exception as e:
-            logger.error("({}) {}".format(machine.fqdn, e))
+            logger.error("(%s) %s", machine.fqdn, e)
             return False
         except IOError as e:
-            logger.error("({}) {}".format(machine.fqdn, e))
+            logger.error("(%s) %s", machine.fqdn, e)
             return False
         finally:
             if conn:

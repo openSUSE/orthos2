@@ -1,16 +1,16 @@
 import datetime
 import json
 
+from django.conf.urls import re_path
+from django.contrib.auth.models import AnonymousUser, User
+from django.http import HttpResponseRedirect
+
+from orthos2.utils.misc import add_offset_to_date, format_cli_form_errors
 from orthos2.api.commands import BaseAPIView, get_machine
 from orthos2.api.forms import ReserveMachineAPIForm
 from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                           InputSerializer, Message, Serializer)
 from orthos2.data.models import Machine
-from django.conf.urls import re_path
-from django.contrib.auth.models import AnonymousUser, User
-from django.http import HttpResponseRedirect
-from orthos2.utils.misc import add_offset_to_date, format_cli_form_errors
-
 
 class ReserveCommand(BaseAPIView):
 

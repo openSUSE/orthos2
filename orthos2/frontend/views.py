@@ -3,8 +3,6 @@ import functools
 import logging
 import warnings
 
-from orthos2.data.models import (Architecture, Domain, Machine, MachineGroup,
-                                 ReservationHistory, ServerConfig)
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate
@@ -30,6 +28,8 @@ from django.views.generic import ListView
 
 from rest_framework.authtoken.models import Token
 
+from orthos2.data.models import (Architecture, Domain, Machine, MachineGroup,
+                                 ReservationHistory, ServerConfig)
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.misc import add_offset_to_date

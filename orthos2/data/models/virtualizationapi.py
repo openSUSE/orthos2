@@ -527,8 +527,8 @@ class Libvirt(VirtualizationAPI):
             self.destroy(vm)
             self.undefine(vm)
         except Exception:
-            logger.warning("Could not remove VM {vm} via from Hypervisor {hyper}"
-                           .format(vm=vm.hostname, hyper=self.host.fqdn))
+            logger.warning("Could not remove VM %s via from Hypervisor %s",
+                           vm.hostname, self.host.fqdn)
             return False
         return True
 

@@ -15,7 +15,7 @@ class BaseManager(models.Manager):
             obj = ServerConfig.objects.get(key=key)
             return obj.value
         except Exception as e:
-            logger.exception("Key '{}': {}".format(key, e))
+            logger.exception("Key '%s': %s", key, e)
         return None
 
     def bool_by_key(self, key):
@@ -31,7 +31,7 @@ class BaseManager(models.Manager):
             if obj.value.lower() == 'bool:true':
                 return True
         except Exception as e:
-            logger.exception("Key '{}': {}".format(key, e))
+            logger.exception("Key '%s': %s", key, e)
         return False
 
     def list_by_key(self, key, delimiter=','):
@@ -44,7 +44,7 @@ class BaseManager(models.Manager):
             else:
                 return []
         except Exception as e:
-            logger.exception("Key '{}': {}".format(key, e))
+            logger.exception("Key '%s': %s", key, e)
         return None
 
     def get_smtp_relay(self):

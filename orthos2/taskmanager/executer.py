@@ -83,10 +83,7 @@ class TaskExecuter(Thread):
                 else:
                     self.reset_daily_task(hash)
                 del running_threads[hash]
-                logger.debug("Thread [{}] {} exited".format(
-                    hash[:8],
-                    task.__class__.__name__
-                ))
+                logger.debug("Thread [%s] %s exited", hash[:8], task.__class__.__name__)
 
     def run(self):
         """Main thread function."""
@@ -118,15 +115,15 @@ class TaskExecuter(Thread):
                     args = json.loads(basetask.arguments)[0]
                     kwargs = json.loads(basetask.arguments)[1]
                 except ImportError:
-                    logger.exception("Can't import task module '{}'".format(basetask.module))
+                    logger.exception("Can't import task module '%s'", basetask.module)
                     self.remove_single_task(basetask.hash)
                     continue
                 except AttributeError:
-                    logger.exception("Unknown task class '{}'".format(basetask.name))
+                    logger.exception("Unknown task class '%s'", basetask.name)
                     self.remove_single_task(basetask.hash)
                     continue
                 except ValueError:
-                    logger.exception("Invalid JSON arguments: {}".format(basetask.arguments))
+                    logger.exception("Invalid JSON arguments: %s", basetask.arguments)
                     continue
 
                 if basetask.hash not in running_threads:
@@ -144,7 +141,7 @@ class TaskExecuter(Thread):
                     thread.start()
 
                     running_threads[basetask.hash] = (thread, task)
-                    logger.debug("Thread [{}] {}:{} started...".format(
+                    logger.debug("Thread [%s] %s:%s started...",
                         basetask.hash[:8],
                         basetask.name,
                         basetask.arguments

@@ -52,6 +52,6 @@ class SetupMachine(Task):
         except SSH.Exception as exception:
             logger.exception(exception)
         except Machine.DoesNotExist:
-            logger.exception("Machine does not exist: fqdn={}".format(self.fqdn))
+            logger.exception("Machine does not exist: fqdn=%s", self.fqdn)
         except Exception as e:
             logger.exception(e)

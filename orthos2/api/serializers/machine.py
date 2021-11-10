@@ -1,6 +1,6 @@
-from orthos2.data.models import Machine
 from rest_framework import serializers
 
+from orthos2.data.models import Machine
 from .annotation import AnnotationSerializer
 from .installation import InstallationSerializer
 from .networkinterface import NetworkInterfaceSerializer

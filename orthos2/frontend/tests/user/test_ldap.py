@@ -4,9 +4,9 @@
 # Author Jan Löser <jan.loeser@posteo.de>
 # Published under the GNU Public Licence 2
 
-from orthos2.data.models.serverconfig import ServerConfig
 from django.urls import reverse
 from django_webtest import WebTest
+from orthos2.data.models.serverconfig import ServerConfig
 
 
 class LDAP(WebTest):

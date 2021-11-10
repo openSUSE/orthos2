@@ -1,7 +1,8 @@
 import logging
 
-from orthos2.data.models import Machine, ServerConfig
 from django.template import Context, Template
+
+from orthos2.data.models import Machine, ServerConfig
 from orthos2.utils.ssh import SSH
 from orthos2.utils.misc import get_hostname, get_ip
 from orthos2.utils.remotepowertype import RemotePowerType
@@ -243,14 +244,14 @@ class CobblerServer:
         command = "{cobbler} system remove --name {fqdn}".format(
             cobbler=self._cobbler_path, fqdn=machine.fqdn)
         _, stderr, exitcode = self._conn.execute(command)
-        if(exitcode):
+        if exitcode:
             logging.error("Removing %s failed with '%s'", machine.fqdn, stderr)
 
     def sync_dhcp(self):
         self.connect()
         self._check()
         _, stderr, exitcode =self._conn.execute("{cobbler} sync --dhcp".format(cobbler=self._cobbler_path))
-        if(exitcode):
+        if exitcode:
             logging.error("Dhcp sync on %s failed with '%s'", self._fqdn, stderr)
 
     def is_installed(self):
@@ -297,7 +298,7 @@ class CobblerServer:
                                cobbler_profile, self._fqdn, stderr)
                 raise CobblerException(
                     "setup of {machine} with {profile} failed on {server} with {error}".format(
-                        machine=machine.fqdn, arch=cobbler_profile, server=self._fqdn))
+                        machine=machine.fqdn, profile=cobbler_profile, server=self._fqdn, error=stderr))
         except:
             pass
         finally:
@@ -321,7 +322,7 @@ class CobblerServer:
                            command, self._fqdn, stderr)
             raise CobblerException(
                 "Powerswitching of {machine} with {command} failed on {server} with {error}".format(
-                    machine=machine.fqdn, command=command, server=self._fqdn))
+                    machine=machine.fqdn, command=command, server=self._fqdn, error=stderr))
         return out
 
     def _check(self):

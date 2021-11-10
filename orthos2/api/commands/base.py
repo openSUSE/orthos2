@@ -1,7 +1,8 @@
-from orthos2.api.serializers.misc import SelectSerializer
-from orthos2.data.models import Machine
 from django.shortcuts import redirect
 from rest_framework.views import APIView
+
+from orthos2.api.serializers.misc import SelectSerializer
+from orthos2.data.models import Machine
 
 
 def get_machine(fqdn, redirect_to, data=None, redirect_key_replace='fqdn'):

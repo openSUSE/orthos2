@@ -1,9 +1,10 @@
 import logging
 
-from orthos2.data.models import Machine, Domain, DomainAdmin
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.models import User
+
+from orthos2.data.models import Machine, Domain, DomainAdmin
 from orthos2.taskmanager.models import Task
 from orthos2.utils.misc import send_email, get_domain
 
@@ -40,7 +41,7 @@ Orthos""".format(
             send_email(user.email, subject, message)
 
         except User.DoesNotExist:
-            logger.error("User not found: id={}".format(self.user_id))
+            logger.error("User not found: id=%s", self.user_id)
         except Exception as e:
             logger.exception(e)
 
@@ -110,9 +111,9 @@ Orthos""".format(
             send_email(user.email, subject, message)
 
         except User.DoesNotExist:
-            logger.error("User not found: id={}".format(self.user_id))
+            logger.error("User not found: id=%s", self.user_id)
         except Machine.DoesNotExist:
-            logger.error("Machine does not exist: fqdn={}".format(self.fqdn))
+            logger.error("Machine does not exist: fqdn=%s", self.fqdn)
         except Exception as e:
             logger.exception(e)
 
@@ -142,11 +143,7 @@ class CheckReservationExpiration(Task):
             delta = timezone.localdate(machine.reserved_until) - today
 
             if delta.days > 5 or delta.days in {4, 3}:
-                logger.debug("{}d left for {}@{}".format(
-                    delta.days,
-                    user.username,
-                    machine.fqdn
-                ))
+                logger.debug("%sd left for %s@%s", delta.days, user.username, machine.fqdn)
                 return
 
             if delta.days < 0:
@@ -191,9 +188,9 @@ Orthos""".format(
             send_email(user.email, subject, message)
 
         except User.DoesNotExist:
-            logger.error("User not found: id={}".format(self.user_id))
+            logger.error("User not found: id=%s", self.user_id)
         except Machine.DoesNotExist:
-            logger.error("Machine does not exist: fqdn={}".format(self.fqdn))
+            logger.error("Machine does not exist: fqdn=%s", self.fqdn)
         except Exception as e:
             logger.exception(e)
 
@@ -240,7 +237,7 @@ Regards,
 Orthos""".format(
                 username=user.username,
                 usernames="\n".join(
-                    ['  {} ({})'.format(user['username'], user['email']) for user in usernames]
+                    ['  {} ({})'.format(user_['username'], user_['email']) for user_ in usernames] # user woudl
                 ),
                 contact=settings.CONTACT
             )
@@ -248,7 +245,7 @@ Orthos""".format(
             send_email(user.email, subject, message)
 
         except User.DoesNotExist:
-            logger.error("User not found: id={}".format(self.user_id))
+            logger.error("User not found: id={}", self.user_id)
         except Exception as e:
             logger.exception(e)
 

@@ -1,8 +1,8 @@
 import logging
 
+from django.conf import settings
 
 from orthos2.data.models import Domain, Machine, ServerConfig
-from django.conf import settings
 from orthos2.taskmanager.models import Task
 from orthos2.utils.cobbler import CobblerServer
 from orthos2.utils.ssh import SSH
@@ -43,14 +43,14 @@ class RegenerateCobbler(Task):
             for domain in domains:
 
                 if domain.cobbler_server.all().count() == 0:
-                    logger.info("Domain '{}' has no Cobbler server... skip".format(domain.name))
+                    logger.info("Domain '%s' has no Cobbler server... skip", domain.name)
                     continue
 
                 if domain.machine_set.count() == 0:
-                    logger.info("Domain '{}' has no machines... skip".format(domain.name))
+                    logger.info("Domain '%s' has no machines... skip", domain.name)
                     continue
 
-                logger.info("Generate Cobbler configuration for '{}'...".format(domain.name))
+                logger.info("Generate Cobbler configuration for '%s'...", domain.name)
 
                 # deploy generated DHCP files on all servers belonging to one domain
                 for server in domain.cobbler_server.all():
@@ -84,9 +84,9 @@ class UpdateCobblerMachine(Task):
             machine = Machine.objects.get(pk=self._machine_id)
             logger.info("Cobbler update started")
             if domain.cobbler_server.all().count() == 0:
-                    logger.info("Domain '{}' has no Cobbler server... aborting".format(domain.name))
-                    return
-            logger.info("Generate Cobbler update configuration for '{}'...".format(machine.fqdn))
+                logger.info("Domain '%s' has no Cobbler server... aborting", domain.name)
+                return
+            logger.info("Generate Cobbler update configuration for '%s'...", machine.fqdn)
             # deploy generated DHCP files on all servers belonging to one domain
             for server in domain.cobbler_server.all():
                 cobbler_server = CobblerServer(server.fqdn, domain)
@@ -103,13 +103,13 @@ class UpdateCobblerMachine(Task):
         except SSH.Exception as e:
             logger.exception(e)
         except Domain.DoesNotExist:
-            logger.error("No Domain with id {id}, aborting".format(self._domain_id))
+            logger.error("No Domain with id %s, aborting", self._domain_id)
         except Domain.MultipleObjectsReturned:
-            logger.error("Multiple Domains with id {id}, aborting".format(self._domain_id))
+            logger.error("Multiple Domains with id %s, aborting", self._domain_id)
         except Machine.DoesNotExist:
-            logger.error("No Machine with id {id}, aborting".format(self._machine_id))
+            logger.error("No Machine with id %s, aborting", self._machine_id)
         except Machine.MultipleObjectsReturned:
-            logger.error("Multiple Machines with id {id}, aborting".format(self._machine_id))
+            logger.error("Multiple Machines with id %s, aborting", self._machine_id)
             return
         except Exception as e:
             logger.exception(e)
@@ -125,11 +125,11 @@ class SyncCobblerDHCP(Task):
         try:
             domain = Domain.objects.get(pk=self._domain_id)
             if domain.cobbler_server.all().count() == 0:
-                    logger.info("Domain '{}' has no Cobbler server... aborting".format(domain.name))
-                    return
+                logger.info("Domain '%s' has no Cobbler server... aborting", domain.name)
+                return
             for server in domain.cobbler_server.all():
                 server.sync_dhcp()
         except Domain.DoesNotExist:
-            logger.error("No Domain with id {id}, aborting".format(self._domain_id))
+            logger.error("No Domain with id %s, aborting", self._domain_id)
         except Domain.MultipleObjectsReturned:
-            logger.error("Multiple Domains with id {id}, aborting".format(self._domain_id))
+            logger.error("Multiple Domains with id %s, aborting", self._domain_id)

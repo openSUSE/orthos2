@@ -66,11 +66,11 @@ def get_ip(fqdn, ip_version=4):
             elif address_family[0] == socket.AF_INET6:
                 ipv6.append(address_family[4][0])
     except (IndexError, socket.gaierror) as e:
-        logger.exception("DNS lookup for '{}': NXDOMAIN (non-existing domain)".format(fqdn, str(e)))
+        logger.exception("DNS lookup for '%s': NXDOMAIN (non-existing domain) (%s)", fqdn, str(e))
         return None
 
     if not ipv4:
-        logger.error("FQDN '{}' doesn't have any IPv4 address!".format(fqdn))
+        logger.error("FQDN '%s' doesn't have any IPv4 address!", fqdn)
         return None
 
     if ip_version == 4:
@@ -189,7 +189,7 @@ def send_email(to_addr, subject, message, from_addr=None):
         msg.attach(text)
 
         s = smtplib.SMTP(ServerConfig.objects.by_key('mail.smtprelay.fqdn'))
-        logger.info("Sending mail to '{}' (subject: '{}')".format(msg['To'], msg['Subject']))
+        logger.info("Sending mail to '%s' (subject: '%s')", msg['To'], msg['Subject'])
         s.sendmail(msg['From'], [to_addr], msg.as_string())
         s.quit()
     except Exception:
@@ -217,7 +217,7 @@ def execute(command):
         # stdout, stderr, exitcode
         result = data[0].decode('utf-8'), data[1].decode('utf-8'), process.returncode
     except FileNotFoundError:
-        logger.exception("No such file or directory: {}".format(command))
+        logger.exception("No such file or directory: %s", command)
     except Exception as e:
         logger.exception(e)
 
@@ -232,11 +232,11 @@ def get_s390_hostname(hostname, use_uppercase=True):
         linux = 'linux'
 
     if (not isinstance(hostname, str) or len(hostname) < 10):
-        logger.error("Invalid s390 name: {}".format(hostname))
+        logger.error("Invalid s390 name: %s", hostname)
         return None
     else:
         name = hostname[7:10]
-    logging.debug("s390 name convertion from {} to {}".format(hostname, linux + name))
+    logging.debug("s390 name convertion from %s to %s", hostname, linux + name)
     return linux + name
 
 
@@ -251,7 +251,7 @@ def sync(original, temp):
         if not key.startswith('_') and original.__class__().__dict__[key] != temp.__dict__[key]:
             differences.append(key)
 
-    logger.debug("Set values for '{}': {}".format(original, ', '.join(differences)))
+    logger.debug("Set values for '%s': %s", original, ', '.join(differences))
 
     original.refresh_from_db()
 

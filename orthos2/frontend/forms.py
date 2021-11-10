@@ -1,16 +1,16 @@
 import collections
 import datetime
+import logging
 
-from orthos2.data.models import (Installation, Machine, Platform,
-                                 ServerConfig, System, Vendor)
 from django import forms
 from django.conf import settings
 from django.contrib.auth.models import User
-
 from django.utils import timezone
 from django.utils.formats import date_format
 
-import logging
+from orthos2.data.models import (Installation, Machine, Platform,
+                                 ServerConfig, System, Vendor)
+
 logger = logging.getLogger('views')
 
 
@@ -534,14 +534,13 @@ class SetupMachineForm(forms.Form):
            ...
         '''
         records = domain.get_setup_records(architecture, grouped=True)
-        logger.debug("Setup choices for {}.{} [{}]:\n{}\n".format(
-            machine, domain, architecture, records))
+        logger.debug("Setup choices for %s.%s [%s]:\n%s\n", machine, domain, architecture, records)
 
         super(SetupMachineForm, self).__init__(*args, **kwargs)
 
         self.fields['setup'].choices = self.get_setup_select_choices(records)
-        logger.debug("Setup choicen for {}.{} [{}]:\n{}\n".format(
-            machine, domain, architecture, self.fields['setup'].choices))
+        logger.debug("Setup choicen for %s.%s [%s]:\n%s\n",
+                     machine, domain, architecture, self.fields['setup'].choices)
 
     def get_setup_select_choices(self, records):
         setup_records = []

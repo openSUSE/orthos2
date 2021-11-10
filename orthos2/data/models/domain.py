@@ -156,7 +156,7 @@ class Domain(models.Model):
         from orthos2.utils.ssh import SSH
 
         if not self.tftp_server:
-            logger.warning("No TFTP server available for '{}'".format(self.name))
+            logger.warning("No TFTP server available for '%s'", self.name)
             return {}
 
         list_command_template = ServerConfig.objects.by_key('setup.list.command')
@@ -169,7 +169,7 @@ class Domain(models.Model):
         try:
             conn = SSH(self.tftp_server.fqdn)
             conn.connect()
-            logger.debug("Fetch setup records: {}:{}".format(self.tftp_server.fqdn, list_command))
+            logger.debug("Fetch setup records: %s:%s",self.tftp_server.fqdn, list_command)
             stdout, stderr, exitstatus = conn.execute(list_command)
             conn.close()
 
@@ -177,16 +177,16 @@ class Domain(models.Model):
                 logger.warning(str(stderr))
                 return {}
 
-            logger.debug("Found {} setup records on {}".format(len(stdout), self.tftp_server.fqdn))
+            logger.debug("Found %s setup records on %s", len(stdout), self.tftp_server.fqdn)
         except Exception as e:
-            logger.warning("Couldn't fetch record list for setup: {}".format(str(e)))
+            logger.warning("Couldn't fetch record list for setup: %s", str(e))
             return {}
         finally:
             if conn:
                 conn.close()
 
         records = [record.strip('\n') for record in stdout]
-        logger.debug("Records:\n{}".format(records))
+        logger.debug("Records:\n%s", records)
         if grouped:
             groups = {}
             for record in records:
@@ -198,7 +198,7 @@ class Domain(models.Model):
                 elif delim_c == 2:
                     (_arch, distro, profile) = record.split(delimiter)
                 else:
-                    logger.debug("Setup record has invalid format: '{}'".format(record))
+                    logger.debug("Setup record has invalid format: '%s'",record)
                     continue
 
                 if distro not in groups:
@@ -206,7 +206,7 @@ class Domain(models.Model):
 
                 groups[distro].append(profile)
             records = collections.OrderedDict(sorted(groups.items()))
-            logger.debug("Grouped and parsed:\n{}".format(records))
+            logger.debug("Grouped and parsed:\n%s", records)
         else:
             delim_c = records[0].count(delimiter)
             if delim_c == 1:
@@ -215,7 +215,7 @@ class Domain(models.Model):
             elif delim_c == 2:
                 # <arch>:<distro>:<profile>
                 records = [record.split(delimiter, maxsplit=1)[1] for record in records]
-            logger.debug("Not grouped and parsed:\n{}".format(records))
+            logger.debug("Not grouped and parsed:\n%s", records)
 
         return records
 

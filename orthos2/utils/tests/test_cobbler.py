@@ -1,12 +1,11 @@
-
-
 import logging
-
 import mock
+from mock import MagicMock, NonCallableMagicMock
+
+from django.test import TestCase
+
 import orthos2.utils.cobbler as cobbler
 from orthos2.data.models import Architecture, Domain, Machine, MachineGroup
-from django.test import TestCase
-from mock import MagicMock, NonCallableMagicMock
 from orthos2.utils.cobbler import CobblerException
 
 logging.disable(logging.CRITICAL)

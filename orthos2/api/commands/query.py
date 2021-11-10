@@ -1,10 +1,11 @@
 import json
 
+from django.conf.urls import re_path
+from django.http import JsonResponse
+
 from orthos2.api.commands import BaseAPIView
 from orthos2.api.models import APIQuery
 from orthos2.api.serializers.misc import ErrorMessage, InfoMessage
-from django.conf.urls import re_path
-from django.http import JsonResponse
 
 
 class QueryCommand(BaseAPIView):

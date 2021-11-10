@@ -1,20 +1,21 @@
 import logging
 
+from django import forms
+from django.forms.models import ModelChoiceIteratorValue
+from django.forms import inlineformset_factory
+from django.forms.fields import (BooleanField, CharField, ChoiceField,
+                                 DateField, DecimalField, IntegerField)
+from django.template.defaultfilters import slugify
+
 from orthos2.data.models import (Architecture, Enclosure, Machine, MachineGroup,
                                  NetworkInterface, RemotePower, SerialConsole,
                                  System, RemotePowerDevice,
                                  is_unique_mac_address, validate_dns,
                                  validate_mac_address)
 from orthos2.data.models.domain import validate_domain_ending
-from django import forms
-from django.forms.models import ModelChoiceIteratorValue
-
-from django.forms import inlineformset_factory
-from django.forms.fields import (BooleanField, CharField, ChoiceField,
-                                 DateField, DecimalField, IntegerField)
-from django.template.defaultfilters import slugify
 from orthos2.frontend.forms import ReserveMachineForm, VirtualMachineForm
 from orthos2.utils.remotepowertype import get_remote_power_type_choices
+
 logger = logging.getLogger('api')
 
 
@@ -171,21 +172,21 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         architectures = []
         for architecture in Architecture.objects.all().values('id', 'name').order_by('name'):
             architectures.append((architecture['id'], architecture['name']))
-        return (architectures)
+        return architectures
 
     def get_systems():
         """Return systems choice tuple."""
         systems = []
         for system in System.objects.all().values('id', 'name').order_by('name'):
             systems.append((system['id'], system['name']))
-        return (systems)
+        return systems
 
     def get_machinegroups():
         """Return machine group choice tuple."""
         groups = [('none', 'None')]
         for group in MachineGroup.objects.all().values('id', 'name').order_by('name'):
             groups.append((group['id'], group['name']))
-        return (groups)
+        return groups
 
     def clean_fqdn(self):
         """Check whether `fqdn` already exists."""
