@@ -49,37 +49,36 @@ class Ansible(Task):
             i_file.write(rendered)
 
     def execute(self):
-        try:
-            self.render_inventory()
-            command = '/usr/bin/ansible-playbook -i {dir}/inventory.yml {dir}/site.yml' \
-                      ' --private-key /home/orthos/.ssh/master'.format(dir=Ansible.facts_dir)
-            stdout, stderr, returncode = execute(command)
-            logger.debug("Calling: %s - %d", command, returncode)
-            logger.debug("ansible: %s - %s - %s", stdout, stderr, returncode)
-            files = self.get_json_filelist()
-            missing = list(set(self.machines) - set(files))
-            if missing:
-                logger.warning("Cannot scan machines %s via ansible, missing json file in %s",
-                               self.machines, Ansible.facts_dir)
-            success = []
-            fail    = []
-            for fqdn in files:
-                try:
-                    Ansible.store_machine_info(fqdn)
-                    success.append(fqdn)
-                except Exception:
-                    logger.exception("Could not store ansible data of host %s", fqdn)
-                    fail.append(fqdn)
-                logger.info("Successfully scanned via ansible: %s", success)
-            if fail:
-                logger.warning("Exceptions caught during scan for these hosts: %s", fail)
-            # Copy json files from ../ansible to ../ansible_archive
-            for file in glob.glob(Ansible.data_dir + "/*.json"):
-                shutil.copy(file, Ansible.data_dir_archive)
-            # Move ../ansible to ../ansible_lastrun
-            shutil.rmtree(Ansible.data_dir_lastrun)
-            shutil.move(Ansible.data_dir, Ansible.data_dir_lastrun)
-            os.mkdir(Ansible.data_dir)
+        self.render_inventory()
+        command = '/usr/bin/ansible-playbook -i {dir}/inventory.yml {dir}/site.yml' \
+            ' --private-key /home/orthos/.ssh/master'.format(dir=Ansible.facts_dir)
+        stdout, stderr, returncode = execute(command)
+        logger.debug("Calling: %s - %d", command, returncode)
+        logger.debug("ansible: %s - %s - %s", stdout, stderr, returncode)
+        files = self.get_json_filelist()
+        missing = list(set(self.machines) - set(files))
+        if missing:
+            logger.warning("Cannot scan machines %s via ansible, missing json file in %s",
+                           self.machines, Ansible.facts_dir)
+        success = []
+        fail    = []
+        for fqdn in files:
+            try:
+                Ansible.store_machine_info(fqdn)
+                success.append(fqdn)
+            except Exception:
+                logger.exception("Could not store ansible data of host %s", fqdn)
+                fail.append(fqdn)
+            logger.info("Successfully scanned via ansible: %s", success)
+        if fail:
+            logger.warning("Exceptions caught during scan for these hosts: %s", fail)
+        # Copy json files from ../ansible to ../ansible_archive
+        for file in glob.glob(Ansible.data_dir + "/*.json"):
+            shutil.copy(file, Ansible.data_dir_archive)
+        # Move ../ansible to ../ansible_lastrun
+        shutil.rmtree(Ansible.data_dir_lastrun)
+        shutil.move(Ansible.data_dir, Ansible.data_dir_lastrun)
+        os.mkdir(Ansible.data_dir)
 
     def get_json_filelist(self) -> list:
         """
