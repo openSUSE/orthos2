@@ -9,7 +9,7 @@ from django.template.defaultfilters import slugify
 
 from orthos2.data.models import (Architecture, Enclosure, Machine, MachineGroup,
                                  NetworkInterface, RemotePower, SerialConsole,
-                                 System, RemotePowerDevice,
+                                 System, RemotePowerDevice, SerialConsoleType,
                                  is_unique_mac_address, validate_dns,
                                  validate_mac_address)
 from orthos2.data.models.domain import validate_domain_ending
@@ -355,6 +355,13 @@ class DeleteMachineAPIForm(forms.Form, BaseAPIForm):
 
 
 class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
+    @staticmethod
+    def get_serial_type_choices():
+        """Return serial console type  choice tuple."""
+        serial_types = []
+        for serial_type in SerialConsoleType.objects.all().values('id', 'name').order_by('name'):
+            serial_types.append((serial_type['id'], serial_type['name']))
+        return serial_types
 
     def __init__(self, *args, **kwargs):
         machine = kwargs.pop('machine', None)
@@ -383,6 +390,7 @@ class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
 
         self.fields = formset.form().fields
         self.fields['stype'].empty_label = None
+        self.fields['stype'].choices=self.get_serial_type_choices
         self.fields['baud_rate'].initial = 5
         self.fields['kernel_device_num'].min_value = 0
         self.fields['kernel_device_num'].max_value = 1024
