@@ -46,10 +46,6 @@ Arguments:
               Passing this optional parameter restricts above service
               to specific hosts or servers:
 
-            motd          : Hostname for which /etc/motd is regenerated
-            cobbler       : Cobbler server configuration which is synced with orthos.
-            serialconsole : Serial console server which is synced
-
 Example:
     REGENERATE cobbler
     REGENERATE cobbler hudba2.arch.suse.cz
