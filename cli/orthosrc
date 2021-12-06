@@ -1,6 +1,6 @@
 [global]
 username = 
-server = orthos2.arch.suse.de
+server = 
 port = 443
 protocol = https
 token = 
