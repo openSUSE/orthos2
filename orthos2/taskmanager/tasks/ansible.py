@@ -50,8 +50,7 @@ class Ansible(Task):
 
     def execute(self):
         self.render_inventory()
-        command = '/usr/bin/ansible-playbook -i {dir}/inventory.yml {dir}/site.yml' \
-            ' --private-key /home/orthos/.ssh/master'.format(dir=Ansible.facts_dir)
+        command = '/usr/bin/ansible-playbook -i {dir}/inventory.yml {dir}/site.yml'.format(dir=Ansible.facts_dir)
         stdout, stderr, returncode = execute(command)
         logger.debug("Calling: %s - %d", command, returncode)
         logger.debug("ansible: %s - %s - %s", stdout, stderr, returncode)
