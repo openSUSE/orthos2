@@ -1,10 +1,8 @@
 {% load tags %}
 <ul class="navbar-nav mr-auto">
-  {% if user.is_superuser %}
   <li class="nav-item {% active_view request 'machines' %}">
     <a class="nav-link" href="{% url 'frontend:machines' %}">All Machines</a>
   </li>
-  {% endif %}
   <li class="nav-item {% active_view request 'free_machines' %}">
     <a class="nav-link" href="{% url 'frontend:free_machines' %}">Free Machines</a>
   </li>
