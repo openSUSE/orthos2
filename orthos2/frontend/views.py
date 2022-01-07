@@ -126,10 +126,6 @@ class AllMachineListView(MachineListView):
     """`All Machines` list view."""
 
     def get(self, request, *args, **kwargs):
-        """Redirect to `Free Machines` if a non-superuser tries to request `All Machines`."""
-        if not request.user.is_superuser:
-            return redirect('frontend:free_machines')
-
         return super(AllMachineListView, self).get(request, *args, **kwargs)
 
     def render_to_response(self, context, **response_kwargs):
