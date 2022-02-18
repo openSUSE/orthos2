@@ -532,18 +532,9 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
         return self._query_fields
 
 
-class RemotePowerDeviceAPIForm(forms.Form, BaseAPIForm):
-    fqdn = forms.CharField(label='FQDN', max_length=256)
-    mac = forms.CharField(label='MAC', max_length=17)
-    username = forms.CharField(label='Username', max_length=256, required=False)
-    password = forms.CharField(label='Password', max_length=256, required=False)
-    fence_name = forms.ChoiceField(
-        choices=get_remote_power_type_choices("rpower_device"),
-        label="Fence Agent"
-    )
-
-    def get_order(self):
-        return ['fqdn', 'mac', 'fence_name', 'username', 'password']
+class RemotePowerDeviceAPIForm(forms.ModelForm, BaseAPIForm):
+    password = forms.CharField(label='Password', max_length=256, required=True,
+                               widget=forms.PasswordInput(render_value = True))
 
 
 class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):

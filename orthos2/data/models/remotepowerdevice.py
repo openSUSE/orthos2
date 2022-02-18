@@ -1,11 +1,11 @@
 from django.db import models
-from . import ServerConfig
 from orthos2.utils.remotepowertype import get_remote_power_type_choices
+from . import ServerConfig
 
 
 class RemotePowerDevice(models.Model):
-    username = models.CharField(max_length=256, blank=True, null=True)
-    password = models.CharField(max_length=256, blank=True, null=True)
+    username = models.CharField(max_length=256, blank=False, null=True)
+    password = models.CharField(max_length=256, blank=False, null=True)
     fqdn = models.CharField(max_length=256, unique=True)
     mac = models.CharField(max_length=17, unique=True)
     power_doc = ServerConfig.objects.by_key('orthos.documentation.url', "http://localhost") \

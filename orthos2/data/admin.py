@@ -10,6 +10,7 @@ from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
 from orthos2.utils.remotepowertype import RemotePowerType
+from orthos2.api.forms import RemotePowerDeviceAPIForm
 
 from .models import (Annotation, Architecture, BMC, Domain, Enclosure,
                      Machine, MachineGroup, MachineGroupMembership, DomainAdmin,
@@ -564,9 +565,8 @@ admin.site.register(Enclosure, EnclosureAdmin)
 
 
 class RemotePowerDeviceAdmin(admin.ModelAdmin):
+    form = RemotePowerDeviceAPIForm
     list_display = ['fqdn']
-
-
 admin.site.register(RemotePowerDevice, RemotePowerDeviceAdmin)
 
 
