@@ -18,10 +18,23 @@ from .models import (Annotation, Architecture, BMC, Domain, Enclosure,
                      SerialConsole, SerialConsoleType, ServerConfig, System, Vendor,
                      is_unique_mac_address, validate_mac_address)
 
+class BMCInlineFormset(forms.models.BaseInlineFormSet):
+    def clean(self):
+        if not self.cleaned_data:
+            return
+        data = self.cleaned_data[0]
+        username = data.get('username')
+        password = data.get('password')
+        if username and not password:
+            raise forms.ValidationError("Username also needs a password")
+        if password and not username:
+            raise forms.ValidationError("Password also needs a username")
+        return self.cleaned_data
 
 class BMCInline(admin.StackedInline):
     model = BMC
     extra = 0
+    formset = BMCInlineFormset
     def get_formset(self, request, obj=None, **kwargs):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
@@ -208,7 +221,7 @@ class MachineAdminForm(forms.ModelForm):
         if collect_system_information and check_connectivity != Machine.Connectivity.ALL:
             self.add_error(
                 'collect_system_information',
-                "Connectivity check must set to 'Full'!"
+                "Connectivity check must set to 'Full'"
             )
 
         hypervisor = self.cleaned_data.get('hypervisor')

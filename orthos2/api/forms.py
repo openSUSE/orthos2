@@ -14,7 +14,7 @@ from orthos2.data.models import (Architecture, Enclosure, Machine, MachineGroup,
                                  validate_mac_address)
 from orthos2.data.models.domain import validate_domain_ending
 from orthos2.frontend.forms import ReserveMachineForm, VirtualMachineForm
-from orthos2.utils.remotepowertype import get_remote_power_type_choices
+
 
 logger = logging.getLogger('api')
 
@@ -451,45 +451,8 @@ class AnnotationAPIForm(forms.Form, BaseAPIForm):
 
 
 class BMCAPIForm(forms.Form, BaseAPIForm):
-
-    def __init__(self, *args, **kwargs):
-        machine = kwargs.pop('machine', None)
-        self.machine = machine
-
-        super(BMCAPIForm, self).__init__(*args, **kwargs)
-
-    username = forms.CharField(
-        label='BMC Username',
-        max_length=256,
-        required=False
-    )
-    password = forms.CharField(
-        label='BMC Password',
-        max_length=256,
-        required=False
-    )
-    fqdn = forms.CharField(
-        label='FQDN',
-        max_length=256,
-    )
-    mac = forms.CharField(
-        label='MAC Address',
-        max_length=256,
-    )
-    fence_name = forms.ChoiceField(
-        choices=get_remote_power_type_choices('BMC'),
-        label="Fence Agent",
-    )
-
-    def get_order(self):
-        """Return input order."""
-        return [
-            'fqdn',
-            'mac',
-            'username',
-            'password',
-            'fence_name'
-        ]
+    password = forms.CharField(label='Password', max_length=256, required=False,
+                               widget=forms.PasswordInput(render_value = True))
 
 
 class RemotePowerAPIForm(forms.Form, BaseAPIForm):
