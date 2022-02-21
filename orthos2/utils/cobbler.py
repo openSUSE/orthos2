@@ -283,11 +283,11 @@ class CobblerServer:
         logger.info("setup called for %s with %s on cobbler server %s ", machine.fqdn, self._fqdn,
             choice)
         if choice:
-            cobbler_profile = "{arch}:{profile}".format(arch=machine.architecture, profile=choice)
+            cobbler_profile = " --profile={arch}:{profile}".format(arch=machine.architecture, profile=choice)
         else:
-            cobbler_profile = get_default_profile(machine)
+            cobbler_profile = ""
 
-        command = "{cobbler} system edit --name={machine}  --profile={profile} --netboot=True"\
+        command = "{cobbler} system edit --name={machine} {profile}  --netboot=True"\
             .format(cobbler=self._cobbler_path, machine=machine.fqdn, profile=cobbler_profile)
         logger.debug("command for setup: %s", command)
         self.connect()
