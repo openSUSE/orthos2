@@ -381,6 +381,7 @@ class MachineAdmin(admin.ModelAdmin):
                     'administrative',
                     'nda'
                 ),
+                'autoreinstall',
                 'active',
                 'unknown_mac'
             )
