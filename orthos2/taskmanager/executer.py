@@ -6,14 +6,14 @@ from queue import Empty as queueEmpty
 from queue import Queue
 from threading import Thread
 
-from orthos2.data.models import ServerConfig
 from django.utils import timezone
 from django.db.utils import InterfaceError
 from django import db
 
-
+from orthos2.data.models import ServerConfig
 from . import Priority
 from .models import BaseTask, DailyTask, SingleTask
+
 
 logger = logging.getLogger('tasks')
 
@@ -145,7 +145,7 @@ class TaskExecuter(Thread):
                         basetask.hash[:8],
                         basetask.name,
                         basetask.arguments
-                    ))
+                    )
             except InterfaceError:
                 # InterfaceError is raised when the connection is closed from the db side.
                 # Closing it in django forces the creation of a new connection for the next access.

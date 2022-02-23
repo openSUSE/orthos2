@@ -441,6 +441,14 @@ class Machine(models.Model):
         help_text="Can orthos log into this host via ssh key (if not scanned data might be outdated)?"
     )
 
+    autoreinstall = models.BooleanField(
+        'Auto re-install machine',
+        editable=True,
+        default=True,
+        help_text="Shall this machine be automatically re-installed when its reservation ends?<br>" \
+        "The last installation that has been triggered will be used for auto re-installation."
+    )
+
     administrative = models.BooleanField(
         'Administrative machine',
         editable=True,
@@ -509,7 +517,8 @@ class Machine(models.Model):
     )
 
     active = models.BooleanField(
-        default=True
+        default=True,
+        help_text="Machine vanishes from most lists. This is intendend as kind of maintenance/repair state"
     )
 
     group = models.ForeignKey(
@@ -891,7 +900,7 @@ class Machine(models.Model):
         self.save()
         reservationhistory.save()
 
-        if self.has_setup_capability():
+        if self.autoreinstall:
             self.setup()
         else:
             self.update_motd()

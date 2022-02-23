@@ -6,10 +6,10 @@ from orthos2.api.commands import BaseAPIView, get_machine
 from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                           Message, Serializer)
 from orthos2.data.signals import (signal_cobbler_regenerate,
-                                  signal_serialconsole_regenerate)
-from orthos2.utils.misc import get_domain
-from orthos2.data.models import Domain
-
+                                  signal_serialconsole_regenerate,
+                                  signal_cobbler_machine_update)
+from orthos2.utils.misc import get_hostname, get_domain
+from orthos2.data.models import Domain, Machine
 
 
 class RegenerateCommand(BaseAPIView):
@@ -23,32 +23,46 @@ class RegenerateCommand(BaseAPIView):
 
     MOTD = 'motd'
     COBBLER = 'cobbler'
+    COBBLER_D = 'cobbler_domain'
     SERIALCONSOLE = 'serialconsole'
 
-    SERVICES = [MOTD, COBBLER, SERIALCONSOLE]
+    SERVICES = [MOTD, COBBLER, COBBLER_D, SERIALCONSOLE]
 
     HELP_SHORT = "Regenerate machine-related or service files."
     HELP = """Command to regenerate machine-related files or configuration files for various
 services (superusers only).
 
 Usage:
-    REGENERATE <service> [ <fqdn> ]
+    REGENERATE <service> [options] [ <fqdn> ]
 
 Arguments:
-    service - Specify which service configuration file shoud be regenerated.
+    service - Specify which service configuration should be regenerated.
               Without passing fqdn parameter, all hosts/servers are synced.
         Options are:
-            motd          : Message of the day.
-            cobbler       : Cobbler configuration (superusers only).
-            serialconsole : Serial console files (superusers only).
+            motd               : Message of the day.
+            cobbler            : Cobbler configuration
+            cobbler_domain     : Cobbler Server/Domain
+            serialconsole      : Serial console files
 
     fqdn    - FQDN or hostname of the machine/server.
               Passing this optional parameter restricts above service
               to specific hosts or servers:
 
+            motd             : Hostname for which /etc/motd is regenerated
+            cobbler          : Cobbler host/system configuration which is synced with orthos.
+            cobbler_domain   : Cobbler server configuration which is synced with orthos.
+            serialconsole    : Serial console server which is synced
+
+    options - [--force] (Not implemented yet)
+
+            cobbler          : Force deletion (remove) and recreation (add) of cobbler
+                               configuration of the specified systems without this param
+                               the cobbler entry is updated (edit) if already available
+
 Example:
-    REGENERATE cobbler
-    REGENERATE cobbler hudba2.arch.suse.cz
+    REGENERATE cobbler                             # regenerate/sync cobbler of all cobbler servers (use with care)
+    REGENERATE cobbler_domain cobbler.arch.suse.de #    of a specific domain/cobbler server
+    REGENERATE cobbler host.arch.suse.de           #    of a specific machine
     REGENERATE serialconsole sconsole1.arch.suse.de
     REGENERATE motd foo.domain.tld
 """
@@ -97,20 +111,43 @@ Example:
         # regenerate Cobbler entries
         if service.lower() == RegenerateCommand.COBBLER:
             domain_id = None
+            machine_id = None
             if fqdn:
-                domain = get_domain(fqdn)
-                if not domain:
-                    return ErrorMessage("No domain found for machine: " + fqdn).as_json
-                o_domain = Domain.objects.get(name=domain)
-                if not o_domain:
-                    return ErrorMessage("No orthos domain found for domain: " + domain).as_json
-                domain_id = getattr(o_domain, 'id', None)
+                try:
+                    o_machine  = Machine.objects.get(fqdn=fqdn)
+                except Machine.DoesNotExist:
+                    return ErrorMessage("Machine not found: " + fqdn).as_json
+                machine_id = getattr(o_machine, 'id', None)
+                if not machine_id:
+                    return ErrorMessage("Could not find id for machine").as_json
+                domain_id = getattr(o_machine.fqdn_domain, 'id', None)
                 if not domain_id:
-                    return ErrorMessage("Could not find id for orthos domain: " + domain).as_json
-                msg = 'domain ' + domain
+                    return ErrorMessage("Could not find id for domain").as_json
+                msg = ' machine %s (%s) network %s (%s)' % \
+                      (get_hostname(fqdn), machine_id, o_machine.fqdn_domain, domain_id)
+                signal_cobbler_machine_update.send(sender=None, \
+                                                   domain_id=domain_id, \
+                                                   machine_id=machine_id)
+                return Message("Regenerate Cobbler entry for" + msg).as_json
             else:
-                domain = None
-                msg = 'all domains'
+                signal_cobbler_regenerate.send(sender=None, domain_id=None)
+                return Message("Regenerate Cobbler entries for all domains").as_json
+
+        if service.lower() == RegenerateCommand.COBBLER_D:
+            domain_id = None
+            if not fqdn:
+                return ErrorMessage("regenerate cobbler_domain needs a cobbler server or host as argument" \
+                                    + msg).as_json
+            domain = get_domain(fqdn)
+            if not domain:
+                return ErrorMessage("No domain found for machine: " + fqdn).as_json
+            o_domain = Domain.objects.get(name=domain)
+            if not o_domain:
+                return ErrorMessage("No orthos domain found for domain: " + domain).as_json
+            domain_id = getattr(o_domain, 'id', None)
+            if not domain_id:
+                return ErrorMessage("Could not find id for orthos domain: " + domain).as_json
+            msg = 'domain ' + domain
             signal_cobbler_regenerate.send(sender=None, domain_id=domain_id)
             return Message("Regenerate Cobbler entries for " + msg).as_json
 
