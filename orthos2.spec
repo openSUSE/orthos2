@@ -207,6 +207,8 @@ sudo -i -u orthos /usr/lib/orthos2/manage.py collectstatic --noinput
 %attr(755,orthos,orthos) %dir /srv/www/orthos2
 %ghost %dir /run/%{name}
 %ghost %dir /run/%{name}/ansible
+%ghost %dir /run/%{name}/ansible_lastrun
+%ghost %dir /run/%{name}/ansible_archive
 %attr(755,orthos,orthos) %dir /var/log/orthos2
 %attr(775,orthos,orthos) %dir /var/lib/orthos2
 %attr(775,orthos,orthos) %dir /var/lib/orthos2/archiv
