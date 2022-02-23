@@ -7,7 +7,6 @@ from django.db.models import Q
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.html import format_html
-from django.utils.translation import ugettext_lazy as _
 
 from orthos2.utils.remotepowertype import RemotePowerType
 from orthos2.api.forms import RemotePowerDeviceAPIForm
@@ -257,7 +256,7 @@ class MachineArchitectureFilter(admin.SimpleListFilter):
         result = []
 
         for architecture in architectures:
-            result.append((architecture.id, _(architecture.name)))
+            result.append((architecture.id, architecture.name))
 
         return result
 
@@ -275,11 +274,11 @@ class MachineSystemFilter(admin.SimpleListFilter):
         systems = System.objects.all()
         result = []
 
-        result.append(('administrative', _('Administrative')))
-        result.append(('inactive', _('Inactive')))
+        result.append(('administrative', 'Administrative'))
+        result.append(('inactive', 'Inactive'))
 
         for system in systems:
-            result.append((system.id, _(system.name)))
+            result.append((system.id, system.name))
 
         return result
 
@@ -304,7 +303,7 @@ class MachineDomainFilter(admin.SimpleListFilter):
         result = []
 
         for domain in domains:
-            result.append((domain.id, _(domain.name)))
+            result.append((domain.id, domain.name))
 
         return result
 
@@ -323,7 +322,7 @@ class MachineGroupFilter(admin.SimpleListFilter):
         result = []
 
         for group in machinegroups:
-            result.append((group.id, _(group.name)))
+            result.append((group.id, group.name))
 
         return result
 
