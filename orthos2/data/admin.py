@@ -1,5 +1,5 @@
 from django import forms
-from django.conf.urls import re_path
+from django.urls import re_path
 from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_list import _boolean_icon
 from django.core.exceptions import ValidationError

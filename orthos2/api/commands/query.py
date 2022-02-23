@@ -1,6 +1,6 @@
 import json
 
-from django.conf.urls import re_path
+from django.urls import re_path
 from django.http import JsonResponse
 
 from orthos2.api.commands import BaseAPIView

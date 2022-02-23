@@ -1,4 +1,4 @@
-from django.conf.urls import re_path
+from django.urls import re_path
 from rest_framework.authtoken import views as authtoken_views
 
 from orthos2.api import views
