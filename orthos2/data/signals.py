@@ -15,11 +15,11 @@ from .models import (Machine, NetworkInterface, SerialConsole, ServerConfig, is_
 logger = logging.getLogger('orthos')
 
 
-signal_cobbler_regenerate = Signal(providing_args=['domain_id'])
-signal_cobbler_sync_dhcp = Signal(providing_args=['domain_id'])
-signal_cobbler_machine_update = Signal(providing_args=['domain_id', 'machine_id'])
-signal_serialconsole_regenerate = Signal(providing_args=['cscreen_server_fqdn'])
-signal_motd_regenerate = Signal(providing_args=['fqdn'])
+signal_cobbler_regenerate = Signal()
+signal_cobbler_sync_dhcp = Signal()
+signal_cobbler_machine_update = Signal()
+signal_serialconsole_regenerate = Signal()
+signal_motd_regenerate = Signal()
 
 @receiver(pre_save, sender=Machine)
 def machine_pre_save(sender, instance, *args, **kwargs):

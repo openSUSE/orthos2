@@ -4,7 +4,6 @@ import logging
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.template import Context, Template
-from django.utils.translation import ugettext_lazy as _
 from orthos2.utils.misc import has_valid_domain_ending
 
 from .architecture import Architecture
@@ -17,10 +16,10 @@ def validate_domain_ending(value):
     valid_domain_endings = ServerConfig.objects.get_valid_domain_endings()
 
     if not has_valid_domain_ending(value, valid_domain_endings):
-        raise ValidationError(_("'{}' has no valid domain ending ({}).".format(
+        raise ValidationError("'{}' has no valid domain ending ({}).".format(
             value,
             ', '.join(valid_domain_endings)
-        )))
+        ))
 
 
 class Domain(models.Model):
@@ -87,7 +86,7 @@ class Domain(models.Model):
 
     def delete(self, *args, **kwargs):
         if self.machine_set.count() > 0:
-            raise ValidationError(_("Domain contains machines."))
+            raise ValidationError("Domain contains machines.")
         else:
             super(Domain, self).delete(*args, **kwargs)
 

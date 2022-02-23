@@ -1,7 +1,7 @@
 import json
 import logging
 
-from django.conf.urls import re_path
+from django.urls import re_path
 from django.contrib.auth.models import AnonymousUser
 from django.http import JsonResponse
 from django.shortcuts import redirect, reverse

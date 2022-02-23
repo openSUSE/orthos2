@@ -64,8 +64,20 @@ html_static_path = ['_static']
 # So we don't need to install the ldap auth
 autodoc_mock_imports = ["django-auth-ldap", "ldap"]
 
+docs_location="/usr/share/doc/packages/"
+cli_pkg_name="orthos-client"
+cli_cmd_name="orthos2"
+
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('commandline', 'orthos2', u'Orthos Command Line Client Documenation', [u'Thomas Renninger'], 1),
+    ('commandline', cli_cmd_name, u'Orthos Command Line Client Documenation', [u'Thomas Renninger'], 1),
 ]
+
+rst_prolog = """
+.. |orthosrc_loc| replace:: {0}
+.. |cli_cmd_name| replace:: {1}
+""".format(
+docs_location + cli_pkg_name + "orthosrc",
+cli_cmd_name
+)

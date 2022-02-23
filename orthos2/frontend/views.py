@@ -19,7 +19,7 @@ from django.shortcuts import redirect, render, resolve_url, reverse
 from django.template.response import TemplateResponse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.utils.http import is_safe_url
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.safestring import mark_safe
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
@@ -835,7 +835,7 @@ def deprecate_current_app(func):
 
 def _get_login_redirect_url(request, redirect_to):
     # Ensure the user-originating redirection URL is safe.
-    if not is_safe_url(url=redirect_to, host=request.get_host()):
+    if not url_has_allowed_host_and_scheme(url=redirect_to, host=request.get_host()):
         return resolve_url(settings.LOGIN_REDIRECT_URL)
     return redirect_to
 
