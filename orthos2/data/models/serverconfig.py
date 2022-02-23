@@ -9,14 +9,14 @@ logger = logging.getLogger('models')
 
 class BaseManager(models.Manager):
 
-    def by_key(self, key):
+    def by_key(self, key, fallback=None):
         """Return the value by key."""
         try:
             obj = ServerConfig.objects.get(key=key)
             return obj.value
         except Exception as e:
             logger.exception("Key '%s': %s", key, e)
-        return None
+        return fallback
 
     def bool_by_key(self, key):
         """

@@ -8,8 +8,8 @@ class RemotePowerDevice(models.Model):
     password = models.CharField(max_length=256, blank=True, null=True)
     fqdn = models.CharField(max_length=256, unique=True)
     mac = models.CharField(max_length=17, unique=True)
-
-    power_doc = ServerConfig.objects.by_key('orthos.documentation.url') + "/" + "powerswitches.html"
+    power_doc = ServerConfig.objects.by_key('orthos.documentation.url', "http://localhost") \
+                + "/" + "powerswitches.html"
     url = models.URLField(
         blank=True,
         help_text="URL of the Webinterface to configure this Power Device.<br>" +
