@@ -1,4 +1,4 @@
-from django.conf.urls import re_path
+from django.urls import re_path
 from django.http import HttpResponseRedirect, JsonResponse
 
 from orthos2.api.commands import BaseAPIView, get_machine
