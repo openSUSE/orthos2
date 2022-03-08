@@ -66,9 +66,41 @@ class SerialConsoleInline(admin.StackedInline):
         self.machine = obj
         return super(SerialConsoleInline, self).get_formset(request, obj, **kwargs)
 
+class RemotePowerInlineFormset(forms.models.BaseInlineFormSet):
+    def clean(self):
+        if not self.cleaned_data:
+            return
+        data = self.cleaned_data[0]
+        port = data.get('port')
+        dev = data.get('remote_power_device')
+        machine = data.get('machine')
+        # dev = RemotePowerDevice.get_by_str(remote_power_device)
+        if not dev:
+            raise forms.ValidationError("Bad remote device - Open a bug")
+        fence = RemotePowerType.from_fence(dev.fence_name)
+        if not fence:
+            raise forms.ValidationError("Fence not found - Open a bug")
+        if fence.use_port:
+            if not port:
+                raise forms.ValidationError("Fence {} needs a port number".format(fence.fence))
+            try:
+                int(port)
+            except ValueError:
+                raise forms.ValidationError("{} - Port must be a number".format(port))
+        elif fence.use_hostname_as_port:
+            if not port:
+                port = machine.hostname
+            elif port != machine.hostname:
+                raise forms.ValidationError("{} - Port must be empty or hostname for fence: {}".format(
+                    port, dev.fence_name))
+        else:
+            if port:
+                raise forms.ValidationError("Fence {} needs no port, please leave emtpy".format(fence.fence))
+
 
 class RemotePowerInlineRpower(admin.StackedInline):
     model = RemotePower
+    formset = RemotePowerInlineFormset
     extra = 0
     fk_name = 'machine'
     verbose_name = 'Remote Power via PowerSwitch Device'

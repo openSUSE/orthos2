@@ -4,7 +4,7 @@ from django.template import Context, Template
 
 from orthos2.data.models import Machine, ServerConfig
 from orthos2.utils.ssh import SSH
-from orthos2.utils.misc import get_hostname, get_ip
+from orthos2.utils.misc import get_hostname, get_ipv4, get_ipv6
 from orthos2.utils.remotepowertype import RemotePowerType
 
 logger = logging.getLogger('utils')
@@ -40,23 +40,20 @@ def get_tftp_server(machine: Machine):
 
 
 def create_cobbler_options(machine):
-    from orthos2.utils.misc import get_ip
     tftp_server = get_tftp_server(machine)
     kernel_options = machine.kernel_options if machine.kernel_options else ""
     options = " --name={name} --ip-address={ipv4}".format(name=machine.fqdn, ipv4=machine.ipv4)
     options += " --hostname={host} ".format(host=get_hostname(machine.fqdn))
-    if machine.ipv6:
-        options += " --ipv6-address={ipv6}".format(ipv6=machine.ipv6)
     if machine.mac_address:
         options += " --interface=default --management=True --interface-master=True"
         options += " --dns-name={dns} ".format(dns=machine.fqdn)
         options += " --mac-address={mac} ".format(mac=machine.mac_address)
-    if get_filename(machine):
-        options += " --filename={filename}".format(filename=get_filename(machine))
+        options += " --ipv6-address={ipv6}".format(ipv6=machine.ipv6 or '')
+    options += " --filename={filename}".format(filename=get_filename(machine) or '')
     if tftp_server:
-        ipv4 = get_ip(tftp_server)
+        ipv4 = get_ipv4(tftp_server)
         if ipv4:
-            options += " --next-server-v4={server}".format(server=ipv4[0])
+            options += " --next-server-v4={server}".format(server=ipv4)
     if machine.has_remotepower():
         options += get_power_options(machine)
     if machine.has_serialconsole():
@@ -73,8 +70,11 @@ def get_bmc_command(machine, cobbler_path):
     bmc = machine.bmc
     bmc_command = """{cobbler} system edit --name={name} --interface=bmc --interface-type=bmc"""\
         .format(cobbler=cobbler_path, name=machine.fqdn)
-    bmc_command += """ --ip-address="{ip}" --mac="{mac}" --dns-name="{dns}" """.format(
-            ip=get_ip(bmc.fqdn)[0], mac=bmc.mac, dns=get_hostname(bmc.fqdn))
+    bmc_command += """ --ip-address="{ip}" --mac="{mac}" --dns-name="{dns}" --ipv6-address="{ipv6}" """.format(
+        ip=get_ipv4(bmc.fqdn) or '',
+        mac=bmc.mac or '',
+        dns=get_hostname(bmc.fqdn) or '',
+        ipv6=get_ipv6(bmc.fqdn) or '')
     return bmc_command
 
 

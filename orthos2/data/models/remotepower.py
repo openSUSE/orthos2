@@ -92,29 +92,23 @@ class RemotePower(models.Model):
 
     def save(self, *args, **kwargs):
         """Check values before saving the remote power object. Do only save if type is set."""
-        self.clean()
 
-        # check for `None` explicitly because type 0 results in false
-        if self.fence_name is not None:
-            super(RemotePower, self).save(*args, **kwargs)
-        else:
-            raise ValidationError("No remote power type set!")
-
-    def clean(self):
-        """
-        Check for every remote power type if all required fields are set and deletes unutilized
-        values.
-        """
         errors = []
         self.fence_name = self._get_remotepower_fence_name()
         logging.debug("getting fence object for %s", self.fence_name)
         fence = RemotePowerType.from_fence(self.fence_name)
         if fence.device == "rpower_device":
+            if fence.use_port:
+                if self.port is None:  # test for None, as port may be 0
+                    errors.append(ValidationError("Please provide a port!"))
+            elif fence.use_hostname_as_port:
+                self.port = self.machine.hostname
+            else:
+                self.port = None
             if self.remote_power_device:
                 self.fence_name = self.remote_power_device.fence_name
             else:
                 errors.append(ValidationError("Please provide a remote power device!"))
-
         elif fence.device == "bmc":
             if self.machine.bmc:
                 self.fence_name = self.machine.bmc.fence_name
@@ -131,15 +125,15 @@ class RemotePower(models.Model):
         else:
             errors.append(ValidationError(
                 "{} is not a valid switching device".format(fence['switching_device'])))
-        if fence.use_port:
-            if self.port is None:  # test for None, as port may be 0
-                errors.append(ValidationError("Please provide a port!"))
-        else:
-            self.port = None
-        if not fence.use_options and self.options:
-            errors.append(ValidationError("Fence agent does not take additional parameters"))
+
         if errors:
             raise ValidationError(errors)
+
+        # check for `None` explicitly because type 0 results in false
+        if self.fence_name is not None:
+            super(RemotePower, self).save(*args, **kwargs)
+        else:
+            raise ValidationError("No remote power type set!")
 
     def _get_remotepower_fence_name(self):
         if self.fence_name:
