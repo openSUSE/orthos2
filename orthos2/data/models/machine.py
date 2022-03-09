@@ -594,6 +594,8 @@ class Machine(models.Model):
         """
         self.fqdn = self.fqdn.lower()
 
+        validate_dns(self.fqdn)
+
         if not self.mac_address and not self.unknown_mac:
             raise ValidationError("'{}' You must select 'MAC Unkown' for systems without MAC".format(self))
 
@@ -621,12 +623,25 @@ class Machine(models.Model):
             self.enclosure = enclosure
 
         super(Machine, self).save(*args, **kwargs)
-
-        # check if DHCP needs to be regenerated
-        if self._original is not None:
+        sync_dhcp = False
+        update_machine = False
+        update_sconsole = False
+        if self._original is None:
             try:
-                sync_dhcp = False
-                update_machine = False
+                primary_networkinterface = NetworkInterface.objects.get(machine=self, primary=True)
+                if self.mac_address and not primary_networkinterface:
+                    self.networkinterfaces.get_or_create(
+                        machine=self,
+                        primary=True,
+                        mac_address=self.mac_address
+                    )
+                sync_dhcp = True
+                update_machine = True
+            except ObjectDoesNotExist:
+                primary_networkinterface = None
+        else:
+            # check if DHCP needs to be regenerated
+            try:
                 assert self.mac_address == self._original.mac_address
                 assert self.fqdn == self._original.fqdn
                 assert self.fqdn_domain == self._original.fqdn_domain
@@ -636,15 +651,15 @@ class Machine(models.Model):
                 assert self.kernel_options == self._original.kernel_options
                 if hasattr(self, 'bmc'):
                     assert hasattr(self._original, 'bmc')
-                    assert self.bmc.username == self._original.bmc.username
-                    assert self.bmc.password == self._original.bmc.password
                     assert self.bmc.mac == self._original.bmc.mac
                     assert self.bmc.fqdn == self._original.bmc.fqdn
             except AssertionError:
                 sync_dhcp = True
                 update_machine = True
-                
             try:
+                if hasattr(self, 'bmc'):
+                    assert self.bmc.username == self._original.bmc.username
+                    assert self.bmc.password == self._original.bmc.password
                 if self.has_remotepower():
                     assert hasattr(self._original, 'remotepower')
                     assert self.remotepower.fence_name == self._original.remotepower.fence_name
@@ -660,27 +675,43 @@ class Machine(models.Model):
                         self._original.serialconsole.kernel_device_num
             except AssertionError:
                 update_machine = True
-            if update_machine:
-                from orthos2.data.signals import signal_cobbler_machine_update
-                if self.fqdn_domain == self._original.fqdn_domain:
-                    domain_id = self.fqdn_domain.pk
-                    machine_id = self.pk
-                    signal_cobbler_machine_update.send(
-                        sender=self.__class__, domain_id=domain_id, machine_id=machine_id)
-                else:
-                    raise NotImplementedError(
-                        "Moving machines between domains is not implemented yet")
-            if sync_dhcp:
-                from orthos2.data.signals import signal_cobbler_sync_dhcp
+            try:
+                if hasattr(self, 'bmc'):
+                    assert hasattr(self._original, 'bmc')
+                    assert self.bmc.mac == self._original.bmc.mac
+                    assert self.bmc.fqdn == self._original.bmc.fqdn
+                    assert self.bmc.username == self._original.bmc.username
+                    assert self.bmc.password == self._original.bmc.password
+                if self.has_serialconsole():
+                    assert hasattr(self._original, 'serialconsole')
+                    assert self.serialconsole.baud_rate == self._original.serialconsole.baud_rate
+                    assert self.serialconsole.kernel_device_num == \
+                        self._original.serialconsole.kernel_device_num
+            except AssertionError:
+                update_sconsole = True
 
-                # regenerate DHCP on all domains (deletion/registration) if domain changed
-                if self.fqdn_domain == self._original.fqdn_domain:
-                    domain_id = self.fqdn_domain.pk
-                else:
-                    raise NotImplementedError(
-                        "Moving machines between domains is not implemented yet")
-                signal_cobbler_sync_dhcp.send(sender=self.__class__, domain_id=domain_id)
+            if self.fqdn_domain != self._original.fqdn_domain:
+                raise NotImplementedError(
+                    "Moving machines between domains is not implemented yet")
 
+        if update_machine:
+            from orthos2.data.signals import signal_cobbler_machine_update
+            logger.debug("Update machine initiated [%s]", self.fqdn)
+            domain_id = self.fqdn_domain.pk
+            machine_id = self.pk
+            signal_cobbler_machine_update.send(
+                sender=self.__class__, domain_id=domain_id, machine_id=machine_id)
+        if sync_dhcp:
+            from orthos2.data.signals import signal_cobbler_sync_dhcp
+            # regenerate DHCP on all domains (deletion/registration) if domain changed
+            domain_id = self.fqdn_domain.pk
+            signal_cobbler_sync_dhcp.send(sender=self.__class__, domain_id=domain_id)
+        if update_sconsole:
+            from orthos2.data.signals import signal_serialconsole_regenerate
+            if hasattr(self.fqdn_domain, 'cscreen_server'):
+                cscreen_server_fqdn = self.fqdn_domain.cscreen_server.fqdn
+                signal_serialconsole_regenerate.send(sender=self.__class__,
+                                                     cscreen_server_fqdn=cscreen_server_fqdn)
 
 
     @property
