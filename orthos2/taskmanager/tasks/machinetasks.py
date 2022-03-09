@@ -260,8 +260,8 @@ class RegenerateMOTD(Task):
                 print("This machine is an administrative machine. DON\'T TOUCH!", file=motd)
             if machine.reserved_by:
                 print(LINE, file=motd)
-                if machine.reserved_until == timezone.ZERO:
-                    print("This machine is RESERVED by {}.".format(machine.reserved_by), file=motd)
+                if machine.is_reserved_infinite():
+                    print("This machine is RESERVED by {} (infinite).".format(machine.reserved_by), file=motd)
                 else:
                     print(
                         "This machine is RESERVED by {} until {}.".format(
