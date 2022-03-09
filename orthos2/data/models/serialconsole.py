@@ -157,6 +157,9 @@ A value of 1 might end up in console=ttyS1 kernel command line paramter."""
             if not self.command:
                 errors.append(ValidationError("Please provide a command!"))
 
+        elif self.stype.name == 'PowerPC HMC':
+            self.kernel_device = 'hvc'
+
         elif self.stype.name == 's390':
             if not self.console_server:
                 errors.append(ValidationError("Please provide a dedicated console server!"))
