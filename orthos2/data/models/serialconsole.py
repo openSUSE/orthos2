@@ -207,6 +207,8 @@ A value of 1 might end up in console=ttyS1 kernel command line paramter."""
         bmc = None
         if hasattr(self.machine, 'bmc'):
             bmc = self.machine.bmc
+            if bmc.username:
+                ipmi = {'user': bmc.username, 'password': bmc.password}
 
         context = Context({
             'machine': self.machine,
