@@ -50,7 +50,6 @@ def ssh_execute(cmd, host, user='root', log_error=True):
 
     stdout = stdout.splitlines()
     stderr = stderr.splitlines()
-
     stdout = stdout if stdout else []
     stderr = stderr if stderr else []
 
