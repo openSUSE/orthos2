@@ -232,6 +232,9 @@ class MachineAdminForm(forms.ModelForm):
         fqdn = self.cleaned_data['fqdn']
 
         if hasattr(self, 'machine'):
+            if fqdn != self.machine.fqdn:
+                raise ValidationError("Machines must not be renamed. Delete and add them if needed")
+            # We do not reach below check, but we do if we would allow renaming at some point
             if Machine.objects.filter(fqdn=fqdn).exclude(pk=self.machine.pk):
                 raise ValidationError("FQDN is already in use!")
         else:
