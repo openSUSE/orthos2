@@ -4,6 +4,7 @@ import logging
 
 from orthos2.utils.misc import execute
 
+logger = logging.getLogger('utils')
 
 def single_quote(buf):
     """
@@ -43,12 +44,15 @@ def ssh_execute(cmd, host, user='root', log_error=True):
         + user + '@' + host + ' ' +  single_quote(cmd)
     (stdout, stderr, err) = execute(ssh_command)
     if (err and log_error):
-        logging.warn("stderr: %s", stderr)
-        logging.warn("ssh command: %s", ssh_command)
-        logging.warn("stdout: %s", stdout)
-    logging.debug("ssh command: %s", ssh_command)
-    logging.debug("stdout: %s", stdout)
-    logging.debug("stderr: %s", stderr)
+        logger.warning("stderr: %s", stderr)
+        logger.warning("ssh command: %s", ssh_command)
+        logger.warning("stdout: %s", stdout)
+
+    stdout = stdout.splitlines()
+    stderr = stderr.splitlines()
+    stdout = stdout if stdout else []
+    stderr = stderr if stderr else []
+
     return (stdout, stderr, err)
 
 

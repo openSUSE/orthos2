@@ -7,6 +7,7 @@ from decimal import Decimal
 from orthos2.data.models import Architecture, Installation, Machine, NetworkInterface
 from orthos2.utils.misc import execute, normalize_ascii
 from orthos2.utils.ssh import SSH
+from orthos2.utils.remote import ssh_execute
 
 ARPHRD_IEEE80211 = 801
 
@@ -55,19 +56,11 @@ def nmap_check(fqdn):
 
 def login_test(fqdn):
     """Check if it's possible to login via SSH."""
-    conn = None
-    try:
-        conn = SSH(fqdn)
-        conn.connect()
-    except Exception as e:
-        logger.warning("SSH login failed for '%s': %s", fqdn, e)
+    _stdout, _stderr, err = ssh_execute("exit", fqdn, log_error=False)
+    if err:
+        logger.warning("SSH login failed for %s", fqdn)
         return False
-    finally:
-        if conn:
-            conn.close()
-
     return True
-
 
 def get_hardware_information(fqdn):
     """Retrieve information of the system."""
@@ -252,86 +245,77 @@ def get_hardware_information(fqdn):
 def get_networkinterfaces(fqdn):
     """Retrieve information of the systems network interfaces."""
     try:
-        machine = Machine.objects.get(fqdn=fqdn)
+        Machine.objects.get(fqdn=fqdn)
     except Machine.DoesNotExist:
         logger.warning("Machine '%s' does not exist", fqdn)
         return False
 
-    conn = None
-    timer = None
-    try:
-        conn = SSH(machine.fqdn)
-        conn.connect()
-        timer = threading.Timer(5 * 60, conn.close)
-        timer.start()
+    # Network interfaces
+    logger.debug("Collect network interfaces...")
+    stdout, _stderr, err = ssh_execute('hwinfo --network', fqdn)
+    if err:
+        logger.warning("Machine '%s' could not read network interfaces", fqdn)
+        return None
 
-        # Network interfaces
-        logger.debug("Collect network interfaces...")
-        stdout, _stderr, _exitstatus = conn.execute('hwinfo --network')
-        interfaces = []
-        interface = None
+    interfaces = []
+    interface = None
+
+    for line in stdout:
+        if line and line[0] != ' ' and line[0] != '\t':
+            if interface and interface.mac_address and\
+               interface.driver_module not in {'bridge', 'tun'}:
+
+                interfaces.append(interface)
+            interface = NetworkInterface()
+        else:
+            match = re.match(r'\s+Driver: "(\w+)"', line)
+            if match:
+                interface.driver_module = match.group(1)
+                continue
+
+            match = re.match(r'\s+SysFS ID: ([/\w.]+)', line)
+            if match:
+                interface.sysfs = match.group(1)
+                continue
+
+            match = re.match(r'\s+HW Address: ([0-9a-fA-F:]+)', line)
+            if match:
+                interface.mac_address = match.group(1).upper()
+                continue
+
+            match = re.match(r'\s+Device File: ([\w.]+)', line)
+            if match:
+                interface.name = match.group(1)
+                continue
+
+    if interface and interface.mac_address and\
+       interface.driver_module not in {'bridge', 'tun'}:
+
+        interfaces.append(interface)
+
+    logger.warning("Machine '%s' interfaces: '%s'", fqdn, interfaces)
+
+    for interface in interfaces:
+        if interface.sysfs is None:
+            continue
+        path = '/sys/{}/type'.format(interface.sysfs)
+        arp_type, _stderr, err = ssh_execute('cat {}'.format(path), fqdn)
+        logger.warning("Machine '%s' type: '%s'", fqdn, arp_type)
+
+        if arp_type == ARPHRD_IEEE80211:
+            continue
+
+        stdout, _stderr, err = ssh_execute('ethtool {}'.format(interface.name), fqdn)
+        if err:
+            logger.warning("Machine '%s' could not check networkinterface '%s'", fqdn, interface.name)
+            return None
 
         for line in stdout:
-            if line and line[0] != ' ' and line[0] != '\t':
-                if interface and interface.mac_address and\
-                        interface.driver_module not in {'bridge', 'tun'}:
+            match = re.match(r'\s+Port: (.+)', line)
+            if match:
+                interface.ethernet_type = match.group(1)
 
-                    interfaces.append(interface)
-                interface = NetworkInterface()
-            else:
-                match = re.match(r'\s+Driver: "(\w+)"', line)
-                if match:
-                    interface.driver_module = match.group(1)
-                    continue
-
-                match = re.match(r'\s+SysFS ID: ([/\w.]+)', line)
-                if match:
-                    interface.sysfs = match.group(1)
-                    continue
-
-                match = re.match(r'\s+HW Address: ([0-9a-fA-F:]+)', line)
-                if match:
-                    interface.mac_address = match.group(1).upper()
-                    continue
-
-                match = re.match(r'\s+Device File: ([\w.]+)', line)
-                if match:
-                    interface.name = match.group(1)
-                    continue
-
-        if interface and interface.mac_address and\
-                interface.driver_module not in {'bridge', 'tun'}:
-
-            interfaces.append(interface)
-
-        for interface in interfaces:
-            if interface.sysfs is None:
-                continue
-
-            path = '/sys/{}/type'.format(interface.sysfs)
-            arp_type = ''.join(conn.read_file(path))
-
-            if arp_type == ARPHRD_IEEE80211:
-                continue
-
-            stdout, _stderr, _exitstatus = conn.execute('ethtool {}'.format(interface.name))
-            for line in stdout:
-                match = re.match(r'\s+Port: (.+)', line)
-                if match:
-                    interface.ethernet_type = match.group(1)
-
-        return interfaces
-
-    except Exception as e:
-        logger.exception("%s (%s)", fqdn, e)
-        return False
-    finally:
-        if conn:
-            conn.close()
-        if timer:
-            timer.cancel()
-
-    return None
+    return interfaces
 
 
 def get_status_ip(fqdn):
@@ -344,107 +328,98 @@ def get_status_ip(fqdn):
 
     machine_ = Machine()
 
-    conn = None
-    timer = None
-    try:
-        conn = SSH(machine.fqdn)
-        conn.connect()
-        timer = threading.Timer(5 * 60, conn.close)
-        timer.start()
+    logger.debug("Check IPv4/IPv6 status...")
 
-        logger.debug("Check IPv4/IPv6 status...")
-        stdout, _stderr, _exitstatus = conn.execute('/sbin/ip a')
+    stdout, _stderr, err = ssh_execute('/sbin/ip a', fqdn)
+    if err:
+        logger.warning("Machine '%s' could not check IP", fqdn)
+        return None
+    '''
+    conn = SSH(machine.fqdn)
+    conn.connect()
+    stdout, _stderr, _exitstatus = conn.execute('/sbin/ip a')
+    '''
+    _file = open("/tmp/orthos_t", "w")
+    print(stdout, file=_file)
+    _file.close()
+    devices = {}
+    current_device = None
+    addresses = {'inet': [], 'inet6': []}
 
-        devices = {}
-        current_device = None
-        addresses = {'inet': [], 'inet6': []}
+    for line in stdout:
+        match = re.match(r'^\d+:\s+([a-zA-Z0-9]+):\s+<.*>\s(.*)', line)
+        if match:
+            current_device = match.group(1)
+            devices[current_device] = {
+                'mac_address': None,
+                'inet': None,
+                'inet6': None,
+                'flags': None
+            }
+            devices[current_device]['flags'] = match.group(2).split()
+            continue
 
-        for line in stdout:
-            match = re.match(r'^\d+:\s+([a-zA-Z0-9]+):\s+<.*>\s(.*)\n', line)
-            if match:
-                current_device = match.group(1)
-                devices[current_device] = {
-                    'mac_address': None,
-                    'inet': None,
-                    'inet6': None,
-                    'flags': None
-                }
-                devices[current_device]['flags'] = match.group(2).split()
-                continue
+        line = line.lstrip()
 
-            line = line.lstrip()
+        match = re.match(r'inet ([0-9.]{7,15})\/.*scope', line)
+        if match:
+            if devices[current_device]['inet'] is None:
+                devices[current_device]['inet'] = []
+            devices[current_device]['inet'].append(match.group(1))
+            continue
 
-            match = re.match(r'inet ([0-9.]{7,15})\/.*scope', line)
-            if match:
-                if devices[current_device]['inet'] is None:
-                    devices[current_device]['inet'] = []
-                devices[current_device]['inet'].append(match.group(1))
-                continue
+        match = re.match(r'inet6 ([a-f0-9:]*)\/[0-9]+ scope', line)
+        if match:
+            if devices[current_device]['inet6'] is None:
+                devices[current_device]['inet6'] = []
+            devices[current_device]['inet6'].append(match.group(1))
+            continue
 
-            match = re.match(r'inet6 ([a-f0-9:]*)\/[0-9]+ scope', line)
-            if match:
-                if devices[current_device]['inet6'] is None:
-                    devices[current_device]['inet6'] = []
-                devices[current_device]['inet6'].append(match.group(1))
-                continue
+        match = re.match('link/ether ([a-f0-9:]{17}) brd', line)
+        if match:
+            devices[current_device]['mac_address'] = match.group(1).upper()
 
-            match = re.match('link/ether ([a-f0-9:]{17}) brd', line)
-            if match:
-                devices[current_device]['mac_address'] = match.group(1).upper()
+    for _device, values in devices.items():
+        if values['mac_address'] is None:
+            continue
 
-        for _device, values in devices.items():
-            if values['mac_address'] is None:
-                continue
+        # ignore device if hooking up another
+        if any(device in values['flags'] for device in devices.keys()):
+            continue
 
-            # ignore device if hooking up another
-            if any(device in values['flags'] for device in devices.keys()):
-                continue
+        if values['mac_address'] == machine.mac_address:
+            if values['inet'] is None:
+                machine_.status_ipv4 = Machine.StatusIP.AF_DISABLED
+            elif machine.ipv4 not in values['inet']:
+                machine_.status_ipv4 = Machine.StatusIP.NO_ADDRESS
+                if [ipv4 for ipv4 in values['inet'] if not ipv4.startswith('127.0.0.1')]:
+                    machine_.status_ipv4 = Machine.StatusIP.ADDRESS_MISMATCH
+            elif machine.ipv4 in values['inet']:
+                machine_.status_ipv4 = Machine.StatusIP.CONFIRMED
+            else:
+                machine_.status_ipv4 = Machine.StatusIP.MISSING
 
-            if values['mac_address'] == machine.mac_address:
-                if values['inet'] is None:
-                    machine_.status_ipv4 = Machine.StatusIP.AF_DISABLED
-                elif machine.ipv4 not in values['inet']:
-                    machine_.status_ipv4 = Machine.StatusIP.NO_ADDRESS
-                    if [ipv4 for ipv4 in values['inet'] if not ipv4.startswith('127.0.0.1')]:
-                        machine_.status_ipv4 = Machine.StatusIP.ADDRESS_MISMATCH
-                elif machine.ipv4 in values['inet']:
-                    machine_.status_ipv4 = Machine.StatusIP.CONFIRMED
-                else:
-                    machine_.status_ipv4 = Machine.StatusIP.MISSING
+            if values['inet6'] is None:
+                machine_.status_ipv6 = Machine.StatusIP.AF_DISABLED
+            elif machine.ipv6 not in values['inet6']:
+                machine_.status_ipv6 = Machine.StatusIP.NO_ADDRESS
+                if [ipv6 for ipv6 in values['inet6'] if not ipv6.startswith('fe80::')]:
+                    machine_.status_ipv6 = Machine.StatusIP.ADDRESS_MISMATCH
+            elif machine.ipv6 in values['inet6']:
+                machine_.status_ipv6 = Machine.StatusIP.CONFIRMED
 
-                if values['inet6'] is None:
-                    machine_.status_ipv6 = Machine.StatusIP.AF_DISABLED
-                elif machine.ipv6 not in values['inet6']:
-                    machine_.status_ipv6 = Machine.StatusIP.NO_ADDRESS
-                    if [ipv6 for ipv6 in values['inet6'] if not ipv6.startswith('fe80::')]:
-                        machine_.status_ipv6 = Machine.StatusIP.ADDRESS_MISMATCH
-                elif machine.ipv6 in values['inet6']:
-                    machine_.status_ipv6 = Machine.StatusIP.CONFIRMED
+        addresses['inet'].append(values['inet'])
+        addresses['inet6'].append(values['inet6'])
 
-            addresses['inet'].append(values['inet'])
-            addresses['inet6'].append(values['inet6'])
+    if machine_.status_ipv4 == Machine.StatusIP.NO_ADDRESS:
+        if machine.ipv4 in addresses['inet']:
+            machine_.status_ipv4 = Machine.StatusIP.MAC_MISMATCH
 
-        if machine_.status_ipv4 == Machine.StatusIP.NO_ADDRESS:
-            if machine.ipv4 in addresses['inet']:
-                machine_.status_ipv4 = Machine.StatusIP.MAC_MISMATCH
+    if machine_.status_ipv6 == Machine.StatusIP.NO_ADDRESS:
+        if machine.ipv6 in addresses['inet6']:
+            machine_.status_ipv6 = Machine.StatusIP.MAC_MISMATCH
 
-        if machine_.status_ipv6 == Machine.StatusIP.NO_ADDRESS:
-            if machine.ipv6 in addresses['inet6']:
-                machine_.status_ipv6 = Machine.StatusIP.MAC_MISMATCH
-
-        return machine_
-
-    except Exception as e:
-        logger.exception("%s (%s)",fqdn, e)
-        return False
-    finally:
-        if conn:
-            conn.close()
-        if timer:
-            timer.cancel()
-
-    return None
-
+    return machine_
 
 def get_installations(fqdn):
     """Retrieve information of the installations."""
@@ -455,6 +430,7 @@ def get_installations(fqdn):
         return False
 
     conn = None
+
     timer = None
     try:
         conn = SSH(fqdn)
@@ -524,66 +500,53 @@ def get_pci_devices(fqdn):
         logger.warning("Machine '%s' does not exist", fqdn)
         return False
 
-    conn = None
-    timer = None
-    try:
-        conn = SSH(fqdn)
-        conn.connect()
-        timer = threading.Timer(5 * 60, conn.close)
-        timer.start()
+    logger.debug("Collect PCI devices for '%s'...", fqdn)
+    pci_devices = []
+    chunk = ''
+    stdout, _stderr, err = ssh_execute('lspci -mmvn')
+    if err:
+        logger.warning("Machine '%s' could not collect PCI devices", fqdn)
+        return None
 
-        logger.debug("Collect PCI devices for '%s'...", machine.fqdn)
-        pci_devices = []
-        chunk = ''
-        stdout, _stderr, _exitstatus = conn.execute('lspci -mmvn')
-        for line in stdout:
-            if line.strip():
-                chunk += line
-            else:
-                pci_devices.append(PCIDevice.from_lspci_mmnv(chunk))
-                chunk = ''
+    for line in stdout:
+        if line.strip():
+            chunk += line
+        else:
+            pci_devices.append(PCIDevice.from_lspci_mmnv(chunk))
+            chunk = ''
 
-        # drivers for PCI devices from hwinfo
-        in_pci_device = False
-        current_busid = None
+    # drivers for PCI devices from hwinfo
+    in_pci_device = False
+    current_busid = None
 
-        if machine.hwinfo:
-            for line in machine.hwinfo.splitlines():
-                if re.match(r'^\d+: PCI', line):
-                    in_pci_device = True
-                    continue
-                if not line.strip():
-                    in_pci_device = False
-                    current_busid = None
-                    continue
-                if not in_pci_device:
-                    continue
-                match = re.match(r'  SysFS BusID: ([0-9a-fA-F.:]+)', line)
-                if match:
-                    current_busid = match.group(1)
-                match = re.match(r'  Driver: "([^"]*)"', line)
-                if match and current_busid:
-                    pcidev = get_pci_device_by_slot(pci_devices, current_busid)
-                    if pcidev:
-                        pcidev.drivermodule = match.group(1)
-                match = re.match(r'  Driver Modules: "([^"]*)"', line)
-                if match and current_busid:
-                    pcidev = get_pci_device_by_slot(pci_devices, current_busid)
-                    if pcidev:
-                        pcidev.drivermodule = match.group(1)
+    if machine.hwinfo:
+        for line in machine.hwinfo.splitlines():
+            if re.match(r'^\d+: PCI', line):
+                in_pci_device = True
+                continue
+            if not line.strip():
+                in_pci_device = False
+                current_busid = None
+                continue
+            if not in_pci_device:
+                continue
+            match = re.match(r'  SysFS BusID: ([0-9a-fA-F.:]+)', line)
+            if match:
+                current_busid = match.group(1)
+            match = re.match(r'  Driver: "([^"]*)"', line)
+            if match and current_busid:
+                pcidev = get_pci_device_by_slot(pci_devices, current_busid)
+                if pcidev:
+                    pcidev.drivermodule = match.group(1)
+            match = re.match(r'  Driver Modules: "([^"]*)"', line)
+            if match and current_busid:
+                pcidev = get_pci_device_by_slot(pci_devices, current_busid)
+                if pcidev:
+                    pcidev.drivermodule = match.group(1)
 
-        for pci_device in pci_devices:
-            pci_device.machine = machine
+    for pci_device in pci_devices:
+        pci_device.machine = machine
 
-        logger.debug("Collected %s PCI devices for '%s'", len(pci_devices), machine.fqdn)
+    logger.debug("Collected %s PCI devices for '%s'", len(pci_devices), machine.fqdn)
 
-        return pci_devices
-
-    except Exception as e:
-        logger.exception("%s (%s)",fqdn, e)
-        return False
-    finally:
-        if conn:
-            conn.close()
-        if timer:
-            timer.cancel()
+    return pci_devices
