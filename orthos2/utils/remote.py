@@ -1,4 +1,8 @@
-#!/usr/bin/python3
+# For test purposes:
+# Execute via:
+#
+# python3 /usr/lib/python3.*/site-packages/orthos2/utils/remote.py <cmd> <host>
+# python3 /usr/lib/python3.*/site-packages/orthos2/utils/remote.py ls gatria-1.arch.suse.de
 
 import logging
 
@@ -85,9 +89,8 @@ if __name__ == '__main__':
         cmd = args[0]
         host = args[1]
 
-    # stdout, stderr, err = ssh_execute(cmd, host)
+    stdout, stderr, err = ssh_execute(cmd, host)
     # stdout, stderr, err = ssh_execute('/sbin/ip a', "gatria-1.arch.suse.de")
-    stdout, stderr, err = scp_execute(cmd, host)
     if err:
         print ("ERROR")
         print (stderr)
