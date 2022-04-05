@@ -627,18 +627,14 @@ class Machine(models.Model):
         update_machine = False
         update_sconsole = False
         if self._original is None:
-            try:
-                primary_networkinterface = NetworkInterface.objects.get(machine=self, primary=True)
-                if self.mac_address and not primary_networkinterface:
-                    self.networkinterfaces.get_or_create(
-                        machine=self,
-                        primary=True,
-                        mac_address=self.mac_address
-                    )
+            if self.mac_address:
+                self.networkinterfaces.get_or_create(
+                    machine=self,
+                    primary=True,
+                    mac_address=self.mac_address
+                )
                 sync_dhcp = True
                 update_machine = True
-            except ObjectDoesNotExist:
-                primary_networkinterface = None
         else:
             # check if DHCP needs to be regenerated
             try:
@@ -706,6 +702,7 @@ class Machine(models.Model):
             # regenerate DHCP on all domains (deletion/registration) if domain changed
             domain_id = self.fqdn_domain.pk
             signal_cobbler_sync_dhcp.send(sender=self.__class__, domain_id=domain_id)
+            self.scan('networkinterfaces')
         if update_sconsole:
             from orthos2.data.signals import signal_serialconsole_regenerate
             if hasattr(self.fqdn_domain, 'cscreen_server'):
@@ -1108,8 +1105,9 @@ class Machine(models.Model):
         TaskManager.add(task)
 
         #ToDo: Better wait until individual machine scans finished
-        task = Ansible([self.fqdn])
-        TaskManager.add(task)
+        if action == "all":
+            task = Ansible([self.fqdn])
+            TaskManager.add(task)
 
     @check_permission
     def update_motd(self, user=None):
