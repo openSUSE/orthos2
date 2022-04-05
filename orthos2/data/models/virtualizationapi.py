@@ -407,7 +407,7 @@ class Libvirt(VirtualizationAPI):
 
         bridge = ServerConfig.objects.by_key('virtualization.libvirt.bridge')
         image_directory = ServerConfig.objects.by_key('virtualization.libvirt.images.directory')
-        disk_image_directory = '/abuild/orthos-vm-images/'
+        disk_image_directory = ServerConfig.objects.by_key('virtualization.libvirt.images.install_directory')
         disk_image = '{}/{}.qcow2'.format(disk_image_directory.rstrip('/'), '{}')
         ovmf = ServerConfig.objects.by_key('virtualization.libvirt.ovmf.path')
 
