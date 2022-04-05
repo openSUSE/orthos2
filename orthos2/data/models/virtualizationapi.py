@@ -214,7 +214,7 @@ class Libvirt(VirtualizationAPI):
 
     def get_list(self, parameters='--all'):
         """Return `virsh list` output."""
-        stdout, _stderr, exitstatus = self._execute('{} list {}'.format(self.VIRSH, parameters))
+        stdout, stderr, exitstatus = self._execute('{} list {}'.format(self.VIRSH, parameters))
 
         if exitstatus == 0:
             return ''.join(stdout)
@@ -380,7 +380,7 @@ class Libvirt(VirtualizationAPI):
 
         command = command.format(**kwargs)
         logger.debug(command)
-        _stdout, _stderr, exitstatus = self.conn.execute(command)
+        _stdout, stderr, exitstatus = self.conn.execute(command)
 
         if exitstatus != 0:
             raise Exception(''.join(stderr))
@@ -430,16 +430,18 @@ class Libvirt(VirtualizationAPI):
                 raise Exception("Image source directory missing on host system!")
 
         if not self.conn.check_path(disk_image_directory, '-w'):
-            raise Exception(
-                "Image disk directory missing on host system: {}!".format(disk_image_directory)
+            _stdout, stderr, exitstatus = self._execute('mkdir -p {}'.format(disk_image_directory))
+            if exitstatus != 0:
+                raise Exception(
+                    "Image disk directory {} could not get created on host system: {}!".format(
+                        disk_image_directory, stderr)
             )
-
         if kwargs['uefi_boot']:
             if not self.conn.check_path(ovmf, '-e'):
                 raise Exception("OVMF file not found: '{}'!".format(ovmf))
             boot = '--boot loader={},network'.format(ovmf)
         else:
-            boot = '--boot network,hd,menu=off,bios.useserial=on'
+            boot = '--boot network,hd,menu=off,useserial=on'
 
         self.check_memory(kwargs['ram_amount'])
 
