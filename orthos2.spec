@@ -186,7 +186,6 @@ sudo -i -u orthos /usr/lib/orthos2/manage.py collectstatic --noinput
 %config %{_sysconfdir}/orthos2/orthos2.ini
 %config %{_sysconfdir}/orthos2/settings
 %config %{_sysconfdir}/logrotate.d/orthos2
-%config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_docs_nginx.conf
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
 %dir /usr/lib/orthos2
 %dir /usr/lib/orthos2/scripts
