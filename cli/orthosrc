@@ -1,6 +1,19 @@
 [global]
 username = 
-server = 
+server = orthos2.arch.suse.de
 port = 443
 protocol = https
 token = 
+
+[alias]
+reserved = query name, res_by, reserved_until where res_by
+not_reserved = query name where !res_by
+not_reserved_avail = query name where !res_by and status_login
+sles_15_sp4 = query name, inst_dist where !res_by and status_login and inst_dist =~ "sles%2015%20sp4"
+older_as_2015 = query name, bios_date where bios_date < 2015-01-01
+freemachines = query name, cpu_cores, ram, sconsole, rpower_type where !res_by and status_login
+mymachines = query name, cpu_cores, ram, res_by, rpower_type, sconsole, status_ping, status_login where res_by = $USERNAME
+lspci = query pci_slot, pci_vendorid, pci_vendor, pci_deviceid, pci_device, pci_svendorid, pci_svendorname, pci_sdeviceid, pci_sdevicename, pci_revision, pci_driver where name =
+sles_15 = query name, inst_dist where !res_by and status_login and inst_dist =~ "sles%2015"
+sles = query name, inst_dist where !res_by and status_login and inst_dist =~ "sle"
+opensuse = query name, inst_dist where !res_by and status_login and inst_dist =~ "openSUSE"
