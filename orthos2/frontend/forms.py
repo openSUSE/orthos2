@@ -659,15 +659,15 @@ class VirtualMachineForm(forms.Form):
     disk_size = forms.DecimalField(
         label='Disk size (GB)',
         required=True,
-        initial=10,
-        max_value=50,
+        initial=30,
+        max_value=100,
         min_value=10,
-        help_text='Value between 10GB and 50GB; applies only if no image is selected.',
+        help_text='Value between 10GB and 100GB; applies only if no image is selected.',
         widget=forms.NumberInput(attrs={'class': 'form-control'})
     )
 
     vnc = forms.BooleanField(
         label='Enable VNC',
         required=False,
-        initial=True
+        initial=False
     )
