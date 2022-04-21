@@ -234,7 +234,7 @@ class Libvirt(VirtualizationAPI):
         if exitstatus != 0:
             raise Exception(''.join(stderr))
 
-        stdout, stderr, exitstatus = self.conn.execute('brctl show')
+        stdout, stderr, exitstatus = self.conn.execute('bridge vlan')
 
         if exitstatus != 0:
             raise Exception(''.join(stderr))
@@ -353,6 +353,7 @@ class Libvirt(VirtualizationAPI):
         command += '--name {hostname} '
         command += '--vcpus {vcpu} '
         command += '--memory {memory} '
+        command += '--osinfo detect=on,require=off '
 
         disk_ = '--disk {},'.format(kwargs['disk']['image'])
         disk_ += 'size={},'.format(kwargs['disk']['size'])
