@@ -59,7 +59,6 @@ Requires:  python3-paramiko
 Requires:  python3-psycopg2
 Requires:  python3-ldap
 Requires:  python3-validators
-
 %endif
 # Needed to install /etc/logrotate.d/orthos2
 Requires:  logrotate
@@ -84,7 +83,7 @@ Orthos is the machine administration tool of the development network at SUSE. It
 
 %package docs
 Summary:        HTML documentation for orthos2
-#BuildRequires:  python3-django >= 3.2
+BuildRequires:  python3-django >= 3.2
 BuildRequires:  python3-django-auth-ldap
 BuildRequires:  python3-django-extensions
 BuildRequires:  python3-paramiko
