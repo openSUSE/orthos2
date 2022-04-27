@@ -654,6 +654,7 @@ class Machine(models.Model):
                 update_machine = True
             try:
                 if hasattr(self, 'bmc'):
+                    assert hasattr(self._original, 'bmc')
                     assert self.bmc.username == self._original.bmc.username
                     assert self.bmc.password == self._original.bmc.password
                 if self.has_remotepower():
