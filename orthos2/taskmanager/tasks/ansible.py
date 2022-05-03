@@ -186,11 +186,15 @@ class Ansible(Task):
         # db_machine.cpu_flags = # --> check if in ansible, else create facts file
         # db_machine.cpu_speed =
         # db_machine.cpu_id =
-        db_machine.ram_amount = int(ansible_machine.get("memtotal_mb", 0)) * 1024
+        db_machine.ram_amount = int(ansible_machine.get("memtotal_mb", 0))
         # db_machine.disk_primary_size = # sectors * sector_size der 1. platte (in bytes).
         # danach hwinfo --disk entfernen.
         # db_machine.disk_type =
 
+        # Need extra readonly commandline field
+        # k_opts = ansible_machine.get("cmdline", 0)
+        # if k_opts:
+        #    db_machine.kernel_options = " ".join(['%s=%s' % (key,value) for key, value in k_opts.items()])
         db_machine.lsmod = normalize_ascii("".join(ansible_machine.get("ansible_local", {}).get("lsmod", {}).get(
                                            "noargs", {}).get("stdout", "")))
         db_machine.lspci = normalize_ascii("".join(ansible_machine.get("lspci", {}).get("-vvv -nn", {}).get(
