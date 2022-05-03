@@ -118,6 +118,13 @@ class QueryField:
         'ram': {
             'field': Machine._meta.get_field('ram_amount')
         },
+        'cobbler_server': {
+            'field': Machine._meta.get_field('reserved_by'),
+            'pre': lambda x:
+                HelperFunctions.username_to_id(x) if isinstance(x, str) else x,
+            'post': lambda x:
+                User.objects.get(pk=x).username
+        },
         'reserved_by': {
             'field': Machine._meta.get_field('reserved_by'),
             'pre': lambda x:
@@ -241,24 +248,11 @@ class QueryField:
         },
 # TODO: adapt this to new implementation
 
-#        'rpower_type': {   # noqa
-#            'field': RemotePower._meta.get_field('type'),
-#            'related_name': 'remotepower',
-#            'verbose_name': 'Remotepower',
-#            'pre': lambda x:
-#                RemotePower.Type.to_int(x) if isinstance(x, str) else x,
-#            'post': lambda x:
-#                RemotePower.Type.to_str(x)
-#        },
-#        'rpower': {
-#            'field': RemotePower._meta.get_field('type'),
-#            'related_name': 'remotepower',
-#            'verbose_name': 'Remotepower',
-#            'pre': lambda x:
-#                RemotePower.Type.to_int(x) if isinstance(x, str) else x,
-#            'post': lambda x:
-#                RemotePower.Type.to_str(x)
-#        },
+        'rpower_type': {
+            'field': RemotePower._meta.get_field('fence_name'),
+            'related_name': 'remotepower',
+            'verbose_name': 'Remotepower type',
+        },
 
         # Installation
         'inst_active': {
@@ -382,17 +376,20 @@ class QueryField:
         },
 
         # Platform
-        'enclosure_platform': {
+        'platform': {
             'field': Platform._meta.get_field('name'),
-            'related_name': 'enclosure__platform',
+            'related_name': 'platform',
             'verbose_name': 'Platform'
         },
-
-        # Vendor
-        'enclosure_vendor': {
+        'platform_vendor': {
             'field': Vendor._meta.get_field('name'),
-            'related_name': 'enclosure__platform__vendor',
+            'related_name': 'platform__vendor',
             'verbose_name': 'Vendor'
+        },
+        'platform_description': {
+            'field': Platform._meta.get_field('description'),
+            'related_name': 'platform',
+            'verbose_name': 'Platform description'
         },
 
         # Annotation
