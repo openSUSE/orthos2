@@ -13,13 +13,14 @@ def check_permissions(key='id'):
             Only superusers can access administrative machines and/or systems.
             Raises `PermissionDenied` exception if a user is not authorized.
             """
-            machine_id = kwargs.get(key, None)
-
-            if machine_id is None:
-                raise PermissionDenied("Can't get ID of machine")
-
             try:
-                machine = Machine.objects.get(pk=machine_id)
+                ident = kwargs.get(key, None)
+                if ident is None:
+                    raise PermissionDenied("Bad key %s", key)
+                if key == 'fqdn':
+                    machine = Machine.objects.get(fqdn=ident)
+                elif key == 'id':
+                    machine = Machine.objects.get(pk=ident)
             except Machine.DoesNotExist:
                 raise Http404("Machine does not exist!")
 
