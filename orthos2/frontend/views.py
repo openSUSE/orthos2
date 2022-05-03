@@ -213,6 +213,23 @@ def machine(request, id):
         }
     )
 
+@login_required
+@check_permissions("fqdn")
+def machine_fqdn(request, fqdn):
+    try:
+        machine = Machine.objects.get(fqdn=fqdn)
+        machine.enclosure.fetch_location(machine.pk)
+    except Machine.DoesNotExist:
+        messages.error(request, "Machine does not exist.")
+        return redirect('machines')
+
+    return render(
+        request,
+        'machines/detail/overview.html', {
+            'machine': machine,
+            'title': 'Machine'
+        }
+    )
 
 @login_required
 def pci(request, id):
