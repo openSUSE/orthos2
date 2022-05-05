@@ -1,4 +1,6 @@
 from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
+
 from orthos2.utils.remotepowertype import get_remote_power_type_choices
 from . import ServerConfig
 
@@ -26,6 +28,16 @@ class RemotePowerDevice(models.Model):
                                   max_length=255,
                                   verbose_name="Fence Agent"
                                   )
+
+    @staticmethod
+    def get_by_str(fqdn_dev):
+        if not fqdn_dev:
+            return
+        fqdn = fqdn_dev.split('[')[0]
+        try:
+            return RemotePowerDevice.objects.get(fqdn=fqdn)
+        except ObjectDoesNotExist:
+            return None
 
     def natural_key(self):
         return (self.fqdn,)

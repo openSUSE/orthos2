@@ -17,8 +17,7 @@ class RemotePowerType:
             self.use_identity_file = True
         else:
             self.use_identity_file = False
-        if 'port' in options:
-            self.use_port = options['port']
-        else:
-            self.use_port = False
-        self.options = options.get('options',None)
+        self.use_port = options.get('port', False)
+        logging.info("Initialiced RemotePowerType for %s", self.fence)
+        self.use_hostname_as_port = options.get('use_hostname_as_port', False)
+        self.options = options.get('options', None)

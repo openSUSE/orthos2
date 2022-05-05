@@ -28,7 +28,7 @@ class SerialConsole(models.Model):
         ('ttyS', 'ttyS'),
         ('ttyUSB', 'ttyUSB'),
         ('ttyAMA', 'ttyAMA'),
-        ('tty', 'tty'),
+        ('hvc', 'hvc'),
         ('None', 'None'),
     )
 

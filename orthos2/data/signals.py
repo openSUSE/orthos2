@@ -75,22 +75,7 @@ def machine_post_save(sender, instance, *args, **kwargs):
             if instance.system.administrative:
                 primary_networkinterface.delete()
             else:
-                # scan networkinterfaces
                 instance.scan('networkinterfaces')
-                # regenerate Cobbler entry
-                signal_cobbler_regenerate.send(sender=None, domain_id=instance.fqdn_domain.pk)
-    else:
-        instance.networkinterfaces.create(
-            machine=instance,
-            primary=True,
-            mac_address=instance.mac_address
-        )
-        instance.scan('networkinterfaces')
-          # create Cobbler entry
-        signal_cobbler_regenerate.send(sender=None, domain_id=instance.fqdn_domain.pk)
-
-
-
 
 
 @receiver(post_init, sender=Machine)

@@ -93,10 +93,13 @@ def get_power_options(machine):
         username, password = remotepower.get_credentials()
         options += " --power-user={username} --power-pass={password} ".format(username=username,
                                                                               password=password)
-    if fence.use_port:
+    if fence.use_hostname_as_port:
+        options += " --power-id={port}".format(port=get_hostname(machine.hostname))
+    elif fence.use_port:
+        # Temporary workaround until fence raritan accepts port as --plug param
+        if fence.fence == "raritan":
+            options += " --power-id=system1/outlet{port}".format(port=remotepower.port)
         options += " --power-id={port}".format(port=remotepower.port)
-    elif fence.device == "hypervisor":
-        options += " --power-id={name}".format(name=machine.hostname)
 
     options += " --power-address={address}".format(address=remotepower.get_power_address())
     if fence.use_options:
@@ -233,9 +236,6 @@ class CobblerServer:
                     )
 
     def remove(self, machine: Machine):
-        #ToDo: We do not remove machines from cobbler server actively in orthos2 yet
-        logging.warning("cobbler remove is switched off")
-        return
         self.connect()
         if not self.is_installed():
             raise CobblerException("No Cobbler service found: {}".format(self._fqdn))
@@ -317,6 +317,8 @@ class CobblerServer:
                                                                     action=cobbler_action,
                                                                     fqdn=machine.fqdn)
         out, stderr, exitcode = self._conn.execute(command)
+        logger.debug("powerswitching of %s called with action %s", machine.fqdn, action)
+        logger.debug("Execute on cobbler: %s", command)
         if exitcode:
             logger.warning("Powerswitching of  %s with %s failed on %s with %s", machine.fqdn,
                            command, self._fqdn, stderr)

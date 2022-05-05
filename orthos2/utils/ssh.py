@@ -40,7 +40,7 @@ class SSH(object):
     def get_system_user_configuration(self):
         """Return SSH configuration of system user as Paramiko dict for `connect()`."""
         ssh_configuration = paramiko.SSHConfig()
-        user_configuration_file = '%s/.ssh/config', os.getenv('HOME')
+        user_configuration_file = '{}/.ssh/config'.format(os.getenv('HOME'))
 
         if not os.path.exists(user_configuration_file):
             logger.warning("Couldn't read SSH configuration: %s", user_configuration_file)
@@ -251,3 +251,15 @@ class SSH(object):
             return False
 
         return True
+
+if __name__ == '__main__':
+    fqdn = "virt133.devlab.prv.suse.com"
+    conn = None
+    try:
+        conn = SSH(fqdn)
+        conn.connect()
+    except Exception as e:
+        logger.warning("SSH login failed for [%s]: %s", fqdn, e)
+    finally:
+        if conn:
+            conn.close()

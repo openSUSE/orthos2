@@ -440,7 +440,7 @@ class Libvirt(VirtualizationAPI):
         if kwargs['uefi_boot']:
             if not self.conn.check_path(ovmf, '-e'):
                 raise Exception("OVMF file not found: '{}'!".format(ovmf))
-            boot = '--boot loader={},network'.format(ovmf)
+            boot = '--boot loader={},network,hd'.format(ovmf)
         else:
             boot = '--boot network,hd,menu=off,useserial=on'
 
