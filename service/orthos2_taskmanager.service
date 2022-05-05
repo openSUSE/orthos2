@@ -3,10 +3,16 @@ Description=Orthos taskmanager
 Requires=nginx.service
 Wants=logrotate.service
 
+StartLimitIntervalSec=500
+StartLimitBurst=5
+
 [Service]
 User=orthos
 Group=orthos
 ExecStart=/usr/lib/orthos2/manage.py taskmanager --start
+
+Restart=on-failure
+RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target
