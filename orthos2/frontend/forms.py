@@ -661,8 +661,8 @@ class VirtualMachineForm(forms.Form):
         required=True,
         initial=30,
         max_value=100,
-        min_value=10,
-        help_text='Value between 10GB and 100GB; applies only if no image is selected.',
+        min_value=30,
+        help_text='Value between 30GB and 100GB; applies only if no image is selected.',
         widget=forms.NumberInput(attrs={'class': 'form-control'})
     )
 

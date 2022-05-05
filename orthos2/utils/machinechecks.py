@@ -16,7 +16,7 @@ logger = logging.getLogger('utils')
 
 def ping_check(fqdn, timeout=None, ip_version=4):
     """Check if the server pings."""
-    command = '/usr/bin/ping'
+    command = '/usr/bin/ping -4'
     if ip_version == 6:
         command = '/usr/bin/ping6'
 

@@ -91,6 +91,7 @@ if __name__ == '__main__':
 
     stdout, stderr, err = ssh_execute(cmd, host)
     # stdout, stderr, err = ssh_execute('/sbin/ip a', "gatria-1.arch.suse.de")
+    # stdout, stderr, err = scp_execute(cmd, host)
     if err:
         print ("ERROR")
         print (stderr)

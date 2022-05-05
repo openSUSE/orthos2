@@ -6,7 +6,7 @@ from copy import deepcopy
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import serializers
-from django.core.exceptions import (PermissionDenied, ValidationError)
+from django.core.exceptions import (PermissionDenied, ValidationError, ObjectDoesNotExist)
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
@@ -627,14 +627,17 @@ class Machine(models.Model):
         update_machine = False
         update_sconsole = False
         if self._original is None:
-            if self.mac_address:
-                self.networkinterfaces.get_or_create(
-                    machine=self,
-                    primary=True,
-                    mac_address=self.mac_address
-                )
-                sync_dhcp = True
-                update_machine = True
+            try:
+                NetworkInterface.objects.get(machine=self, primary=True)
+            except ObjectDoesNotExist:
+                if self.mac_address:
+                    self.networkinterfaces.get_or_create(
+                        machine=self,
+                        primary=True,
+                        mac_address=self.mac_address
+                    )
+                    sync_dhcp = True
+                    update_machine = True
         else:
             # check if DHCP needs to be regenerated
             try:
@@ -668,6 +671,9 @@ class Machine(models.Model):
                 if self.has_serialconsole():
                     assert hasattr(self._original, 'serialconsole')
                     assert self.serialconsole.baud_rate == self._original.serialconsole.baud_rate
+                    assert self.serialconsole.command == self._original.serialconsole.command
+                    assert self.serialconsole.stype == self._original.serialconsole.stype
+                    assert self.serialconsole.kernel_device == self._original.serialconsole.kernel_device
                     assert self.serialconsole.kernel_device_num == \
                         self._original.serialconsole.kernel_device_num
             except AssertionError:
@@ -682,6 +688,9 @@ class Machine(models.Model):
                 if self.has_serialconsole():
                     assert hasattr(self._original, 'serialconsole')
                     assert self.serialconsole.baud_rate == self._original.serialconsole.baud_rate
+                    assert self.serialconsole.command == self._original.serialconsole.command
+                    assert self.serialconsole.stype == self._original.serialconsole.stype
+                    assert self.serialconsole.kernel_device == self._original.serialconsole.kernel_device
                     assert self.serialconsole.kernel_device_num == \
                         self._original.serialconsole.kernel_device_num
             except AssertionError:
@@ -909,7 +918,9 @@ class Machine(models.Model):
         if self.administrative:
             raise Exception("Administrative machines must not be released, remove admin flag first")
 
+        logger.debug("Release VM %s", self.fqdn)
         if self.is_vm_managed() and self.hypervisor.vm_auto_delete:
+            logger.debug("Delete VM %s", self.fqdn)
             self.delete()
             return
 

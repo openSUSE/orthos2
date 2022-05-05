@@ -116,11 +116,19 @@ def add_arch_relations(queries: list):
         item.cobbler_server.set([])
     queries.extend(query)
     add_machine("markeb.arch.suse.de", queries)
-    
+
+def delete_network(mac: str):
+    from orthos2.data.models import NetworkInterface
+    network = NetworkInterface.objects.get(mac_address=mac.upper())
+    if network:
+        print(network)
+        network.delete()
+    exit(1)
+
 def run(*args):
 
     natural = False
-
+    # delete_network('00:01:73:02:37:74')
     if not args or args[0] == "help" or len(args) > 2:
         show_help()
 

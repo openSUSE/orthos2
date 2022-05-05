@@ -128,7 +128,8 @@ class SyncCobblerDHCP(Task):
                 logger.info("Domain '%s' has no Cobbler server... aborting", domain.name)
                 return
             for server in domain.cobbler_server.all():
-                server.sync_dhcp()
+                cobbler_server = CobblerServer(server.fqdn, domain)
+                cobbler_server.sync_dhcp()
         except Domain.DoesNotExist:
             logger.error("No Domain with id %s, aborting", self._domain_id)
         except Domain.MultipleObjectsReturned:

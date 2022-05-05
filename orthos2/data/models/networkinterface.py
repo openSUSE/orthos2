@@ -103,4 +103,12 @@ class NetworkInterface(models.Model):
             exclude = []
 
         if not is_unique_mac_address(self.mac_address, exclude=exclude):
-            raise ValidationError("MAC address '{}' is already in use!".format(self.mac_address))
+            violate_net = NetworkInterface.objects.get(mac_address=self.mac_address)
+            if hasattr(violate_net, 'machine'):
+                violate_machine = violate_net.machine.fqdn
+            else:
+                violate_machine = "networkinterface not assigned to a machine"
+            raise ValidationError("MAC address '{}' is already in use by: {}".format(
+                self.mac_address,
+                violate_machine
+            ))

@@ -119,11 +119,13 @@ class QueryField:
             'field': Machine._meta.get_field('ram_amount')
         },
         'cobbler_server': {
-            'field': Machine._meta.get_field('reserved_by'),
+            'field': Domain._meta.get_field('cobbler_server'),
+            'related_name': 'fqdn_domain',
+            'verbose_name': 'Cobbler server',
             'pre': lambda x:
-                HelperFunctions.username_to_id(x) if isinstance(x, str) else x,
+                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x,
             'post': lambda x:
-                User.objects.get(pk=x).username
+                Machine.objects.get(pk=x).fqdn
         },
         'reserved_by': {
             'field': Machine._meta.get_field('reserved_by'),
