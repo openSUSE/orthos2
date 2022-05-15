@@ -141,26 +141,6 @@ DATE_INPUT_FORMATS = [
     '%Y-%m-%d',
 ]
 
-# LDAP authentication
-AUTH_LDAP_SERVER_URI = os.environ.get('LDAP_HOST', default="")
-AUTH_LDAP_BIND_DN = os.environ.get('LDAP_USERNAME')
-AUTH_LDAP_BIND_PASSWORD = os.environ.get('LDAP_PASSWORD')
-AUTH_LDAP_USER_SEARCH = LDAPSearch(
-    'dc=example,dc=com',
-    ldap.SCOPE_SUBTREE,
-    '(uid=%(user)s)',
-)
-AUTH_LDAP_USER_ATTR_MAP = {
-    'username': 'uid',
-    'email': 'mail',
-}
-AUTH_LDAP_ALWAYS_UPDATE_USER = True
-AUTH_LDAP_CACHE_TIMEOUT = 3600
-
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-)
-
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error when DEBUG=False.
@@ -283,26 +263,7 @@ AUTH_ALLOW_USER_CREATION = False
 # HINT: Configure the DEFAULT_AUTO_FIELD setting ...
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-REMOTEPOWER_TYPES = [
-                        {
-                            'fence': 'virsh',
-                            'device': 'hypervisor',
-                            'username': 'root',
-                            'identity_file': '/var/lib/orthos2/.ssh/master'
-                        },
-                        {
-                            'fence': 'ipmitool',
-                            'device': 'bmc',
-                            'username': 'xxx',
-                            'password': 'XXX',
-                        },
-                        {
-                            'fence': 'raritan',
-                            'device': 'rpower_device',
-                            'username': 'xxx',
-                            'password': 'XXX',
-                            'port': True
-                        }]
+REMOTEPOWER_TYPES = []
 
 # Check for alternative settings file. If this file exists, we use it and evaluate the code.
 # This is intended to be used for production mode.
