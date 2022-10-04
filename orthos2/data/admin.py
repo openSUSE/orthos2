@@ -19,7 +19,9 @@ from .models import (Annotation, Architecture, BMC, Domain, Enclosure,
 
 class BMCInlineFormset(forms.models.BaseInlineFormSet):
     def clean(self):
-        if not self.cleaned_data:
+        if self.is_valid() and self.cleaned_data:
+            data = self.cleaned_data[0]
+        else:
             return
         data = self.cleaned_data[0]
         username = data.get('username')

@@ -640,6 +640,8 @@ class Machine(models.Model):
                     update_machine = True
         else:
             # check if DHCP needs to be regenerated
+            if self.mac_address != self._original.mac_address:
+                self.delete_secondary_interfaces()
             try:
                 assert self.mac_address == self._original.mac_address
                 assert self.fqdn == self._original.fqdn
@@ -777,6 +779,12 @@ class Machine(models.Model):
     def get_active_distribution(self):
         return self.installations.get(active=True)
 
+    def delete_secondary_interfaces(self):
+        primary = self.get_primary_networkinterface()
+        for network in self.networkinterfaces.all():
+            if network != primary:
+                network.delete()
+    
     def get_primary_networkinterface(self):
         try:
             interface = self.networkinterfaces.get(primary=True)
