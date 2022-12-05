@@ -1,7 +1,7 @@
 from django.urls import re_path
 from django.http import HttpResponseRedirect, JsonResponse
 
-from orthos2.api.commands import BaseAPIView, get_machine
+from orthos2.api.commands import BaseAPIView, get_machine, getException
 from orthos2.api.serializers.machine import MachineSerializer
 from orthos2.api.serializers.misc import ErrorMessage, Serializer
 from orthos2.data.models import Machine
@@ -143,7 +143,7 @@ Example:
 
             response['header'] = {'type': 'INFO', 'order': order}
             response['data'] = machine.data_info
-        except Exception as e:
-            return ErrorMessage(str(e)).as_json
+        except Exception:
+            return ErrorMessage(getException()).as_json
 
         return JsonResponse(response)

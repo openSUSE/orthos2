@@ -1,9 +1,30 @@
+import sys
+import linecache
+
 from django.shortcuts import redirect
 from rest_framework.views import APIView
 
 from orthos2.api.serializers.misc import SelectSerializer
 from orthos2.data.models import Machine
 
+def getException():
+    """
+    Use this function to create error messages when an Exception happens during
+    processing of client commands.
+    Typically Exceptions during command processing are caught and returned like that:
+        except Exception as e:
+            logger.exception(e)
+            return ErrorMessage(getException()).as_json
+
+        return JsonResponse(response)
+    """
+    _exc_type, exc_obj, tb = sys.exc_info()
+    f = tb.tb_frame
+    lineno = tb.tb_lineno
+    filename = f.f_code.co_filename
+    linecache.checkcache(filename)
+    line = linecache.getline(filename, lineno, f.f_globals)
+    return 'EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj)
 
 def get_machine(fqdn, redirect_to, data=None, redirect_key_replace='fqdn'):
     """
