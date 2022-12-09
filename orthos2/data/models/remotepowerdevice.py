@@ -10,14 +10,11 @@ class RemotePowerDevice(models.Model):
     password = models.CharField(max_length=256, blank=False, null=True)
     fqdn = models.CharField(max_length=256, unique=True)
     mac = models.CharField(max_length=17, unique=True)
-    power_doc = ServerConfig.objects.by_key('orthos.documentation.url', "http://localhost") \
-                + "/" + "powerswitches.html"
     url = models.URLField(
         blank=True,
         help_text="URL of the Webinterface to configure this Power Device.<br>" +
         "Power devices should be in a separate management network only reachable via the cobbler server.<br>" +
-        "In this case the Webinterface might be port forwarded, also check " +
-        "<a href=\"" + power_doc + "\" target=\"_blank\">Documentation</a><br>"
+        "In this case the Webinterface might be port forwarded, also check Documentation<br>"
     )
 
 
@@ -29,6 +26,11 @@ class RemotePowerDevice(models.Model):
                                   verbose_name="Fence Agent"
                                   )
 
+    def __init__(self, *args, **kwargs):
+        power_doc = ServerConfig.objects.by_key('orthos.documentation.url', "http://localhost") \
+                    + "/" + "powerswitches.html"
+        self.url.help_text += "<a href=\"" + power_doc + "\" target=\"_blank\"></a><br>"
+        super(models.Model, self).__init__(*args, **kwargs)
     @staticmethod
     def get_by_str(fqdn_dev):
         if not fqdn_dev:
