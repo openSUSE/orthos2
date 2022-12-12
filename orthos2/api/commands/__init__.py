@@ -1,4 +1,4 @@
-from orthos2.api.commands.base import BaseAPIView, get_machine
+from orthos2.api.commands.base import BaseAPIView, get_machine, getException
 from orthos2.api.commands.info import InfoCommand
 from orthos2.api.commands.query import QueryCommand
 from orthos2.api.commands.reserve import ReserveCommand
