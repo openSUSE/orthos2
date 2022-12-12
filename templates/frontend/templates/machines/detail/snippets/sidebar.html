@@ -59,7 +59,7 @@
 <br/>
 <div class="btn-group-vertical d-flex">
   {% if machine.has_setup_capability %}
-  <a class="btn btn-secondary btn-sm" href="{% url 'frontend:setup' machine.id %}" role="button">Setup Machine</a>
+  <a class="btn btn-secondary btn-sm" href="{% url 'frontend:setup' machine.id %}" role="button">Setup Machine...</a>
   {% else %}
   <a class="btn btn-secondary btn-sm disabled" href="#" role="button">Setup Machine</a>
   {% endif %}
