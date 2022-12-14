@@ -83,6 +83,7 @@ class MachineSerializer(serializers.ModelSerializer):
         model = Machine
         fields = (
             'fqdn',
+            'id',
             'ipv4',
             'ipv6',
             'comment',

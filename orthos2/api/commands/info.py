@@ -60,6 +60,7 @@ Example:
 
             order = [
                 'fqdn',
+                'id',
                 'architecture',
                 'ipv4',
                 'ipv6',
