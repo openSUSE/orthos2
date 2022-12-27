@@ -21,7 +21,7 @@ jobs:
         python -m pip install pycodestyle
     - name: run pycodestyle
       run: |
-        pycodestyle .
+        pycodestyle --max-line-length=120 .
 
   build:
     runs-on: ubuntu-latest
