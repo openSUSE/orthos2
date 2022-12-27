@@ -41,11 +41,11 @@ Also see: https://docs.djangoproject.com/en/3.2/topics/serialization
 Modules = {}
 
 # General also includes taskmanager.dailytask and basic arch.suse.de domain
-Modules['general'] = ( "Serverconfig", "System", "Architecture", "Vendor", "Platform", "Serialconsoletype" )
+Modules['general'] = ("Serverconfig", "System", "Architecture", "Vendor", "Platform", "Serialconsoletype")
 
-Modules['domain'] = ( "Domain", "Domainadmin" )
+Modules['domain'] = ("Domain", "Domainadmin")
 
-#Modules['remote' ] = ( "Remotepower", "Bmc", "Remotepowerdevice", "Serialconsole", "Serialconsoletype" )
+# Modules['remote' ] = ( "Remotepower", "Bmc", "Remotepowerdevice", "Serialconsole", "Serialconsoletype" )
 
 added_machines = []
 domains = ['test-100.arch.suse.de',
@@ -54,7 +54,7 @@ domains = ['test-100.arch.suse.de',
            'test-30.arch.suse.de',
            'test-40.arch.suse.de',
            'devlab.prv.suse.com'
-]
+           ]
 
 
 def show_help():
@@ -62,18 +62,17 @@ def show_help():
     print("")
     print("\tgeneral \t-- Dump general DB data [ %s ] " % ", ".join(Modules['general']))
     print("")
-    #print("\tremote  \t-- Dump remote management HW DB data [ %s ] " % ", ".join(Modules['remote']))
-    #print("")
+    # print("\tremote  \t-- Dump remote management HW DB data [ %s ] " % ", ".join(Modules['remote']))
+    # print("")
     print("\t<domain>\t-- Dump data of a specific domain [ %s ] " % ", ".join(Modules['domain']))
     print()
-    print (USAGE)
+    print(USAGE)
     exit(1)
 
 
 class Command(BaseCommand):
     help = "Dump orthos DB data\n"
     help += USAGE
-
 
     config = apps.get_app_config("data")
     queries = []
@@ -100,7 +99,7 @@ class Command(BaseCommand):
             print("%s - Machine does not exist" % fqdn)
             show_help()
 
-    def add_domain_infra(self, domain :str):
+    def add_domain_infra(self, domain: str):
         try:
             """
             This is needed if we want to have a blank domain with
@@ -122,7 +121,7 @@ class Command(BaseCommand):
             print("%s - Domain does not exist" % domain)
             show_help()
 
-    def add_domain_machines(self, domain :str):
+    def add_domain_machines(self, domain: str):
         machines = Machine.objects.filter(fqdn_domain__name=domain)
         for machine in machines:
             self.add_machine(machine)
@@ -155,7 +154,7 @@ class Command(BaseCommand):
         group.add_argument('--machinesonly', action='store_true',
                            help="Dump only systems/machines of specified domains")
         group.add_argument('--general', action='store_true', help="Store general DB metadata", default=False)
-        
+
     def handle(self, *args, **options):
 
         self.natural = False
@@ -167,7 +166,7 @@ class Command(BaseCommand):
         self.file = filename + ".json"
         self.machinesonly = options["machinesonly"]
         self.general = options["general"]
-        
+
         if self.general:
             tables = Modules.get("general")
             self.add_arch_relations()
@@ -175,7 +174,7 @@ class Command(BaseCommand):
             if query:
                 self.queries.extend(query)
             for table in tables:
-                print (".. dump table %s" % table)
+                print(".. dump table %s" % table)
                 model = self.config.get_model(table).objects.all()
                 self.queries.extend(model)
 
@@ -192,5 +191,5 @@ class Command(BaseCommand):
         with open(self.file, "w") as out:
             from django.core import serializers
             serializers.serialize("json", self.queries, indent=2, stream=out,
-                                  use_natural_foreign_keys=self.natural,use_natural_primary_keys=self.natural)
+                                  use_natural_foreign_keys=self.natural, use_natural_primary_keys=self.natural)
             print("File dumped: %s" % os.path.abspath(self.file))
