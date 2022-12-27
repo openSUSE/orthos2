@@ -17,6 +17,7 @@ from .models import (Annotation, Architecture, BMC, Domain, Enclosure,
                      SerialConsole, SerialConsoleType, ServerConfig, System, Vendor,
                      is_unique_mac_address, validate_mac_address)
 
+
 class BMCInlineFormset(forms.models.BaseInlineFormSet):
     def clean(self):
         if self.is_valid() and self.cleaned_data:
@@ -31,6 +32,7 @@ class BMCInlineFormset(forms.models.BaseInlineFormSet):
         if password and not username:
             raise forms.ValidationError("Password also needs a username")
         return self.cleaned_data
+
 
 class BMCInline(admin.StackedInline):
     model = BMC
@@ -67,6 +69,7 @@ class SerialConsoleInline(admin.StackedInline):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
         return super(SerialConsoleInline, self).get_formset(request, obj, **kwargs)
+
 
 class RemotePowerInlineFormset(forms.models.BaseInlineFormSet):
     def clean(self):
@@ -282,6 +285,7 @@ class MachineAdminForm(forms.ModelForm):
             self.add_error('unknown_mac', "Either specify a MAC, or confirm that the MAC is not yet known")
             self.add_error('mac_address', "Either specify a MAC, or confirm that the MAC is not yet known")
         return cleaned_data
+
 
 class MachineArchitectureFilter(admin.SimpleListFilter):
     title = 'Architecture'
@@ -551,9 +555,11 @@ class MachineAdmin(admin.ModelAdmin):
 
 admin.site.register(Machine, MachineAdmin)
 
+
 class ArchsInline(admin.TabularInline):
     model = DomainAdmin
     fields = ('arch', 'contact_email',)
+
 
 class DomainAdmin(admin.ModelAdmin):
     list_display = (

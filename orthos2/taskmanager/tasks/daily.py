@@ -45,6 +45,7 @@ class DailyMachineChecks(Task):
         """Execute the task."""
         DailyMachineChecks.do_scan_all()
 
+
 class DailyCheckReservationExpirations(Task):
     """Check for expiring reservations for reserved machines."""
 
@@ -62,6 +63,7 @@ class DailyCheckReservationExpirations(Task):
             if machine.reserved_by and not machine.is_reserved_infinite():
                 task = tasks.CheckReservationExpiration(machine.fqdn)
                 TaskManager.add(task)
+
 
 class DailyCheckForPrimaryNetwork(Task):
     """ Check for machines without primary network interfaces and complain via email."""

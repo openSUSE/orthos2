@@ -6,6 +6,7 @@ from orthos2.api.serializers.misc import ErrorMessage, InfoMessage, Message, Ser
 from orthos2.taskmanager.tasks.machinetasks import MachineCheck
 from orthos2.taskmanager.tasks.daily import DailyMachineChecks
 
+
 class RescanCommand(BaseAPIView):
 
     METHOD = 'GET'

@@ -22,6 +22,7 @@ from orthos2.utils.misc import execute
 
 logger = logging.getLogger('tasks')
 
+
 class Ansible(Task):
 
     data_dir = "/run/orthos2/ansible"

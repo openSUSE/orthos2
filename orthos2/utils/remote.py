@@ -10,6 +10,7 @@ from orthos2.utils.misc import execute
 
 logger = logging.getLogger('utils')
 
+
 def single_quote(buf):
     """
     Put the whole string into single quotes and escape
@@ -22,6 +23,7 @@ def single_quote(buf):
     """
     buf = "'" + buf.replace("'","'\\''") + "'"
     return buf
+
 
 def ssh_execute(cmd, host, user='root', log_error=True):
     """

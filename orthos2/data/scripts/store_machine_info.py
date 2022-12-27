@@ -2,6 +2,7 @@
 
 from orthos2.taskmanager.tasks.ansible import Ansible
 
+
 def run(*args):
 
     if not args:

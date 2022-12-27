@@ -21,6 +21,7 @@ signal_cobbler_machine_update = Signal()
 signal_serialconsole_regenerate = Signal()
 signal_motd_regenerate = Signal()
 
+
 @receiver(pre_save, sender=Machine)
 def machine_pre_save(sender, instance, *args, **kwargs):
     """Prevent saving machine object if MAC address is already in use (exclude own interfaces)."""
@@ -195,6 +196,7 @@ def cobbler_sync_dhcp(sender, domain_id, *args, **kwargs):
     """
     task = tasks.SyncCobblerDHCP(domain_id)
     TaskManager.add(task)
+
 
 @receiver(signal_cobbler_machine_update)
 def update_cobbler_machine(sender, domain_id, machine_id, *args, **kwargs):

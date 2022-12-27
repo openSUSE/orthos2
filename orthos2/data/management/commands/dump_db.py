@@ -56,6 +56,7 @@ domains = ['test-100.arch.suse.de',
            'devlab.prv.suse.com'
 ]
 
+
 def show_help():
     print("Use --script-args to specify what you want to dump:")
     print("")
@@ -67,6 +68,7 @@ def show_help():
     print()
     print (USAGE)
     exit(1)
+
 
 class Command(BaseCommand):
     help = "Dump orthos DB data\n"

@@ -106,6 +106,7 @@ def get_power_options(machine):
         options += " --power-options={options}".format(options=remotepower.options)
     return options
 
+
 def get_serial_options(machine):
     console = machine.serialconsole
     options = """ --serial-device="{device}" """.format(device=console.kernel_device_num)
@@ -116,6 +117,7 @@ def get_serial_options(machine):
                                                                 num=console.kernel_device_num,
                                                                 baud=console.baud_rate)
     return (options, kernel_option)
+
 
 def get_cobbler_add_command(machine, cobber_path):
     profile = get_default_profile(machine)

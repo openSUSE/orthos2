@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand
 
 from orthos2.utils.hostnamefind import HostnameFinder
 
+
 class Command(BaseCommand):
     help = "Find free hostnames\n"
 
