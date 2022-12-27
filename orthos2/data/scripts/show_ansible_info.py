@@ -10,5 +10,3 @@ def run(*args):
         exit(1)
 
     Ansible.print_ansible_info(args[0])
-    
-    

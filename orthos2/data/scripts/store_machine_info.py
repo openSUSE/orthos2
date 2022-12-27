@@ -10,4 +10,3 @@ def run(*args):
         exit(1)
 
     Ansible.store_machine_info(args[0])
-    

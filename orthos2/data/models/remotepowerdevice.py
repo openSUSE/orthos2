@@ -17,7 +17,6 @@ class RemotePowerDevice(models.Model):
         "In this case the Webinterface might be port forwarded, also check Documentation<br>"
     )
 
-
     remotepower_type_choices = get_remote_power_type_choices("rpower_device")
 
     fence_name = models.CharField(

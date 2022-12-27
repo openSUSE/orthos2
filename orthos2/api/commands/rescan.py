@@ -82,7 +82,6 @@ Example:
                     "Collecting system information is disabled for this machine."
                 ).as_json
 
-
         except Exception as e:
             return ErrorMessage(str(e)).as_json
 

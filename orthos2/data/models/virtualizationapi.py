@@ -436,7 +436,7 @@ class Libvirt(VirtualizationAPI):
                 raise Exception(
                     "Image disk directory {} could not get created on host system: {}!".format(
                         disk_image_directory, stderr)
-            )
+                )
         if kwargs['uefi_boot']:
             if not self.conn.check_path(ovmf, '-e'):
                 raise Exception("OVMF file not found: '{}'!".format(ovmf))

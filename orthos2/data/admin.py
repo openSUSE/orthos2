@@ -268,7 +268,7 @@ class MachineAdminForm(forms.ModelForm):
         system = self.cleaned_data.get('system')
         if hypervisor and System.objects.filter(name=system, virtual=False):
             self.add_error('system', "System type is not virtual. Only Virtual Machines may have a hypervisor")
-            self.add_error('hypervisor', "System type {} is not virtual. Only Virtual Machines may have " \
+            self.add_error('hypervisor', "System type {} is not virtual. Only Virtual Machines may have "
                            "a hypervisor".format(system))
 
         vm_dedicated_host = self.cleaned_data.get('vm_dedicated_host')
@@ -382,8 +382,8 @@ class MachineAdmin(admin.ModelAdmin):
         'architecture',
         'system',
         'reserved_by',
-#        'group',
-#        'active'
+        # 'group',
+        # 'active'
     )
     list_per_page = 50
     show_full_result_count = True
@@ -624,6 +624,8 @@ admin.site.register(Enclosure, EnclosureAdmin)
 class RemotePowerDeviceAdmin(admin.ModelAdmin):
     form = RemotePowerDeviceAPIForm
     list_display = ['fqdn']
+
+
 admin.site.register(RemotePowerDevice, RemotePowerDeviceAdmin)
 
 
@@ -688,7 +690,6 @@ class PlatformAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     show_full_result_count = True
     list_max_show_all = 1000
-
 
 
 admin.site.register(Platform, PlatformAdmin)

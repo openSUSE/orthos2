@@ -10,5 +10,3 @@ def run(*args):
         exit(1)
 
     Ansible.print_machine_info(args[0])
-    
-    

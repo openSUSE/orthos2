@@ -110,12 +110,12 @@ def get_power_options(machine):
 def get_serial_options(machine):
     console = machine.serialconsole
     options = """ --serial-device="{device}" """.format(device=console.kernel_device_num)
-    options +=  """--serial-baud-rate="{baud}" """.format(baud=console.baud_rate)
+    options += """--serial-baud-rate="{baud}" """.format(baud=console.baud_rate)
     kernel_option = ""
     if console.kernel_device != "None":
         kernel_option += " console={device}{num},{baud} ".format(device=console.kernel_device,
-                                                                num=console.kernel_device_num,
-                                                                baud=console.baud_rate)
+                                                                 num=console.kernel_device_num,
+                                                                 baud=console.baud_rate)
     return (options, kernel_option)
 
 
@@ -217,7 +217,7 @@ class CobblerServer:
     def update_or_add(self, machine: Machine):
         self.connect()
         self._check()
-        if machine.fqdn in  self.get_machines():
+        if machine.fqdn in self.get_machines():
             command = get_cobbler_update_command(machine, self._cobbler_path)
         else:
             command = get_cobbler_add_command(machine, self._cobbler_path)
@@ -252,7 +252,7 @@ class CobblerServer:
     def sync_dhcp(self):
         self.connect()
         self._check()
-        _, stderr, exitcode =self._conn.execute("{cobbler} sync --dhcp".format(cobbler=self._cobbler_path))
+        _, stderr, exitcode = self._conn.execute("{cobbler} sync --dhcp".format(cobbler=self._cobbler_path))
         if exitcode:
             logging.error("Dhcp sync on %s failed with '%s'", self._fqdn, stderr)
 
@@ -279,18 +279,17 @@ class CobblerServer:
         clean_out = [system.strip(' \n\t') for system in stdout]
         return clean_out
 
-
-
     def setup(self, machine: Machine, choice: str):
-        logger.info("setup called for %s with %s on cobbler server %s ", machine.fqdn, self._fqdn,
-            choice)
+        logger.info("setup called for %s with %s on cobbler server %s ", machine.fqdn, self._fqdn, choice)
         if choice:
             cobbler_profile = " --profile={arch}:{profile}".format(arch=machine.architecture, profile=choice)
         else:
             cobbler_profile = ""
 
-        command = "{cobbler} system edit --name={machine} {profile}  --netboot=True"\
-            .format(cobbler=self._cobbler_path, machine=machine.fqdn, profile=cobbler_profile)
+        command = "{cobbler} system edit --name={machine} {profile}  --netboot=True".format(
+            cobbler=self._cobbler_path,
+            machine=machine.fqdn,
+            profile=cobbler_profile)
         logger.debug("command for setup: %s", command)
         self.connect()
         try:
@@ -301,7 +300,7 @@ class CobblerServer:
                 raise CobblerException(
                     "setup of {machine} with {profile} failed on {server} with {error}".format(
                         machine=machine.fqdn, profile=cobbler_profile, server=self._fqdn, error=stderr))
-        except:
+        except Exception:
             pass
         finally:
             self.close()
