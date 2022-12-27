@@ -31,6 +31,7 @@ class RemotePowerDevice(models.Model):
                     + "/" + "powerswitches.html"
         self.url.help_text += "<a href=\"" + power_doc + "\" target=\"_blank\"></a><br>"
         super(models.Model, self).__init__(*args, **kwargs)
+
     @staticmethod
     def get_by_str(fqdn_dev):
         if not fqdn_dev:

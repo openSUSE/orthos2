@@ -38,6 +38,7 @@ class BMCInline(admin.StackedInline):
     model = BMC
     extra = 0
     formset = BMCInlineFormset
+
     def get_formset(self, request, obj=None, **kwargs):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
