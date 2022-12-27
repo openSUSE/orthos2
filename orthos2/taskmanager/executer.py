@@ -142,10 +142,10 @@ class TaskExecuter(Thread):
 
                     running_threads[basetask.hash] = (thread, task)
                     logger.debug("Thread [%s] %s:%s started...",
-                        basetask.hash[:8],
-                        basetask.name,
-                        basetask.arguments
-                    )
+                                 basetask.hash[:8],
+                                 basetask.name,
+                                 basetask.arguments
+                                 )
             except InterfaceError:
                 # InterfaceError is raised when the connection is closed from the db side.
                 # Closing it in django forces the creation of a new connection for the next access.

@@ -252,6 +252,7 @@ class SSH(object):
 
         return True
 
+
 if __name__ == '__main__':
     fqdn = "virt133.devlab.prv.suse.com"
     conn = None

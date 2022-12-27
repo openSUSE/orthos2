@@ -42,7 +42,7 @@ class RegenerateSerialConsole(Task):
             for domain in domains:
                 machines += domain.machine_set.all()
 
-            #logger.debug("Creating serial console for %s" % machines)
+            # logger.debug("Creating serial console for %s" % machines)
             consoles = [machine.serialconsole for machine in machines if hasattr(machine, 'serialconsole')]
             for serialconsole in consoles:
                 new_content += serialconsole.get_comment_record() + '\n'
