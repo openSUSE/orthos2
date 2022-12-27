@@ -21,7 +21,7 @@ def single_quote(buf):
     @rtype: string
     @return: The input string put in single quotes and containing quotes escaped.
     """
-    buf = "'" + buf.replace("'","'\\''") + "'"
+    buf = "'" + buf.replace("'", "'\\''") + "'"
     return buf
 
 
@@ -47,7 +47,7 @@ def ssh_execute(cmd, host, user='root', log_error=True):
     ssh_command = 'ssh -o UserKnownHostsFile=/dev/null ' \
         '-o StrictHostKeyChecking=no ' \
         '-o ConnectTimeout=5 ' \
-        + user + '@' + host + ' ' +  single_quote(cmd)
+        + user + '@' + host + ' ' + single_quote(cmd)
     (stdout, stderr, err) = execute(ssh_command)
     if (err and log_error):
         logger.warning("stderr: %s", stderr)
@@ -80,7 +80,6 @@ def scp_execute(source, target, user='root'):
     return execute(command)
 
 
-
 # Test ssh code above by passing:
 # cmd:  arg[0]
 # host: arg[1]
@@ -95,9 +94,8 @@ if __name__ == '__main__':
     # stdout, stderr, err = ssh_execute('/sbin/ip a', "gatria-1.arch.suse.de")
     # stdout, stderr, err = scp_execute(cmd, host)
     if err:
-        print ("ERROR")
-        print (stderr)
+        print("ERROR")
+        print(stderr)
     else:
         print("SUCCESS")
         print(stdout)
-
