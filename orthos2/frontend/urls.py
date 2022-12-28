@@ -21,10 +21,10 @@ urlpatterns = [
     ),
     re_path(r'^machines/search', views.machine_search, name='advanced_search'),
     re_path(r'^machine/(?P<id>[0-9]+)/$', views.machine, name='detail'),
-    re_path(r'^(?P<fqdn>[0-9a-zA-Z][0-9a-zA-Z-\.]+)/$', views.machine_fqdn, name='detail'),
-    re_path(r'^machine/(?P<fqdn>[0-9a-zA-Z][0-9a-zA-Z-\.]+)/$', views.machine_fqdn, name='detail'),
+#    re_path(r'^(?P<fqdn>[0-9a-zA-Z][0-9a-zA-Z-\.]+)/$', views.machine_fqdn, name='detail'),
+#    re_path(r'^machine/(?P<fqdn>[0-9a-zA-Z][0-9a-zA-Z-\.]+)/$', views.machine_fqdn, name='detail'),
     re_path(r'^machine/(?P<id>[0-9]+)/detail$', views.machine, name='detail'),
-    re_path(r'^machine/(?P<fqdn>[0-9a-zA-Z][0-9a-zA-Z-\.]+)/detail$', views.machine_fqdn, name='detail'),
+#    re_path(r'^machine/(?P<fqdn>[0-9a-zA-Z][0-9a-zA-Z-\.]+)/detail$', views.machine_fqdn, name='detail'),
     re_path(r'^machine/(?P<id>[0-9]+)/cpu$', views.cpu, name='cpu'),
     re_path(
         r'^machine/(?P<id>[0-9]+)/networkinterfaces$',

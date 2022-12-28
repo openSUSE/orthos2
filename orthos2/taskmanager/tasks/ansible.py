@@ -59,7 +59,7 @@ class Ansible(Task):
         missing = list(set(self.machines) - set(files))
         if missing:
             logger.warning("Cannot scan machines %s via ansible, missing json file in %s",
-                           self.machines, Ansible.facts_dir)
+                           self.machines, Ansible.data_dir)
         success = []
         fail = []
         for fqdn in files:
