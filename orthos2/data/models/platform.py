@@ -33,7 +33,7 @@ class Platform(models.Model):
     def natural_key(self):
         return (self.name,)
 
-    natural_key.dependencies = [ 'data.vendor' ]
+    natural_key.dependencies = ['data.vendor']
 
     def __str__(self):
         return self.name

@@ -22,6 +22,7 @@ from orthos2.utils.misc import execute
 
 logger = logging.getLogger('tasks')
 
+
 class Ansible(Task):
 
     data_dir = "/run/orthos2/ansible"
@@ -60,7 +61,7 @@ class Ansible(Task):
             logger.warning("Cannot scan machines %s via ansible, missing json file in %s",
                            self.machines, Ansible.facts_dir)
         success = []
-        fail    = []
+        fail = []
         for fqdn in files:
             try:
                 Ansible.store_machine_info(fqdn)
@@ -92,7 +93,7 @@ class Ansible(Task):
         return res_files
 
     @staticmethod
-    def get_ansible_data(machine_fqdn: str, try_lastruns = False):
+    def get_ansible_data(machine_fqdn: str, try_lastruns=False):
 
         ans_file = os.path.join(Ansible.data_dir, machine_fqdn + '.json')
         if not os.path.isfile(ans_file):
@@ -147,24 +148,24 @@ class Ansible(Task):
                 continue
 
     @staticmethod
-    def print_ansible_info(machine_fqdn :str):
+    def print_ansible_info(machine_fqdn: str):
         """
         This is only a debug function which can be used via runscript interface
         Example:
         manage runscript show_ansible_info --script-args lammermuir.arch.suse.de  |less
         """
 
-        ansible_machine = Ansible.get_ansible_data(machine_fqdn, try_lastruns = True)
+        ansible_machine = Ansible.get_ansible_data(machine_fqdn, try_lastruns=True)
         if not ansible_machine:
             return
-        exclude_keys = [ "_ansible_facts_gathered", "ansible_local" ]
+        exclude_keys = ["_ansible_facts_gathered", "ansible_local"]
         for key in ansible_machine:
             if key in exclude_keys:
                 continue
             print(key, '->', ansible_machine[key])
         return
 
-    #def get_hardware_information(fqdn):
+    # def get_hardware_information(fqdn):
     @staticmethod
     def write_ansible_local(db_machine, ansible_machine):
         """
@@ -181,7 +182,7 @@ class Ansible(Task):
         db_machine.cpu_physical = ansible_machine.get("processor_count", 0)
         db_machine.cpu_cores = ansible_machine.get("processor_cores", 0)
         db_machine.cpu_threads = ansible_machine.get("processor_cores", 0) \
-                                 * ansible_machine.get("processor_threads_per_core", 0)
+            * ansible_machine.get("processor_threads_per_core", 0)
         # db_machine.cpu_model =
         # db_machine.cpu_flags = # --> check if in ansible, else create facts file
         # db_machine.cpu_speed =
@@ -236,10 +237,9 @@ class Ansible(Task):
     # db_machine.__ipv4 # do not set (yet)
     # db_machine.__ipv6 # do not set (yet)
 
-
     '''
     attributes that can probaby be mapped easily/directly:
-    db_machine.architecture = ansible_machine.get("architecture")                    
+    db_machine.architecture = ansible_machine.get("architecture")
     db_machine.efi
     db_machine.cpu_id
     db_machine.cpu_model
@@ -247,12 +247,12 @@ class Ansible(Task):
     attributes where its values probably need to be edited before assigning:
 
     db_machine.disk_primary_size =
-    db_machine.disk_type = 
-    db_machine.vm_capable = 
-    db_machine.cpu_flags = 
-    db_machine.cpu_physical.cpu_speed = 
+    db_machine.disk_type =
+    db_machine.vm_capable =
+    db_machine.cpu_flags =
+    db_machine.cpu_physical.cpu_speed =
 
-    db_machine.efi = 
+    db_machine.efi =
     db_machine.ipmi =
     db_machine.hwinfo =
     db_machine.dmidecode =

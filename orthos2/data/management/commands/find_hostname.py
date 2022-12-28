@@ -5,9 +5,9 @@ from django.core.management.base import BaseCommand
 
 from orthos2.utils.hostnamefind import HostnameFinder
 
+
 class Command(BaseCommand):
     help = "Find free hostnames\n"
-
 
     config = apps.get_app_config("data")
     queries = []
@@ -19,7 +19,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--domain', default="arch.suse.de", help="Domainname")
         parser.add_argument('--arch', default="x86_64", help="architecture")
-        
+
     def handle(self, *args, **options):
         domain = options["domain"]
         arch = options["arch"]

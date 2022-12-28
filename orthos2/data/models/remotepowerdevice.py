@@ -17,7 +17,6 @@ class RemotePowerDevice(models.Model):
         "In this case the Webinterface might be port forwarded, also check Documentation<br>"
     )
 
-
     remotepower_type_choices = get_remote_power_type_choices("rpower_device")
 
     fence_name = models.CharField(
@@ -31,6 +30,7 @@ class RemotePowerDevice(models.Model):
                     + "/" + "powerswitches.html"
         self.url.help_text += "<a href=\"" + power_doc + "\" target=\"_blank\"></a><br>"
         super(models.Model, self).__init__(*args, **kwargs)
+
     @staticmethod
     def get_by_str(fqdn_dev):
         if not fqdn_dev:

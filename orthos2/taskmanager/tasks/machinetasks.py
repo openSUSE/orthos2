@@ -9,7 +9,6 @@ from orthos2.utils.machinechecks import (get_installations, get_networkinterface
                                          nmap_check, ping_check_ipv4, ping_check_ipv6)
 from orthos2.utils.misc import sync, wrap80
 from orthos2.utils.ssh import SSH
-#from orthos2.utils.ansible import Ansible
 
 logger = logging.getLogger('tasks')
 
@@ -123,9 +122,7 @@ class MachineCheck(Task):
                         self.machine.check_connectivity > Machine.Connectivity.SSH:
                     self.machine.status_login = login_test(self.fqdn)
         self.online = bool(self.machine.status_login)
-
         self.machine.save()
-
 
     def network(self):
         """

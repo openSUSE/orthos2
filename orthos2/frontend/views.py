@@ -213,6 +213,7 @@ def machine(request, id):
         }
     )
 
+
 @login_required
 @check_permissions("fqdn")
 def machine_fqdn(request, fqdn):
@@ -230,6 +231,7 @@ def machine_fqdn(request, fqdn):
             'title': 'Machine'
         }
     )
+
 
 @login_required
 def pci(request, id):
@@ -864,7 +866,7 @@ def _get_login_redirect_url(request, redirect_to):
 def login(request, template_name='registration/login.html',
           redirect_field_name=REDIRECT_FIELD_NAME,
           authentication_form=AuthenticationForm,
-          extra_context={'account_creation' : settings.AUTH_ALLOW_USER_CREATION}, redirect_authenticated_user=False):
+          extra_context={'account_creation': settings.AUTH_ALLOW_USER_CREATION}, redirect_authenticated_user=False):
     """Display the login form and handles the login action."""
     redirect_to = request.POST.get(redirect_field_name, request.GET.get(redirect_field_name, ''))
 

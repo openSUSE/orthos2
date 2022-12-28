@@ -12,6 +12,7 @@ from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                           InputSerializer, Message, Serializer)
 from orthos2.data.models import Machine
 
+
 class ReserveCommand(BaseAPIView):
 
     METHOD = 'GET'

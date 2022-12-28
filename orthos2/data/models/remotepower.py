@@ -117,7 +117,7 @@ class RemotePower(models.Model):
                 errors.append(ValidationError("The machine needs to have an associated BMC"))
 
         elif fence.device == "hypervisor":
-            if  self.machine.hypervisor:
+            if self.machine.hypervisor:
                 self.remote_power_device = None
             else:
                 errors.append(ValidationError("No hypervisor found!"))

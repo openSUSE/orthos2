@@ -30,7 +30,7 @@ class HostnameFinder(object):
         if not hasattr(settings, 'HOSTNAMEFINDER'):
             logger.info("Config file is missing HOSTNAMEFINDER variable")
             return None
-        config  = next((x for x in settings.HOSTNAMEFINDER if x['network'] == domain), None)
+        config = next((x for x in settings.HOSTNAMEFINDER if x['network'] == domain), None)
         if not config:
             logger.info("Domain %s has no hostfinder configuration", domain)
             return None
@@ -56,7 +56,7 @@ class HostnameFinder(object):
         used = []
         unused = []
         # get the hostnames in the database
-        Machines = set(Machine.objects.filter(fqdn_domain__name = self.domain).values_list('fqdn', flat=True))
+        Machines = set(Machine.objects.filter(fqdn_domain__name=self.domain).values_list('fqdn', flat=True))
         for i in self.sections:
             for j in self.ip_range:
                 ip = '10.161.%d.%d' % (i, j)
@@ -75,6 +75,5 @@ class HostnameFinder(object):
         hostnames = self.free_hostnames()
         if len(hostnames) < 1:
             return None
-        #return hostnames[random.randint(0, len(hostnames))]
+        # return hostnames[random.randint(0, len(hostnames))]
         return hostnames[0]
-

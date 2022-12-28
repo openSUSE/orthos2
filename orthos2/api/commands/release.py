@@ -6,6 +6,7 @@ from orthos2.api.commands import BaseAPIView, get_machine
 from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
                                           Message, Serializer)
 
+
 class ReleaseCommand(BaseAPIView):
 
     METHOD = 'GET'
