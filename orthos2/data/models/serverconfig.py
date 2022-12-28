@@ -12,7 +12,9 @@ class BaseManager(models.Manager):
     def by_key(self, key, fallback=None):
         """Return the value by key."""
         try:
-            obj = ServerConfig.objects.get(key=key)
+            obj, created = ServerConfig.objects.get_or_create(key=key, defaults={'value': fallback})
+            if created:
+                logger.info("Created serverconfig entry: %s -> %s", key, fallback)
             return obj.value
         except Exception as e:
             logger.exception("Key '%s': %s", key, e)

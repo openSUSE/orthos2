@@ -237,7 +237,7 @@ Regards,
 Orthos""".format(
                 username=user.username,
                 usernames="\n".join(
-                    ['  {} ({})'.format(user_['username'], user_['email']) for user_ in usernames] # user woudl
+                    ['  {} ({})'.format(user_['username'], user_['email']) for user_ in usernames]
                 ),
                 contact=settings.CONTACT
             )
@@ -248,7 +248,6 @@ Orthos""".format(
             logger.error("User not found: id={}", self.user_id)
         except Exception as e:
             logger.exception(e)
-
 
 
 class CheckForPrimaryNetwork(Task):
@@ -276,7 +275,6 @@ Regards,
 Orthos
 """.format(fqdn=self.fqdn, admin=admin_mail.split('@')[0])
         send_email(admin_mail, subject, message)
-
 
     def execute(self):
         try:

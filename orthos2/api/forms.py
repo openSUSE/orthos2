@@ -390,7 +390,7 @@ class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
 
         self.fields = formset.form().fields
         self.fields['stype'].empty_label = None
-        self.fields['stype'].choices=self.get_serial_type_choices
+        self.fields['stype'].choices = self.get_serial_type_choices
         self.fields['baud_rate'].initial = 5
         self.fields['kernel_device_num'].min_value = 0
         self.fields['kernel_device_num'].max_value = 1024
@@ -452,7 +452,7 @@ class AnnotationAPIForm(forms.Form, BaseAPIForm):
 
 class BMCAPIForm(forms.Form, BaseAPIForm):
     password = forms.CharField(label='Password', max_length=256, required=False,
-                               widget=forms.PasswordInput(render_value = True))
+                               widget=forms.PasswordInput(render_value=True))
 
 
 class RemotePowerAPIForm(forms.Form, BaseAPIForm):
@@ -497,7 +497,7 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
 
 class RemotePowerDeviceAPIForm(forms.ModelForm, BaseAPIForm):
     password = forms.CharField(label='Password', max_length=256, required=True,
-                               widget=forms.PasswordInput(render_value = True))
+                               widget=forms.PasswordInput(render_value=True))
 
 
 class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):

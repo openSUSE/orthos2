@@ -114,7 +114,7 @@ Example:
             machine_id = None
             if fqdn:
                 try:
-                    o_machine  = Machine.objects.get(fqdn=fqdn)
+                    o_machine = Machine.objects.get(fqdn=fqdn)
                 except Machine.DoesNotExist:
                     return ErrorMessage("Machine not found: " + fqdn).as_json
                 machine_id = getattr(o_machine, 'id', None)
@@ -125,8 +125,8 @@ Example:
                     return ErrorMessage("Could not find id for domain").as_json
                 msg = ' machine %s (%s) network %s (%s)' % \
                       (get_hostname(fqdn), machine_id, o_machine.fqdn_domain, domain_id)
-                signal_cobbler_machine_update.send(sender=None, \
-                                                   domain_id=domain_id, \
+                signal_cobbler_machine_update.send(sender=None,
+                                                   domain_id=domain_id,
                                                    machine_id=machine_id)
                 return Message("Regenerate Cobbler entry for" + msg).as_json
             else:
@@ -136,7 +136,7 @@ Example:
         if service.lower() == RegenerateCommand.COBBLER_D:
             domain_id = None
             if not fqdn:
-                return ErrorMessage("regenerate cobbler_domain needs a cobbler server or host as argument" \
+                return ErrorMessage("regenerate cobbler_domain needs a cobbler server or host as argument"
                                     + msg).as_json
             domain = get_domain(fqdn)
             if not domain:

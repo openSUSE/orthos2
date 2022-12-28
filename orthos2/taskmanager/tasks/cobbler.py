@@ -74,10 +74,12 @@ class RegenerateCobbler(Task):
         finally:
             logger.info("--- Cobbler deployment finished ---")
 
+
 class UpdateCobblerMachine(Task):
     def __init__(self, domain_id, machine_id):
         self._domain_id = domain_id
         self._machine_id = machine_id
+
     def execute(self):
         try:
             domain = Domain.objects.get(pk=self._domain_id)

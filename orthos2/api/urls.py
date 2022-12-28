@@ -1,3 +1,5 @@
+# pylint: skip-file
+
 from django.urls import re_path
 from rest_framework.authtoken import views as authtoken_views
 
@@ -32,4 +34,4 @@ urlpatterns += DeleteCommand.get_urls()                 # noqa: F405
 urlpatterns += DeleteMachineCommand.get_urls()          # noqa: F405
 urlpatterns += DeleteSerialConsoleCommand.get_urls()    # noqa: F405
 urlpatterns += DeleteRemotePowerCommand.get_urls()      # noqa: F405
-urlpatterns += DeleteRemotePowerDeviceCommand.get_urls() # noda: F405
+urlpatterns += DeleteRemotePowerDeviceCommand.get_urls()  # noda: F405

@@ -15,7 +15,6 @@ class SetupMachine(Task):
         self.fqdn = fqdn
         self.choice = choice
 
-
     def execute(self):
         """Execute the task."""
         if not ServerConfig.objects.bool_by_key('orthos.debug.setup.execute'):
@@ -47,7 +46,7 @@ class SetupMachine(Task):
                     break
             else:
                 logger.exception("Setup of %s with %s failed on all cobbler servers",
-                             machine.fqdn, self.choice)
+                                 machine.fqdn, self.choice)
 
         except SSH.Exception as exception:
             logger.exception(exception)

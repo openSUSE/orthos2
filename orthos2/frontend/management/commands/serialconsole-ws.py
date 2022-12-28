@@ -20,6 +20,7 @@ from django.core.management.base import BaseCommand
 
 from orthos2.data.models import ServerConfig
 
+
 class TermSocketHandler(TermSocket):
 
     def open(self, url_component=None, hostname=None):

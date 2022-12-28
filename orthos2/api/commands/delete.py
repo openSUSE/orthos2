@@ -372,7 +372,6 @@ class DeleteRemotePowerDeviceCommand(BaseAPIView):
 
                 device = RemotePowerDevice.objects.get(fqdn__iexact=cleaned_data['fqdn'])
 
-
                 result = device.delete()
 
                 theader = [

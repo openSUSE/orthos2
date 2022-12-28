@@ -62,6 +62,7 @@ def login_test(fqdn):
         return False
     return True
 
+
 def get_hardware_information(fqdn):
     """Retrieve information of the system."""
     try:
@@ -420,6 +421,7 @@ def get_status_ip(fqdn):
             machine_.status_ipv6 = Machine.StatusIP.MAC_MISMATCH
 
     return machine_
+
 
 def get_installations(fqdn):
     """Retrieve information of the installations."""

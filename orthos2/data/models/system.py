@@ -21,7 +21,7 @@ class System(models.Model):
                 -1
             )
 
-    help_text="Describes the system type of a machine"
+    help_text = "Describes the system type of a machine"
 
     name = models.CharField(
         max_length=200,

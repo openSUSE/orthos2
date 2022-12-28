@@ -17,6 +17,7 @@ from .models import (Annotation, Architecture, BMC, Domain, Enclosure,
                      SerialConsole, SerialConsoleType, ServerConfig, System, Vendor,
                      is_unique_mac_address, validate_mac_address)
 
+
 class BMCInlineFormset(forms.models.BaseInlineFormSet):
     def clean(self):
         if self.is_valid() and self.cleaned_data:
@@ -32,10 +33,12 @@ class BMCInlineFormset(forms.models.BaseInlineFormSet):
             raise forms.ValidationError("Password also needs a username")
         return self.cleaned_data
 
+
 class BMCInline(admin.StackedInline):
     model = BMC
     extra = 0
     formset = BMCInlineFormset
+
     def get_formset(self, request, obj=None, **kwargs):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
@@ -67,6 +70,7 @@ class SerialConsoleInline(admin.StackedInline):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
         return super(SerialConsoleInline, self).get_formset(request, obj, **kwargs)
+
 
 class RemotePowerInlineFormset(forms.models.BaseInlineFormSet):
     def clean(self):
@@ -264,7 +268,7 @@ class MachineAdminForm(forms.ModelForm):
         system = self.cleaned_data.get('system')
         if hypervisor and System.objects.filter(name=system, virtual=False):
             self.add_error('system', "System type is not virtual. Only Virtual Machines may have a hypervisor")
-            self.add_error('hypervisor', "System type {} is not virtual. Only Virtual Machines may have " \
+            self.add_error('hypervisor', "System type {} is not virtual. Only Virtual Machines may have "
                            "a hypervisor".format(system))
 
         vm_dedicated_host = self.cleaned_data.get('vm_dedicated_host')
@@ -282,6 +286,7 @@ class MachineAdminForm(forms.ModelForm):
             self.add_error('unknown_mac', "Either specify a MAC, or confirm that the MAC is not yet known")
             self.add_error('mac_address', "Either specify a MAC, or confirm that the MAC is not yet known")
         return cleaned_data
+
 
 class MachineArchitectureFilter(admin.SimpleListFilter):
     title = 'Architecture'
@@ -377,8 +382,8 @@ class MachineAdmin(admin.ModelAdmin):
         'architecture',
         'system',
         'reserved_by',
-#        'group',
-#        'active'
+        # 'group',
+        # 'active'
     )
     list_per_page = 50
     show_full_result_count = True
@@ -551,9 +556,11 @@ class MachineAdmin(admin.ModelAdmin):
 
 admin.site.register(Machine, MachineAdmin)
 
+
 class ArchsInline(admin.TabularInline):
     model = DomainAdmin
     fields = ('arch', 'contact_email',)
+
 
 class DomainAdmin(admin.ModelAdmin):
     list_display = (
@@ -617,6 +624,8 @@ admin.site.register(Enclosure, EnclosureAdmin)
 class RemotePowerDeviceAdmin(admin.ModelAdmin):
     form = RemotePowerDeviceAPIForm
     list_display = ['fqdn']
+
+
 admin.site.register(RemotePowerDevice, RemotePowerDeviceAdmin)
 
 
@@ -681,7 +690,6 @@ class PlatformAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     show_full_result_count = True
     list_max_show_all = 1000
-
 
 
 admin.site.register(Platform, PlatformAdmin)

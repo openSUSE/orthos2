@@ -290,7 +290,7 @@ class Machine(models.Model):
     nda = models.BooleanField(
         'NDA hardware',
         default=False,
-        help_text="This machine is under NDA and has secret (early development HW?) partner information,"\
+        help_text="This machine is under NDA and has secret (early development HW?) partner information,"
                   " do not share any data to the outside world"
     )
 
@@ -321,7 +321,7 @@ class Machine(models.Model):
     vm_auto_delete = models.BooleanField(
         'Delete automatically',
         default=False,
-        help_text="Release and destroy virtual machine instances, once people have released"\
+        help_text="Release and destroy virtual machine instances, once people have released"
         "(do not reserve anymore) them"
     )
 
@@ -445,7 +445,7 @@ class Machine(models.Model):
         'Auto re-install machine',
         editable=True,
         default=True,
-        help_text="Shall this machine be automatically re-installed when its reservation ends?<br>" \
+        help_text="Shall this machine be automatically re-installed when its reservation ends?<br>"
         "The last installation that has been triggered will be used for auto re-installation."
     )
 
@@ -460,13 +460,13 @@ class Machine(models.Model):
         choices=CONNECTIVITY_CHOICE,
         default=Connectivity.ALL,
         blank=False,
-        help_text='Nightly checks whether the machine responds to ping, ssh port is open or whether orthos can'\
+        help_text='Nightly checks whether the machine responds to ping, ssh port is open or whether orthos can'
                   'log in via ssh key. Can be triggered manually via command line client: `rescan [fqdn] status`'
     )
 
     collect_system_information = models.BooleanField(
         default=True,
-        help_text='Shall the system be scanned every night? This only works if the proper ssh key is in place in'\
+        help_text='Shall the system be scanned every night? This only works if the proper ssh key is in place in'
                   ' authorized_keys and can be triggered manually via command line client: `rescan [fqdn]`'
     )
 
@@ -475,7 +475,7 @@ class Machine(models.Model):
         max_length=64,
         null=True,
         blank=True,
-        help_text="Override bootloader binary retrieved from a tftp server (corresponds to the `filename`"\
+        help_text="Override bootloader binary retrieved from a tftp server (corresponds to the `filename`"
                   " ISC dhcpd.conf variable)"
     )
 
@@ -487,7 +487,7 @@ class Machine(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         limit_choices_to={'administrative': True},
-        help_text="Override tftp server used for network boot (corresponds to the `next_server` ISC"\
+        help_text="Override tftp server used for network boot (corresponds to the `next_server` ISC"
                   " dhcpd.conf variable)"
     )
 
@@ -722,7 +722,6 @@ class Machine(models.Model):
                 signal_serialconsole_regenerate.send(sender=self.__class__,
                                                      cscreen_server_fqdn=cscreen_server_fqdn)
 
-
     @property
     def ipv4(self):
         if self.__ipv4 is None:
@@ -784,12 +783,12 @@ class Machine(models.Model):
         for network in self.networkinterfaces.all():
             if network != primary:
                 network.delete()
-    
+
     def get_primary_networkinterface(self):
         try:
             interface = self.networkinterfaces.get(primary=True)
         except NetworkInterface.DoesNotExist:
-            logger.debug("In 'get_primary_networkinterface': Machine %s has no networkinterfce", self.fqdn )
+            logger.debug("In 'get_primary_networkinterface': Machine %s has no networkinterfce", self.fqdn)
             return None
         return interface
 
@@ -1124,7 +1123,7 @@ class Machine(models.Model):
         task = tasks.MachineCheck(self.fqdn, tasks.MachineCheck.Scan.to_int(action))
         TaskManager.add(task)
 
-        #ToDo: Better wait until individual machine scans finished
+        # ToDo: Better wait until individual machine scans finished
         if action == "all":
             task = Ansible([self.fqdn])
             TaskManager.add(task)
@@ -1168,7 +1167,7 @@ class Machine(models.Model):
             if contact:
                 return contact
 
-        admin = DomainAdmin.objects.get(domain = self.fqdn_domain, arch = self.architecture)
+        admin = DomainAdmin.objects.get(domain=self.fqdn_domain, arch=self.architecture)
         if admin and admin.contact_email:
             return admin.contact_email
 

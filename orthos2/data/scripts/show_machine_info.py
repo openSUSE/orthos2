@@ -2,6 +2,7 @@
 
 from orthos2.taskmanager.tasks.ansible import Ansible
 
+
 def run(*args):
 
     if not args:
@@ -9,5 +10,3 @@ def run(*args):
         exit(1)
 
     Ansible.print_machine_info(args[0])
-    
-    

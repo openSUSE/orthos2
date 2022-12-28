@@ -75,10 +75,9 @@ class SerialConsole(models.Model):
         max_length=1024,
         null=True,
         blank=True,
-        help_text="Final command which is constructed using above info and synced to cscreen server"\
+        help_text="Final command which is constructed using above info and synced to cscreen server"
                   " /etc/cscreenrc config"
     )
-
 
     comment = models.CharField(
         max_length=200,
@@ -97,7 +96,7 @@ class SerialConsole(models.Model):
         max_length=64,
         null=False,
         default='ttyS',
-        help_text='The kernel device string as passed via kernel command line, e.g. ttyS, ttyAMA, ttyUSB,...'\
+        help_text='The kernel device string as passed via kernel command line, e.g. ttyS, ttyAMA, ttyUSB,...'
                   ' "None" will remove console= kernel paramter'
     )
 
@@ -172,7 +171,6 @@ A value of 1 might end up in console=ttyS1 kernel command line paramter."""
         elif self.stype.name in {'IPMI'}:
             if not self.machine.has_bmc():
                 errors.append(ValidationError("Please add a BMC to the machine [%s]" % self.machine.fqdn))
-
 
             # requires: management interface
             self.command = ''
