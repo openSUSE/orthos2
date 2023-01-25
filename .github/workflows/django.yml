@@ -4,48 +4,44 @@ on: [pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
       matrix:
         python-version: ['3.10']
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Cache pip
-      uses: actions/cache@v2
+    - uses: actions/cache@v3
       with:
-        # This path is specific to Ubuntu
         path: ~/.cache/pip
-        # Look to see if there is a cache hit for the corresponding requirements file
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements-devel.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-          ${{ runner.os }}-
-    - name: Install Dependencies
-      run: |
+        key: ${{ runner.os }}-pip
+    - run: |
         sudo apt-get install libldap2-dev libsasl2-dev
         python -m pip install --upgrade pip
-        pip install -r requirements-devel.txt
+        python -m pip install -r requirements.txt
+    - name: Install Dependencies
+      run: |
+        sudo apt-get install python3-setuptools
     - name: Create Logfiles
       run: |
         sudo mkdir -p /var/log/orthos2
         sudo touch /var/log/orthos2/default.log
         sudo chmod o+w /var/log/orthos2/default.log
+        sudo groupadd -r orthos
+        sudo useradd -r -g orthos -d /var/lib/orthos2 -s /bin/bash -c "orthos account" orthos
     - name: Install orthos2
       run: |
-        sudo apt-get install python3-setuptools
         sudo python3 setup.py install
     - name: Migrate database
       run: |
         cd orthos2
-        python bin/manage.py migrate
+        sudo -u orthos bin/manage.py migrate
     - name: Run Tests
       run: |
-        python bin/manage.py loaddata data/fixtures/*.json
-        python bin/manage.py loaddata taskmanager/fixtures/*.json
-        python manage.py test
+        sudo -u orthos python3 bin/manage.py loaddata data/fixtures/*.json
+        sudo -u orthos python3 bin/manage.py loaddata taskmanager/fixtures/*.json
+        sudo -u orthos python3 bin/manage.py test

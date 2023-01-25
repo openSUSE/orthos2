@@ -110,6 +110,7 @@ def add_domain(domain: str, queries: list):
         print("%s - Domain does not exist" % domain)
         show_help()
 
+
 def add_arch_relations(queries: list):
     """
     We always need arch.suse.de domain and markeb.arch.suse.de
