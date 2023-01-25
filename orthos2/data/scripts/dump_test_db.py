@@ -18,7 +18,7 @@ Second Paramter: "pk" to dump Primary/Foreign keys with numbers (default)
                  fully implemented yet
 
 Examples:
-manage runscript dump_test_db  --script-args general 
+manage runscript dump_test_db  --script-args general
 manage runscript dump_test_db  --script-args test-30.arch.suse.de
 manage runscript dump_test_db  --script-args test-100.arch.suse.de
 ...
@@ -40,11 +40,11 @@ Also see: https://docs.djangoproject.com/en/3.2/topics/serialization
 Modules = {}
 
 # General also includes taskmanager.dailytask and basic arch.suse.de domain
-Modules['general'] = ( "Serverconfig", "System", "Architecture", "Vendor", "Platform", "Serialconsoletype" )
+Modules['general'] = ("Serverconfig", "System", "Architecture", "Vendor", "Platform", "Serialconsoletype")
 
-Modules['domain'] = ( "Domain", "Domainadmin" )
+Modules['domain'] = ("Domain", "Domainadmin")
 
-#Modules['remote' ] = ( "Remotepower", "Bmc", "Remotepowerdevice", "Serialconsole", "Serialconsoletype" )
+# Modules['remote' ] = ("Remotepower", "Bmc", "Remotepowerdevice", "Serialconsole", "Serialconsoletype")
 
 queries = []
 
@@ -52,18 +52,20 @@ added_machines = []
 
 config = apps.get_app_config("data")
 
+
 def show_help():
     print("Use --script-args to specify what you want to dump:")
     print("")
     print("\tgeneral \t-- Dump general DB data [ %s ] " % ", ".join(Modules['general']))
     print("")
- #   print("\tremote  \t-- Dump remote management HW DB data [ %s ] " % ", ".join(Modules['remote']))
- #   print("")
+    # print("\tremote  \t-- Dump remote management HW DB data [ %s ] " % ", ".join(Modules['remote']))
+    # print("")
     print("\t<domain>\t-- Dump data of a specific domain [ %s ] " % ", ".join(Modules['domain']))
     print()
-    print (USAGE)
+    print(USAGE)
     exit(1)
-    
+
+
 def add_machine(fqdn: str, queries: list):
 
     if fqdn in added_machines:
@@ -83,7 +85,8 @@ def add_machine(fqdn: str, queries: list):
         show_help()
     added_machines.append(fqdn)
 
-def add_domain(domain :str, queries : list):
+
+def add_domain(domain: str, queries: list):
 
     try:
         """
@@ -107,18 +110,20 @@ def add_domain(domain :str, queries : list):
         print("%s - Domain does not exist" % domain)
         show_help()
 
+
 def add_arch_relations(queries: list):
-        """
-        We always need arch.suse.de domain and markeb.arch.suse.de
-        We delete unneeded machine references
-        """
-        query = Domain.objects.filter(name="arch.suse.de")
-        for item in query:
-            item.tftp_server = None
-            item.cscreen_server = None
-            item.cobbler_server.set([])
-        queries.extend(query)
-        add_machine("markeb.arch.suse.de", queries)
+    """
+    We always need arch.suse.de domain and markeb.arch.suse.de
+    We delete unneeded machine references
+    """
+    query = Domain.objects.filter(name="arch.suse.de")
+    for item in query:
+        item.tftp_server = None
+        item.cscreen_server = None
+        item.cobbler_server.set([])
+    queries.extend(query)
+    add_machine("markeb.arch.suse.de", queries)
+
 
 def delete_network(mac: str):
     network = NetworkInterface.objects.get(mac_address=mac.upper())
@@ -126,6 +131,7 @@ def delete_network(mac: str):
         print(network)
         network.delete()
     exit(1)
+
 
 def run(*args):
 
@@ -155,7 +161,7 @@ def run(*args):
         if query:
             queries.extend(query)
         for table in tables:
-            print (".. dump table %s" % table)
+            print(".. dump table %s" % table)
             model = config.get_model(table).objects.all()
             queries.extend(model)
 
@@ -163,5 +169,10 @@ def run(*args):
     # print(queries)
     with open(file, "w") as out:
         from django.core import serializers
-        serializers.serialize("json", queries, indent=2, stream=out, use_natural_foreign_keys=natural,use_natural_primary_keys=natural)
+        serializers.serialize("json",
+                              queries,
+                              indent=2,
+                              stream=out,
+                              use_natural_foreign_keys=natural,
+                              use_natural_primary_keys=natural)
         print("File dumped: %s" % os.path.abspath(file))
