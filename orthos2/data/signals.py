@@ -25,10 +25,10 @@ signal_motd_regenerate = Signal()
 @receiver(pre_save, sender=Machine)
 def machine_pre_save(sender, instance, *args, **kwargs):
     """Prevent saving machine object if MAC address is already in use (exclude own interfaces)."""
-    if hasattr(instance, 'networkinterfaces'):
+
+    exclude = []
+    if hasattr(instance, 'networkinterfaces') and instance.pk:
         exclude = instance.networkinterfaces.all().values_list('mac_address', flat=True)
-    else:
-        exclude = []
 
     if not is_unique_mac_address(instance.mac_address, exclude=exclude):
         raise ValidationError(
