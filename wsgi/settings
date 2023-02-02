@@ -14,7 +14,7 @@ SUPPORT_CONTACT = 'tbd@domain.tld'
 
 # This must be set False in case of ldap authentication
 # User creation can only be done via:
-# sudo -u orthos /usr/lib/orthos2/manage.py createsuperuser
+# orthos-admin createsuperuser
 #AUTH_ALLOW_USER_CREATION = False
 
 #AUTH_LDAP_SERVER_URI = os.environ.get('LDAP_HOST', default="")

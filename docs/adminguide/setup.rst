@@ -17,39 +17,48 @@ Installation/Setup (Production system)
 4. Dump Database Model:
     .. code-block::
 
-        cd /usr/lib/orthos2
-        sudo -u orthos ./manage.py makemigrations data frontend taskmanager api
+        orthos-admin makemigrations data frontend taskmanager api
     
 5. Deploy code to database
    
    a. In case of a fresh install - Create the database:
       .. code-block::
 
-        cd /usr/lib/orthos2
-        sudo -u orthos ./manage.py migrate
+        orthos-admin migrate
 
    b. In case of an Update (and makemigrations above produced database difference
       dumps) - Apply/deploy detected database changes
       In case of changes detected in the data app, do:
       .. code-block::
 	 
-       cd /usr/lib/orthos2
-       sudo -u orthos ./manage.py migrate data
+       orthos-admin migrate data
 
-6. Install fixtures:
+6. Install fixtures (push data to database):
+
+   a. In case of a fresh install - Load data from package data:
+
     .. code-block::
 
-        sudo -u orthos ./install_all_fixtures.sh
+        orthos-admin loaddata /usr/share/orthos2/fixtures/data/*.json /usr/share/orthos2/fixtures/taskmanager/*.json
+
+
+   b. In case you want to load data from another orthos instance where you
+      previously dumped data tables:
+
+    .. code-block::
+
+        orthos-admin loaddata "dumped_table.json"
+
 
 7. Create a superuser
     .. code-block::
 
-        sudo -u orthos ./manage.py createsuperuser
+        orthos-admin createsuperuser
 
 8. Create html files from templates
     .. code-block::
 
-        sudo -u orthos ./manage.py collectstatic
+        orthos-admin collectstatic
 
 9. start all services
     .. code-block::

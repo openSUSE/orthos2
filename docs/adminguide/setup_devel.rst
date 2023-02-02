@@ -40,13 +40,12 @@ Installation/Setup (Devel system)
 5. Dump Database Model:
     .. code-block::
 
-        cd /usr/lib/orthos2
-        sudo -u orthos ./manage.py makemigrations data frontend taskmanager api
+        orthos-admin makemigrations data frontend taskmanager api
 
 6. Migrate (create) the database:
     .. code-block::
 
-         $ python manage.py migrate
+         orthos-admin migrate
          Operations to perform:
                  Apply all migrations: admin, auth, authtoken, contenttypes, data, sessions, taskmanager
          Running migrations:
@@ -55,15 +54,15 @@ Installation/Setup (Devel system)
 7. Load initial data:
     .. code-block::
 
-        $ python manage.py loaddata data/fixtures/*.json
+        orthos-admin loaddata data/fixtures/*.json
         Installed 94 object(s) from 7 fixture(s)
-        $ python manage.py loaddata taskmanager/fixtures/*.json
+        orthos-admin loaddata taskmanager/fixtures/*.json
         Installed 2 object(s) from 1 fixture(s)
 
 8. Create a superuser (administrator) account:
     .. code-block::
 
-        $ python manage.py createsuperuser
+        $ orthos-admin createsuperuser
         Username (leave blank to use '<your_login>'): admin
         Email address: <your_login>@domain.de
         Password: ********
@@ -73,7 +72,7 @@ Installation/Setup (Devel system)
 9. Run the test server:
     .. code-block::
 
-        $ python manage.py runserver localhost:8000
+        orthos-admin runserver localhost:8000
         Performing system checks...
         System check identified no issues (0 silenced).
         November 23, 2017 - 16:25:35

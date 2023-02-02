@@ -7,8 +7,6 @@ from setuptools import find_packages, setup
 logpath = os.environ.get('LOG_PATH', "/var/log/orthos2")
 db_path = os.environ.get('DB_PATH', "/var/lib/orthos2")
 tmpfilespath = os.environ.get('TMPFILES_PATH', "/usr/lib/tmpfiles.d")
-# Directory for package specific executables not exposed
-# to the world via /bin or /sbin
 execpath = os.environ.get('EXEC_PATH',  "/usr/lib/orthos2")
 # Directory for package specific data
 datapath = os.environ.get('DATA_PATH', "/usr/share/orthos2")
@@ -63,9 +61,8 @@ if __name__ == "__main__":
         data_files=[
             ("/etc/nginx/conf.d",  ["wsgi/orthos2_nginx.conf"]),
             ("/etc/logrotate.d",  ["logrotate/orthos2"]),
-            # orthos2 internal binaries in /usr/lib/orthos2
-            ("%s" % execpath, glob("orthos2/bin/*")),
             ("%s/scripts" % execpath, glob("orthos2/scripts/*")),
+            ("/usr/bin", glob("orthos2/bin/*")),
             # orthos2 data files in /usr/share/orthos2
             ("/etc/orthos2", ["wsgi/orthos2.ini", "wsgi/settings"]),
             ("%s/fixtures/data" % datapath,
