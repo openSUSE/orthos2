@@ -358,5 +358,13 @@
       "value": "/usr/bin/cobbler",
       "created": "2016-01-01T10:00:00+00:00"
     }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": null,
+    "fields": {
+      "key": "orthos.documentation.url",
+      "value": "https://w3.suse.de/~trenn/orthos_internal_docs",
+    }
   }
 ]
