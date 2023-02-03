@@ -44,13 +44,13 @@ BuildRequires:  python-rpm-macros
 # restrictions (be careful, there they messed it up and
 # python_enable_dependency_generator macro is defined, but does not do
 # anything. This check still also needs to explicitly check for SLE 15 SP2...
-%if 0%{?sle_version} <= 150200
+%if 0%{?sle_version} <= 150300
 %undefine python_enable_dependency_generator
 %undefine python_disable_dependency_generator
 %endif
 %{?python_enable_dependency_generator}
 %if ! (%{defined python_enable_dependency_generator} || %{defined python_disable_dependency_generator})
-Requires:  python3-django >= 3.2
+Requires:  python3-Django >= 3.2
 Requires:  python3-django-extensions
 Requires:  python3-django-auth-ldap
 Requires:  python3-djangorestframework
@@ -61,6 +61,7 @@ Requires:  python3-ldap
 Requires:  python3-validators
 %endif
 # Needed to install /etc/logrotate.d/orthos2
+Requires:  python3-Django >= 3.2
 Requires:  logrotate
 Requires:  nginx
 Requires:  ansible
