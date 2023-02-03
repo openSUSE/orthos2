@@ -155,9 +155,9 @@ getent passwd orthos >/dev/null || \
 %tmpfiles_create %{_tmpfilesdir}/%{name}.conf
 %service_add_post orthos2.service orthos2_taskmanager.service orthos2.socket orthos2_debug.service
 
-sudo -i -u orthos /usr/lib/orthos2/manage.py makemigrations
-sudo -i -u orthos /usr/lib/orthos2/manage.py migrate
-sudo -i -u orthos /usr/lib/orthos2/manage.py collectstatic --noinput
+orthos-admin makemigrations
+orthos-admin migrate
+orthos-admin collectstatic --noinput
 
 
 %preun
@@ -195,13 +195,14 @@ sudo -i -u orthos /usr/lib/orthos2/manage.py collectstatic --noinput
 # /usr/lib/python3.8/site-packages/orthos2/data ->
 #      /usr/share/orthos2/data/migrations
 # Like this:
-# sudo -u orthos /usr/lib/orthos2/manage.py makemigrations
+# orthos-admin makemigrations
 # has rights to dump migrations into site-packages subdir
 %attr(755,orthos,orthos) /usr/share/orthos2/data_migrations
 %attr(755,orthos,orthos) /usr/share/orthos2/taskmanager_migrations
 %attr(755,orthos,orthos) /usr/share/orthos2/frontend_migrations
 %attr(755,orthos,orthos) /usr/share/orthos2/api_migrations
 /usr/lib/orthos2/*
+%attr(755,orthos,orthos) %{_bindir}/orthos-admin
 %attr(755,orthos,orthos) %dir /srv/www/orthos2
 %ghost %dir /run/%{name}
 %ghost %dir /run/%{name}/ansible

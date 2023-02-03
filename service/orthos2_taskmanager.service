@@ -9,7 +9,7 @@ StartLimitBurst=5
 [Service]
 User=orthos
 Group=orthos
-ExecStart=/usr/lib/orthos2/manage.py taskmanager --start
+ExecStart=/usr/bin/orthos-admin taskmanager --start
 
 Restart=on-failure
 RestartSec=5s

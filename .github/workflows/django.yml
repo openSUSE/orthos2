@@ -39,9 +39,9 @@ jobs:
     - name: Migrate database
       run: |
         cd orthos2
-        sudo -u orthos bin/manage.py migrate
+        orthos-admin migrate
     - name: Run Tests
       run: |
-        sudo -u orthos python3 bin/manage.py loaddata data/fixtures/*.json
-        sudo -u orthos python3 bin/manage.py loaddata taskmanager/fixtures/*.json
-        sudo -u orthos python3 bin/manage.py test
+        orthos-admin loaddata data/fixtures/*.json
+        orthos-admin loaddata taskmanager/fixtures/*.json
+        orthos-admin test
