@@ -6,7 +6,7 @@ Wants=logrotate.service
 [Service]
 User=orthos
 Group=orthos
-ExecStart=/usr/bin/orthos-admin runserver $(hostname -s).$(dnsdomainname):8000'
+ExecStart=/bin/sh -c '/usr/bin/orthos-admin runserver $(hostname -s).$(dnsdomainname):8000'
 
 [Install]
 WantedBy=multi-user.target
