@@ -85,9 +85,9 @@ def machine_post_init(sender, instance, *args, **kwargs):
     if instance.pk:
         try:
             instance.hostname = get_hostname(instance.fqdn)
-
-            if instance.get_primary_networkinterface():
-                instance.mac_address = instance.get_primary_networkinterface().mac_address
+            pm = instance.get_primary_networkinterface()
+            if pm:
+                instance.mac_address = pm.mac_address
         except Exception as e:
             logger.warning("Errors occurred during machine init: '%s': %s", instance, e)
 
