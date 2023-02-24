@@ -179,10 +179,12 @@ class Ansible(Task):
 
         db_machine.fqdn = ansible_machine.get("fqdn", "")
 
-        db_machine.cpu_physical = ansible_machine.get("processor_count", 0)
-        db_machine.cpu_cores = ansible_machine.get("processor_cores", 0)
-        db_machine.cpu_threads = ansible_machine.get("processor_cores", 0) \
-            * ansible_machine.get("processor_threads_per_core", 0)
+        # Amount of real CPU sockets
+        db_machine.cpu_physical = ansible_machine.get("processor_count", 1)
+        # Amount of all CPU cores (sockets * cores_per_socket)
+        db_machine.cpu_cores = ansible_machine.get("processor_cores", 1) * db_machine.cpu_physical
+        # Amount of all CPU threads (All CPU cores * threads_per_core)
+        db_machine.cpu_threads = db_machine.cpu_cores * ansible_machine.get("processor_threads_per_core", 1)
         # db_machine.cpu_model =
         # db_machine.cpu_flags = # --> check if in ansible, else create facts file
         # db_machine.cpu_speed =
