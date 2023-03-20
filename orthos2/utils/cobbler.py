@@ -205,12 +205,18 @@ class CobblerServer:
             if hasattr(machine, 'bmc') and machine.bmc:
                 cobbler_commands.append(get_bmc_command(machine, self._cobbler_path))
 
+        logger.info("=======================")
+        logger.info(machines)
+        logger.info(cobbler_machines)
+        logger.info(cobbler_commands)
+        logger.info("=======================")
+
         for command in cobbler_commands:  # TODO: Convert this to a single ssh call (performance)
             logger.debug("executing %s ", command)
-            _, stderr, exitcode = self._conn.execute(command)
+            stdout, stderr, exitcode = self._conn.execute(command)
             if exitcode:
-                logger.error("failed to execute %s on %s with error %s",
-                             command, self._fqdn, stderr)
+                logger.error("failed to execute %s on %s with error '%s' and stdout '%s'",
+                             command, self._fqdn, stderr, stdout)
 
         self.close()
 
@@ -222,20 +228,21 @@ class CobblerServer:
         else:
             command = get_cobbler_add_command(machine, self._cobbler_path)
         logger.debug("Executing Cobbler command %s", command)
-        _, stderr, exitcode = self._conn.execute(command)
+        stdout, stderr, exitcode = self._conn.execute(command)
         if exitcode:
             logger.error(
-                "Update or Add with command \n '%s'\n failed, giving \n '%s", command, stderr
-                )
+                "Update or Add with command \n '%s'\n failed, giving \n '%s',\nand stdout '%s'", command, stderr, stdout
+            )
         self._conn.execute(command)
         if hasattr(machine, 'bmc') and machine.bmc:
             command = get_bmc_command(machine, self._cobbler_path)
             logger.debug("Executing Cobbler command %s", command)
-            _, stderr, exitcode = self._conn.execute(command)
+            stdout, stderr, exitcode = self._conn.execute(command)
             if exitcode:
                 logger.error(
-                    "writing BMC data to cobbler with \n'%s' failed, giving \n'%s'", command, stderr
-                    )
+                    "writing BMC data to cobbler with \n'%s' failed, giving \n '%s',\nand stdout '%s'",
+                    command, stderr, stdout
+                )
 
     def remove(self, machine: Machine):
         self.connect()
@@ -245,16 +252,19 @@ class CobblerServer:
             raise CobblerException("Cobbler server is not running: {}".format(self._fqdn))
         command = "{cobbler} system remove --name {fqdn}".format(
             cobbler=self._cobbler_path, fqdn=machine.fqdn)
-        _, stderr, exitcode = self._conn.execute(command)
+        stdout, stderr, exitcode = self._conn.execute(command)
         if exitcode:
-            logging.error("Removing %s failed with '%s'", machine.fqdn, stderr)
+            logging.error("Removing %s failed with '%s' and stdout '%s'",
+                          machine.fqdn, stderr, stdout)
 
     def sync_dhcp(self):
         self.connect()
         self._check()
-        _, stderr, exitcode = self._conn.execute("{cobbler} sync --dhcp".format(cobbler=self._cobbler_path))
+        stdout, stderr, exitcode = self._conn.execute(
+            "{cobbler} sync --dhcp".format(cobbler=self._cobbler_path))
         if exitcode:
-            logging.error("Dhcp sync on %s failed with '%s'", self._fqdn, stderr)
+            logging.error("Dhcp sync on %s failed with '%s' and stdout '%s'",
+                          self._fqdn, stderr, stdout)
 
     def is_installed(self):
         """Check if Cobbler server is available."""
@@ -280,9 +290,11 @@ class CobblerServer:
         return clean_out
 
     def setup(self, machine: Machine, choice: str):
-        logger.info("setup called for %s with %s on cobbler server %s ", machine.fqdn, self._fqdn, choice)
+        logger.info("setup called for %s with %s on cobbler server %s ",
+                    machine.fqdn, self._fqdn, choice)
         if choice:
-            cobbler_profile = " --profile={arch}:{profile}".format(arch=machine.architecture, profile=choice)
+            cobbler_profile = " --profile={arch}:{profile}".format(
+                arch=machine.architecture, profile=choice)
         else:
             cobbler_profile = ""
 
