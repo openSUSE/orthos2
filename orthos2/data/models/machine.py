@@ -597,10 +597,12 @@ class Machine(models.Model):
         validate_dns(self.fqdn)
 
         if not self.mac_address and not self.unknown_mac:
-            raise ValidationError("'{}' You must select 'MAC Unkown' for systems without MAC".format(self))
+            raise ValidationError(
+                "'{}' You must select 'MAC Unkown' for systems without MAC".format(self))
 
         if self.mac_address and self.unknown_mac:
-            raise ValidationError("'{}' You must not select 'MAC Unkown' for systems with a MAC".format(self))
+            raise ValidationError(
+                "'{}' You must not select 'MAC Unkown' for systems with a MAC".format(self))
         if self.unknown_mac and not self.bmc_allowed():
             raise ValidationError("You may only skip the MAC for systems with BMC")
         if self.mac_address:
@@ -669,7 +671,7 @@ class Machine(models.Model):
                     if hasattr(self.remotepower, 'remote_power_device'):
                         assert hasattr(self._original.remotepower, 'remote_power_device')
                         assert self.remotepower.remote_power_device == \
-                               self._original.remotepower.remote_power_device
+                            self._original.remotepower.remote_power_device
                 if self.has_serialconsole():
                     assert hasattr(self._original, 'serialconsole')
                     assert self.serialconsole.baud_rate == self._original.serialconsole.baud_rate
@@ -699,8 +701,21 @@ class Machine(models.Model):
                 update_sconsole = True
 
             if self.fqdn_domain != self._original.fqdn_domain:
-                raise NotImplementedError(
-                    "Moving machines between domains is not implemented yet")
+                logger.info(f"Domain change for: %s", self.fqdn)
+                # TODO: add error handling (checking whether the signal went through)
+                # Not removing the machine from the original Cobbler system, because there is no easy remove signal
+                # and it's probably not even necessary
+                # Add the machine to the new Cobbler system
+                # TODO: check if machine is known to us, and also a cobbler server
+                new_domain_id = self.fqdn_domain.pk
+                from orthos2.data.signals import signal_cobbler_machine_update
+                signal_cobbler_machine_update.send(
+                    sender=self.__class__, machine_id=self.pk, domain_id=new_domain_id)
+
+                # Sync DHCP on the new domain
+                from orthos2.data.signals import signal_cobbler_sync_dhcp
+                signal_cobbler_sync_dhcp.send(sender=self.__class__, domain_id=new_domain_id)
+                return
 
         if update_machine:
             from orthos2.data.signals import signal_cobbler_machine_update
@@ -788,7 +803,8 @@ class Machine(models.Model):
         try:
             interface = self.networkinterfaces.get(primary=True)
         except NetworkInterface.DoesNotExist:
-            logger.debug("In 'get_primary_networkinterface': Machine %s has no networkinterfce", self.fqdn)
+            logger.debug(
+                "In 'get_primary_networkinterface': Machine %s has no networkinterfce", self.fqdn)
             return None
         return interface
 
