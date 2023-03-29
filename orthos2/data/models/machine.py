@@ -699,8 +699,21 @@ class Machine(models.Model):
                 update_sconsole = True
 
             if self.fqdn_domain != self._original.fqdn_domain:
-                raise NotImplementedError(
-                    "Moving machines between domains is not implemented yet")
+                logger.info(f"Domain change for: %s", self.fqdn)
+                # TODO: add error handling (checking whether the signal went through)
+                # Not removing the machine from the original Cobbler system, because there is no easy remove signal
+                # and it's probably not even necessary
+                # Add the machine to the new Cobbler system
+                # TODO: check if machine is known to us, and also a cobbler server
+                new_domain_id = self.fqdn_domain.pk
+                from orthos2.data.signals import signal_cobbler_machine_update
+                signal_cobbler_machine_update.send(
+                    sender=self.__class__, machine_id=self.pk, domain_id=new_domain_id)
+
+                # Sync DHCP on the new domain
+                from orthos2.data.signals import signal_cobbler_sync_dhcp
+                signal_cobbler_sync_dhcp.send(sender=self.__class__, domain_id=new_domain_id)
+                return
 
         if update_machine:
             from orthos2.data.signals import signal_cobbler_machine_update
