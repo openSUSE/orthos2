@@ -575,10 +575,10 @@ class DomainAdmin(admin.ModelAdmin):
     inlines = (ArchsInline, )
 
     def cobbler_server_list(self, obj):
-        """Return DHCP server list as string."""
-        if obj.cobbler_server.all().count() == 0:
-            return '-'
-        return ', '.join([cobbler_server.fqdn for cobbler_server in obj.cobbler_server.all()])
+        """Return DHCP server FQDN as string."""
+        cobbler_server = obj.cobbler_server
+        return cobbler_server.fqdn if cobbler_server else '-'
+
 
     def delete_model(self, request, obj=None):
         try:

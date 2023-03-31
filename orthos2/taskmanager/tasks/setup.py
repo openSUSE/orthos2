@@ -25,32 +25,24 @@ class SetupMachine(Task):
 
         try:
             machine = Machine.objects.get(fqdn=self.fqdn)
-            domain = machine.fqdn_domain
-            servers = domain.cobbler_server.all()
-            if not servers:
-                logger.warning("No cobbler server available for '%s'", machine.fqdn_domain.name)
-                return
-
-            for server in servers:
-                try:
-                    logger.debug("trying %s for setup", server.fqdn)
-                    cobbler_server = CobblerServer(server.fqdn, domain)
-                    cobbler_server.setup(machine, self.choice)
-
-                except CobblerException as e:
-                    logger.warning("Setup of %s with %s failed on %s with %s", machine.fqdn,
-                                   self.choice, server.fqdn, e)
-                else:
-                    logger.debug("success")
-                    machine.reboot()
-                    break
-            else:
-                logger.exception("Setup of %s with %s failed on all cobbler servers",
-                                 machine.fqdn, self.choice)
-
-        except SSH.Exception as exception:
-            logger.exception(exception)
         except Machine.DoesNotExist:
             logger.exception("Machine does not exist: fqdn=%s", self.fqdn)
-        except Exception as e:
-            logger.exception(e)
+            return
+
+        domain = machine.fqdn_domain
+        server = domain.cobbler_server
+        if not server:
+            logger.warning("No cobbler server available for '%s'", machine.fqdn_domain.name)
+            return
+
+        try:
+            logger.debug("Trying %s for setup", server.fqdn)
+            cobbler_server = CobblerServer(server.fqdn, domain)
+            cobbler_server.setup(machine, self.choice)
+
+        except CobblerException as e:
+            logger.warning("Setup of %s with %s failed on %s with %s", machine.fqdn,
+                           self.choice, server.fqdn, e)
+        else:
+            logger.debug("success")
+            machine.reboot()

@@ -172,9 +172,9 @@ class CobblerServer:
         :returns: The corresponding cobbler server or None
         """
         domain = machine.fqdn_domain
-        server = domain.cobbler_server.all()
-        if server and server[0]:
-            return CobblerServer(server[0].fqdn, domain)
+        server = domain.cobbler_server
+        if server:
+            return CobblerServer(server.fqdn, domain)
         return None
 
     def connect(self):
