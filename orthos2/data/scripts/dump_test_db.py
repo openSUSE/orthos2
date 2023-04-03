@@ -40,7 +40,8 @@ Also see: https://docs.djangoproject.com/en/3.2/topics/serialization
 Modules = {}
 
 # General also includes taskmanager.dailytask and basic arch.suse.de domain
-Modules['general'] = ("Serverconfig", "System", "Architecture", "Vendor", "Platform", "Serialconsoletype")
+Modules['general'] = ("Serverconfig", "System", "Architecture",
+                      "Vendor", "Platform", "Serialconsoletype")
 
 Modules['domain'] = ("Domain", "Domainadmin")
 
@@ -111,7 +112,6 @@ def add_domain(domain: str, queries: list):
         show_help()
 
 
-
 def add_arch_relations(queries: list):
     """
     We always need arch.suse.de domain and markeb.arch.suse.de
@@ -121,7 +121,7 @@ def add_arch_relations(queries: list):
     for item in query:
         item.tftp_server = None
         item.cscreen_server = None
-        item.cobbler_server.set([])
+        item.cobbler_server = None
     queries.extend(query)
     add_machine("markeb.arch.suse.de", queries)
 

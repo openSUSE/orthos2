@@ -38,7 +38,7 @@ class SetupMachine(Task):
 
             except CobblerException as e:
                 logger.warning("Setup of %s with %s failed on %s with %s", machine.fqdn,
-                            self.choice, server.fqdn, e)
+                               self.choice, server.fqdn, e)
             else:
                 logger.debug("success")
                 machine.reboot()
@@ -49,4 +49,3 @@ class SetupMachine(Task):
             logger.exception("Machine does not exist: fqdn=%s", self.fqdn)
         except Exception as e:
             logger.exception(e)
-

@@ -74,7 +74,6 @@ class RegenerateCobbler(Task):
             logger.info("--- Cobbler deployment finished ---")
 
 
-
 class UpdateCobblerMachine(Task):
     def __init__(self, domain_id, machine_id):
         self._domain_id = domain_id
@@ -136,4 +135,3 @@ class SyncCobblerDHCP(Task):
             logger.error("No Domain with id %s, aborting", self._domain_id)
         except Domain.MultipleObjectsReturned:
             logger.error("Multiple Domains with id %s, aborting", self._domain_id)
-

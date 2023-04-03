@@ -40,6 +40,8 @@ class Domain(models.Model):
         related_name='cobbler_server_for',
         verbose_name='Cobbler server',
         blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
         limit_choices_to={'administrative': True}
     )
 

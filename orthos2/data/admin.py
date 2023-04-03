@@ -563,22 +563,17 @@ class ArchsInline(admin.TabularInline):
 class DomainAdmin(admin.ModelAdmin):
     list_display = (
         'name',
-        'cobbler_server_list',
         'tftp_server',
         'cscreen_server'
     )
     # enables nifty unobtrusive JavaScript “filter” interface
     filter_horizontal = (
-        'cobbler_server',
         'supported_architectures',
     )
+    raw_id_fields = (
+        'cobbler_server',
+    )
     inlines = (ArchsInline, )
-
-    def cobbler_server_list(self, obj):
-        """Return DHCP server FQDN as string."""
-        cobbler_server = obj.cobbler_server
-        return cobbler_server.fqdn if cobbler_server else '-'
-
 
     def delete_model(self, request, obj=None):
         try:
