@@ -25,24 +25,28 @@ class SetupMachine(Task):
 
         try:
             machine = Machine.objects.get(fqdn=self.fqdn)
+            domain = machine.fqdn_domain
+            server = domain.cobbler_server
+            if not server:
+                logger.warning("No cobbler server available for '%s'", machine.fqdn_domain.name)
+                return
+
+            try:
+                logger.debug("trying %s for setup", server.fqdn)
+                cobbler_server = CobblerServer(server.fqdn, domain)
+                cobbler_server.setup(machine, self.choice)
+
+            except CobblerException as e:
+                logger.warning("Setup of %s with %s failed on %s with %s", machine.fqdn,
+                            self.choice, server.fqdn, e)
+            else:
+                logger.debug("success")
+                machine.reboot()
+
+        except SSH.Exception as exception:
+            logger.exception(exception)
         except Machine.DoesNotExist:
             logger.exception("Machine does not exist: fqdn=%s", self.fqdn)
-            return
+        except Exception as e:
+            logger.exception(e)
 
-        domain = machine.fqdn_domain
-        server = domain.cobbler_server
-        if not server:
-            logger.warning("No cobbler server available for '%s'", machine.fqdn_domain.name)
-            return
-
-        try:
-            logger.debug("Trying %s for setup", server.fqdn)
-            cobbler_server = CobblerServer(server.fqdn, domain)
-            cobbler_server.setup(machine, self.choice)
-
-        except CobblerException as e:
-            logger.warning("Setup of %s with %s failed on %s with %s", machine.fqdn,
-                           self.choice, server.fqdn, e)
-        else:
-            logger.debug("success")
-            machine.reboot()

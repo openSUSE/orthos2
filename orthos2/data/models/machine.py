@@ -765,7 +765,7 @@ class Machine(models.Model):
     is_administrative.boolean = True
 
     def is_cobbler_server(self):
-        return self.domain_set.all().exists()
+        return self.cobbler_server_for.exists()
     is_cobbler_server.boolean = True
 
     def is_virtual_machine(self):
