@@ -1,7 +1,7 @@
 import json
 
-from django.urls import re_path
 from django.http import JsonResponse
+from django.urls import re_path
 
 from orthos2.api.commands import BaseAPIView
 from orthos2.api.models import APIQuery

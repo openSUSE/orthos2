@@ -14,8 +14,8 @@ import logging
 import logging.config
 import os
 import sys
-from socket import getfqdn, gethostname
 from pwd import getpwuid
+from socket import getfqdn, gethostname
 
 from django.contrib.messages import constants as messages
 

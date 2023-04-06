@@ -1,9 +1,8 @@
 import datetime
 
-from django.urls import re_path
 from django.contrib import admin, messages
 from django.shortcuts import redirect
-from django.urls import reverse
+from django.urls import re_path, reverse
 from django.utils.html import format_html
 
 from .models import DailyTask, SingleTask

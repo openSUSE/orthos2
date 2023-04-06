@@ -2,6 +2,7 @@
 
 import os
 from glob import glob
+
 from setuptools import find_packages, setup
 
 logpath = os.environ.get('LOG_PATH', "/var/log/orthos2")

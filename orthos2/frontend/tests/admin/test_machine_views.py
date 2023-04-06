@@ -1,5 +1,4 @@
 import mock
-
 from django.urls import reverse
 from django_webtest import WebTest
 

@@ -3,9 +3,9 @@ import logging
 from django.template import Context, Template
 
 from orthos2.data.models import Machine, ServerConfig
-from orthos2.utils.ssh import SSH
 from orthos2.utils.misc import get_hostname, get_ipv4, get_ipv6
 from orthos2.utils.remotepowertype import RemotePowerType
+from orthos2.utils.ssh import SSH
 
 logger = logging.getLogger('utils')
 

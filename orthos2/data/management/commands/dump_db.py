@@ -6,7 +6,7 @@ from django.apps import apps
 from django.core.management.base import BaseCommand
 
 from orthos2.data.models.domain import Domain, DomainAdmin
-from orthos2.data.models.machine import Machine, Enclosure, NetworkInterface
+from orthos2.data.models.machine import Enclosure, Machine, NetworkInterface
 from orthos2.taskmanager.models import DailyTask
 
 USAGE = """
