@@ -1,20 +1,37 @@
 import json
 import logging
 
-from django.urls import re_path
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, reverse
+from django.urls import re_path
 
 from orthos2.api.commands import BaseAPIView, get_machine
-from orthos2.api.forms import (AnnotationAPIForm, BMCAPIForm, MachineAPIForm, RemotePowerAPIForm,
-                               RemotePowerDeviceAPIForm, SerialConsoleAPIForm,
-                               VirtualMachineAPIForm)
-from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
-                                          InfoMessage, InputSerializer, Message,
-                                          Serializer)
-from orthos2.data.models import (Annotation, BMC, Machine, RemotePower,
-                                 RemotePowerDevice, SerialConsole)
+from orthos2.api.forms import (
+    AnnotationAPIForm,
+    BMCAPIForm,
+    MachineAPIForm,
+    RemotePowerAPIForm,
+    RemotePowerDeviceAPIForm,
+    SerialConsoleAPIForm,
+    VirtualMachineAPIForm,
+)
+from orthos2.api.serializers.misc import (
+    AuthRequiredSerializer,
+    ErrorMessage,
+    InfoMessage,
+    InputSerializer,
+    Message,
+    Serializer,
+)
+from orthos2.data.models import (
+    BMC,
+    Annotation,
+    Machine,
+    RemotePower,
+    RemotePowerDevice,
+    SerialConsole,
+)
 from orthos2.utils.misc import add_offset_to_date, format_cli_form_errors
 
 logger = logging.getLogger('api')

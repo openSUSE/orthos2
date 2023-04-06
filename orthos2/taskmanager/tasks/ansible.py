@@ -5,20 +5,19 @@ This function/module will replace get_hardware_information by
 passing ansible collected data instead of self called functions
 '''
 
+import glob
+import json
+import logging
 import os
 import shutil
-import glob
 import threading
-import logging
-import json
 from datetime import datetime
 
 from django.template.loader import render_to_string
 
-from orthos2.taskmanager.models import Task
 from orthos2.data.models import Machine
-from orthos2.utils.misc import normalize_ascii
-from orthos2.utils.misc import execute
+from orthos2.taskmanager.models import Task
+from orthos2.utils.misc import execute, normalize_ascii
 
 logger = logging.getLogger('tasks')
 

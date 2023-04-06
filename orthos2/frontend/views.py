@@ -25,19 +25,30 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import ListView
-
 from rest_framework.authtoken.models import Token
 
-from orthos2.data.models import (Architecture, Domain, Machine, MachineGroup,
-                                 ReservationHistory, ServerConfig)
+from orthos2.data.models import (
+    Architecture,
+    Domain,
+    Machine,
+    MachineGroup,
+    ReservationHistory,
+    ServerConfig,
+)
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.misc import add_offset_to_date
 
 from .decorators import check_permissions
-from .forms import (NewUserForm, PasswordRestoreForm, PreferencesForm,
-                    ReserveMachineForm, SearchForm, SetupMachineForm,
-                    VirtualMachineForm)
+from .forms import (
+    NewUserForm,
+    PasswordRestoreForm,
+    PreferencesForm,
+    ReserveMachineForm,
+    SearchForm,
+    SetupMachineForm,
+    VirtualMachineForm,
+)
 
 logger = logging.getLogger('views')
 

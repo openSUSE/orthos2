@@ -1,20 +1,35 @@
 import logging
 
 from django import forms
-from django.forms.models import ModelChoiceIteratorValue
 from django.forms import inlineformset_factory
-from django.forms.fields import (BooleanField, CharField, ChoiceField,
-                                 DateField, DecimalField, IntegerField)
+from django.forms.fields import (
+    BooleanField,
+    CharField,
+    ChoiceField,
+    DateField,
+    DecimalField,
+    IntegerField,
+)
+from django.forms.models import ModelChoiceIteratorValue
 from django.template.defaultfilters import slugify
 
-from orthos2.data.models import (Architecture, Enclosure, Machine, MachineGroup,
-                                 NetworkInterface, RemotePower, SerialConsole,
-                                 System, RemotePowerDevice, SerialConsoleType,
-                                 is_unique_mac_address, validate_dns,
-                                 validate_mac_address)
+from orthos2.data.models import (
+    Architecture,
+    Enclosure,
+    Machine,
+    MachineGroup,
+    NetworkInterface,
+    RemotePower,
+    RemotePowerDevice,
+    SerialConsole,
+    SerialConsoleType,
+    System,
+    is_unique_mac_address,
+    validate_dns,
+    validate_mac_address,
+)
 from orthos2.data.models.domain import validate_domain_ending
 from orthos2.frontend.forms import ReserveMachineForm, VirtualMachineForm
-
 
 logger = logging.getLogger('api')
 

@@ -15,8 +15,8 @@ Examples:
         1. Import the include() function: from django.urls import url, include
         2. Add a URL to urlpatterns:  re_path(r'^blog/', include('blog.urls'))
 """
-from django.urls import include, re_path
 from django.contrib import admin
+from django.urls import include, re_path
 
 urlpatterns = [
     re_path(r'^', include('orthos2.frontend.urls', namespace='frontend')),

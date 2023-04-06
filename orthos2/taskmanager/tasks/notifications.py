@@ -1,12 +1,12 @@
 import logging
 
 from django.conf import settings
-from django.utils import timezone
 from django.contrib.auth.models import User
+from django.utils import timezone
 
-from orthos2.data.models import Machine, Domain, DomainAdmin
+from orthos2.data.models import Domain, DomainAdmin, Machine
 from orthos2.taskmanager.models import Task
-from orthos2.utils.misc import send_email, get_domain
+from orthos2.utils.misc import get_domain, send_email
 
 logger = logging.getLogger('tasks')
 

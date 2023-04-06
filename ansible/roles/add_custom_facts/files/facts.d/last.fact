@@ -4,7 +4,6 @@ import json
 import subprocess
 import sys
 
-
 data = dict()
 
 command = "last | grep -v reboot | head -n 1"

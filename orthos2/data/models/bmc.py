@@ -1,6 +1,7 @@
 from django.db import models
 
 from orthos2.utils.remotepowertype import get_remote_power_type_choices
+
 from .machine import Machine
 
 

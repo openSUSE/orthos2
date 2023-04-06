@@ -80,9 +80,16 @@ class VirtualizationAPI:
         Method returns a new `Machine` object and calls the subclass to actually create the virtual
         machine physically.
         """
-        from orthos2.data.models import (Architecture, Machine, RemotePower,
-                                         SerialConsole, SerialConsoleType, System)
         from django.contrib.auth.models import User
+
+        from orthos2.data.models import (
+            Architecture,
+            Machine,
+            RemotePower,
+            SerialConsole,
+            SerialConsoleType,
+            System,
+        )
 
         vm = Machine()
         vm.unsaved_networkinterfaces = []
