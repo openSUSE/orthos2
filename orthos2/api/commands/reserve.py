@@ -5,7 +5,7 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.http import HttpResponseRedirect
 from django.urls import re_path
 
-from orthos2.api.commands import BaseAPIView, get_machine
+from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.forms import ReserveMachineAPIForm
 from orthos2.api.serializers.misc import (
     AuthRequiredSerializer,
