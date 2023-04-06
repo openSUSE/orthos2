@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, reverse
 from django.urls import re_path
 
-from orthos2.api.commands import BaseAPIView, get_machine
+from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.forms import (
     AnnotationAPIForm,
     BMCAPIForm,
