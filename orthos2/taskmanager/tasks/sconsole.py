@@ -1,6 +1,6 @@
 import logging
 
-from orthos2.data.models import ServerConfig, Domain
+from orthos2.data.models import Domain, ServerConfig
 from orthos2.taskmanager.models import Task
 from orthos2.utils.ssh import SSH
 

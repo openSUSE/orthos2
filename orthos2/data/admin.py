@@ -1,21 +1,37 @@
 from django import forms
-from django.urls import re_path
 from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_list import _boolean_icon
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.shortcuts import redirect
-from django.urls import reverse
+from django.urls import re_path, reverse
 from django.utils.html import format_html
 
-from orthos2.utils.remotepowertype import RemotePowerType
 from orthos2.api.forms import RemotePowerDeviceAPIForm
+from orthos2.utils.remotepowertype import RemotePowerType
 
-from .models import (Annotation, Architecture, BMC, Domain, Enclosure,
-                     Machine, MachineGroup, MachineGroupMembership, DomainAdmin,
-                     NetworkInterface, Platform, RemotePower, RemotePowerDevice,
-                     SerialConsole, SerialConsoleType, ServerConfig, System, Vendor,
-                     is_unique_mac_address, validate_mac_address)
+from .models import (
+    BMC,
+    Annotation,
+    Architecture,
+    Domain,
+    DomainAdmin,
+    Enclosure,
+    Machine,
+    MachineGroup,
+    MachineGroupMembership,
+    NetworkInterface,
+    Platform,
+    RemotePower,
+    RemotePowerDevice,
+    SerialConsole,
+    SerialConsoleType,
+    ServerConfig,
+    System,
+    Vendor,
+    is_unique_mac_address,
+    validate_mac_address,
+)
 
 
 class BMCInlineFormset(forms.models.BaseInlineFormSet):

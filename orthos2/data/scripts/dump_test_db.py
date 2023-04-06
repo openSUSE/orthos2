@@ -3,8 +3,9 @@
 import os
 
 from django.apps import apps
+
 from orthos2.data.models.domain import Domain, DomainAdmin
-from orthos2.data.models.machine import Machine, Enclosure, NetworkInterface
+from orthos2.data.models.machine import Enclosure, Machine, NetworkInterface
 from orthos2.taskmanager.models import DailyTask
 
 USAGE = """

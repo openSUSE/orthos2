@@ -6,14 +6,14 @@ from queue import Empty as queueEmpty
 from queue import Queue
 from threading import Thread
 
-from django.utils import timezone
-from django.db.utils import InterfaceError
 from django import db
+from django.db.utils import InterfaceError
+from django.utils import timezone
 
 from orthos2.data.models import ServerConfig
+
 from . import Priority
 from .models import BaseTask, DailyTask, SingleTask
-
 
 logger = logging.getLogger('tasks')
 

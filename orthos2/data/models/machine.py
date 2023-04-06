@@ -6,21 +6,27 @@ from copy import deepcopy
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import serializers
-from django.core.exceptions import (PermissionDenied, ValidationError, ObjectDoesNotExist)
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
-from orthos2.utils.misc import (Serializer, get_domain, get_hostname,
-                                get_ipv4, get_ipv6, get_s390_hostname,
-                                is_dns_resolvable)
-
 
 from orthos2.data.exceptions import ReleaseException, ReserveException
+from orthos2.utils.misc import (
+    Serializer,
+    get_domain,
+    get_hostname,
+    get_ipv4,
+    get_ipv6,
+    get_s390_hostname,
+    is_dns_resolvable,
+)
+
 from .architecture import Architecture
 from .domain import Domain, DomainAdmin, validate_domain_ending
 from .enclosure import Enclosure
 from .machinegroup import MachineGroup
-from .networkinterface import validate_mac_address, NetworkInterface
+from .networkinterface import NetworkInterface, validate_mac_address
 from .platform import Platform
 from .system import System
 from .virtualizationapi import VirtualizationAPI
@@ -724,6 +730,7 @@ class Machine(models.Model):
                 sender=self.__class__, domain_id=domain_id, machine_id=machine_id)
         if sync_dhcp:
             from orthos2.data.signals import signal_cobbler_sync_dhcp
+
             # regenerate DHCP on all domains (deletion/registration) if domain changed
             domain_id = self.fqdn_domain.pk
             signal_cobbler_sync_dhcp.send(sender=self.__class__, domain_id=domain_id)
@@ -1127,8 +1134,8 @@ class Machine(models.Model):
     def scan(self, action='all', user=None):
         """Start scanning/checking the machine by creating a task."""
         from orthos2.taskmanager import tasks
-        from orthos2.taskmanager.tasks.ansible import Ansible
         from orthos2.taskmanager.models import TaskManager
+        from orthos2.taskmanager.tasks.ansible import Ansible
 
         if action.lower() not in tasks.MachineCheck.Scan.Action.as_list:
             raise Exception("Unknown scan option '{}'!".format(action))

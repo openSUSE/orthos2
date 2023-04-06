@@ -1,5 +1,5 @@
-from django.urls import re_path
 from django.http import HttpResponseRedirect, JsonResponse
+from django.urls import re_path
 
 from orthos2.api.commands import BaseAPIView, get_machine
 from orthos2.api.serializers.misc import ErrorMessage, InfoMessage, Serializer

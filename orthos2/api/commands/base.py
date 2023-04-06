@@ -1,5 +1,5 @@
-import sys
 import linecache
+import sys
 
 from django.shortcuts import redirect
 from rest_framework.views import APIView

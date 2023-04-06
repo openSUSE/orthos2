@@ -4,7 +4,6 @@ import json
 import subprocess
 import sys
 
-
 data = dict()
 
 command = "if [ -e /var/log/boot.msg ]; then cat /var/log/boot.msg; else journalctl -xl | head -n200; fi"

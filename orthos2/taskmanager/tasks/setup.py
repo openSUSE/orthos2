@@ -2,8 +2,8 @@ import logging
 
 from orthos2.data.models import Machine, ServerConfig
 from orthos2.taskmanager.models import Task
+from orthos2.utils.cobbler import CobblerException, CobblerServer
 from orthos2.utils.ssh import SSH
-from orthos2.utils.cobbler import CobblerServer, CobblerException
 
 logger = logging.getLogger('tasks')
 

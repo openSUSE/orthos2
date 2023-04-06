@@ -1,6 +1,5 @@
 import json
 import logging
-
 from hashlib import sha1
 
 from django.db import models

@@ -1,4 +1,5 @@
 import sys
+
 try:
     from ptyprocess import PtyProcessUnicode
     from terminado import TermSocket, UniqueTermManager
