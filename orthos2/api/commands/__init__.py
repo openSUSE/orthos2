@@ -8,7 +8,6 @@ from orthos2.api.commands.add import (
     AddSerialConsoleCommand,
     AddVMCommand,
 )
-from orthos2.api.commands.base import BaseAPIView, get_machine, getException
 from orthos2.api.commands.delete import (
     DeleteCommand,
     DeleteMachineCommand,

@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, reverse
 from django.urls import re_path
 
-from orthos2.api.commands import BaseAPIView
+from orthos2.api.commands.base import BaseAPIView
 from orthos2.api.forms import (
     DeleteMachineAPIForm,
     DeleteRemotePowerAPIForm,

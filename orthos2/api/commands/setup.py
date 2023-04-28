@@ -4,7 +4,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import re_path
 
-from orthos2.api.commands import BaseAPIView, get_machine
+from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.serializers.misc import (
     AuthRequiredSerializer,
     ErrorMessage,
