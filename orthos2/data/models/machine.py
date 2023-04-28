@@ -712,6 +712,8 @@ class Machine(models.Model):
                 # Add the machine to the new Cobbler system
                 # TODO: check if machine is known to us, and also a cobbler server
                 new_domain_id = self.fqdn_domain.pk
+                self.__ipv4 = get_ipv4(self.fqdn)
+                self.__ipv6 = get_ipv6(self.fqdn)
                 from orthos2.data.signals import signal_cobbler_machine_update
                 signal_cobbler_machine_update.send(
                     sender=self.__class__, machine_id=self.pk, domain_id=new_domain_id)
