@@ -269,8 +269,8 @@ class MachineAdminForm(forms.ModelForm):
         """
         cleaned_data = self.cleaned_data
 
-        check_connectivity = cleaned_data['check_connectivity']
-        collect_system_information = cleaned_data['collect_system_information']
+        check_connectivity = cleaned_data.get('check_connectivity')
+        collect_system_information = cleaned_data.get('collect_system_information')
 
         if collect_system_information and check_connectivity != Machine.Connectivity.ALL:
             self.add_error(
@@ -278,20 +278,20 @@ class MachineAdminForm(forms.ModelForm):
                 "Connectivity check must set to 'Full'"
             )
 
-        hypervisor = self.cleaned_data.get('hypervisor')
-        system = self.cleaned_data.get('system')
+        hypervisor = cleaned_data.get('hypervisor')
+        system = cleaned_data.get('system')
         if hypervisor and System.objects.filter(name=system, virtual=False):
             self.add_error('system', "System type is not virtual. Only Virtual Machines may have a hypervisor")
             self.add_error('hypervisor', "System type {} is not virtual. Only Virtual Machines may have "
                            "a hypervisor".format(system))
 
-        vm_dedicated_host = self.cleaned_data.get('vm_dedicated_host')
+        vm_dedicated_host = cleaned_data.get('vm_dedicated_host')
         if vm_dedicated_host and System.objects.filter(name=system, allowHypervisor=False):
             self.add_error('system', "System type cannot serve as a hypervisor")
             self.add_error('vm_dedicated_host', "System cannot be set as dedicated VM host")
 
-        mac = self.cleaned_data.get('mac_address')
-        unknown_mac = self.cleaned_data.get('unknown_mac')
+        mac = cleaned_data.get('mac_address')
+        unknown_mac = cleaned_data.get('unknown_mac')
 
         if mac and unknown_mac:
             self.add_error('unknown_mac', "MAC unknown must not be selected when a MAC is provided")
