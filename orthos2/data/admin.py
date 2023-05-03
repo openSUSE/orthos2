@@ -117,7 +117,8 @@ class RemotePowerInlineFormset(forms.models.BaseInlineFormSet):
                     port, dev.fence_name))
         else:
             if port:
-                raise forms.ValidationError("Fence {} needs no port, please leave emtpy".format(fence.fence))
+                raise forms.ValidationError(
+                    "Fence {} needs no port, please leave emtpy".format(fence.fence))
 
 
 class RemotePowerInlineRpower(admin.StackedInline):
@@ -281,7 +282,8 @@ class MachineAdminForm(forms.ModelForm):
         hypervisor = cleaned_data.get('hypervisor')
         system = cleaned_data.get('system')
         if hypervisor and System.objects.filter(name=system, virtual=False):
-            self.add_error('system', "System type is not virtual. Only Virtual Machines may have a hypervisor")
+            self.add_error(
+                'system', "System type is not virtual. Only Virtual Machines may have a hypervisor")
             self.add_error('hypervisor', "System type {} is not virtual. Only Virtual Machines may have "
                            "a hypervisor".format(system))
 
@@ -297,8 +299,10 @@ class MachineAdminForm(forms.ModelForm):
             self.add_error('unknown_mac', "MAC unknown must not be selected when a MAC is provided")
             self.add_error('mac_address', "MAC unknown must not be selected when a MAC is provided")
         if not mac and not unknown_mac:
-            self.add_error('unknown_mac', "Either specify a MAC, or confirm that the MAC is not yet known")
-            self.add_error('mac_address', "Either specify a MAC, or confirm that the MAC is not yet known")
+            self.add_error(
+                'unknown_mac', "Either specify a MAC, or confirm that the MAC is not yet known")
+            self.add_error(
+                'mac_address', "Either specify a MAC, or confirm that the MAC is not yet known")
         return cleaned_data
 
 
@@ -591,10 +595,9 @@ class DomainAdmin(admin.ModelAdmin):
     inlines = (ArchsInline, )
 
     def cobbler_server_list(self, obj):
-        """Return DHCP server list as string."""
-        if obj.cobbler_server.all().count() == 0:
-            return '-'
-        return ', '.join([cobbler_server.fqdn for cobbler_server in obj.cobbler_server.all()])
+        """Return DHCP server FQDN as string."""
+        cobbler_server = obj.cobbler_server
+        return cobbler_server.fqdn if cobbler_server else '-'
 
     def delete_model(self, request, obj=None):
         try:

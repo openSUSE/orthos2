@@ -41,7 +41,8 @@ Also see: https://docs.djangoproject.com/en/3.2/topics/serialization
 Modules = {}
 
 # General also includes taskmanager.dailytask and basic arch.suse.de domain
-Modules['general'] = ("Serverconfig", "System", "Architecture", "Vendor", "Platform", "Serialconsoletype")
+Modules['general'] = ("Serverconfig", "System", "Architecture",
+                      "Vendor", "Platform", "Serialconsoletype")
 
 Modules['domain'] = ("Domain", "Domainadmin")
 
@@ -100,8 +101,8 @@ def add_domain(domain: str, queries: list):
             add_machine(d_obj.tftp_server.fqdn, queries)
         if d_obj.cscreen_server:
             add_machine(d_obj.cscreen_server.fqdn, queries)
-        if d_obj.cobbler_server and len(d_obj.cobbler_server.all()):
-            add_machine(d_obj.cobbler_server.all()[0].fqdn, queries)
+        if d_obj.cobbler_server:
+            add_machine(d_obj.cobbler_server.fqdn, queries)
 
         query = Domain.objects.filter(name=d_obj)
         queries.extend(query)

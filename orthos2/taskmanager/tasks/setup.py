@@ -26,27 +26,22 @@ class SetupMachine(Task):
         try:
             machine = Machine.objects.get(fqdn=self.fqdn)
             domain = machine.fqdn_domain
-            servers = domain.cobbler_server.all()
-            if not servers:
+            server = domain.cobbler_server
+            if not server:
                 logger.warning("No cobbler server available for '%s'", machine.fqdn_domain.name)
                 return
 
-            for server in servers:
-                try:
-                    logger.debug("trying %s for setup", server.fqdn)
-                    cobbler_server = CobblerServer(server.fqdn, domain)
-                    cobbler_server.setup(machine, self.choice)
+            try:
+                logger.debug("trying %s for setup", server.fqdn)
+                cobbler_server = CobblerServer(server.fqdn, domain)
+                cobbler_server.setup(machine, self.choice)
 
-                except CobblerException as e:
-                    logger.warning("Setup of %s with %s failed on %s with %s", machine.fqdn,
-                                   self.choice, server.fqdn, e)
-                else:
-                    logger.debug("success")
-                    machine.reboot()
-                    break
+            except CobblerException as e:
+                logger.warning("Setup of %s with %s failed on %s with %s", machine.fqdn,
+                               self.choice, server.fqdn, e)
             else:
-                logger.exception("Setup of %s with %s failed on all cobbler servers",
-                                 machine.fqdn, self.choice)
+                logger.debug("success")
+                machine.reboot()
 
         except SSH.Exception as exception:
             logger.exception(exception)
