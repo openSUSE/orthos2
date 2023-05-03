@@ -110,8 +110,8 @@ class Command(BaseCommand):
                 self.add_machine(d_obj.tftp_server.fqdn)
             if d_obj.cscreen_server:
                 self.add_machine(d_obj.cscreen_server.fqdn)
-            if d_obj.cobbler_server and len(d_obj.cobbler_server.all()):
-                self.add_machine(d_obj.cobbler_server.all()[0].fqdn)
+            if d_obj.cobbler_server:
+                self.add_machine(d_obj.cobbler_server.fqdn)
 
             query = Domain.objects.filter(name=d_obj)
             self.queries.extend(query)
@@ -135,7 +135,7 @@ class Command(BaseCommand):
         for item in query:
             item.tftp_server = None
             item.cscreen_server = None
-            item.cobbler_server.set([])
+            item.cobbler_server = None
         self.queries.extend(query)
         self.add_machine("markeb.arch.suse.de")
 

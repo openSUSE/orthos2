@@ -36,11 +36,13 @@ class Domain(models.Model):
         validators=[validate_domain_ending]
     )
 
-    cobbler_server = models.ManyToManyField(
+    cobbler_server = models.ForeignKey(
         'data.Machine',
         related_name='cobbler_server_for',
         verbose_name='Cobbler server',
+        null=True,
         blank=True,
+        on_delete=models.SET_NULL,
         limit_choices_to={'administrative': True}
     )
 
