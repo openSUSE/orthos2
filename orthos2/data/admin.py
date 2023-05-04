@@ -10,28 +10,12 @@ from django.utils.html import format_html
 from orthos2.api.forms import RemotePowerDeviceAPIForm
 from orthos2.utils.remotepowertype import RemotePowerType
 
-from .models import (
-    BMC,
-    Annotation,
-    Architecture,
-    Domain,
-    DomainAdmin,
-    Enclosure,
-    Machine,
-    MachineGroup,
-    MachineGroupMembership,
-    NetworkInterface,
-    Platform,
-    RemotePower,
-    RemotePowerDevice,
-    SerialConsole,
-    SerialConsoleType,
-    ServerConfig,
-    System,
-    Vendor,
-    is_unique_mac_address,
-    validate_mac_address,
-)
+from .models import (BMC, Annotation, Architecture, Domain, DomainAdmin,
+                     Enclosure, Machine, MachineGroup, MachineGroupMembership,
+                     NetworkInterface, Platform, RemotePower,
+                     RemotePowerDevice, SerialConsole, SerialConsoleType,
+                     ServerConfig, System, Vendor, is_unique_mac_address,
+                     validate_mac_address)
 
 
 class BMCInlineFormset(forms.models.BaseInlineFormSet):
@@ -589,7 +573,6 @@ class DomainAdmin(admin.ModelAdmin):
     )
     # enables nifty unobtrusive JavaScript “filter” interface
     filter_horizontal = (
-        'cobbler_server',
         'supported_architectures',
     )
     inlines = (ArchsInline, )

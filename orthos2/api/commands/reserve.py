@@ -7,13 +7,8 @@ from django.urls import re_path
 
 from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.forms import ReserveMachineAPIForm
-from orthos2.api.serializers.misc import (
-    AuthRequiredSerializer,
-    ErrorMessage,
-    InputSerializer,
-    Message,
-    Serializer,
-)
+from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
+                                          InputSerializer, Message, Serializer)
 from orthos2.data.models import Machine
 from orthos2.utils.misc import add_offset_to_date, format_cli_form_errors
 

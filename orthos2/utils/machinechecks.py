@@ -4,7 +4,8 @@ import socket
 import threading
 from decimal import Decimal
 
-from orthos2.data.models import Architecture, Installation, Machine, NetworkInterface
+from orthos2.data.models import (Architecture, Installation, Machine,
+                                 NetworkInterface)
 from orthos2.utils.misc import execute, normalize_ascii
 from orthos2.utils.remote import ssh_execute
 from orthos2.utils.ssh import SSH
