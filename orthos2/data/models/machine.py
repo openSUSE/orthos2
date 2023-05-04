@@ -6,21 +6,15 @@ from copy import deepcopy
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import serializers
-from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
+from django.core.exceptions import (ObjectDoesNotExist, PermissionDenied,
+                                    ValidationError)
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
 from orthos2.data.exceptions import ReleaseException, ReserveException
-from orthos2.utils.misc import (
-    Serializer,
-    get_domain,
-    get_hostname,
-    get_ipv4,
-    get_ipv6,
-    get_s390_hostname,
-    is_dns_resolvable,
-)
+from orthos2.utils.misc import (Serializer, get_domain, get_hostname, get_ipv4,
+                                get_ipv6, get_s390_hostname, is_dns_resolvable)
 
 from .architecture import Architecture
 from .domain import Domain, DomainAdmin, validate_domain_ending

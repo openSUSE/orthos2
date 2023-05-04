@@ -82,14 +82,9 @@ class VirtualizationAPI:
         """
         from django.contrib.auth.models import User
 
-        from orthos2.data.models import (
-            Architecture,
-            Machine,
-            RemotePower,
-            SerialConsole,
-            SerialConsoleType,
-            System,
-        )
+        from orthos2.data.models import (Architecture, Machine, RemotePower,
+                                         SerialConsole, SerialConsoleType,
+                                         System)
 
         vm = Machine()
         vm.unsaved_networkinterfaces = []

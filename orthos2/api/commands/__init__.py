@@ -1,20 +1,12 @@
-from orthos2.api.commands.add import (
-    AddAnnotationCommand,
-    AddBMCCommand,
-    AddCommand,
-    AddMachineCommand,
-    AddRemotePowerCommand,
-    AddRemotePowerDeviceCommand,
-    AddSerialConsoleCommand,
-    AddVMCommand,
-)
-from orthos2.api.commands.delete import (
-    DeleteCommand,
-    DeleteMachineCommand,
-    DeleteRemotePowerCommand,
-    DeleteRemotePowerDeviceCommand,
-    DeleteSerialConsoleCommand,
-)
+from orthos2.api.commands.add import (AddAnnotationCommand, AddBMCCommand,
+                                      AddCommand, AddMachineCommand,
+                                      AddRemotePowerCommand,
+                                      AddRemotePowerDeviceCommand,
+                                      AddSerialConsoleCommand, AddVMCommand)
+from orthos2.api.commands.delete import (DeleteCommand, DeleteMachineCommand,
+                                         DeleteRemotePowerCommand,
+                                         DeleteRemotePowerDeviceCommand,
+                                         DeleteSerialConsoleCommand)
 from orthos2.api.commands.info import InfoCommand
 from orthos2.api.commands.power import PowerCommand
 from orthos2.api.commands.query import QueryCommand

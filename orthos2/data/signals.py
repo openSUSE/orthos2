@@ -3,13 +3,8 @@ import os
 import time
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.db.models.signals import (
-    post_delete,
-    post_init,
-    post_save,
-    pre_delete,
-    pre_save,
-)
+from django.db.models.signals import (post_delete, post_init, post_save,
+                                      pre_delete, pre_save)
 from django.dispatch import Signal, receiver
 
 from orthos2.taskmanager import tasks
@@ -17,13 +12,8 @@ from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.cobbler import CobblerServer
 from orthos2.utils.misc import Serializer, get_hostname
 
-from .models import (
-    Machine,
-    NetworkInterface,
-    SerialConsole,
-    ServerConfig,
-    is_unique_mac_address,
-)
+from .models import (Machine, NetworkInterface, SerialConsole, ServerConfig,
+                     is_unique_mac_address)
 
 logger = logging.getLogger('orthos')
 
