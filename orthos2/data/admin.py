@@ -589,7 +589,6 @@ class DomainAdmin(admin.ModelAdmin):
     )
     # enables nifty unobtrusive JavaScript “filter” interface
     filter_horizontal = (
-        'cobbler_server',
         'supported_architectures',
     )
     inlines = (ArchsInline, )
