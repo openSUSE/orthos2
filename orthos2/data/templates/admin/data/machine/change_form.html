@@ -5,7 +5,13 @@
     document.addEventListener('DOMContentLoaded', function () {
         const architectureSystemMapping = {
             's390x': ['zVM', 'zKVM', 'LPAR zSeries'],
-            'x86_64': ['BareMetal', 'KVM', 'XEN']
+            'x86_64': ['BareMetal', 'KVM', 'XEN', 'HMC'],
+
+            'ppc64': ['LPAR PowerPC', 'PowerVM', 'KVM', 'HMC'],
+            'ppc64le': ['LPAR PowerPC', 'PowerVM', 'KVM', 'HMC'],
+            
+            'aarch64': ['BareMetal', 'KVM'],
+            'embedded': ['BareMetal']
         };
 
         function filterSystems() {
