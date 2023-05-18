@@ -363,7 +363,6 @@ class Machine(models.Model):
         Platform,
         blank=True,
         null=True,
-        limit_choices_to={'is_cartridge': True},
         on_delete=models.SET_NULL
     )
 
