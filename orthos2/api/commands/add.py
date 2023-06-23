@@ -59,6 +59,7 @@ class AddCommand(BaseAPIView):
                                                 machine (superusers only).
                 virtualmachine <architecture> : Add a virtual machine on a specific
                                                 architecture.
+                bmc <fqdn>                    : Add a bmc to a machine.
 
     Example:
         ADD machine
@@ -66,6 +67,7 @@ class AddCommand(BaseAPIView):
         ADD serialconsole foo.domain.tld
         ADD remotepower foo.domain.tld
         ADD annotation foo.domain.tld
+        ADD bmc foo.domain.tld
     """
 
     @staticmethod
