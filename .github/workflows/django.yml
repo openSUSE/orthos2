@@ -1,14 +1,24 @@
 name: Django CI
 
-on: [pull_request]
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     strategy:
       max-parallel: 4
       matrix:
         python-version: ['3.10']
+
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -19,13 +29,11 @@ jobs:
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip
-    - run: |
-        sudo apt-get install libldap2-dev libsasl2-dev
-        python -m pip install --upgrade pip
-        python -m pip install -r requirements.txt
     - name: Install Dependencies
       run: |
-        sudo apt-get install python3-setuptools
+        sudo apt-get install python3-setuptools libldap2-dev libsasl2-dev jq
+        python -m pip install --upgrade pip
+        python -m pip install -r requirements-devel.txt
     - name: Create Logfiles
       run: |
         sudo mkdir -p /var/log/orthos2
@@ -38,10 +46,17 @@ jobs:
         sudo python3 setup.py install
     - name: Migrate database
       run: |
+        sudo touch /var/lib/orthos2/database/db.sqlite3
+        sudo chown -R orthos:orthos /var/lib/orthos2/database/
         cd orthos2
         orthos-admin migrate
     - name: Run Tests
       run: |
-        orthos-admin loaddata data/fixtures/*.json
-        orthos-admin loaddata taskmanager/fixtures/*.json
-        orthos-admin test
+        coverage run --source='.' manage.py test orthos2
+        coverage report
+    - name: Check coverage goal
+      run: |
+        # Coverage goal is atm 25% or greater
+        coverage json
+        coverage_percent=$(jq -r ".totals.percent_covered_display" < coverage.json)
+        [ "$coverage_percent" -gt "25" ]
