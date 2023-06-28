@@ -28,29 +28,36 @@ jobs:
     - uses: actions/cache@v3
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-devel.txt', '**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
     - name: Install Dependencies
       run: |
         sudo apt-get install python3-setuptools libldap2-dev libsasl2-dev jq
-        python -m pip install --upgrade pip
-        python -m pip install -r requirements-devel.txt
-    - name: Create Logfiles
+        python3 -m pip install --upgrade pip
+        python3 -m pip install -r requirements-devel.txt
+    - name: Create required directories
       run: |
         sudo mkdir -p /var/log/orthos2
+        sudo mkdir -p /var/lib/orthos2/database
+    - name: Create required files
+      run: |
         sudo touch /var/log/orthos2/default.log
-        sudo chmod o+w /var/log/orthos2/default.log
-        sudo groupadd -r orthos
-        sudo useradd -r -g orthos -d /var/lib/orthos2 -s /bin/bash -c "orthos account" orthos
-    - name: Install orthos2
-      run: |
-        sudo python3 setup.py install
-    - name: Migrate database
-      run: |
         sudo touch /var/lib/orthos2/database/db.sqlite3
-        sudo chown -R orthos:orthos /var/lib/orthos2/database/
-        cd orthos2
-        orthos-admin migrate
+    - name: Adjust permissions for files
+      run: |
+        CURRENT_USER=$(whoami)
+        CURRENT_GROUP=$(id -gn)
+        sudo chown -R $CURRENT_USER:$CURRENT_GROUP /var/lib/orthos2
+        sudo chown -R $CURRENT_USER:$CURRENT_GROUP /var/log/orthos2
+    - name: Migrate database
+      env:
+        ORTHOS_USER: runner
+      run: |
+        python3 manage.py migrate
     - name: Run Tests
+      env:
+        ORTHOS_USER: runner
       run: |
         coverage run --source='.' manage.py test orthos2
         coverage report
