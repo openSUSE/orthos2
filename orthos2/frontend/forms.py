@@ -89,8 +89,8 @@ class ReserveMachineForm(forms.Form):
 
     until = forms.DateField(
         widget=forms.TextInput(attrs={'id': 'datepicker', 'size': '10', 'class': 'form-control'}),
-        help_text="Format: YYYY-MM-DD (TZ: " + timezone.get_default_timezone_name() +
-                  "). Type '9999-12-31' for infinite reservation (superusers only)."
+        help_text="Format: YYYY-MM-DD (TZ: " + timezone.get_default_timezone_name()
+                  + "). Type '9999-12-31' for infinite reservation (superusers only)."
     )
 
     username = forms.CharField(
