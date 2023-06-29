@@ -69,6 +69,18 @@
   }
 },
 {
+  "model": "data.BMC",
+  "pk": null,
+  "fields": {
+    "username": "",
+    "password": "",
+    "fqdn": "my-bmc.foo.lan",
+    "mac": "",
+    "machine": 1,
+    "fence_name": "fence_ipmilanplus"
+  }
+},
+{
   "model": "data.machine",
   "pk": null,
   "fields": {
