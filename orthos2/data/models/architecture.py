@@ -8,8 +8,8 @@ from orthos2.utils.misc import safe_get_or_default
 class Architecture(models.Model):
 
     class Manager(models.Manager):
-        def get_by_natural_key(self, fqdn):
-            return self.get(fqdn=fqdn)
+        def get_by_natural_key(self, name):
+            return self.get(name=name)
 
     class Type:
 
