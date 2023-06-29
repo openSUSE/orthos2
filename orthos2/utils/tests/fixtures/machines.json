@@ -1,15 +1,84 @@
 [
 {
+  "model": "data.Domain",
+  "pk": 1,
+  "fields": {
+    "name": "foo.bar.de"
+  }
+},
+{
+  "model": "data.Architecture",
+  "pk": null,
+  "fields": {
+    "name": "x86_64",
+    "updated": "2022-05-10",
+    "created": "2022-05-10"
+  }
+},
+{
+  "model": "data.system",
+  "pk": null,
+  "fields": {
+    "name": "BareMetal",
+    "administrative": false,
+    "virtual": false,
+    "created": "2016-01-01T10:00:00+00:00"
+  }
+},
+{
+  "model": "data.enclosure",
+  "pk": null,
+  "fields": {
+    "name": "test",
+    "platform": 1,
+    "description": "test enclosure"
+  }
+},
+{
+  "model": "data.platform",
+  "pk": null,
+  "fields": {
+    "name": "Other",
+    "vendor": 1
+  }
+},
+{
+  "model": "data.vendor",
+  "pk": null,
+  "fields": {
+    "name": "Other"
+  }
+},
+{
+  "model": "data.remotepowerdevice",
+  "pk": null,
+  "fields": {
+    "username": "test",
+    "password": "test",
+    "fqdn": "rpower.foo.de",
+    "mac": "AA:BB:CC:DD:EE",
+    "url": "https://rpower.foo.de"
+  }
+},
+{
+  "model": "data.remotepower",
+  "pk": null,
+  "fields": {
+    "fence_name": "ipmilanplus",
+    "remote_power_device": 1
+  }
+},
+{
   "model": "data.machine",
   "pk": null,
   "fields": {
     "enclosure": 1,
-    "fqdn": "machine.foo.bar.de",
-    "system": 0,
+    "fqdn": "test.foo.bar.de",
+    "system": 1,
     "comment": "",
     "serial_number": "",
     "product_code": "",
-    "architecture": 0,
+    "architecture": 1,
     "fqdn_domain": 1,
     "cpu_model": "",
     "cpu_flags": "",
@@ -26,14 +95,11 @@
     "vm_max": 5,
     "vm_dedicated_host": false,
     "vm_auto_delete": false,
-    "virtualization_api": null,
-    "reserved_by": 1,
-    "reserved_at": "2017-10-11",
     "reserved_until": "9999-12-31",
     "reserved_reason": "test HOS",
     "platform": null,
     "bios_version": "",
-    "bios_date": "",
+    "bios_date": "2010-10-10",
     "disk_primary_size": null,
     "disk_type": "",
     "lsmod": "",
@@ -55,8 +121,9 @@
     "active": true,
     "group": null,
     "contact_email": "",
+    "tftp_server": 1,
     "updated": "2017-11-17T15:36:51.499Z",
-    "created": "2017-10-24T14:20:37.298Z",
+    "created": "2017-10-24T14:20:37.298Z"
   }
 }
 ]

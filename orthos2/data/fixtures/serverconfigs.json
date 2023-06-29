@@ -4,8 +4,7 @@
     "pk": null,
     "fields": {
       "key": "ssh.keys.paths",
-      "value": "/home/orthos/.ssh/master",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "/home/orthos/.ssh/master"
     }
   },
   {
@@ -13,8 +12,7 @@
     "pk": null,
     "fields": {
       "key": "ssh.timeout.seconds",
-      "value": "10",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "10"
     }
   },
   {
@@ -22,8 +20,7 @@
     "pk": null,
     "fields": {
       "key": "ssh.scripts.remote.directory",
-      "value": "/tmp/orthos-scripts",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "/tmp/orthos-scripts"
     }
   },
   {
@@ -31,8 +28,7 @@
     "pk": null,
     "fields": {
       "key": "ssh.scripts.local.directory",
-      "value": "./scripts",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "./scripts"
     }
   },
   {
@@ -40,8 +36,7 @@
     "pk": null,
     "fields": {
       "key": "domain.validendings",
-      "value": "example.de, excample.com",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "example.de, excample.com"
     }
   },
   {
@@ -49,8 +44,7 @@
     "pk": null,
     "fields": {
       "key": "tasks.daily.executiontime",
-      "value": "00:00",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "00:00"
     }
   },
   {
@@ -58,8 +52,7 @@
     "pk": null,
     "fields": {
       "key": "mail.smtprelay.fqdn",
-      "value": "relay.mail-server.de",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "relay.mail-server.de"
     }
   },
   {
@@ -67,8 +60,7 @@
     "pk": null,
     "fields": {
       "key": "mail.subject.prefix",
-      "value": "[ORTHOS] ",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "[ORTHOS] "
     }
   },
   {
@@ -76,8 +68,7 @@
     "pk": null,
     "fields": {
       "key": "setup.execute.command",
-      "value":  "/usr/bin/cobbler system edit --name={{machine.fqdn}}  --profile={{architecture}}:{{choice}} --netboot=True",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value":  "/usr/bin/cobbler system edit --name={{machine.fqdn}}  --profile={{architecture}}:{{choice}} --netboot=True"
     }
   },
   {
@@ -85,8 +76,7 @@
     "pk": null,
     "fields": {
       "key": "setup.list.command",
-      "value": "/usr/bin/cobbler system  --list {{ architecture }}",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "/usr/bin/cobbler system  --list {{ architecture }}"
     }
   },
   {
@@ -94,8 +84,7 @@
     "pk": null,
     "fields": {
       "key": "racktables.url.query",
-      "value": "https://racktables.our/domain.de/cgi-bin/get_location_from_racktables.pl?orthos_id={{ id }}",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "https://racktables.our/domain.de/cgi-bin/get_location_from_racktables.pl?orthos_id={{ id }}"
     }
   },
   {
@@ -103,8 +92,7 @@
     "pk": null,
     "fields": {
       "key": "orthos.web.welcomemessage",
-      "value": "",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": ""
     }
   },
   {
@@ -112,8 +100,7 @@
     "pk": null,
     "fields": {
       "key": "orthos.api.welcomemessage",
-      "value": "",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": ""
     }
   },
   {
@@ -121,8 +108,7 @@
     "pk": null,
     "fields": {
       "key": "orthos.bugreport.url",
-      "value": "https://github.de/openSUSE/orthos2/issues",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "https://github.de/openSUSE/orthos2/issues"
     }
   },
   {
@@ -130,8 +116,7 @@
     "pk": null,
     "fields": {
       "key": "orthos.cli.url",
-      "value": "https://github.com/openSUSE/orthos2/blob/master/cli/orthos2",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "https://github.com/openSUSE/orthos2/blob/master/cli/orthos2"
     }
   },
   {
@@ -139,8 +124,7 @@
     "pk": null,
     "fields": {
       "key": "mail.from.address",
-      "value": "orthos-noreply@domain.de",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "orthos-noreply@domain.de"
     }
   },
   {
@@ -148,8 +132,7 @@
     "pk": null,
     "fields": {
       "key": "orthos.configuration.inline.begin",
-      "value": "# -- BEGIN ORTHOS SECTION --",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "# -- BEGIN ORTHOS SECTION --"
     }
   },
   {
@@ -157,8 +140,7 @@
     "pk": null,
     "fields": {
       "key": "orthos.configuration.inline.end",
-      "value": "# -- END ORTHOS SECTION --",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "# -- END ORTHOS SECTION --"
     }
   },
   {
@@ -166,8 +148,7 @@
     "pk": null,
     "fields": {
       "key": "orthos.debug.mail.send",
-      "value": "bool:false",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "bool:false"
     }
   },
   {
@@ -175,8 +156,7 @@
     "pk": null,
     "fields": {
       "key": "orthos.debug.serialconsole.write",
-      "value": "bool:false",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "bool:false"
     }
   },
   {
@@ -184,8 +164,7 @@
     "pk": null,
     "fields": {
       "key": "orthos.debug.dhcp.write",
-      "value": "bool:false",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "bool:false"
     }
   },
   {
@@ -193,8 +172,7 @@
     "pk": null,
     "fields": {
       "key": "orthos.debug.motd.write",
-      "value": "bool:false",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "bool:false"
     }
   },
   {
@@ -202,8 +180,7 @@
     "pk": null,
     "fields": {
       "key": "orthos.debug.setup.execute",
-      "value": "bool:false",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "bool:false"
     }
   },
   {
@@ -211,8 +188,7 @@
     "pk": null,
     "fields": {
       "key": "websocket.cscreen.port",
-      "value": "8010",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "8010"
     }
   },
   {
@@ -220,8 +196,7 @@
     "pk": null,
     "fields": {
       "key": "websocket.cscreen.command",
-      "value": "usr/bin/screen",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "usr/bin/screen"
     }
   },
   {
@@ -229,8 +204,7 @@
     "pk": null,
     "fields": {
       "key": "serialization.output.format",
-      "value": "json",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "json"
     }
   },
   {
@@ -238,8 +212,7 @@
     "pk": null,
     "fields": {
       "key": "serialization.output.directory",
-      "value": "/tmp",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "/tmp"
     }
   },
   {
@@ -247,8 +220,7 @@
     "pk": null,
     "fields": {
       "key": "serialization.execute",
-      "value": "bool:true",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "bool:true"
     }
   },
   {
@@ -256,8 +228,7 @@
     "pk": null,
     "fields": {
       "key": "ssh.use.systemuser",
-      "value": "bool:false",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "bool:false"
     }
   },
   {
@@ -265,8 +236,7 @@
     "pk": null,
     "fields": {
       "key": "orthos.documentation.url",
-      "value": "https://github.com/openSUSE/orthos2/tree/development/docs",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "https://github.com/openSUSE/orthos2/tree/development/docs"
     }
   },
   {
@@ -274,8 +244,7 @@
     "pk": null,
     "fields": {
       "key": "mail.validdomains",
-      "value": "example.de, example.com",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "example.de, example.com"
     }
   },
   {
@@ -283,8 +252,7 @@
     "pk": null,
     "fields": {
       "key": "virtualization.libvirt.bridge",
-      "value": "br0",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "br0"
     }
   },
   {
@@ -292,8 +260,7 @@
     "pk": null,
     "fields": {
       "key": "virtualization.libvirt.images.directory",
-      "value": "/var/lib/orthos/orthos-vm-images",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "/var/lib/orthos/orthos-vm-images"
     }
   },
   {
@@ -301,8 +268,7 @@
     "pk": null,
     "fields": {
       "key": "virtualization.libvirt.ovmf.path",
-      "value": "/usr/share/qemu/ovmf-x86_64-opensuse.bin",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "/usr/share/qemu/ovmf-x86_64-opensuse.bin"
     }
   },
   {
@@ -310,8 +276,7 @@
     "pk": null,
     "fields": {
       "key": "serialconsole.ipmi.username",
-      "value": "",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": ""
     }
   },
   {
@@ -319,8 +284,7 @@
     "pk": null,
     "fields": {
       "key": "serialconsole.ipmi.password",
-      "value": "",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": ""
     }
   },
   {
@@ -328,8 +292,7 @@
     "pk": null,
     "fields": {
       "key": "remotepower.default.username",
-      "value": "",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": ""
     }
   },
   {
@@ -337,8 +300,7 @@
     "pk": null,
     "fields": {
       "key": "remotepower.default.password",
-      "value": "",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": ""
     }
   },
   {
@@ -346,8 +308,7 @@
     "pk": null,
     "fields": {
       "key": "remotepower.ipmi.command",
-      "value": "/usr/bin/ipmitool -I lanplus -H {{ machine.bmc.fqdn }} -U {{ ipmi.user }} -P {{ ipmi.password }} power {{ action }}",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "/usr/bin/ipmitool -I lanplus -H {{ machine.bmc.fqdn }} -U {{ ipmi.user }} -P {{ ipmi.password }} power {{ action }}"
     }
   },
   {
@@ -355,8 +316,7 @@
     "pk": null,
     "fields": {
       "key": "cobbler.command",
-      "value": "/usr/bin/cobbler",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "/usr/bin/cobbler"
     }
   },
   {
@@ -364,7 +324,7 @@
     "pk": null,
     "fields": {
       "key": "orthos.documentation.url",
-      "value": "https://w3.suse.de/~trenn/orthos_internal_docs",
+      "value": "https://w3.suse.de/~trenn/orthos_internal_docs"
     }
   }
 ]
