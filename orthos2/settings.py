@@ -92,7 +92,7 @@ DATABASES = {
     }
 }
 
-RUN_AS_USER = 'orthos'
+RUN_AS_USER = os.environ.get("ORTHOS_USER", "orthos")
 CUR_USER = getpwuid(os.getuid())[0]
 if CUR_USER != RUN_AS_USER:
     logging.error("You must run as user: %s, not as user: %s", RUN_AS_USER, CUR_USER)

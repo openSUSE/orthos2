@@ -142,8 +142,8 @@ def get_hardware_information(fqdn):
             cpu_flags = machine_.cpu_flags
             if cpu_flags:
                 cpu_flags = cpu_flags.upper()
-                if ((cpu_flags.find('VMX') >= 0 or cpu_flags.find('SVM') >= 0) and
-                        int(machine_.ram_amount) > VM_HOST_MIN_RAM_MB):
+                if ((cpu_flags.find('VMX') >= 0 or cpu_flags.find('SVM') >= 0)
+                        and int(machine_.ram_amount) > VM_HOST_MIN_RAM_MB):
                     machine_.vm_capable = True
 
         # Virtualization: ppc64le
@@ -188,11 +188,11 @@ def get_hardware_information(fqdn):
         # hwinfo
         logger.debug("Get 'hwinfo' (full)...")
         stdout, _stderr, _exitstatus = conn.execute(
-            'hwinfo --bios ' +
-            '--block --bridge --cdrom --cpu --disk --floppy --framebuffer ' +
-            '--gfxcard --hub --ide --isapnp --isdn --keyboard --memory ' +
-            '--monitor --mouse --netcard --network --partition --pci --pcmcia ' +
-            '--scsi --smp --sound --sys --tape --tv --usb --usb-ctrl --wlan'
+            'hwinfo --bios '
+            + '--block --bridge --cdrom --cpu --disk --floppy --framebuffer '
+            + '--gfxcard --hub --ide --isapnp --isdn --keyboard --memory '
+            + '--monitor --mouse --netcard --network --partition --pci --pcmcia '
+            + '--scsi --smp --sound --sys --tape --tv --usb --usb-ctrl --wlan'
         )
         machine_.hwinfo = normalize_ascii("".join(stdout))
 
@@ -204,9 +204,9 @@ def get_hardware_information(fqdn):
         # dmesg
         logger.debug("Get 'dmesg'...")
         stdout, _stderr, _exitstatus = conn.execute(
-            'if [ -e /var/log/boot.msg ]; then ' +
-            'cat /var/log/boot.msg; else journalctl -xl | head -n200; ' +
-            'fi'
+            'if [ -e /var/log/boot.msg ]; then '
+            + 'cat /var/log/boot.msg; else journalctl -xl | head -n200; '
+            + 'fi'
         )
         machine_.dmesg = normalize_ascii("".join(stdout))
 

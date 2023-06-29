@@ -8,7 +8,7 @@ from setuptools import find_packages, setup
 logpath = os.environ.get('LOG_PATH', "/var/log/orthos2")
 db_path = os.environ.get('DB_PATH', "/var/lib/orthos2")
 tmpfilespath = os.environ.get('TMPFILES_PATH', "/usr/lib/tmpfiles.d")
-execpath = os.environ.get('EXEC_PATH',  "/usr/lib/orthos2")
+execpath = os.environ.get('EXEC_PATH', "/usr/lib/orthos2")
 # Directory for package specific data
 datapath = os.environ.get('DATA_PATH', "/usr/share/orthos2")
 unitpath = os.environ.get('UNIT_PATH', "/usr/lib/systemd/system")
@@ -60,8 +60,8 @@ if __name__ == "__main__":
             "cli/orthos2",
         ],
         data_files=[
-            ("/etc/nginx/conf.d",  ["wsgi/orthos2_nginx.conf"]),
-            ("/etc/logrotate.d",  ["logrotate/orthos2"]),
+            ("/etc/nginx/conf.d", ["wsgi/orthos2_nginx.conf"]),
+            ("/etc/logrotate.d", ["logrotate/orthos2"]),
             ("%s/scripts" % execpath, glob("orthos2/scripts/*")),
             ("/usr/bin", glob("orthos2/bin/*")),
             # orthos2 data files in /usr/share/orthos2
@@ -87,6 +87,6 @@ if __name__ == "__main__":
             ("%s/archiv" % db_path, []),
             ("%s/database" % db_path, []),
             ("%s/orthos-vm-images" % db_path, []),
-            ("/run/orthos2",         [])
+            ("/run/orthos2", [])
         ]
     )

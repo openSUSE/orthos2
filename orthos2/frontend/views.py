@@ -74,10 +74,10 @@ class MachineListView(ListView):
         status = self.request.GET.get('status')
         if status and status == 'ping':
             filters.append(
-                Q(status_ipv4=Machine.StatusIP.REACHABLE) |
-                Q(status_ipv4=Machine.StatusIP.CONFIRMED) |
-                Q(status_ipv6=Machine.StatusIP.REACHABLE) |
-                Q(status_ipv6=Machine.StatusIP.CONFIRMED)
+                Q(status_ipv4=Machine.StatusIP.REACHABLE)
+                | Q(status_ipv4=Machine.StatusIP.CONFIRMED)
+                | Q(status_ipv6=Machine.StatusIP.REACHABLE)
+                | Q(status_ipv6=Machine.StatusIP.CONFIRMED)
             )
         elif status:
             filters.append(Q(**{'status_{}'.format(status): True}))
@@ -749,10 +749,10 @@ def statistics(request):
     total = Machine.objects.all().count()
 
     status_ping = Machine.objects.filter(
-        Q(status_ipv4=Machine.StatusIP.REACHABLE) |
-        Q(status_ipv4=Machine.StatusIP.CONFIRMED) |
-        Q(status_ipv6=Machine.StatusIP.REACHABLE) |
-        Q(status_ipv6=Machine.StatusIP.CONFIRMED)
+        Q(status_ipv4=Machine.StatusIP.REACHABLE)
+        | Q(status_ipv4=Machine.StatusIP.CONFIRMED)
+        | Q(status_ipv6=Machine.StatusIP.REACHABLE)
+        | Q(status_ipv6=Machine.StatusIP.CONFIRMED)
     ).count()
     status_ssh = Machine.objects.filter(status_ssh=True).count()
     status_login = Machine.objects.filter(status_login=True).count()

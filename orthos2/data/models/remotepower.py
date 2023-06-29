@@ -53,9 +53,10 @@ class RemotePower(models.Model):
     remotepower_type_choices = get_remote_power_type_choices("hypervisor")
 
     fence_name = models.CharField(
-                                  choices=remotepower_type_choices,
-                                  max_length=255,
-                                  verbose_name="Fence Agent")
+        choices=remotepower_type_choices,
+        max_length=255,
+        verbose_name="Fence Agent"
+    )
 
     machine = models.OneToOneField(
         'data.Machine',

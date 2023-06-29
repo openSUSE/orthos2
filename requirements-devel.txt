@@ -5,6 +5,7 @@
 -r requirements.txt
 
 flake8
+coverage
 isort
 pytest
 mock
