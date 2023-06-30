@@ -729,7 +729,7 @@ def machine_search(request):
             machines = Machine.search.form(form.cleaned_data, request.user)
             return render(
                 request,
-                'machines/list.html', {
+                'frontend/machines/list.html', {
                     'machines': machines,
                     'title': 'Search Result'
                 }
