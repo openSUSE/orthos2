@@ -39,7 +39,7 @@ def get_tftp_server(machine: Machine):
     return server.fqdn if server else None
 
 
-def create_cobbler_options(machine):
+def create_cobbler_options(machine: Machine):
     tftp_server = get_tftp_server(machine)
     kernel_options = machine.kernel_options if machine.kernel_options else ""
     options = " --name={name} --ip-address={ipv4}".format(name=machine.fqdn, ipv4=machine.ipv4)
@@ -64,7 +64,7 @@ def create_cobbler_options(machine):
     return options
 
 
-def get_bmc_command(machine, cobbler_path):
+def get_bmc_command(machine: Machine, cobbler_path: str):
     if not hasattr(machine, 'bmc') or not machine.bmc:
         logger.error("Tried to get bmc command for %s, which does not have one", machine.fqdn)
     bmc = machine.bmc
