@@ -588,29 +588,32 @@ def users_create(request):
         form = NewUserForm()
     else:
         form = NewUserForm(request.POST)
+        if settings.AUTH_ALLOW_USER_CREATION:
+            if form.is_valid():
+                username = form.cleaned_data['login']
+                email = form.cleaned_data['email']
+                password = form.cleaned_data['password']
 
-        if form.is_valid():
-            username = form.cleaned_data['login']
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password']
+                new_user = User.objects.create_user(
+                    username=username,
+                    email=email.lower(),
+                    password=password
+                )
+                new_user.save()
 
-            new_user = User.objects.create_user(
-                username=username,
-                email=email.lower(),
-                password=password
-            )
-            new_user.save()
+                new_user = authenticate(username=username, password=password)
+                auth_login(request, new_user)
 
-            new_user = authenticate(username=username, password=password)
-            auth_login(request, new_user)
-
-            return redirect('frontend:machines')
+                return redirect('frontend:machines')
+        else:
+            messages.error(request, "Account creation is disabled!")
 
     return render(
         request,
         'frontend/registration/new.html', {
             'form': form,
-            'title': 'Create User'
+            'title': 'Create User',
+            'account_creation': settings.AUTH_ALLOW_USER_CREATION
         }
     )
 
@@ -712,7 +715,8 @@ def users_preferences(request):
         request,
         'frontend/registration/preferences.html', {
             'form': form,
-            'title': 'Preferences'
+            'title': 'Preferences',
+            'account_creation': settings.AUTH_ALLOW_USER_CREATION,
         }
     )
 
@@ -865,8 +869,10 @@ def _get_login_redirect_url(request, redirect_to):
 def login(request, template_name='frontend/registration/login.html',
           redirect_field_name=REDIRECT_FIELD_NAME,
           authentication_form=AuthenticationForm,
-          extra_context={'account_creation': settings.AUTH_ALLOW_USER_CREATION}, redirect_authenticated_user=False):
+          extra_context=None, redirect_authenticated_user=False):
     """Display the login form and handles the login action."""
+    if extra_context is None:
+        extra_context = {}
     redirect_to = request.POST.get(redirect_field_name, request.GET.get(redirect_field_name, ''))
 
     if redirect_authenticated_user and request.user.is_authenticated:
@@ -889,7 +895,7 @@ def login(request, template_name='frontend/registration/login.html',
                 try:
                     user = User.objects.get(username=request.POST['username'])
                     if user.is_active and not user.password:
-                        messages.info(request, "Please receive your inital password.")
+                        messages.info(request, "Please receive your initial password.")
                         url = reverse('frontend:password_restore')
                         return redirect('{}?user_id={}'.format(url, user.pk))
                 except Exception:
@@ -907,10 +913,10 @@ def login(request, template_name='frontend/registration/login.html',
         redirect_field_name: redirect_to,
         'site': current_site,
         'site_name': current_site.name,
-        'title': 'Login'
+        'title': 'Login',
+        'account_creation': settings.AUTH_ALLOW_USER_CREATION,
     }
-    if extra_context is not None:
-        context.update(extra_context)
+    context.update(extra_context)
 
     welcome_message = ServerConfig.objects.by_key('orthos.web.welcomemessage')
 

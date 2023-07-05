@@ -62,8 +62,11 @@
             {{ form.password2 }}
           </div>
         </div>
-
+        {% if account_creation %}
         <button type="submit" class="btn btn-default btn-block">Create</button>
+        {% else %}
+        <button type="submit" class="btn btn-default btn-block disabled">Create</button>
+        {% endif %}
       </form>
     </div>
   </div>
