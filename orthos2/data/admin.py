@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_list import _boolean_icon
@@ -499,17 +501,17 @@ class MachineAdmin(admin.ModelAdmin):
         self.inlines = ()
         return super(MachineAdmin, self).add_view(request, form_url, extra_context)
 
-    def get_fieldsets(self, request, machine):
+    def get_fieldsets(self, request, obj: Optional[Machine] = None):
         """Do not show 'VIRTUALIZATION' client/server forms if not appropriate"""
-        fieldsets = super(MachineAdmin, self).get_fieldsets(request)
-        if machine:
+        fieldsets = super().get_fieldsets(request)
+        if obj:
             fieldsets_ = ()
             for fieldset in fieldsets:
                 if fieldset[0] == 'VIRTUALIZATION SERVER':
-                    if not machine.system.allowHypervisor:
+                    if not obj.system.allowHypervisor:
                         continue
                 if fieldset[0] == 'VIRTUALIZATION CLIENT':
-                    if not machine.system.virtual:
+                    if not obj.system.virtual:
                         continue
                 fieldsets_ += (fieldset,)
             fieldsets = fieldsets_
