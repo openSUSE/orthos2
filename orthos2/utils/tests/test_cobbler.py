@@ -89,9 +89,9 @@ class CobblerMethodTests(TestCase):
         self.assertTrue(" --filename=file.name" in options)
         self.assertTrue(" --ipv6-address=2001:db8::8a2e:370:7334" in options)
 
-    @mock.patch("utils.cobbler.create_cobbler_options",
+    @mock.patch("orthos2.utils.cobbler.create_cobbler_options",
                 mock.MagicMock(return_value="option-string"))
-    @mock.patch("utils.cobbler.get_default_profile", mock.MagicMock(return_value="default_profile"))
+    @mock.patch("orthos2.utils.cobbler.get_default_profile", mock.MagicMock(return_value="default_profile"))
     def test_get_cobbler_add_command(self):
         machine = mock.NonCallableMock()
         path = "/cobbler/path"
@@ -101,9 +101,9 @@ class CobblerMethodTests(TestCase):
         self.assertTrue(" --profile=default_profile" in command)
         self.assertTrue("--netboot-enabled=False")
 
-    @mock.patch("utils.cobbler.create_cobbler_options",
+    @mock.patch("orthos2.utils.cobbler.create_cobbler_options",
                 mock.MagicMock(return_value="option-string"))
-    @mock.patch("utils.cobbler.get_default_profile", mock.MagicMock(return_value="default_profile"))
+    @mock.patch("orthos2.utils.cobbler.get_default_profile", mock.MagicMock(return_value="default_profile"))
     def test_get_cobbler_update_command(self):
         machine = mock.NonCallableMock()
         path = "/cobbler/path"
@@ -167,10 +167,10 @@ class CobblerMethodTests(TestCase):
 
     @mock.patch("orthos2.data.models.Machine.active_machines.filter",
                 MagicMock(return_value=[machine1, machine2]))
-    @mock.patch("utils.cobbler.CobblerServer.get_machines", MagicMock(return_value="test1.foo.bar"))
-    @mock.patch("utils.cobbler.get_cobbler_update_command",
+    @mock.patch("orthos2.utils.cobbler.CobblerServer.get_machines", MagicMock(return_value="test1.foo.bar"))
+    @mock.patch("orthos2.utils.cobbler.get_cobbler_update_command",
                 MagicMock(side_effect=mocked_get_update_command))
-    @mock.patch("utils.cobbler.get_cobbler_add_command",
+    @mock.patch("orthos2.utils.cobbler.get_cobbler_add_command",
                 MagicMock(side_effect=mocked_get_add_command))
     def test_cobbler_deploy(self):
         domain = NonCallableMagicMock(spec_set=Domain)
