@@ -4,8 +4,7 @@
     "pk": null,
     "fields": {
       "key": "orthos.web.welcomemessage",
-      "value": "Hello to the web frontend!",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "Hello to the web frontend!"
     }
   },
   {
@@ -13,8 +12,7 @@
     "pk": null,
     "fields": {
       "key": "orthos.bugreport.url",
-      "value": "https://github.com/openSUSE/orthos2/issues",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "https://github.com/openSUSE/orthos2/issues"
     }
   },
   {
@@ -22,8 +20,15 @@
     "pk": null,
     "fields": {
       "key": "orthos.cli.url",
-      "value": "",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": ""
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": null,
+    "fields": {
+      "key": "auth.account.creation",
+      "value": "bool:true"
     }
   },
   {
@@ -31,8 +36,7 @@
     "pk": null,
     "fields": {
       "key": "mail.validdomains",
-      "value": "example.de, example.com, foo.bar",
-      "created": "2016-01-01T10:00:00+00:00"
+      "value": "example.de, example.com, foo.bar"
     }
   }
 ]

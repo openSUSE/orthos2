@@ -7,8 +7,8 @@ class Logout(WebTest):
     csrf_checks = True
 
     fixtures = [
-        'frontend/tests/fixtures/serverconfigs.json',
-        'frontend/tests/user/fixtures/users.json'
+        'orthos2/frontend/tests/fixtures/serverconfigs.json',
+        'orthos2/frontend/tests/user/fixtures/users.json'
     ]
 
     def test_successful_logout(self):

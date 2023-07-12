@@ -8,9 +8,9 @@ from orthos2.data.models import Architecture, Machine, ServerConfig
 class ChangeView(WebTest):
 
     fixtures = [
-        'data/fixtures/systems.json',
-        'frontend/tests/user/fixtures/users.json',
-        'data/fixtures/architectures.json'
+        'orthos2/data/fixtures/systems.json',
+        'orthos2/frontend/tests/user/fixtures/users.json',
+        'orthos2/data/fixtures/architectures.json'
     ]
 
     @mock.patch('orthos2.data.models.machine.is_dns_resolvable')

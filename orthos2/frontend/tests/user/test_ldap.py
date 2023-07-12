@@ -15,8 +15,8 @@ class LDAP(WebTest):
     csrf_checks = True
 
     fixtures = [
-        'frontend/tests/fixtures/serverconfigs.json',
-        'frontend/tests/user/fixtures/users.json'
+        'orthos2/frontend/tests/fixtures/serverconfigs.json',
+        'orthos2/frontend/tests/user/fixtures/users.json'
     ]
 
     def test_enabled_user_creation(self):
