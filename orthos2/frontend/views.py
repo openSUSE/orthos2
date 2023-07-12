@@ -43,7 +43,7 @@ logger = logging.getLogger('views')
 
 class MachineListView(ListView):
     model = Machine
-    template_name = "machines/list.html"
+    template_name = "frontend/machines/list.html"
     paginate_by = 50
 
     # login is required for all machine lists
@@ -206,7 +206,7 @@ def machine(request, id):
 
     return render(
         request,
-        'machines/detail/overview.html', {
+        'frontend/machines/detail/overview.html', {
             'machine': machine,
             'title': 'Machine'
         }
@@ -225,7 +225,7 @@ def machine_fqdn(request, fqdn):
 
     return render(
         request,
-        'machines/detail/overview.html', {
+        'frontend/machines/detail/overview.html', {
             'machine': machine,
             'title': 'Machine'
         }
@@ -239,7 +239,7 @@ def pci(request, id):
         machine.enclosure.fetch_location(machine.pk)
         return render(
             request,
-            'machines/detail/pci.html', {
+            'frontend/machines/detail/pci.html', {
                 'machine': machine,
                 'title': 'lspci'
             }
@@ -254,7 +254,7 @@ def cpu(request, id):
         machine = Machine.objects.get(pk=id)
         return render(
             request,
-            'machines/detail/cpu.html', {
+            'frontend/machines/detail/cpu.html', {
                 'machine': machine,
                 'title': 'CPU'
             }
@@ -269,7 +269,7 @@ def networkinterfaces(request, id):
         machine = Machine.objects.get(pk=id)
         return render(
             request,
-            'machines/detail/networkinterfaces.html', {
+            'frontend/machines/detail/networkinterfaces.html', {
                 'machine': machine,
                 'title': 'Network Interfaces'
             }
@@ -284,7 +284,7 @@ def installations(request, id):
         machine = Machine.objects.get(pk=id)
         return render(
             request,
-            'machines/detail/installations.html', {
+            'frontend/machines/detail/installations.html', {
                 'machine': machine,
                 'title': 'Installations'
             }
@@ -299,7 +299,7 @@ def usb(request, id):
         machine = Machine.objects.get(pk=id)
         return render(
             request,
-            'machines/detail/usb.html', {
+            'frontend/machines/detail/usb.html', {
                 'machine': machine,
                 'title': 'USB'
             }
@@ -314,7 +314,7 @@ def scsi(request, id):
         machine = Machine.objects.get(pk=id)
         return render(
             request,
-            'machines/detail/scsi.html', {
+            'frontend/machines/detail/scsi.html', {
                 'machine': machine,
                 'title': 'SCSI'
             }
@@ -335,7 +335,7 @@ def virtualization(request, id):
 
     return render(
         request,
-        'machines/detail/virtualization.html', {
+        'frontend/machines/detail/virtualization.html', {
             'machine': machine,
             'title': 'Virtualization'
         }
@@ -380,7 +380,7 @@ def virtualization_add(request, id):
 
     return render(
         request,
-        'machines/detail/virtualization_add.html', {
+        'frontend/machines/detail/virtualization_add.html', {
             'form': form,
             'machine': machine,
             'title': 'Virtualization'
@@ -394,7 +394,7 @@ def misc(request, id):
         machine = Machine.objects.get(pk=id)
         return render(
             request,
-            'machines/detail/miscellaneous.html', {
+            'frontend/machines/detail/miscellaneous.html', {
                 'machine': machine,
                 'title': 'Miscellaneous'
             }
@@ -439,7 +439,7 @@ def machine_reserve(request, id):
 
     return render(
         request,
-        'machines/reserve.html', {
+        'frontend/machines/reserve.html', {
             'form': form,
             'machine': machine,
             'title': 'Reserve Machine'
@@ -478,7 +478,7 @@ def history(request, id):
         machine = Machine.objects.get(pk=id)
         return render(
             request,
-            'machines/detail/history.html', {
+            'frontend/machines/detail/history.html', {
                 'machine': machine,
                 'title': 'Reservation History'
             }
@@ -559,7 +559,7 @@ def setup(request, id):
 
     return render(
         request,
-        'machines/setup.html', {
+        'frontend/machines/setup.html', {
             'form': form,
             'machine': machine,
             'title': 'Setup Machine'
@@ -573,7 +573,7 @@ def console(request, id):
         machine = Machine.objects.get(pk=id)
         return render(
             request,
-            'machines/detail/console.html', {
+            'frontend/machines/detail/console.html', {
                 'machine': machine,
                 'port': ServerConfig.objects.by_key('websocket.cscreen.port'),
                 'title': 'Serial Console'
@@ -608,7 +608,7 @@ def users_create(request):
 
     return render(
         request,
-        'registration/new.html', {
+        'frontend/registration/new.html', {
             'form': form,
             'title': 'Create User'
         }
@@ -658,7 +658,7 @@ def users_password_restore(request):
 
     return render(
         request,
-        'registration/password_reset.html', {
+        'frontend/registration/password_reset.html', {
             'form': form,
             'title': 'Reset Password'
         }
@@ -710,7 +710,7 @@ def users_preferences(request):
 
     return render(
         request,
-        'registration/preferences.html', {
+        'frontend/registration/preferences.html', {
             'form': form,
             'title': 'Preferences'
         }
@@ -737,7 +737,7 @@ def machine_search(request):
 
     return render(
         request,
-        'machines/search.html', {
+        'frontend/machines/search.html', {
             'form': form,
             'title': 'Advanced Search'
         }
@@ -825,7 +825,7 @@ def statistics(request):
 
     return render(
         request,
-        'machines/statistics.html', {
+        'frontend/machines/statistics.html', {
             'architectures': Architecture.objects.all(),
             'data': data,
             'title': 'Statistics'
@@ -862,7 +862,7 @@ def _get_login_redirect_url(request, redirect_to):
 @sensitive_post_parameters()
 @csrf_protect
 @never_cache
-def login(request, template_name='registration/login.html',
+def login(request, template_name='frontend/registration/login.html',
           redirect_field_name=REDIRECT_FIELD_NAME,
           authentication_form=AuthenticationForm,
           extra_context={'account_creation': settings.AUTH_ALLOW_USER_CREATION}, redirect_authenticated_user=False):

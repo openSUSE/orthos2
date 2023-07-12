@@ -1,0 +1,11 @@
+{% extends 'frontend/machines/machine.html' %}
+
+{% block tabcontent %}
+<div class="title">
+  <h5>lsscsi Output</h5>
+</div>
+
+<pre class="monospace">
+{{ machine.lsscsi }}
+</pre>
+{% endblock %}

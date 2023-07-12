@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Orthos - {{ title }}</title>
+    <meta name="description" content="Orthos">
+    <link rel="stylesheet" href="{% static 'frontend/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'frontend/jquery-ui.css' %}">
+    <link rel="stylesheet" href="{% static 'frontend/custom.css' %}">
+    <link rel="stylesheet" href="{% static 'frontend/fa/css/font-awesome.min.css' %}">
+    {% block links %}
+    {% endblock %}
+  </head>
+  <body>
+
+    <div class="container-fluid" style="background: #0D2C40; margin-bottom: 15px">
+      <div class="row justify-content-between" style="padding-top: 15px;">
+        <div class="col-6">
+          <a class="navbar-brand" href="{% url 'frontend:machines' %}">
+            <img src="{% static 'frontend/images/orthos.png' %}" width="40px" style="float: left;"/>
+            <span class="spacer-05"/>
+            <span style="color: #fff; font-size: 30px; font: Gotham, Arial, sans-serif;"><strong>Orthos</strong></span>
+          </a>
+        </div>
+        {% include 'frontend/snippet.userbar.html' %}
+      </div>
+
+      <nav class="navbar navbar-expand navbar-dark" style="padding-left: 0px; padding-right: 0px;">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          {% block navbar %}
+          {% endblock %}
+        </div>
+      </nav>
+
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="container-fluid">
+      <div{% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %}>
+      {{ message }}
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+
+    <script src="{% static 'frontend/js/jquery.js' %}"></script>
+    <script src="{% static 'frontend/js/jquery-ui.js' %}"></script>
+    <script src="{% static 'frontend/js/popper.min.js' %}"></script>
+    <script src="{% static 'frontend/js/bootstrap.min.js' %}"></script>
+
+    {% block javascript_imports %}
+    {% endblock %}
+    {% block javascript %}
+    {% endblock %}
+    <script>
+    $(document).ajaxStart(function() {
+      $('#spinner').show();
+      $('.machine-statusbar #message').html('');
+      $('#machine-statusbar').removeClass(function (index, css) {
+        return (css.match (/\balert-\S+/g) || []).join(' '); // removes "alert-*"
+      });
+      $('#machine-statusbar').show();
+      if (typeof machineStatusbarfFadOutTimer !== 'undefined') {
+        clearTimeout(machineStatusbarfFadOutTimer);
+      }
+    });
+
+    $(document).ajaxStop(function() {
+      $('#spinner').hide();
+    });
+
+    function showMachineStatusBarMessage (data) {
+      var cls = data.cls;
+      var message = data.message.trim();
+      var messageArray = message.split('\n');
+      var messageFirstLine = messageArray[0];
+      var messageAdditionalLinesArray = messageArray.slice(1);
+
+      var printMessage = messageFirstLine;
+
+      if (messageAdditionalLinesArray.length > 0) {
+        messageAdditionalLinesArray = messageAdditionalLinesArray + "";
+        messageAdditionalLinesArray = messageAdditionalLinesArray.replace(/'/g,'"');
+        messageAdditionalLinesArray = messageAdditionalLinesArray.replace(/"/g,'');
+
+        printMessage += ' <a href="javascript:void(0);" onClick=\'alert(\"' + messageAdditionalLinesArray + '\");\'>(more)</a>';
+      }
+      $('.machine-statusbar #message').html(printMessage);
+      $('#machine-statusbar').addClass('alert-' + cls);
+      machineStatusbarfFadOutTimer = setTimeout(function() {
+        $('#machine-statusbar').fadeOut();
+      }, 5000);
+    }
+
+    $('#spinner').hide();
+    </script>
+  </body>
+</html>

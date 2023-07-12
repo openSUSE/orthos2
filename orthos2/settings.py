@@ -69,7 +69,7 @@ ROOT_URLCONF = 'orthos2.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates'), "/usr/lib/orthos2/ansible"],
+        'DIRS': ["/usr/lib/orthos2/ansible"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

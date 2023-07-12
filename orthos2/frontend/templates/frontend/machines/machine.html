@@ -1,0 +1,71 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+{% load tags %}
+{% load filters %}
+
+{% block navbar %}
+{% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+
+    <main class="col-12">
+
+      {% include 'frontend/machines/detail/snippets/machinetitle.html' %}
+
+      <ul class="nav nav-tabs gray">
+        <li class="nav-item">
+        <a class="nav-link {% active_view request 'detail' %}" href="{% url 'frontend:detail' machine.id %}">Overview</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% active_view request 'cpu' %}" href="{% url 'frontend:cpu' machine.id %}">CPU</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% active_view request 'networkinterfaces' %}" href="{% url 'frontend:networkinterfaces' machine.id %}">Network</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% active_view request 'installations' %}" href="{% url 'frontend:installations' machine.id %}">Installations</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% active_view request 'pci' %}" href="{% url 'frontend:pci' machine.id %}">PCI</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% active_view request 'usb' %}" href="{% url 'frontend:usb' machine.id %}">USB</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% active_view request 'scsi' %}" href="{% url 'frontend:scsi' machine.id %}">SCSI</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% active_view request 'misc' %}" href="{% url 'frontend:misc' machine.id %}">Miscellaneous</a>
+        </li>
+        {% if machine.vm_capable and machine.vm_dedicated_host and machine.virtualization_api != None %}
+        <li class="nav-item">
+          <a class="nav-link {% active_view request 'virtualization' %}" href="{% url 'frontend:virtualization' machine.id %}">Virtualization</a>
+        </li>
+        {% endif %}
+        {% if machine.has_serialconsole %}
+        <li class="nav-item">
+          <a class="nav-link {% active_view request 'console' %}" href="{% url 'frontend:console' machine.id %}">Serial Console</a>
+        </li>
+        {% endif %}
+        <li class="nav-item">
+          <a class="nav-link {% active_view request 'history' %}" href="{% url 'frontend:history' machine.id %}">Reservation History</a>
+        </li>
+      </ul>
+
+
+      <div class="tab-content">
+        {% block tabcontent %}
+        {% endblock %}
+      </div>
+
+      <span style="font-size: 0.7em; font-family: Monospace;">API: <a href="{% url 'api:machine' %}?fqdn={{ machine.fqdn }}">{% url 'api:machine' %}?fqdn={{ machine.fqdn }}</a> | Edit: <a href="{% url 'admin:data_machine_change' machine.id %}">{% url 'admin:data_machine_change' machine.id %}</a></span>
+
+    </main>
+
+  </div>
+</div>
+
+{% endblock %}

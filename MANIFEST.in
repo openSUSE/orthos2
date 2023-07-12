@@ -1,0 +1,3 @@
+recursive-include orthos2/frontend/static *
+recursive-include orthos2/frontend/templates *
+recursive-include orthos2/admin/templates *

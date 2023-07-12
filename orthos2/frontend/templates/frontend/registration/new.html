@@ -1,0 +1,71 @@
+{% extends 'frontend/base.html' %}
+{% load tags %}
+
+{% block navbar %}
+<ul class="navbar-nav mr-auto">
+  <li class="nav-item {% active_view request 'login' %}">
+    <a class="nav-link" href="{% url 'frontend:login' %}">Login</a>
+  </li>
+  <li class="nav-item {% active_view request 'create_user' %}">
+    <a class="nav-link" href="{% url 'frontend:create_user' %}">Create Account</a>
+  </li>
+  <li class="nav-item {% active_view request 'password_restore' %}">
+    <a class="nav-link" href="{% url 'frontend:password_restore' %}">Restore Password</a>
+  </li>
+</ul>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-4">
+      {{ form.non_field_errors }}
+      <form method="post" action="{% url 'frontend:create_user' %}" class="form-createacc">
+        {% csrf_token %}
+
+        {{ form.login.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-4">
+            <label for="{{ form.login.id_for_label }}">Login:</label>
+          </div>
+          <div class="col-8">
+            {{ form.login }}
+          </div>
+        </div>
+
+        {{ form.email.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-4">
+            <label for="{{ form.email.id_for_label }}">E-Mail:</label>
+          </div>
+          <div class="col-8">
+            {{ form.email }}
+          </div>
+        </div>
+
+        {{ form.password.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-4">
+            <label for="{{ form.password.id_for_label }}">Password:</label>
+          </div>
+          <div class="col-8">
+            {{ form.password }}
+          </div>
+        </div>
+
+        {{ form.password2.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-4">
+            <label for="{{ form.password2.id_for_label }}">Confirmation:</label>
+          </div>
+          <div class="col-8">
+            {{ form.password2 }}
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-default btn-block">Create</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
