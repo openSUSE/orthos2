@@ -376,6 +376,10 @@ class MachineGroupFilter(admin.SimpleListFilter):
 
 
 class MachineAdmin(admin.ModelAdmin):
+
+    class Media:
+        js = ("js/machine_admin.js",)
+
     form = MachineAdminForm
 
     list_display = (
