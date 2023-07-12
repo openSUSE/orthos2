@@ -170,10 +170,10 @@ orthos-admin collectstatic --noinput
 
 %files
 %{python3_sitelib}/orthos2-*
-%_unitdir/orthos2_taskmanager.service
-%_unitdir/orthos2.service
-%_unitdir/orthos2_debug.service
-%_unitdir/orthos2.socket
+%{_unitdir}/orthos2_taskmanager.service
+%{_unitdir}/orthos2.service
+%{_unitdir}/orthos2_debug.service
+%{_unitdir}/orthos2.socket
 %if 0%{?suse_version}
 %{_sbindir}/rcorthos2_taskmanager
 %{_sbindir}/rcorthos2
