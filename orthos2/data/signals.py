@@ -26,7 +26,7 @@ signal_motd_regenerate = Signal()
 
 
 @receiver(pre_save, sender=Machine)
-def machine_pre_save(sender, instance, *args, **kwargs):
+def machine_pre_save(sender, instance: Machine, *args, **kwargs):
     """Prevent saving machine object if MAC address is already in use (exclude own interfaces)."""
 
     exclude = []
@@ -43,7 +43,7 @@ def machine_pre_save(sender, instance, *args, **kwargs):
 
 
 @receiver(post_save, sender=Machine)
-def machine_post_save(sender, instance, *args, **kwargs):
+def machine_post_save(sender, instance: Machine, *args, **kwargs):
     """
     Post action after machine is saved.
 
@@ -83,7 +83,7 @@ def machine_post_save(sender, instance, *args, **kwargs):
 
 
 @receiver(post_init, sender=Machine)
-def machine_post_init(sender, instance, *args, **kwargs):
+def machine_post_init(sender, instance: Machine, *args, **kwargs):
     """Post init action for machine. Set non-database saved values here."""
     if instance.pk:
         try:
@@ -96,7 +96,7 @@ def machine_post_init(sender, instance, *args, **kwargs):
 
 
 @receiver(pre_delete, sender=Machine)
-def machine_pre_delete(sender, instance, *args, **kwargs):
+def machine_pre_delete(sender, instance: Machine, *args, **kwargs):
     """Pre delete action for machine. Save deleted machine object as file for archiving.
        Also remove the machine from the cobbler Server.
     """
@@ -142,7 +142,7 @@ def machine_pre_delete(sender, instance, *args, **kwargs):
 
 
 @receiver(post_save, sender=SerialConsole)
-def serialconsole_post_save(sender, instance, *args, **kwargs):
+def serialconsole_post_save(sender, instance: SerialConsole, *args, **kwargs):
     """ Regenerate cscreen server configs if a serial console info got changed """
     if not instance.machine.fqdn_domain.cscreen_server:
         return
@@ -153,7 +153,7 @@ def serialconsole_post_save(sender, instance, *args, **kwargs):
 
 
 @receiver(post_delete, sender=SerialConsole)
-def serialconsole_post_delete(sender, instance, *args, **kwargs):
+def serialconsole_post_delete(sender, instance: SerialConsole, *args, **kwargs):
     """ Regenerate cscreen server configs if a serial console got deleted """
     if not instance.machine.fqdn_domain.cscreen_server:
         return

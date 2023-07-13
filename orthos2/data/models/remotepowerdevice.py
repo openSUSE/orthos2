@@ -27,10 +27,13 @@ class RemotePowerDevice(models.Model):
     )
 
     def __init__(self, *args, **kwargs):
-        power_doc = ServerConfig.objects.by_key('orthos.documentation.url', "http://localhost") \
-            + "/" + "powerswitches.html"
-        self.url.help_text += "<a href=\"" + power_doc + "\" target=\"_blank\"></a><br>"
-        super(models.Model, self).__init__(*args, **kwargs)
+        power_doc = (
+            ServerConfig.objects.by_key("orthos.documentation.url", "http://localhost")
+            + "/"
+            + "powerswitches.html"
+        )
+        self._meta.get_field("url").help_text += '<a href="' + power_doc + '" target="_blank"></a><br>'
+        super().__init__(*args, **kwargs)
 
     @staticmethod
     def get_by_str(fqdn_dev):

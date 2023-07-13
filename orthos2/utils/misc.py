@@ -8,6 +8,7 @@ from datetime import date, datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
+from typing import List, Optional, Tuple, Union
 
 import validators
 from django.conf import settings
@@ -27,17 +28,17 @@ class Serializer:
             return output_format.lower() in {cls.JSON, cls.YAML}
 
 
-def get_domain(fqdn):
+def get_domain(fqdn: str) -> str:
     """Return domain of FQDN."""
     return '.'.join(fqdn.split('.')[1:])
 
 
-def get_hostname(fqdn):
+def get_hostname(fqdn: str) -> str:
     """Return hostname of FQDN."""
     return fqdn.split('.')[0]
 
 
-def get_ip(fqdn, ip_version=4):
+def get_ip(fqdn: str, ip_version=4) -> Optional[Union[Tuple[str, str], str]]:
     """
     Return all IP addresses for FQDN.
 
@@ -78,14 +79,12 @@ def get_ip(fqdn, ip_version=4):
     elif ip_version == 6:
         return ipv6
     elif ip_version == 10:
-        return (ipv4, ipv6)
+        return ipv4, ipv6
     else:
         raise ValueError("Unknown IP version '{}'!".format(ip_version))
 
-    return None
 
-
-def get_ipv4(fqdn):
+def get_ipv4(fqdn: str):
     """Return (first) IPv4 address for FQDN."""
     ipv4 = get_ip(fqdn, ip_version=4)
     if ipv4:
@@ -93,7 +92,7 @@ def get_ipv4(fqdn):
     return None
 
 
-def get_ipv6(fqdn):
+def get_ipv6(fqdn: str):
     """Return (first) IPv6 address for FQDN."""
     ipv6 = get_ip(fqdn, ip_version=6)
     if ipv6:
@@ -101,7 +100,7 @@ def get_ipv6(fqdn):
     return None
 
 
-def is_dns_resolvable(fqdn):
+def is_dns_resolvable(fqdn: str):
     """Check if FQDN can be resolved by DNS server."""
     if not fqdn:
         return False
@@ -113,7 +112,7 @@ def is_dns_resolvable(fqdn):
         return False
 
 
-def has_valid_domain_ending(fqdn, valid_endings):
+def has_valid_domain_ending(fqdn: str, valid_endings: Union[str, List[str]]):
     """
     Check if FQDN has valid domain ending. This check can be bypassed if no
     valid domain endings are given.
@@ -231,12 +230,12 @@ def get_s390_hostname(hostname, use_uppercase=True):
     else:
         linux = 'linux'
 
-    if (not isinstance(hostname, str) or len(hostname) < 10):
+    if not isinstance(hostname, str) or len(hostname) < 10:
         logger.error("Invalid s390 name: %s", hostname)
         return None
     else:
         name = hostname[7:10]
-    logging.debug("s390 name convertion from %s to %s", hostname, linux + name)
+    logging.debug("s390 name conversion from %s to %s", hostname, linux + name)
     return linux + name
 
 
@@ -282,7 +281,7 @@ def add_offset_to_date(offset, begin=date.today(), as_string=False):
     return date
 
 
-def get_random_mac_address():
+def get_random_mac_address() -> str:
     """Return a random MAC Address (local unicast)."""
     # TODO: This comment is wrong.
     # Xen Vendor OUI is 00:16:3e
@@ -298,9 +297,9 @@ def get_random_mac_address():
     return mac.upper()
 
 
-def normalize_ascii(string):
+def normalize_ascii(string: str) -> str:
     """
-    Remove non-ascii characters of an string.
+    Remove non-ascii characters of a string.
 
     In that case, the character is set to ` ` (space).
     """

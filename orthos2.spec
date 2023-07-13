@@ -122,12 +122,6 @@ cp -r docs/_build/html/* %{buildroot}%{orthos_web_docs}
 %fdupes %{buildroot}/%{orthos_web_docs}
 
 #systemd
-%if 0%{?suse_version}
-mkdir -p %{buildroot}%{_sbindir}
-ln -sf service %{buildroot}%{_sbindir}/rcorthos2_taskmanager
-ln -sf service %{buildroot}%{_sbindir}/rcorthos2
-ln -sf service %{buildroot}%{_sbindir}/rcorthos2_debug
-%endif
 ln -sr %{buildroot}%{python3_sitelib}/orthos2 %{buildroot}/usr/lib/orthos2/orthos2
 mkdir -p %{buildroot}/usr/share/orthos2/data_migrations
 mkdir -p %{buildroot}/usr/share/orthos2/taskmanager_migrations
@@ -169,11 +163,6 @@ orthos-admin collectstatic --noinput
 %{_unitdir}/orthos2.service
 %{_unitdir}/orthos2_debug.service
 %{_unitdir}/orthos2.socket
-%if 0%{?suse_version}
-%{_sbindir}/rcorthos2_taskmanager
-%{_sbindir}/rcorthos2
-%{_sbindir}/rcorthos2_debug
-%endif
 %{_tmpfilesdir}/orthos2.conf
 %dir %{python3_sitelib}/orthos2/
 %{python3_sitelib}/orthos2/*

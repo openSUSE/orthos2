@@ -2,6 +2,7 @@ import datetime
 import logging
 import re
 from copy import deepcopy
+from typing import Optional
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -799,7 +800,7 @@ class Machine(models.Model):
             if network != primary:
                 network.delete()
 
-    def get_primary_networkinterface(self):
+    def get_primary_networkinterface(self) -> Optional[NetworkInterface]:
         try:
             interface = self.networkinterfaces.get(primary=True)
         except NetworkInterface.DoesNotExist:

@@ -13,16 +13,17 @@ class CreateAccount(WebTest):
 
     def test_successful_user_creation(self):
         """Test if a new user can create an account."""
-        form = self.app.get(reverse('frontend:create_user')).form
-        form['login'] = 'new-user'
-        form['email'] = 'new-user@foo.bar'
-        form['password'] = 'linux1234'
-        form['password2'] = 'linux1234'
-        page = form.submit().maybe_follow()
+        with self.settings(AUTH_ALLOW_USER_CREATION=True):
+            form = self.app.get(reverse('frontend:create_user')).form
+            form['login'] = 'new-user'
+            form['email'] = 'new-user@foo.bar'
+            form['password'] = 'linux1234'
+            form['password2'] = 'linux1234'
+            page = form.submit().maybe_follow()
 
-        self.assertEqual(page.context['user'].username, 'new-user')
-        self.assertIn(reverse('frontend:free_machines'), page.request.url)
-        self.assertContains(page, 'My Machine')
+            self.assertEqual(page.context['user'].username, 'new-user')
+            self.assertIn(reverse('frontend:machines'), page.request.url)
+            self.assertContains(page, 'My Machine')
 
     def test_password_too_short(self):
         """Check if password is too short (at least 8 characters)."""
