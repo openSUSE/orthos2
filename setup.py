@@ -56,6 +56,7 @@ if __name__ == "__main__":
         ],
         install_requires=list(requires()),
         packages=find_packages(exclude=["*tests*"]),
+        include_package_data=True,
         scripts=[
             "cli/orthos2",
         ],

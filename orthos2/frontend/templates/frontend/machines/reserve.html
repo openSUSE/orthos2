@@ -1,0 +1,63 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block javascript %}
+<script>
+$( function() {
+  $('#datepicker').datepicker(
+    {
+      maxDate: "+90d",
+      minDate: 1,
+      dateFormat: "yy-mm-dd",
+    }
+  );
+} );
+</script>
+{% endblock %}
+
+{% block navbar %}
+{% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      {% include 'frontend/machines/detail/snippets/machinetitle.html' %}
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-6">
+      <form method="post" action="{% url 'frontend:reserve_machine' machine.id %}" class="form-reservemachine">
+        {% csrf_token %}
+
+        {{ form.reason.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label>{{ form.reason.label }}:</label>
+          </div>
+          <div class="col-9">
+            {{ form.reason }}
+            <small class="form-text text-muted">{{ form.reason.help_text }}</small>
+          </div>
+        </div>
+
+        {{ form.until.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label>{{ form.until.label }}:</label>
+          </div>
+          <div class="col-9">
+            {{ form.until }}
+            <small class="form-text text-muted">{{ form.until.help_text }}</small>
+          </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm btn-block">Reserve</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

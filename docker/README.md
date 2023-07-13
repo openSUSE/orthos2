@@ -11,8 +11,20 @@ If you are inside the container the usage is as follows:
 
 ```shell
 pip install -r requirements-devel.txt
-su - orthos
+sudo -u orthos bash
 python3 manage.py test
+```
+
+Now if you want to serve the webinterface you need to do something a little weird:
+
+```shell
+# Start as root
+ORTHOS_USER=root python3 manage.py makemigrations data
+ORTHOS_USER=root python3 manage.py makemigrations taskmanager
+sudo -u orthos bash
+python3 manage.py migrate
+DJANGO_SUPERUSER_PASSWORD="admin" python3 manage.py createsuperuser --noinput --username admin --email admin@example.com
+python3 manage.py runserver 0.0.0.0:8000
 ```
 
 If you messed something up just hit "Ctrl + D" two times and use the `podman run ...` command to spawn a new container.

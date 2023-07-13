@@ -1,0 +1,135 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+{% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      {% include 'frontend/machines/detail/snippets/machinetitle.html' %}
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-6">
+
+      <form method="post" class="form-reservemachine" id="post-form">
+        {% csrf_token %}
+
+        {{ form.system.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-4">
+            <label>{{ form.system.label }}:</label>
+          </div>
+          <div class="col-8">
+            {{ form.system }}
+            <small class="form-text text-muted">{{ form.system.help_text }}</small>
+          </div>
+        </div>
+
+        {{ form.architecture.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-4">
+            <label>{{ form.architecture.label }}:</label>
+          </div>
+          <div class="col-8">
+            {{ form.architecture }}
+            <small class="form-text text-muted">{{ form.architecture.help_text }}</small>
+          </div>
+        </div>
+
+        {{ form.ram_amount.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-4">
+            <label>{{ form.ram_amount.label }}:</label>
+          </div>
+          <div class="col-8">
+            {{ form.ram_amount }}
+            <small class="form-text text-muted">{{ form.ram_amount.help_text }}</small>
+          </div>
+        </div>
+
+        {{ form.image.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-4">
+            <label>{{ form.image.label }}:</label>
+          </div>
+          <div class="col-8">
+            {{ form.image }}
+            <small class="form-text text-muted">{{ form.image.help_text }}</small>
+          </div>
+        </div>
+
+        {{ form.disk_size.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-4">
+            <label>{{ form.disk_size.label }}:</label>
+          </div>
+          <div class="col-8">
+            {{ form.disk_size }}
+            <small class="form-text text-muted">{{ form.disk_size.help_text }}</small>
+          </div>
+        </div>
+
+        {{ form.networkinterfaces.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-4">
+            <label>NICs (max. 5):</label>
+          </div>
+          <div class="col-8">
+            {{ form.networkinterfaces }}
+            <small class="form-text text-muted">{{ form.networkinterfaces.help_text }}</small>
+          </div>
+        </div>
+
+        {{ form.uefi_boot.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-4">
+            <label>{{ form.uefi_boot.label }}:</label>
+          </div>
+          <div class="col-8">
+            <label class="switch">
+              {{ form.uefi_boot }}
+              <span class="slider"></span>
+            </label>
+            <small class="form-text text-muted">{{ form.uefi_boot.help_text }}</small>
+          </div>
+        </div>
+
+        {{ form.vnc.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-4">
+            <label>{{ form.vnc.label }}:</label>
+          </div>
+          <div class="col-8">
+            <label class="switch">
+              {{ form.vnc }}
+              <span class="slider"></span>
+            </label>
+            <small class="form-text text-muted">{{ form.vnc.help_text }}</small>
+          </div>
+        </div>
+
+        {{ form.parameters.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-4">
+            <label>{{ form.parameters.label }}:</label>
+          </div>
+          <div class="col-8">
+            {{ form.parameters }}
+            <small class="form-text text-muted">{{ form.parameters.help_text }}</small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm btn-block" onClick="$('#spinner').show(); $('#addvmbtn').addClass('disabled');" id="addvmbtn">Add Virtual Machine</button>
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

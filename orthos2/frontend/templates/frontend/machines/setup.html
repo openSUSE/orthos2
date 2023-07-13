@@ -1,0 +1,38 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+{% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      {% include 'frontend/machines/detail/snippets/machinetitle.html' %}
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-6">
+      <form method="post" action="{% url 'frontend:setup' machine.id %}" class="form-reservemachine">
+        {% csrf_token %}
+
+        {{ form.setup.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label>{{ form.setup.label }}:</label>
+          </div>
+          <div class="col-9">
+            {{ form.setup }}
+            <small class="form-text text-muted">{{ form.setup.help_text }}</small>
+          </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm btn-block">Start Setup</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
