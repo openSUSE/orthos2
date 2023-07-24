@@ -11,22 +11,6 @@
     "model": "data.serverconfig",
     "pk": null,
     "fields": {
-      "key": "orthos.bugreport.url",
-      "value": "https://github.com/openSUSE/orthos2/issues"
-    }
-  },
-  {
-    "model": "data.serverconfig",
-    "pk": null,
-    "fields": {
-      "key": "orthos.cli.url",
-      "value": ""
-    }
-  },
-  {
-    "model": "data.serverconfig",
-    "pk": null,
-    "fields": {
       "key": "auth.account.creation",
       "value": "bool:true"
     }
