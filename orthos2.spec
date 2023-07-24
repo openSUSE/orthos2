@@ -123,14 +123,6 @@ cp -r docs/_build/html/* %{buildroot}%{orthos_web_docs}
 
 #systemd
 ln -sr %{buildroot}%{python3_sitelib}/orthos2 %{buildroot}/usr/lib/orthos2/orthos2
-mkdir -p %{buildroot}/usr/share/orthos2/data_migrations
-mkdir -p %{buildroot}/usr/share/orthos2/taskmanager_migrations
-mkdir -p %{buildroot}/usr/share/orthos2/frontend_migrations
-mkdir -p %{buildroot}/usr/share/orthos2/api_migrations
-ln -sr %{buildroot}/usr/share/orthos2/data_migrations %{buildroot}%{python3_sitelib}/orthos2/data/migrations
-ln -sr %{buildroot}/usr/share/orthos2/taskmanager_migrations %{buildroot}%{python3_sitelib}/orthos2/taskmanager/migrations
-ln -sr %{buildroot}/usr/share/orthos2/frontend_migrations %{buildroot}%{python3_sitelib}/orthos2/frontend/migrations
-ln -sr %{buildroot}/usr/share/orthos2/api_migrations %{buildroot}%{python3_sitelib}/orthos2/api/migrations
 
 cp -r ansible %{buildroot}/usr/lib/orthos2/ansible
 
@@ -145,7 +137,6 @@ getent passwd orthos >/dev/null || \
 %tmpfiles_create %{_tmpfilesdir}/%{name}.conf
 %service_add_post orthos2.service orthos2_taskmanager.service orthos2.socket orthos2_debug.service
 
-orthos-admin makemigrations
 orthos-admin migrate
 orthos-admin collectstatic --noinput
 
@@ -176,16 +167,6 @@ orthos-admin collectstatic --noinput
 %dir /usr/share/orthos2
 %dir /usr/share/orthos2/fixtures
 /usr/share/orthos2/fixtures/*
-# The migrations link has to be owned by orthos user:
-# /usr/lib/python3.8/site-packages/orthos2/data ->
-#      /usr/share/orthos2/data/migrations
-# Like this:
-# orthos-admin makemigrations
-# has rights to dump migrations into site-packages subdir
-%attr(755,orthos,orthos) /usr/share/orthos2/data_migrations
-%attr(755,orthos,orthos) /usr/share/orthos2/taskmanager_migrations
-%attr(755,orthos,orthos) /usr/share/orthos2/frontend_migrations
-%attr(755,orthos,orthos) /usr/share/orthos2/api_migrations
 /usr/lib/orthos2/*
 %attr(755,orthos,orthos) %{_bindir}/orthos-admin
 %attr(755,orthos,orthos) %dir /srv/www/orthos2
