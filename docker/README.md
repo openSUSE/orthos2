@@ -19,8 +19,6 @@ Now if you want to serve the webinterface you need to do something a little weir
 
 ```shell
 # Start as root
-ORTHOS_USER=root python3 manage.py makemigrations data
-ORTHOS_USER=root python3 manage.py makemigrations taskmanager
 sudo -u orthos bash
 python3 manage.py migrate
 DJANGO_SUPERUSER_PASSWORD="admin" python3 manage.py createsuperuser --noinput --username admin --email admin@example.com

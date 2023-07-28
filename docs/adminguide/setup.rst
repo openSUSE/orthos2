@@ -14,26 +14,13 @@ Installation/Setup (Production system)
     In ``/etc/nginx/conf.d/orthos2_nginx.conf`` replace ``127.0.0.1`` in the ``server_name`` directive with the fqdn of
     the orthos2 server
 
-4. Dump Database Model:
-    .. code-block::
+4. Deploy code to database
 
-        orthos-admin makemigrations data frontend taskmanager api
-    
-5. Deploy code to database
-   
-   a. In case of a fresh install - Create the database:
-      .. code-block::
+  .. code-block::
 
-        orthos-admin migrate
+    orthos-admin migrate
 
-   b. In case of an Update (and makemigrations above produced database difference
-      dumps) - Apply/deploy detected database changes
-      In case of changes detected in the data app, do:
-      .. code-block::
-	 
-       orthos-admin migrate data
-
-6. Install fixtures (push data to database):
+5. Install fixtures (push data to database):
 
    a. In case of a fresh install - Load data from package data:
 
@@ -50,17 +37,17 @@ Installation/Setup (Production system)
         orthos-admin loaddata "dumped_table.json"
 
 
-7. Create a superuser
+6. Create a superuser
     .. code-block::
 
         orthos-admin createsuperuser
 
-8. Create html files from templates
+7. Create html files from templates
     .. code-block::
 
         orthos-admin collectstatic
 
-9. start all services
+8. start all services
     .. code-block::
 
         systemctl enable nginx
