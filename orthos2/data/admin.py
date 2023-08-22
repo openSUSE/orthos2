@@ -464,6 +464,7 @@ class MachineAdmin(admin.ModelAdmin):
             ),
         })
     )
+    autocomplete_fields = ["hypervisor"]
 
     def get_queryset(self, request):
         """
