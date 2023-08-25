@@ -15,6 +15,7 @@ from orthos2.data.models import (Architecture, Enclosure, Machine,
                                  validate_mac_address)
 from orthos2.data.models.domain import validate_domain_ending
 from orthos2.frontend.forms import ReserveMachineForm, VirtualMachineForm
+from orthos2.utils.remotepowertype import get_remote_power_type_choices
 
 logger = logging.getLogger('api')
 
@@ -89,7 +90,6 @@ class BaseAPIForm:
         result = {}
 
         for name, field in self.fields.items():
-
             result[name] = self.form_field_to_dict(
                 field,
                 name
@@ -105,7 +105,6 @@ class ReserveMachineAPIForm(ReserveMachineForm, BaseAPIForm):
         result = {}
 
         for name, field in self.fields.items():
-
             result[name] = self.form_field_to_dict(
                 field,
                 name
@@ -134,7 +133,6 @@ class VirtualMachineAPIForm(VirtualMachineForm, BaseAPIForm):
         result = {}
 
         for name, field in self.fields.items():
-
             result[name] = self.form_field_to_dict(
                 field,
                 name
@@ -165,28 +163,31 @@ class VirtualMachineAPIForm(VirtualMachineForm, BaseAPIForm):
         ]
 
 
+def get_architectures():
+    """Return architectures choice tuple."""
+    architectures = []
+    for architecture in Architecture.objects.all().values('id', 'name').order_by('name'):
+        architectures.append((architecture['id'], architecture['name']))
+    return architectures
+
+
+def get_systems():
+    """Return systems choice tuple."""
+    systems = []
+    for system in System.objects.all().values('id', 'name').order_by('name'):
+        systems.append((system['id'], system['name']))
+    return systems
+
+
+def get_machinegroups():
+    """Return machine group choice tuple."""
+    groups = [('none', 'None')]
+    for group in MachineGroup.objects.all().values('id', 'name').order_by('name'):
+        groups.append((group['id'], group['name']))
+    return groups
+
+
 class MachineAPIForm(forms.Form, BaseAPIForm):
-
-    def get_architectures():
-        """Return architectures choice tuple."""
-        architectures = []
-        for architecture in Architecture.objects.all().values('id', 'name').order_by('name'):
-            architectures.append((architecture['id'], architecture['name']))
-        return architectures
-
-    def get_systems():
-        """Return systems choice tuple."""
-        systems = []
-        for system in System.objects.all().values('id', 'name').order_by('name'):
-            systems.append((system['id'], system['name']))
-        return systems
-
-    def get_machinegroups():
-        """Return machine group choice tuple."""
-        groups = [('none', 'None')]
-        for group in MachineGroup.objects.all().values('id', 'name').order_by('name'):
-            groups.append((group['id'], group['name']))
-        return groups
 
     def clean_fqdn(self):
         """Check whether `fqdn` already exists."""
@@ -239,7 +240,8 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
                 self.add_error('enclosure', "Something went wrong!")
         cleaned_data['enclosure'] = enclosure
 
-        check_connectivity = int(cleaned_data['check_connectivity'])
+        # If no connectivity check is given, assume none should be checked
+        check_connectivity = int(cleaned_data.get('check_connectivity', 0))
         collect_system_information = cleaned_data['collect_system_information']
 
         if collect_system_information and check_connectivity != Machine.Connectivity.ALL:
@@ -451,8 +453,51 @@ class AnnotationAPIForm(forms.Form, BaseAPIForm):
 
 
 class BMCAPIForm(forms.Form, BaseAPIForm):
-    password = forms.CharField(label='Password', max_length=256, required=False,
-                               widget=forms.PasswordInput(render_value=True))
+
+    def __init__(self, *args, **kwargs):
+        machine = kwargs.pop('machine', None)
+        self.machine = machine
+
+        super().__init__(*args, **kwargs)
+        self._query_fields = (
+            'fqdn',
+            'mac',
+            'username',
+            'password',
+            'fence_name',
+        )
+        self.fields["fence_name"] = forms.ChoiceField(
+            choices=get_remote_power_type_choices('BMC'),
+            label="Fence Agent",
+        )
+
+    username = forms.CharField(
+        label='BMC Username',
+        max_length=256,
+        required=False
+    )
+    password = forms.CharField(
+        label='Password',
+        max_length=256,
+        required=False,
+        widget=forms.PasswordInput(render_value=True)
+    )
+    fqdn = forms.CharField(
+        label='FQDN',
+        max_length=256,
+    )
+    mac = forms.CharField(
+        label='MAC Address',
+        max_length=256,
+    )
+    fence_name = forms.ChoiceField(
+        choices=[],
+        label="Fence Agent",
+    )
+
+    def get_order(self):
+        """Return input order."""
+        return self._query_fields
 
 
 class RemotePowerAPIForm(forms.Form, BaseAPIForm):
