@@ -1,0 +1,13 @@
+[
+  {
+    "model": "data.remotepowerdevice",
+    "pk": null,
+    "fields": {
+      "username": "test",
+      "password": "test",
+      "fqdn": "rpower.foo.de",
+      "mac": "AA:BB:CC:DD:EE",
+      "url": "https://rpower.foo.de"
+    }
+  }
+]
