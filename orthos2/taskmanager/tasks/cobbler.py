@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from django.conf import settings
 
@@ -15,7 +16,7 @@ class RegenerateCobbler(Task):
     Regenerates the Cobbler configurations for IPv4/IPv6.
     """
 
-    def __init__(self, domain_id=None):
+    def __init__(self, domain_id: Optional[int] = None):
         self._domain_id = domain_id
 
     def _get_domains(self):
@@ -75,7 +76,7 @@ class RegenerateCobbler(Task):
 
 
 class UpdateCobblerMachine(Task):
-    def __init__(self, domain_id, machine_id):
+    def __init__(self, domain_id: int, machine_id: int):
         self._domain_id = domain_id
         self._machine_id = machine_id
 
@@ -119,7 +120,7 @@ class UpdateCobblerMachine(Task):
 
 
 class SyncCobblerDHCP(Task):
-    def __init__(self, domain_id):
+    def __init__(self, domain_id: int):
         self._domain_id = domain_id
 
     def execute(self):

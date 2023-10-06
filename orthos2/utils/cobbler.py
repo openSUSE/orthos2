@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING, Optional
 
 from django.template import Context, Template
 
@@ -6,6 +7,9 @@ from orthos2.data.models import Machine, ServerConfig
 from orthos2.utils.misc import get_hostname, get_ipv4, get_ipv6
 from orthos2.utils.remotepowertype import RemotePowerType
 from orthos2.utils.ssh import SSH
+
+if TYPE_CHECKING:
+    from orthos2.data.models import Domain
 
 logger = logging.getLogger('utils')
 
@@ -157,9 +161,9 @@ def get_filename(machine):
 
 class CobblerServer:
 
-    def __init__(self, fqdn, domain):
+    def __init__(self, fqdn: str, domain: "Domain"):
         self._fqdn = fqdn
-        self._conn = None
+        self._conn: Optional[SSH] = None
         self._domain = domain
         self._cobbler_path = ServerConfig.objects.by_key("cobbler.command")
 
