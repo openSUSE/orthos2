@@ -251,16 +251,3 @@ class SSH(object):
             return False
 
         return True
-
-
-if __name__ == '__main__':
-    fqdn = "virt133.devlab.prv.suse.com"
-    conn = None
-    try:
-        conn = SSH(fqdn)
-        conn.connect()
-    except Exception as e:
-        logger.warning("SSH login failed for [%s]: %s", fqdn, e)
-    finally:
-        if conn:
-            conn.close()
