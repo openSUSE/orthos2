@@ -1,6 +1,7 @@
 import logging
 
 from django import forms
+from django.db import models
 from django.forms import inlineformset_factory
 from django.forms.fields import (
     BooleanField,
@@ -556,8 +557,27 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
 
 
 class RemotePowerDeviceAPIForm(forms.ModelForm, BaseAPIForm):
+    class Meta:
+        model = RemotePowerDevice
+        fields = ["fqdn", "mac", "username", "password", "fence_name", "url"]
+
+    remotepower_type_choices = get_remote_power_type_choices("rpower_device")
+
+    fence_name = models.CharField(
+        choices=remotepower_type_choices,
+        max_length=255,
+        verbose_name="Fence Agent",
+    )
+
     password = forms.CharField(label='Password', max_length=256, required=True,
                                widget=forms.PasswordInput(render_value=True))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        remote_power_choices = get_remote_power_type_choices("rpower_device")
+        self.fields["fence_name"].choices = remote_power_choices
+        # Automatic Widget selection doesn't seem to work in this scenario sadly
+        self.fields["fence_name"].widget = forms.Select(choices=remote_power_choices)
 
 
 class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):
