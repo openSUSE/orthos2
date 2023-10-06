@@ -1,9 +1,12 @@
 import logging
 import os
 import socket
+from typing import Iterable, Optional, Tuple, Union
 
 import paramiko
 from django.conf import settings
+from paramiko import SFTPClient
+from paramiko.channel import ChannelFile, ChannelStderrFile
 
 from orthos2.data.models import Machine, ServerConfig
 
@@ -18,7 +21,7 @@ class SSH(object):
 
         pass
 
-    def __init__(self, fqdn):
+    def __init__(self, fqdn: str):
         """
         Create a new SSH object.
 
@@ -29,8 +32,7 @@ class SSH(object):
             self._fqdn = 'localhost'
         self._client = paramiko.SSHClient()
         self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self._sftp = None
-        self._username = None
+        self._sftp: Optional[SFTPClient] = None
         self._open = False
         try:
             self._machine = Machine.objects.get(fqdn=fqdn)
@@ -75,8 +77,13 @@ class SSH(object):
         self._client.close()
         self._open = False
 
-    def connect(self, user='root', timeout=None):
-        """Connect to the specified server (in SSH.__init__())."""
+    def connect(self, user: str = 'root', timeout: Optional[int] = None):
+        """
+        Connect to the specified server (in SSH.__init__()).
+
+        :param user: The user to use for connecting to the server.
+        :param timeout: The timeout in seconds for the connection.
+        """
         last_exception = None
 
         if not timeout:
@@ -92,7 +99,8 @@ class SSH(object):
             'port': 22,
             'username': user,
             'key_filename': [],
-            'timeout': timeout
+            # paramiko wants timeout to be a float
+            'timeout': float(timeout) if timeout else None
         }
 
         try:
@@ -115,14 +123,21 @@ class SSH(object):
 
         raise SSH.Exception(last_exception)
 
-    def execute(self, command, retry=True, timeout=None):
+    def execute(self, command: str, retry: bool = True, timeout: Optional[float] = None) -> Tuple[
+        Union[Iterable, ChannelFile], Union[Iterable, ChannelStderrFile], int
+    ]:
         """
         Execute the given command.
 
-        Return a tuple containing stdout (list), stderr (list) and exit status (int).
+        :param command: The command to execute.
+        :param retry: Set to "True" to retry the command once if it failed on the remote (default).
+        :param timeout: Timeout in seconds or "None" to disable setting a timeout (default).
+        :returns: A tuple containing stdout (list), stderr (list) and exit status (int).
         """
         try:
-            _stdin, stdout, stderr = self._client.exec_command(command)
+            stdout: Union[Iterable, ChannelFile]
+            stderr: Union[Iterable, ChannelStderrFile]
+            _stdin, stdout, stderr = self._client.exec_command(command, timeout=timeout)
             exitstatus = stdout.channel.recv_exit_status()
 
             stdout = stdout.readlines()
@@ -131,7 +146,7 @@ class SSH(object):
             stdout = stdout if stdout else []
             stderr = stderr if stderr else []
 
-            return (stdout, stderr, exitstatus)
+            return stdout, stderr, exitstatus
 
         except Exception as e:
             if retry:
@@ -147,7 +162,7 @@ class SSH(object):
         except Exception:
             raise SSH.Exception("Unknown SSH exception")
 
-    def read_file(self, filename):
+    def read_file(self, filename: str):
         """Read the given file contents."""
         if not self._sftp:
             self._sftp = self._client.open_sftp()
@@ -156,14 +171,14 @@ class SSH(object):
         f.close()
         return retval
 
-    def get_file(self, filename, mode):
+    def get_file(self, filename: str, mode: str):
         """Return a file-like object for filename with mode `mode`."""
         if not self._sftp:
             self._sftp = self._client.open_sftp()
         f = self._sftp.file(filename=filename, mode=mode)
         return f
 
-    def execute_script_remote(self, script, arguments=''):
+    def execute_script_remote(self, script: str, arguments: str = '') -> Optional[Tuple[str, str, int]]:
         """
         Execute the given script on the remote side.
 
@@ -209,7 +224,7 @@ class SSH(object):
 
         return retval
 
-    def copy_file(self, localfile, remotefile, parents=False):
+    def copy_file(self, localfile, remotefile, parents: bool = False):
         """
         Copy a local file to the remote side.
 
@@ -236,15 +251,20 @@ class SSH(object):
 
         self._sftp.put(localfile, remotefile)
 
-    def remove_file(self, remotefile):
+    def remove_file(self, remotefile: str):
         """Delete a file on the remote side."""
         if not self._sftp:
             self._sftp = self._client.open_sftp()
 
         self._sftp.remove(remotefile)
 
-    def check_path(self, path, test):
-        """Check if the file/directory exists remotely."""
+    def check_path(self, path: str, test: str) -> bool:
+        """
+        Check if the file/directory exists remotely.
+
+        :param path: The path to test for.
+        :param test: Arguments that are passed to "test".
+        """
         _stdout, _stderr, exitstatus = self.execute('test {} "{}"'.format(test, path))
 
         if exitstatus != 0:
