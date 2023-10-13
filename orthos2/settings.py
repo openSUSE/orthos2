@@ -22,7 +22,6 @@ from django.contrib.messages import constants as messages
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.abspath('/var/lib/orthos2')
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
@@ -84,7 +83,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'orthos2.wsgi.application'
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -115,7 +113,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
@@ -226,19 +223,16 @@ logger = logging.getLogger('orthos')
 
 STATIC_URL = '/static/'
 
-
 # Login URL
 LOGIN_URL = '/login/'
 
 # On logout, go back to the starting page
 LOGOUT_REDIRECT_URL = "/"
 
-
 # Override messages settings for Bootstrap
 MESSAGE_TAGS = {
     messages.ERROR: 'danger'
 }
-
 
 # REST framework
 REST_FRAMEWORK = {
@@ -246,7 +240,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     )
 }
-
 
 # Orthos variables
 SERVER_FQDN = 'orthos.domain.tld'
@@ -261,7 +254,34 @@ AUTH_ALLOW_USER_CREATION = False
 # HINT: Configure the DEFAULT_AUTO_FIELD setting ...
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-REMOTEPOWER_TYPES = []
+# Cobbler has a recommends on `fence_agents` if that is installed these defaults should work out of the box.
+REMOTEPOWER_TYPES = [
+    {
+        'fence': 'redfish',
+        'device': 'bmc',
+        'username': 'root',
+        'identity_file': '/root/.ssh/master',
+        'use_hostname_as_port': True,
+        'arch': ['x86_64', 'aarch64'],
+        'system': ['KVM VM']
+    },
+    {
+        'fence': 'ipmilanplus',
+        'device': 'bmc',
+        'username': 'xxx',
+        'password': 'XXX',
+        'arch': ['x86_64', 'aarch64'],
+        'system': ['Bare Metal']
+    },
+    {
+        'fence': 'apc',
+        'device': 'rpower_device',
+        'username': 'xxx',
+        'password': 'XXX',
+        'port': True,
+        'system': ['Bare Metal']
+    }
+]
 
 # Check for alternative settings file. If this file exists, we use it and evaluate the code.
 # This is intended to be used for production mode.
