@@ -26,3 +26,13 @@ python3 manage.py runserver 0.0.0.0:8000
 ```
 
 If you messed something up just hit "Ctrl + D" two times and use the `podman run ...` command to spawn a new container.
+
+What might be useful is if you load some default fixtures for testing:
+
+```shell
+python3 manage.py loaddata orthos2/data/fixtures/architectures.json
+python3 manage.py loaddata orthos2/data/fixtures/platforms.json
+python3 manage.py loaddata orthos2/data/fixtures/serialconsoletypes.json
+python3 manage.py loaddata orthos2/data/fixtures/systems.json
+python3 manage.py loaddata orthos2/data/fixtures/vendors.json
+```
