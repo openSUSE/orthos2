@@ -9,6 +9,55 @@ on:
       - master
 
 jobs:
+  mypy:
+    name: mypy
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [ '3.10' ]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-devel.txt', '**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          sudo apt-get install python3-setuptools libldap2-dev libsasl2-dev
+          python -m pip install --upgrade pip
+          pip install -r requirements-devel.txt
+          pip install mypy django-stubs[compatible-mypy]~=4.2
+      - name: Create required directories
+        run: |
+          sudo mkdir -p /var/log/orthos2
+          sudo mkdir -p /var/lib/orthos2/database
+      - name: Create required files
+        run: |
+          sudo touch /var/log/orthos2/default.log
+          sudo touch /var/lib/orthos2/database/db.sqlite3
+      - name: Adjust permissions for files
+        run: |
+          CURRENT_USER=$(whoami)
+          CURRENT_GROUP=$(id -gn)
+          sudo chown -R $CURRENT_USER:$CURRENT_GROUP /var/lib/orthos2
+          sudo chown -R $CURRENT_USER:$CURRENT_GROUP /var/log/orthos2
+      - name: Run mypy for server
+        continue-on-error: true
+        env:
+          ORTHOS_USER: runner
+        run: mypy orthos2
+      - name: Run mypy for CLI
+        continue-on-error: true
+        env:
+          ORTHOS_USER: runner
+        run: mypy cli
   isort:
     name: isort
     runs-on: ubuntu-20.04
