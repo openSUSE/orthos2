@@ -29,7 +29,7 @@ class RegenerateSerialConsole(Task):
         conn = None
         try:
             conn = SSH(self.fqdn)
-            conn.connect(user='cscreen')
+            conn.connect(user='_cscreen')
 
             _stdout, stderr, exitstatus = conn.execute('touch /dev/shm/.cscreenrc_allow_update')
             if exitstatus != 0:
