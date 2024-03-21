@@ -13,6 +13,26 @@ RUN zypper in -y \
     jq \
     sudo
 
+# Install requirements via zypper
+RUN zypper in -y \
+    python3-Django \
+    python3-django-extensions \
+    python3-paramiko \
+    python3-djangorestframework \
+    python3-validators \
+    python3-netaddr \
+    python3-django-auth-ldap
+
+# Test dependencies
+RUN zypper in -y \
+    python3-flake8 \
+    python3-coverage \
+    python3-isort \
+    python3-pytest \
+    python3-django-webtest \
+    python3-pexpect \
+    iputils
+
 # Create required user
 RUN groupadd -r orthos
 RUN useradd -r -g orthos -d /var/lib/orthos2 -s /bin/bash -c "orthos account" orthos
@@ -29,6 +49,7 @@ RUN chown -R orthos:orthos /var/lib/orthos2
 WORKDIR /code
 VOLUME /code
 EXPOSE 8000
+USER orthos
 
 # Set entrypoint for development
-ENTRYPOINT /bin/bash
+CMD ["/code/docker/devel-server.sh"]
