@@ -1,4 +1,4 @@
-name: Django CI
+name: Tests
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
       - master
 
 jobs:
-  build:
+  unit:
     runs-on: ubuntu-latest
 
     strategy:
@@ -67,3 +67,31 @@ jobs:
         coverage json
         coverage_percent=$(jq -r ".totals.percent_covered_display" < coverage.json)
         [ "$coverage_percent" -gt "25" ]
+  integration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Orthos 2 development docker images
+        run: |
+          docker compose build
+      - name: Setup Orthos 2 server
+        run: |
+          docker compose up -d
+        # TODO: Ensure domain resolves correctly
+      - name: Generate Django Token
+        # Wait 10 seconds so the container can start
+        run: |
+          sleep 10
+          docker compose cp orthos2:/var/lib/orthos2/admin-token .
+          echo "ORTHOS_DJANGO_ADMIN_TOKEN=$(cat ./admin-token)" >> $GITHUB_ENV
+      - name: Configure orthosrc
+        run: |
+          sed -i "s/token = /token = $ORTHOS_DJANGO_ADMIN_TOKEN/g" cli/orthosrc
+          sed -i "s/protocol = https/protocol = http/g" cli/orthosrc
+          sed -i "s/server = orthos2.arch.suse.de/server = localhost/g" cli/orthosrc
+          sed -i "s/port = 443/port = 8000/g" cli/orthosrc
+      - run: cat cli/orthosrc
+      - name: Execute Integration Tests
+        run: |
+          docker compose exec -it orthos2 bash -c 'cd cli; python3 -m unittest discover -v'
