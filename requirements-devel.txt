@@ -10,6 +10,8 @@ isort
 pytest
 mock
 django-webtest
+types-pytz
+pexpect
 
 # generate UML diagram:
 # pygraphviz
