@@ -9,7 +9,7 @@ window.addEventListener("load", function () {
                 'ppc64le': ['LPAR PowerPC', 'PowerVM', 'KVM', 'HMC'],
 
                 'aarch64': ['BareMetal', 'KVM'],
-                'embedded': ['BareMetal']
+                'embedded': ['BareMetal', 'Storage Array', 'FC Switch', 'Network Switch', 'Omni-Path Switch']
             };
 
             function filterSystems() {
