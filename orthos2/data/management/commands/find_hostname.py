@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
 from django.apps import apps
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 
-from orthos2.utils.hostnamefind import HostnameFinder
+from orthos2.utils.hostnamefinder import HostnameFinder
 
 
 class Command(BaseCommand):
@@ -16,7 +16,7 @@ class Command(BaseCommand):
         super(Command, self).__init__(*args, **kwargs)
         self.machinesonly = False
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: CommandParser):
         parser.add_argument('--domain', default="arch.suse.de", help="Domainname")
         parser.add_argument('--arch', default="x86_64", help="architecture")
 
