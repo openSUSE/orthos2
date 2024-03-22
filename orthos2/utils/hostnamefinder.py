@@ -1,5 +1,6 @@
 import logging
 import socket
+from typing import Dict, List, Optional, Tuple
 
 from django.conf import settings
 
@@ -36,7 +37,7 @@ class HostnameFinder(object):
             return None
         return HostnameFinder(config)
 
-    def __init__(self, config):
+    def __init__(self, config: Dict[str, str]):
         """
         Creates a new object with the given domain model object.
         """
@@ -48,13 +49,13 @@ class HostnameFinder(object):
         else:
             self.ip_range = config['ip_range']
 
-    def free_hostnames(self):
+    def free_hostnames(self) -> Tuple[List[str], List[str]]:
         """
         Returns the free hostnames in the 10.161.<section>.<ip_range> area.
         """
 
-        used = []
-        unused = []
+        used: List[str] = []
+        unused: List[str] = []
         # get the hostnames in the database
         Machines = set(Machine.objects.filter(fqdn_domain__name=self.domain).values_list('fqdn', flat=True))
         for i in self.sections:
@@ -71,7 +72,7 @@ class HostnameFinder(object):
                 unused.append(name)
         return used, unused
 
-    def get_hostname(self):
+    def get_hostname(self) -> Optional[List[str]]:
         hostnames = self.free_hostnames()
         if len(hostnames) < 1:
             return None
