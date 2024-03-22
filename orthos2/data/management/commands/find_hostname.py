@@ -3,7 +3,7 @@
 from django.apps import apps
 from django.core.management.base import BaseCommand
 
-from orthos2.utils.hostnamefind import HostnameFinder
+from orthos2.utils.hostnamefinder import HostnameFinder
 
 
 class Command(BaseCommand):
