@@ -111,8 +111,8 @@ class MachineSerializer(serializers.ModelSerializer[Machine]):
         fields = (
             "fqdn",
             "id",
-            "ipv4",
-            "ipv6",
+            "ip_address_v4",
+            "ip_address_v6",
             "comment",
             "group",
             "serial_number",
@@ -220,9 +220,9 @@ class MachineSerializer(serializers.ModelSerializer[Machine]):
         exclude.remove("power_type")
 
         for name, field in self.fields.items():
-            if name == "ipv4":
+            if name == "ip_address_v4":
                 field.label = "IPv4"
-            if name == "ipv6":
+            if name == "ip_address_v6":
                 field.label = "IPv6"
             if name == "status_ipv4":
                 field.label = "Status IPv4"

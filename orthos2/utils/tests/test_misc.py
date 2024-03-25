@@ -10,7 +10,6 @@ from orthos2.utils.misc import (
     get_hostname,
     has_valid_domain_ending,
     is_dns_resolvable,
-    is_valid_mac_address,
     normalize_ascii,
     str_time_to_datetime,
 )
@@ -65,16 +64,6 @@ class MiscMethodTests(TestCase):
 
         assert has_valid_domain_ending("test.foo", []) is False
         assert has_valid_domain_ending("test.foo", ["bar"]) is False
-
-    def test_is_valid_mac_address(self) -> None:
-        """
-        is_valid_mac_address() should return True if given MAC address is valid, False otherwise.
-        """
-        assert is_valid_mac_address("") is False
-        assert is_valid_mac_address("foo") is False
-
-        assert is_valid_mac_address("12:34:56:78:9A:BC") is True
-        assert is_valid_mac_address("12:34:56:78:9A:BC:D") is False
 
     def test_str_time_to_datetime(self) -> None:
         """

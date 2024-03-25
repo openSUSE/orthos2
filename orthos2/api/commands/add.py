@@ -39,7 +39,8 @@ from orthos2.data.models import (
     RemotePowerDevice,
     SerialConsole,
 )
-from orthos2.utils.misc import add_offset_to_date, format_cli_form_errors
+from orthos2.data.models.networkinterface import NetworkInterface
+from orthos2.utils.misc import add_offset_to_date, format_cli_form_errors, suggest_ip
 
 logger = logging.getLogger("api")
 
@@ -355,7 +356,23 @@ class AddMachineCommand(BaseAPIView):
             del cleaned_data["hypervisor_fqdn"]
             new_machine = Machine(**cleaned_data)
             new_machine.hypervisor = hypervisor
-            new_machine.mac_address = mac_address
+            new_primary_interface = new_machine.get_primary_networkinterface()
+            if new_primary_interface is None:
+                new_primary_interface = NetworkInterface(primary=True)
+            new_primary_interface.mac_address = mac_address
+            if new_machine.domain_set.enable_v4:
+                new_primary_interface.ip_address_v4 = suggest_ip(
+                    4,
+                    new_machine.domain_set.ip_v4,
+                    new_machine.domain_set.subnet_mask_v4,
+                )
+            if new_machine.domain_set.enable_v6:
+                new_primary_interface.ip_address_v6 = suggest_ip(
+                    6,
+                    new_machine.domain_set.ip_v6,
+                    new_machine.domain_set.subnet_mask_v6,
+                )
+            new_primary_interface.save()
             try:
                 new_machine.save()
             except Exception as e:

@@ -82,7 +82,6 @@ class MachineAPIFormTests(TestCase):
         form.fields["fqdn"].validators.pop(0)
 
         # Assert
-        print(form.errors)
         self.assertTrue(form.is_valid())
 
 

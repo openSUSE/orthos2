@@ -3,7 +3,13 @@
     "model": "data.Domain",
     "pk": 1,
     "fields": {
-      "name": "orthos2.test"
+      "name": "orthos2.test",
+      "ip_v4": "127.0.0.1",
+      "ip_v6": "::1",
+      "dynamic_range_v4_start": "127.0.0.1",
+      "dynamic_range_v4_end": "127.0.0.1",
+      "dynamic_range_v6_start": "::1",
+      "dynamic_range_v6_end": "::1"
     }
   },
   {
@@ -236,6 +242,19 @@
       "primary": true,
       "mac_address": "AA:BB:CC:DD:EE:EF",
       "name": "unknown",
+      "updated": "2024-08-05T12:25:52.168Z",
+      "created": "2024-08-05T12:25:52.168Z"
+    }
+  },
+  {
+    "model": "data.networkinterface",
+    "pk": 2,
+    "fields": {
+      "machine": 1,
+      "primary": true,
+      "mac_address": "AA:BB:CC:DD:EE:F0",
+      "name": "unknown",
+      "ip_address_v4": "127.0.0.1",
       "updated": "2024-08-05T12:25:52.168Z",
       "created": "2024-08-05T12:25:52.168Z"
     }

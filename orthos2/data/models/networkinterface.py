@@ -1,37 +1,13 @@
-from typing import TYPE_CHECKING, Any, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Tuple
 
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from orthos2.utils.misc import is_valid_mac_address
+from orthos2.data.validators import validate_mac_address
+from orthos2.utils import misc
 
 if TYPE_CHECKING:
     from orthos2.data.models.machine import Machine
-
-
-def validate_mac_address(mac_address: str) -> None:
-    """Validate MAC address format."""
-    if not is_valid_mac_address(mac_address):
-        raise ValidationError("'{}' is not a valid MAC address!".format(mac_address))
-
-
-def is_unique_mac_address(
-    mac_address: str, exclude: Optional[List[str]] = None
-) -> bool:
-    """
-    Check if `mac_address` does already exists.
-
-    Exlcude all MAC addresses in `exclude`.
-    """
-    if exclude is None:
-        exclude = []
-    mac_addresses = NetworkInterface.objects.filter(mac_address=mac_address).exclude(
-        mac_address__in=exclude
-    )
-
-    if mac_addresses.count() > 0:
-        return False
-    return True
 
 
 class NetworkInterface(models.Model):
@@ -54,6 +30,24 @@ class NetworkInterface(models.Model):
         blank=False,
         unique=True,
         validators=[validate_mac_address],
+    )
+
+    ip_address_v4 = models.GenericIPAddressField(
+        protocol="IPv4",
+        unique=True,
+        null=True,
+        blank=True,
+        verbose_name="IPv4 address",
+        help_text="IPv4 address",
+    )
+
+    ip_address_v6 = models.GenericIPAddressField(
+        protocol="IPv6",
+        unique=True,
+        null=True,
+        blank=True,
+        verbose_name="IPv6 address",
+        help_text="IPv6 address",
     )
 
     ethernet_type = models.CharField(
@@ -96,7 +90,7 @@ class NetworkInterface(models.Model):
         else:
             exclude = []
 
-        if not is_unique_mac_address(self.mac_address, exclude=exclude):
+        if not misc.is_unique_mac_address(self.mac_address, exclude=exclude):
             violate_net = NetworkInterface.objects.get(mac_address=self.mac_address)
             if hasattr(violate_net, "machine"):
                 violate_machine = violate_net.machine.fqdn  # type: ignore

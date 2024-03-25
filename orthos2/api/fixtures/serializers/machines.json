@@ -12,7 +12,13 @@
     "model": "data.domain",
     "pk": null,
     "fields": {
-      "name": "example.our-org.tld"
+      "name": "example.our-org.tld",
+      "ip_v4": "127.0.0.1",
+      "ip_v6": "::1",
+      "dynamic_range_v4_start": "127.0.0.1",
+      "dynamic_range_v4_end": "127.0.0.1",
+      "dynamic_range_v6_start": "::1",
+      "dynamic_range_v6_end": "::1"
     }
   },
   {

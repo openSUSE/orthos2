@@ -21,7 +21,7 @@ from typing import (
 
 from django.template import Context, Template
 
-from orthos2.utils.misc import get_hostname, get_ipv4, get_ipv6
+from orthos2.utils.misc import get_hostname
 from orthos2.utils.remotepowertype import RemotePowerType
 
 if TYPE_CHECKING:
@@ -58,7 +58,7 @@ def get_default_profile(machine: "Machine") -> str:
     )
 
 
-def get_tftp_server(machine: "Machine") -> Optional[str]:
+def get_tftp_server(machine: "Machine") -> Optional["Machine"]:
     """
     Return the corresponding tftp server attribute for the DHCP record.
 
@@ -73,7 +73,7 @@ def get_tftp_server(machine: "Machine") -> Optional[str]:
         server = machine.fqdn_domain.tftp_server
     else:
         server = None
-    return server.fqdn if server else None
+    return server
 
 
 def get_filename(machine: "Machine") -> Optional[str]:
@@ -226,10 +226,13 @@ class CobblerServer:
             object_id, "filename", get_filename(machine) or "", self._token
         )
         if tftp_server:
-            ipv4 = get_ipv4(tftp_server)
-            if ipv4:
+            if tftp_server.ip_address_v4:
                 self._xmlrpc_server.modify_system(
-                    object_id, "next_server_v4", ipv4, self._token
+                    object_id, "next_server_v4", tftp_server.ip_address_v4, self._token
+                )
+            if tftp_server.ip_address_v6:
+                self._xmlrpc_server.modify_system(
+                    object_id, "next_server_v6", tftp_server.ip_address_v6, self._token
                 )
         if old_machine_has_bmc and not machine.has_bmc():
             self.remove_bmc(object_id, save)
@@ -266,8 +269,8 @@ class CobblerServer:
         """
         interface_options = {
             "macaddress-default": machine.mac_address,
-            "ipaddress-default": machine.ipv4 or "",
-            "ipv6address-default": machine.ipv6 or "",
+            "ipaddress-default": machine.ip_address_v4 or "",
+            "ipv6address-default": machine.ip_address_v6 or "",
             "hostname-default": get_hostname(machine.fqdn),
             "dnsname-default": machine.fqdn,
             "management-default": True,
@@ -299,10 +302,10 @@ class CobblerServer:
             "hostname-bmc": get_hostname(bmc.fqdn),
             "dnsname-bmc": bmc.fqdn,
         }
-        ipv4_address = get_ipv4(bmc.fqdn)
+        ipv4_address = bmc.ip_address_v4
         if ipv4_address is not None:
             interface_options["ipaddress-bmc"] = ipv4_address
-        ipv6_address = get_ipv6(bmc.fqdn)
+        ipv6_address = bmc.ip_address_v6
         if ipv6_address is not None:
             interface_options["ipv6address-bmc"] = ipv6_address
         self._xmlrpc_server.modify_system(

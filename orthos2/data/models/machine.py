@@ -37,8 +37,6 @@ from orthos2.utils.misc import (
     Serializer,
     get_domain,
     get_hostname,
-    get_ipv4,
-    get_ipv6,
     get_s390_hostname,
     is_dns_resolvable,
 )
@@ -60,7 +58,7 @@ def validate_dns(value: str) -> None:
 
 
 def check_permission(
-    function: Callable[Concatenate["Machine", P], R]
+    function: Callable[Concatenate["Machine", P], R],
 ) -> Callable[Concatenate["Machine", P], R]:
     """Return decorator for checking machine specific methods."""
 
@@ -240,7 +238,7 @@ class Machine(models.Model):
         max_length=200,
         blank=False,
         unique=True,
-        validators=[validate_dns, validate_domain_ending],
+        validators=[validate_domain_ending],
         db_index=True,
         help_text="The Fully Qualified Domain Name of the main network interface of the machine",
     )
@@ -505,22 +503,9 @@ class Machine(models.Model):
         on_delete=models.SET_NULL,
         help_text="The physical host this virtual machine is running on",
     )
-    hostname: Optional[str] = None
-
-    __ipv4: Optional[str] = None
-
-    __ipv6: Optional[str] = None
-
-    mac_address: Optional[str] = None
 
     # Runtime object created on virt_api_int in init()
     virtualization_api = None
-
-    unknown_mac = models.BooleanField(
-        default=False,
-        verbose_name="MAC unknwon",
-        help_text="Use this to create a BMC before the mac address of the machine is known",
-    )
 
     active = models.BooleanField(
         default=True,
@@ -594,6 +579,31 @@ class Machine(models.Model):
     def __str__(self) -> str:
         return self.fqdn
 
+    @property
+    def ip_address_v4(self):
+        intf = self.get_primary_networkinterface()
+        if intf is None:
+            return None
+        return intf.ip_address_v4
+
+    @property
+    def ip_address_v6(self):
+        intf = self.get_primary_networkinterface()
+        if intf is None:
+            return None
+        return intf.ip_address_v6
+
+    @property
+    def hostname(self) -> Optional[str]:
+        return get_hostname(self.fqdn)
+
+    @property
+    def mac_address(self) -> Optional[str]:
+        intf = self.get_primary_networkinterface()
+        if intf is None:
+            return None
+        return intf.mac_address
+
     def bmc_allowed(self) -> bool:
         return self.system.allowBMC
 
@@ -609,21 +619,8 @@ class Machine(models.Model):
         """
         self.fqdn = self.fqdn.lower()
 
-        validate_dns(self.fqdn)
+        validate_domain_ending(self.fqdn)
 
-        if not self.mac_address and not self.unknown_mac:
-            raise ValidationError(
-                "'{}' You must select 'MAC Unkown' for systems without MAC".format(self)
-            )
-
-        if self.mac_address and self.unknown_mac:
-            raise ValidationError(
-                "'{}' You must not select 'MAC Unkown' for systems with a MAC".format(
-                    self
-                )
-            )
-        if self.unknown_mac and not self.bmc_allowed():
-            raise ValidationError("You may only skip the MAC for systems with BMC")
         if self.mac_address:
             validate_mac_address(self.mac_address)
 
@@ -748,8 +745,6 @@ class Machine(models.Model):
                 # Add the machine to the new Cobbler system
                 # TODO: check if machine is known to us, and also a cobbler server
                 new_domain_id = self.fqdn_domain.pk
-                self.__ipv4 = get_ipv4(self.fqdn)
-                self.__ipv6 = get_ipv6(self.fqdn)
                 from orthos2.data.signals import signal_cobbler_machine_update
 
                 signal_cobbler_machine_update.send(
@@ -791,18 +786,6 @@ class Machine(models.Model):
                 signal_serialconsole_regenerate.send(
                     sender=self.__class__, cscreen_server_fqdn=cscreen_server_fqdn
                 )
-
-    @property
-    def ipv4(self) -> Optional[str]:
-        if self.__ipv4 is None:
-            self.__ipv4 = get_ipv4(self.fqdn)
-        return self.__ipv4
-
-    @property
-    def ipv6(self) -> Optional[str]:
-        if self.__ipv6 is None:
-            self.__ipv6 = get_ipv6(self.fqdn)
-        return self.__ipv6
 
     @property
     def status_ping(self) -> bool:

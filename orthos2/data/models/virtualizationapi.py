@@ -514,9 +514,8 @@ class Libvirt(VirtualizationAPI):
 
         self.check_memory(kwargs["ram_amount"])
 
-        vm.hostname = self.generate_hostname()
         vm.hypervisor = self.host
-        vm.fqdn = "{}.{}".format(vm.hostname, self.host.fqdn_domain.name)
+        vm.fqdn = "{}.{}".format(self.generate_hostname(), self.host.fqdn_domain.name)
 
         vnc_port = 5900 + int(vm.hostname.split("-")[1])  # type: ignore
         vm.vnc = {"enabled": kwargs["vnc"], "port": vnc_port}  # type: ignore

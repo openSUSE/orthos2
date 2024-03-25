@@ -4,6 +4,7 @@ from django.urls import reverse
 from django_webtest import WebTest  # type: ignore
 
 from orthos2.data.models import Architecture, Machine, ServerConfig, System
+from orthos2.data.models.domain import Domain
 
 
 class ChangeView(WebTest):
@@ -20,11 +21,20 @@ class ChangeView(WebTest):
 
         ServerConfig.objects.create(key="domain.validendings", value="bar.de")
 
+        Domain(
+            name="foo.bar.de",
+            ip_v4="127.0.0.1",
+            ip_v6="::1",
+            dynamic_range_v4_start="127.0.0.1",
+            dynamic_range_v4_end="127.0.0.1",
+            dynamic_range_v6_start="::1",
+            dynamic_range_v6_end="::1",
+        ).save()
+
         m1 = Machine()
         m1.pk = 1
         m1.system = System.objects.get_by_natural_key("BareMetal")
         m1.fqdn = "machine1.foo.bar.de"
-        m1.mac_address = "01:AB:22:33:44:55"
         m1.architecture_id = Architecture.objects.get_by_natural_key("x86_64").id
 
         m1.save()
@@ -34,7 +44,6 @@ class ChangeView(WebTest):
         m2.administrative = True
         m2.system = System.objects.get_by_natural_key("BareMetal")
         m2.fqdn = "machine2.foo.bar.de"
-        m2.mac_address = "02:AB:22:33:44:55"
         m2.architecture_id = Architecture.objects.get_by_natural_key("x86_64").id
 
         m2.save()

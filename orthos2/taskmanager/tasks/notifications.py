@@ -68,7 +68,7 @@ To login, just SSH to {fqdn} or {ip}.
 If you have any problems, contact <{support_contact}>.""".format(
                 username=user.username,
                 fqdn=machine.fqdn,
-                ip=machine.ipv4,
+                ip=machine.ip_address_v4,
                 support_contact=machine.get_support_contact(),
             )
 

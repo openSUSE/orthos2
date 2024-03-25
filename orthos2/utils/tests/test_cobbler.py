@@ -56,7 +56,8 @@ class CobblerMethodTests(TestCase):
 
         # Assert
         self.longMessage = True
-        self.assertEqual(result, test_machine.fqdn)
+        self.assertIsNotNone(result)
+        self.assertEqual(result.fqdn, test_machine.fqdn)  # type: ignore[union-attr]
 
     def test_cobbler_deploy(self) -> None:
         # Arrange
