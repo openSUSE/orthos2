@@ -35,7 +35,7 @@ line interface based on readline.
 
 %prep
 
-%setup -q -n orthos2-%{version}
+%autosetup
 
 %build
 

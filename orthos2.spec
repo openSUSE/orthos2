@@ -101,7 +101,7 @@ BuildRequires:  python3-Sphinx
 HTML documentation that can be put into a web servers htdocs directory for publishing.
 
 %prep
-%setup
+%autosetup
 
 %build
 %py3_build
