@@ -5,8 +5,7 @@ from django.test import TestCase
 from mock import MagicMock, NonCallableMagicMock
 
 import orthos2.utils.cobbler as cobbler
-from orthos2.data.models import (Architecture, Domain, Machine, MachineGroup,
-                                 RemotePower)
+from orthos2.data.models import Architecture, Domain, Machine, MachineGroup, RemotePower
 from orthos2.utils.cobbler import CobblerException
 
 logging.disable(logging.CRITICAL)
