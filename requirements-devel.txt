@@ -10,6 +10,9 @@ isort
 pytest
 mock
 django-webtest
+djangorestframework-stubs[compatible-mypy]
+django-stubs[compatible-mypy]
+types-netaddr
 types-pytz
 pexpect
 
