@@ -56,6 +56,7 @@
       "ipmi": true,
       "vm_capable": true,
       "vm_dedicated_host": true,
+      "virt_api_int": 0,
       "platform": 1,
       "disk_type": "scsi controller",
       "last": "root      Sat Dec 10 01:19",
