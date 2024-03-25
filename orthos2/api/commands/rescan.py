@@ -2,8 +2,7 @@ from django.http import HttpResponseRedirect
 from django.urls import re_path
 
 from orthos2.api.commands.base import BaseAPIView, get_machine
-from orthos2.api.serializers.misc import (ErrorMessage, InfoMessage, Message,
-                                          Serializer)
+from orthos2.api.serializers.misc import ErrorMessage, InfoMessage, Message, Serializer
 from orthos2.taskmanager.tasks.daily import DailyMachineChecks
 from orthos2.taskmanager.tasks.machinetasks import MachineCheck
 

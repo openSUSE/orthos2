@@ -3,8 +3,11 @@ from django.http import JsonResponse
 from django.urls import re_path
 
 from orthos2.api.commands.base import BaseAPIView
-from orthos2.api.serializers.misc import (AuthRequiredSerializer, ErrorMessage,
-                                          InfoMessage)
+from orthos2.api.serializers.misc import (
+    AuthRequiredSerializer,
+    ErrorMessage,
+    InfoMessage,
+)
 from orthos2.data.models import ServerConfig
 
 
