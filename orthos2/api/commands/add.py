@@ -5,6 +5,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, reverse
 from django.urls import re_path
+from rest_framework.permissions import IsAuthenticated
 
 from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.forms import (AnnotationAPIForm, BMCAPIForm, MachineAPIForm,
@@ -59,6 +60,7 @@ class AddCommand(BaseAPIView):
                                                 machine (superusers only).
                 virtualmachine <architecture> : Add a virtual machine on a specific
                                                 architecture.
+                bmc <fqdn>                    : Add a bmc to a machine.
 
     Example:
         ADD machine
@@ -66,6 +68,7 @@ class AddCommand(BaseAPIView):
         ADD serialconsole foo.domain.tld
         ADD remotepower foo.domain.tld
         ADD annotation foo.domain.tld
+        ADD bmc foo.domain.tld
     """
 
     @staticmethod
@@ -300,6 +303,7 @@ class AddMachineCommand(BaseAPIView):
 
 
 class AddBMCCommand(BaseAPIView):
+    permission_classes = [IsAuthenticated]
     URL_POST = '/bmc/add/{fqdn}'
 
     @staticmethod
@@ -307,7 +311,7 @@ class AddBMCCommand(BaseAPIView):
         return [
             re_path(r'^bmc/add', AddBMCCommand.as_view(), name='bmc_add'),
             re_path(
-                r'^bmc/add/(?P<fqdn>[a-z0-9\.-]+)$/',
+                r'^bmc/add/(?P<fqdn>[a-z0-9.-]+)/$',
                 AddBMCCommand.as_view(),
                 name='bmc_add'
             ),
@@ -330,22 +334,19 @@ class AddBMCCommand(BaseAPIView):
         except Exception as e:
             return ErrorMessage(str(e)).as_json
 
-        if isinstance(request.user, AnonymousUser) or not request.auth:
-            return AuthRequiredSerializer().as_json
-
         form = BMCAPIForm(machine=machine)
 
-        input = InputSerializer(
+        input_serializer = InputSerializer(
             form.as_dict(),
             self.URL_POST.format(fqdn=machine.fqdn),
             form.get_order()
         )
-        return input.as_json
+        return input_serializer.as_json
 
     def post(self, request, *args, **kwargs):
         """Add BMC to machine."""
         try:
-
+            # FIXME: When you call /bmc/add/ the machine is add
             fqdn = request.path.split("/")[-1]
             result = get_machine(
                 fqdn,
@@ -360,7 +361,7 @@ class AddBMCCommand(BaseAPIView):
         except Exception as e:
             return ErrorMessage(str(e)).as_json
 
-        data = json.loads(request.body.decode('utf-8'))['form']
+        data = json.loads(request.body.decode('utf-8')).get("form", "")
         form = BMCAPIForm(data, machine=machine)
 
         if form.is_valid():
