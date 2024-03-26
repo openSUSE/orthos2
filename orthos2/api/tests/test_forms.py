@@ -144,10 +144,28 @@ class RemotePowerAPIFormTests(TestCase):
 
 
 class RemotePowerDeviceAPIFormTests(TestCase):
+    remote_power_types = [
+        {
+            'fence': 'apc',
+            'device': 'rpower_device',
+            'username': 'xxx',
+            'password': 'XXX',
+            'port': True,
+            'system': ['Bare Metal']
+        },
+    ]
+
+    @override_settings(REMOTEPOWER_TYPES=remote_power_types)
     def test_form(self):
         """Test the remote power device creation API form"""
         # Arrange & Act
-        form = RemotePowerDeviceAPIForm({"password": "test"})
+        form = RemotePowerDeviceAPIForm({
+            "fqdn": "TODO",
+            "password": "test",
+            "mac": "AA:BB:CC:DD:EE",
+            "username": "TODO",
+            "fence_name": "apc"
+        })
 
         # Assert
         self.assertTrue(form.is_valid())
