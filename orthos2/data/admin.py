@@ -646,7 +646,7 @@ admin.site.register(Enclosure, EnclosureAdmin)
 
 class RemotePowerDeviceAdmin(admin.ModelAdmin):
     form = RemotePowerDeviceAPIForm
-    list_display = ['fqdn']
+    list_display = ['fqdn', 'fence_name']
 
 
 admin.site.register(RemotePowerDevice, RemotePowerDeviceAdmin)
