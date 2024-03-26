@@ -592,9 +592,12 @@ class VirtualMachineForm(forms.Form):
         self.fields['system'].choices = [
             (system.pk, system.name) for system in System.objects.filter(
                 virtual=True,
-                name="KVM"
+                name__regex=r"\bKVM\b"
             )
         ]
+        if virtualization_api is None:
+            raise ValueError('VirtualMachineForm requires "virtualization_api" (an instance of "VirtualizationAPI") '
+                             'as a kwarg.')
         architectures, image_list = virtualization_api.get_image_list()
         self.fields['architecture'].choices = [(architectures[0], architectures[0])]
         self.fields['image'].choices = [('none', 'None')] + image_list

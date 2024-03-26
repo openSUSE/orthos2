@@ -1,8 +1,12 @@
 import logging
 import os
 from datetime import date
+from typing import TYPE_CHECKING
 
 from orthos2.utils.misc import get_random_mac_address
+
+if TYPE_CHECKING:
+    from orthos2.data.models import Machine
 
 logger = logging.getLogger('models')
 
@@ -32,7 +36,7 @@ class VirtualizationAPI:
         (Type.LIBVIRT, 'libvirt'),
     )
 
-    def __init__(self, type, host, *args, **kwargs):
+    def __init__(self, type, host: "Machine", *args, **kwargs):
         """
         Cast plain `VirtualizationAPI` object to respective subclass.
 
@@ -169,7 +173,10 @@ class Libvirt(VirtualizationAPI):
         from orthos2.data.models import ServerConfig
 
         architectures = [self.host.architecture.name]
-        image_directory = ServerConfig.objects.by_key('virtualization.libvirt.images.directory')
+        image_directory = ServerConfig.objects.by_key(
+            'virtualization.libvirt.images.directory',
+            '/var/lib/libvirt/images'
+        )
         image_list = []
 
         try:
