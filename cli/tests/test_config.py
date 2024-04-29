@@ -19,7 +19,7 @@ class ConfigTests(OrthosCliTestCase):
 
         # Act
         self.process.sendline("config")
-        self.process.expect("(orthos 2.0.0:Anonymous)")
+        self.process.expect("(orthos 2.3.0:Anonymous)")
         output = self.process.before.decode().split("\n")[1:]
 
         # Assert

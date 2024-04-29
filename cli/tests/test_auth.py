@@ -21,7 +21,7 @@ class AuthTests(OrthosCliTestCase):
         self.process.sendline("admin")
 
         # Assert
-        self.process.expect("(orthos 2.0.0:admin)")
+        self.process.expect("(orthos 2.3.0:admin)")
         self.stop_cli()
 
 
