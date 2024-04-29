@@ -9,11 +9,13 @@ from . import OrthosCliTestCase
 
 class PowerTests(OrthosCliTestCase):
     @unittest.skip("Too much setup at the moment")
-    def test_power_on(self):
+    def test_power_on(self) -> None:
         # Arrange
         self.start_cli(username="admin")
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("power <fqdn> on")
 
         # Cleanup
@@ -23,11 +25,13 @@ class PowerTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_power_off(self):
+    def test_power_off(self) -> None:
         # Arrange
         self.start_cli(username="admin")
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("power <fqdn> off")
 
         # Cleanup
@@ -37,11 +41,13 @@ class PowerTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_power_off_ssh(self):
+    def test_power_off_ssh(self) -> None:
         # Arrange
         self.start_cli(username="admin")
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("power <fqdn> off-ssh")
 
         # Cleanup
@@ -51,11 +57,13 @@ class PowerTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_power_off_remotepower(self):
+    def test_power_off_remotepower(self) -> None:
         # Arrange
         self.start_cli(username="admin")
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("power <fqdn> off-remotepower")
 
         # Cleanup
@@ -65,11 +73,13 @@ class PowerTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_power_reboot(self):
+    def test_power_reboot(self) -> None:
         # Arrange
         self.start_cli(username="admin")
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("power <fqdn> reboot")
 
         # Cleanup
@@ -79,11 +89,13 @@ class PowerTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_power_reboot_ssh(self):
+    def test_power_reboot_ssh(self) -> None:
         # Arrange
         self.start_cli(username="admin")
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("power <fqdn> reboot-ssh")
 
         # Cleanup
@@ -93,11 +105,13 @@ class PowerTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_power_reboot_remotepower(self):
+    def test_power_reboot_remotepower(self) -> None:
         # Arrange
         self.start_cli(username="admin")
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("power <fqdn> reboot-remotepower")
 
         # Cleanup
@@ -107,11 +121,13 @@ class PowerTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_power_status(self):
+    def test_power_status(self) -> None:
         # Arrange
         self.start_cli(username="admin")
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("power <fqdn> status")
 
         # Cleanup

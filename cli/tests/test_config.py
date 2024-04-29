@@ -8,7 +8,7 @@ from . import OrthosCliTestCase
 
 
 class ConfigTests(OrthosCliTestCase):
-    def test_config(self):
+    def test_config(self) -> None:
         """
         Test to verify that outputting the config of the CLI works as expected.
         """
@@ -18,9 +18,13 @@ class ConfigTests(OrthosCliTestCase):
         # self.process.logfile = sys.stdout.buffer
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("config")
-        self.process.expect("(orthos 2.0.0:Anonymous)")
-        output = self.process.before.decode().split("\n")[1:]
+        self.process.expect("(orthos 2.3.0:Anonymous)")
+        if self.process.before is None:
+            self.fail("CLI didn't communicate back properly!")
+        output = self.process_output(self.process.before)
 
         # Assert
         self.stop_cli()

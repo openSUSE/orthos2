@@ -9,11 +9,13 @@ from . import OrthosCliTestCase
 
 class ReserveTests(OrthosCliTestCase):
     @unittest.skip("Too much setup at the moment")
-    def test_reserve(self):
+    def test_reserve(self) -> None:
         # Arrange
         self.start_cli()
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("reserve <fqdn>")
 
         # Cleanup

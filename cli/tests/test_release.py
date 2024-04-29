@@ -9,12 +9,12 @@ from . import OrthosCliTestCase
 
 class ReleaseTests(OrthosCliTestCase):
     @unittest.skip("Too much setup at the moment")
-    def test_fqdn(self):
+    def test_fqdn(self) -> None:
         # Assert
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_hostname(self):
+    def test_hostname(self) -> None:
         # Assert
         self.assertTrue(False)
 
