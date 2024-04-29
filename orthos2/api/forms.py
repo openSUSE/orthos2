@@ -410,6 +410,7 @@ class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
         self.fields['stype'].empty_label = None
         self.fields['stype'].choices = self.get_serial_type_choices
         self.fields['baud_rate'].initial = 5
+        self.fields['kernel_device'].initial = 0
         self.fields['kernel_device_num'].min_value = 0
         self.fields['kernel_device_num'].max_value = 1024
         self.fields['console_server'].empty_label = 'None'
