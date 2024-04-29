@@ -18,7 +18,7 @@ class HelpTests(OrthosCliTestCase):
 
         # Act
         self.process.sendline("HELP")
-        self.process.expect(r"\(orthos 2.0.0:Anonymous\) ")
+        self.process.expect(r"\(orthos 2.3.0:Anonymous\) ")
         output = self.process.before.decode().split("\n")[1:]
 
         # Assert

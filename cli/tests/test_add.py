@@ -21,7 +21,7 @@ class AddTests(OrthosCliTestCase):
 
         # Act
         self.process.sendline("add bmc <fqdn>")
-        self.process.expect("(orthos 2.0.0:admin)")
+        self.process.expect("(orthos 2.3.0:admin)")
         output = self.process.before.decode().split("\n")[1:]
 
         # Assert
@@ -49,7 +49,7 @@ class AddTests(OrthosCliTestCase):
 
         # Act
         self.process.sendline("add bmc <fqdn>")
-        self.process.expect("(orthos 2.0.0:admin)")
+        self.process.expect("(orthos 2.3.0:admin)")
         output = self.process.before.decode().split("\n")[1:]
 
         # Assert

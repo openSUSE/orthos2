@@ -21,7 +21,7 @@ class AliasTests(OrthosCliTestCase):
 
         # Act
         self.process.sendline("alias test query name")
-        self.process.expect("(orthos 2.0.0:Anonymous)")
+        self.process.expect("(orthos 2.3.0:Anonymous)")
 
         # Assert
         self.stop_cli()
