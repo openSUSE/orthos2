@@ -80,10 +80,19 @@ Example for the connection to the Orthos Server:
 Orthosrc configuration file
 ===========================
 
-The orthos package installs an empty configuration file in |orthosrc_loc|.
-Once you connected to the orthos server, it is recommended to copy this
-file to your local config directory: ~/.config/orthosrc
-and adapt the file to your needs.
+The orthos package installs an empty configuration file in |orthosrc_loc|. Once you connected to the orthos server, it
+is recommended to copy this file to your local config directory: ``~/.config/orthosrc`` and adapt the file to your
+needs.
+
+The file follows the following format: `Python 3 Docs - Supported INI file structure <https://docs.python.org/3/library/configparser.html#supported-ini-file-structure>`_
+
+The CLI will read the global configuration file found at ``/etc/orthosrc`` and after that load the user config file.
+There are two sections:
+
+* ``global``: Keys for username, server, port, protocol and the token.
+* ``alias``: Keys are the name of the alias whereas the value is the query that is being sent.
+
+For authentication it is required to obtain a token from the WebUI under "Preferences".
 
 Orthos Command Examples
 =======================
