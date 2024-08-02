@@ -7,18 +7,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0021_auto_20210628_1207'),
+        ("data", "0021_auto_20210628_1207"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='machine',
-            name='hypervisor',
-            field=models.ForeignKey(blank=True, help_text='The physical host this virtual machine is running on', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='hypervising', to='data.machine'),
+            model_name="machine",
+            name="hypervisor",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="The physical host this virtual machine is running on",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="hypervising",
+                to="data.machine",
+            ),
         ),
         migrations.AlterField(
-            model_name='serialconsole',
-            name='kernel_device',
-            field=models.CharField(default='ttyS', help_text='The kernel device string as passed via kernel command line, e.g. ttyS, ttyAMA, ttyUSB,...', max_length=255, verbose_name='Kernel Device'),
+            model_name="serialconsole",
+            name="kernel_device",
+            field=models.CharField(
+                default="ttyS",
+                help_text="The kernel device string as passed via kernel command line, e.g. ttyS, ttyAMA, ttyUSB,...",
+                max_length=255,
+                verbose_name="Kernel Device",
+            ),
         ),
     ]

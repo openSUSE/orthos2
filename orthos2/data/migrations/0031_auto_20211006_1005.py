@@ -6,13 +6,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0030_auto_20210916_1228'),
+        ("data", "0030_auto_20210916_1228"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='serialconsole',
-            name='kernel_device',
-            field=models.CharField(choices=[('ttyS', 'ttyS'), ('ttyUSB', 'ttyUSB'), ('ttyAMA', 'ttyAMA'), ('tty', 'tty'), ('None', 'None')], default='ttyS', help_text='The kernel device string as passed via kernel command line, e.g. ttyS, ttyAMA, ttyUSB,... "None" will remove console= kernel paramter', max_length=64, verbose_name='Kernel Device'),
+            model_name="serialconsole",
+            name="kernel_device",
+            field=models.CharField(
+                choices=[
+                    ("ttyS", "ttyS"),
+                    ("ttyUSB", "ttyUSB"),
+                    ("ttyAMA", "ttyAMA"),
+                    ("tty", "tty"),
+                    ("None", "None"),
+                ],
+                default="ttyS",
+                help_text='The kernel device string as passed via kernel command line, e.g. ttyS, ttyAMA, ttyUSB,... "None" will remove console= kernel paramter',
+                max_length=64,
+                verbose_name="Kernel Device",
+            ),
         ),
     ]

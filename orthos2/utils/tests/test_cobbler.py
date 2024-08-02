@@ -70,14 +70,14 @@ class CobblerMethodTests(TestCase):
         # Assert
         self.assertEqual(
             result,
-            'cobbler system edit'
-            ' --name=test.foo.bar.de'
-            ' --interface=bmc'
-            ' --interface-type=bmc'
+            "cobbler system edit"
+            " --name=test.foo.bar.de"
+            " --interface=bmc"
+            " --interface-type=bmc"
             ' --ip-address=""'
             ' --mac=""'
             ' --dns-name="my-bmc"'
-            ' --ipv6-address="" '
+            ' --ipv6-address="" ',
         )
 
     def test_get_power_options(self):
@@ -86,12 +86,12 @@ class CobblerMethodTests(TestCase):
         test_machine.remotepower = RemotePower.objects.get(pk=1)
         remote_power_types = [
             {
-                'fence': 'ipmilanplus',
-                'device': 'rpower_device',
-                'username': 'xxx',
-                'password': 'XXX',
-                'arch': ['x86_64', 'aarch64'],
-                'system': ['Bare Metal']
+                "fence": "ipmilanplus",
+                "device": "rpower_device",
+                "username": "xxx",
+                "password": "XXX",
+                "arch": ["x86_64", "aarch64"],
+                "system": ["Bare Metal"],
             },
         ]
 
@@ -103,7 +103,7 @@ class CobblerMethodTests(TestCase):
         self.longMessage = True
         self.assertEqual(
             result,
-            " --power-type=ipmilanplus  --power-user=test --power-pass=test  --power-address=rpower.foo.de"
+            " --power-type=ipmilanplus  --power-user=test --power-pass=test  --power-address=rpower.foo.de",
         )
 
     @mock.patch(
@@ -120,7 +120,10 @@ class CobblerMethodTests(TestCase):
         test_machine.mac_address = "AA:BB:CC:DD:EE:FF"
 
         # Act
-        with mock.patch("orthos2.data.models.Machine.ipv4", new_callable=mock.PropertyMock(return_value="17.17.17.17")):
+        with mock.patch(
+            "orthos2.data.models.Machine.ipv4",
+            new_callable=mock.PropertyMock(return_value="17.17.17.17"),
+        ):
             options = cobbler.create_cobbler_options(test_machine)
 
         # Assert
@@ -133,8 +136,10 @@ class CobblerMethodTests(TestCase):
         self.assertTrue(" --interface-master=True" in options)
 
         # Act
-        with mock.patch("orthos2.data.models.Machine.ipv6",
-                        new_callable=mock.PropertyMock(return_value="2001:db8::8a2e:370:7334")):
+        with mock.patch(
+            "orthos2.data.models.Machine.ipv6",
+            new_callable=mock.PropertyMock(return_value="2001:db8::8a2e:370:7334"),
+        ):
             options = cobbler.create_cobbler_options(test_machine)
 
         # Assert
@@ -144,8 +149,10 @@ class CobblerMethodTests(TestCase):
         test_machine.dhcp_filename = "file.name"
 
         # Act
-        with mock.patch("orthos2.data.models.Machine.ipv6",
-                        new_callable=mock.PropertyMock(return_value=None)):
+        with mock.patch(
+            "orthos2.data.models.Machine.ipv6",
+            new_callable=mock.PropertyMock(return_value=None),
+        ):
             options = cobbler.create_cobbler_options(test_machine)
 
         # Assert
@@ -153,17 +160,24 @@ class CobblerMethodTests(TestCase):
         self.assertTrue(" --filename=file.name" in options)
 
         # Act
-        with mock.patch("orthos2.data.models.Machine.ipv6",
-                        new_callable=mock.PropertyMock(return_value="2001:db8::8a2e:370:7334")):
+        with mock.patch(
+            "orthos2.data.models.Machine.ipv6",
+            new_callable=mock.PropertyMock(return_value="2001:db8::8a2e:370:7334"),
+        ):
             options = cobbler.create_cobbler_options(test_machine)
 
         # Assert
         self.assertTrue(" --filename=file.name" in options)
         self.assertTrue(" --ipv6-address=2001:db8::8a2e:370:7334" in options)
 
-    @mock.patch("orthos2.utils.cobbler.create_cobbler_options",
-                mock.MagicMock(return_value="option-string"))
-    @mock.patch("orthos2.utils.cobbler.get_default_profile", mock.MagicMock(return_value="default_profile"))
+    @mock.patch(
+        "orthos2.utils.cobbler.create_cobbler_options",
+        mock.MagicMock(return_value="option-string"),
+    )
+    @mock.patch(
+        "orthos2.utils.cobbler.get_default_profile",
+        mock.MagicMock(return_value="default_profile"),
+    )
     def test_get_cobbler_add_command(self):
         machine = mock.NonCallableMock()
         path = "/cobbler/path"
@@ -173,9 +187,14 @@ class CobblerMethodTests(TestCase):
         self.assertTrue(" --profile=default_profile" in command)
         self.assertTrue("--netboot-enabled=False")
 
-    @mock.patch("orthos2.utils.cobbler.create_cobbler_options",
-                mock.MagicMock(return_value="option-string"))
-    @mock.patch("orthos2.utils.cobbler.get_default_profile", mock.MagicMock(return_value="default_profile"))
+    @mock.patch(
+        "orthos2.utils.cobbler.create_cobbler_options",
+        mock.MagicMock(return_value="option-string"),
+    )
+    @mock.patch(
+        "orthos2.utils.cobbler.get_default_profile",
+        mock.MagicMock(return_value="default_profile"),
+    )
     def test_get_cobbler_update_command(self):
         machine = mock.NonCallableMock()
         path = "/cobbler/path"
@@ -201,15 +220,22 @@ class CobblerMethodTests(TestCase):
         server = cobbler.CobblerServer("test.foo.bar", "foo.bar")
         server._cobbler_path = "/cobbler/path"
         conn = mock.NonCallableMock()
-        conn.execute.return_value = [["Cobbler 3.1.2", "source: ?, ?",
-                                      "build time: Mon Feb 24 12:00:00 2020"], "", 0]
+        conn.execute.return_value = [
+            ["Cobbler 3.1.2", "source: ?, ?", "build time: Mon Feb 24 12:00:00 2020"],
+            "",
+            0,
+        ]
         server._conn = conn
         running = server.is_running()
         self.assertTrue(running)
         expected = [mock.call.execute("/cobbler/path version")]
         self.assertEqual(expected, conn.mock_calls)
-        conn.execute.return_value = ["", "cobblerd does not appear to be running/accessible: "
-                                     "ConnectionRefusedError(111, 'Connection refused')", 155]
+        conn.execute.return_value = [
+            "",
+            "cobblerd does not appear to be running/accessible: "
+            "ConnectionRefusedError(111, 'Connection refused')",
+            155,
+        ]
         running = server.is_running()
         self.assertFalse(running)
 
@@ -237,14 +263,26 @@ class CobblerMethodTests(TestCase):
     def mocked_get_update_command(machine, _):
         return machine.fqdn + "-update"
 
-    @mock.patch("orthos2.data.models.Machine.active_machines.filter",
-                MagicMock(return_value=[machine1, machine2]))
-    @mock.patch("orthos2.utils.cobbler.CobblerServer.get_machines", MagicMock(return_value="test1.foo.bar"))
-    @mock.patch("orthos2.utils.cobbler.get_bmc_command", MagicMock(return_value="cobbler system edit mock bmc command"))
-    @mock.patch("orthos2.utils.cobbler.get_cobbler_update_command",
-                MagicMock(side_effect=mocked_get_update_command))
-    @mock.patch("orthos2.utils.cobbler.get_cobbler_add_command",
-                MagicMock(side_effect=mocked_get_add_command))
+    @mock.patch(
+        "orthos2.data.models.Machine.active_machines.filter",
+        MagicMock(return_value=[machine1, machine2]),
+    )
+    @mock.patch(
+        "orthos2.utils.cobbler.CobblerServer.get_machines",
+        MagicMock(return_value="test1.foo.bar"),
+    )
+    @mock.patch(
+        "orthos2.utils.cobbler.get_bmc_command",
+        MagicMock(return_value="cobbler system edit mock bmc command"),
+    )
+    @mock.patch(
+        "orthos2.utils.cobbler.get_cobbler_update_command",
+        MagicMock(side_effect=mocked_get_update_command),
+    )
+    @mock.patch(
+        "orthos2.utils.cobbler.get_cobbler_add_command",
+        MagicMock(side_effect=mocked_get_add_command),
+    )
     def test_cobbler_deploy(self):
         # Arrange
         domain = NonCallableMagicMock(spec_set=Domain)
@@ -261,8 +299,10 @@ class CobblerMethodTests(TestCase):
         server.deploy()
 
         # Assert
-        expected = [mock.call.execute("test1.foo.bar-update"),
-                    mock.call.execute("test2.foo.bar-add")]
+        expected = [
+            mock.call.execute("test1.foo.bar-update"),
+            mock.call.execute("test2.foo.bar-add"),
+        ]
         for exp in expected:
             self.assertIn(exp, conn.mock_calls)
 

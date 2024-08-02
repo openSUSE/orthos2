@@ -4,9 +4,6 @@ from orthos2.data.models import BMC
 
 
 class BMCSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = BMC
-        exclude = [
-            'machine'
-        ]
+        exclude = ["machine"]

@@ -10,11 +10,9 @@ from orthos2.api.serializers.misc import ErrorMessage, InfoMessage
 
 class QueryCommand(BaseAPIView):
 
-    METHOD = 'POST'
-    URL = '/query'
-    ARGUMENTS = (
-        ['data*'],
-    )
+    METHOD = "POST"
+    URL = "/query"
+    ARGUMENTS = (["data*"],)
 
     HELP_SHORT = "Retrieve information about a machine."
     HELP = """Command to query machines. You can just specify a comma-separated list of
@@ -43,7 +41,7 @@ OR                  logical disjunction
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^query$', QueryCommand.as_view(), name='query'),
+            re_path(r"^query$", QueryCommand.as_view(), name="query"),
         ]
 
     @staticmethod
@@ -55,7 +53,7 @@ OR                  logical disjunction
         response = {}
 
         try:
-            query_str = json.loads(request.body.decode('utf-8'))['data']
+            query_str = json.loads(request.body.decode("utf-8"))["data"]
         except (KeyError, ValueError):
             return ErrorMessage("Data format is invalid!").as_json
 
@@ -67,7 +65,7 @@ OR                  logical disjunction
         except Exception as e:
             return ErrorMessage(str(e)).as_json
 
-        response['header'] = {'type': 'TABLE', 'theader': query.get_theader()}
-        response['data'] = query.data
+        response["header"] = {"type": "TABLE", "theader": query.get_theader()}
+        response["data"] = query.data
 
         return JsonResponse(response, safe=False)

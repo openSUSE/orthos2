@@ -9,11 +9,11 @@ from orthos2.taskmanager.tasks.machinetasks import MachineCheck
 
 class RescanCommand(BaseAPIView):
 
-    METHOD = 'GET'
-    URL = '/rescan'
+    METHOD = "GET"
+    URL = "/rescan"
     ARGUMENTS = (
-        ['fqdn'],
-        ['fqdn', 'option'],
+        ["fqdn"],
+        ["fqdn", "option"],
     )
 
     HELP_SHORT = "Rescan a machine."
@@ -41,7 +41,7 @@ Example:
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^rescan$', RescanCommand.as_view(), name='rescan'),
+            re_path(r"^rescan$", RescanCommand.as_view(), name="rescan"),
         ]
 
     @staticmethod
@@ -50,19 +50,15 @@ Example:
 
     def get(self, request, *args, **kwargs):
         """Return reservation history of machine."""
-        fqdn = request.GET.get('fqdn', None)
-        option = request.GET.get('option', 'all')
+        fqdn = request.GET.get("fqdn", None)
+        option = request.GET.get("option", "all")
 
         try:
             if fqdn == "all":
                 DailyMachineChecks.do_scan_all()
                 return Message("OK.").as_json
 
-            result = get_machine(
-                fqdn,
-                redirect_to='api:rescan',
-                data=request.GET
-            )
+            result = get_machine(fqdn, redirect_to="api:rescan", data=request.GET)
             if isinstance(result, Serializer):
                 return result.as_json
             elif isinstance(result, HttpResponseRedirect):

@@ -31,5 +31,5 @@ class AliasTests(OrthosCliTestCase):
         self.assertEqual(config_file_content[1], expected)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

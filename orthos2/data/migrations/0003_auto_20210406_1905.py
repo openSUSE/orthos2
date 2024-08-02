@@ -6,38 +6,53 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0002_auto_20210311_1216'),
+        ("data", "0002_auto_20210311_1216"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='remotepower',
-            name='kind',
+            model_name="remotepower",
+            name="kind",
         ),
         migrations.AddField(
-            model_name='bmc',
-            name='fence_name',
-            field=models.CharField(choices=[('ipmilanplus', 'ipmilanplus')], default='ipmilanplus', max_length=255, verbose_name='Fence agent'),
+            model_name="bmc",
+            name="fence_name",
+            field=models.CharField(
+                choices=[("ipmilanplus", "ipmilanplus")],
+                default="ipmilanplus",
+                max_length=255,
+                verbose_name="Fence agent",
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='remotepower',
-            name='fence_name',
-            field=models.CharField(choices=[('virsh', 'virsh')], default='virsh', max_length=255, verbose_name='Fence Agent'),
+            model_name="remotepower",
+            name="fence_name",
+            field=models.CharField(
+                choices=[("virsh", "virsh")],
+                default="virsh",
+                max_length=255,
+                verbose_name="Fence Agent",
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='remotepowerdevice',
-            name='fence_name',
-            field=models.CharField(choices=[('raritan', 'raritan')], default='raritan', max_length=255, verbose_name='Fence Agent'),
+            model_name="remotepowerdevice",
+            name="fence_name",
+            field=models.CharField(
+                choices=[("raritan", "raritan")],
+                default="raritan",
+                max_length=255,
+                verbose_name="Fence Agent",
+            ),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='machine',
-            name='use_bmc',
-            field=models.BooleanField(default=True, verbose_name='Use BMC'),
+            model_name="machine",
+            name="use_bmc",
+            field=models.BooleanField(default=True, verbose_name="Use BMC"),
         ),
         migrations.DeleteModel(
-            name='RemotePowerType',
+            name="RemotePowerType",
         ),
     ]

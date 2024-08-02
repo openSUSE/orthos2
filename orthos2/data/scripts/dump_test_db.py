@@ -41,10 +41,16 @@ Also see: https://docs.djangoproject.com/en/3.2/topics/serialization
 Modules = {}
 
 # General also includes taskmanager.dailytask and basic arch.suse.de domain
-Modules['general'] = ("Serverconfig", "System", "Architecture",
-                      "Vendor", "Platform", "Serialconsoletype")
+Modules["general"] = (
+    "Serverconfig",
+    "System",
+    "Architecture",
+    "Vendor",
+    "Platform",
+    "Serialconsoletype",
+)
 
-Modules['domain'] = ("Domain", "Domainadmin")
+Modules["domain"] = ("Domain", "Domainadmin")
 
 # Modules['remote' ] = ("Remotepower", "Bmc", "Remotepowerdevice", "Serialconsole", "Serialconsoletype")
 
@@ -58,11 +64,14 @@ config = apps.get_app_config("data")
 def show_help():
     print("Use --script-args to specify what you want to dump:")
     print("")
-    print("\tgeneral \t-- Dump general DB data [ %s ] " % ", ".join(Modules['general']))
+    print("\tgeneral \t-- Dump general DB data [ %s ] " % ", ".join(Modules["general"]))
     print("")
     # print("\tremote  \t-- Dump remote management HW DB data [ %s ] " % ", ".join(Modules['remote']))
     # print("")
-    print("\t<domain>\t-- Dump data of a specific domain [ %s ] " % ", ".join(Modules['domain']))
+    print(
+        "\t<domain>\t-- Dump data of a specific domain [ %s ] "
+        % ", ".join(Modules["domain"])
+    )
     print()
     print(USAGE)
     exit(1)
@@ -171,10 +180,13 @@ def run(*args):
     # print(queries)
     with open(file, "w") as out:
         from django.core import serializers
-        serializers.serialize("json",
-                              queries,
-                              indent=2,
-                              stream=out,
-                              use_natural_foreign_keys=natural,
-                              use_natural_primary_keys=natural)
+
+        serializers.serialize(
+            "json",
+            queries,
+            indent=2,
+            stream=out,
+            use_natural_foreign_keys=natural,
+            use_natural_primary_keys=natural,
+        )
         print("File dumped: %s" % os.path.abspath(file))

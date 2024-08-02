@@ -9,11 +9,9 @@ from orthos2.data.models import Machine
 
 class InfoCommand(BaseAPIView):
 
-    METHOD = 'GET'
-    URL = '/machine'
-    ARGUMENTS = (
-        ['fqdn'],
-    )
+    METHOD = "GET"
+    URL = "/machine"
+    ARGUMENTS = (["fqdn"],)
 
     HELP_SHORT = "Retrieve information about a machine."
     HELP = """Command to get information about a machine.
@@ -31,24 +29,20 @@ Example:
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^machine$', InfoCommand.as_view(), name='machine'),
+            re_path(r"^machine$", InfoCommand.as_view(), name="machine"),
         ]
 
     @staticmethod
     def get_tabcompletion():
-        return list(Machine.api.all().values_list('fqdn', flat=True))
+        return list(Machine.api.all().values_list("fqdn", flat=True))
 
     def get(self, request, *args, **kwargs):
         """Return machine information."""
-        fqdn = request.GET.get('fqdn', None)
+        fqdn = request.GET.get("fqdn", None)
         response = {}
 
         try:
-            result = get_machine(
-                fqdn,
-                redirect_to='api:machine',
-                data=request.GET
-            )
+            result = get_machine(fqdn, redirect_to="api:machine", data=request.GET)
             if isinstance(result, Serializer):
                 return result.as_json
             elif isinstance(result, HttpResponseRedirect):
@@ -59,91 +53,87 @@ Example:
             machine = MachineSerializer(machine)
 
             order = [
-                'fqdn',
-                'id',
-                'architecture',
-                'ipv4',
-                'ipv6',
-                'serial_number',
-                'product_code',
-                'comment',
-                'nda',
+                "fqdn",
+                "id",
+                "architecture",
+                "ipv4",
+                "ipv6",
+                "serial_number",
+                "product_code",
+                "comment",
+                "nda",
                 None,
-                'system',
-                'enclosure',
-                'group',
+                "system",
+                "enclosure",
+                "group",
                 None,
-                'location_room',
-                'location_rack',
-                'location_rack_position',
+                "location_room",
+                "location_rack",
+                "location_rack_position",
                 None,
-                'reserved_by',
-                'reserved_reason',
-                'reserved_at',
-                'reserved_until',
+                "reserved_by",
+                "reserved_reason",
+                "reserved_at",
+                "reserved_until",
                 None,
-                'status_ipv4',
-                'status_ipv6',
-                'status_ssh',
-                'status_login',
+                "status_ipv4",
+                "status_ipv6",
+                "status_ssh",
+                "status_login",
                 None,
-                'cpu_model',
-                'cpu_id',
-                'cpu_physical',
-                'cpu_cores',
-                'cpu_threads',
-                'cpu_flags',
-                'ram_amount',
+                "cpu_model",
+                "cpu_id",
+                "cpu_physical",
+                "cpu_cores",
+                "cpu_threads",
+                "cpu_flags",
+                "ram_amount",
                 None,
-                'serial_type',
-                'serial_cscreen_server',
-                'serial_console_server',
-                'serial_port',
-                'serial_command',
-                'serial_comment',
-                'serial_baud_rate',
-                'serial_kernel_device',
-                'serial_kernel_device_num',
+                "serial_type",
+                "serial_cscreen_server",
+                "serial_console_server",
+                "serial_port",
+                "serial_command",
+                "serial_comment",
+                "serial_baud_rate",
+                "serial_kernel_device",
+                "serial_kernel_device_num",
                 None,
-                'power_type',
-                'power_host',
-                'power_port',
-                'power_device',
-                'power_comment',
+                "power_type",
+                "power_host",
+                "power_port",
+                "power_device",
+                "power_comment",
                 None,
-                'bmc_fqdn',
-                'bmc_mac',
-                'bmc_username',
-                'bmc_password',
+                "bmc_fqdn",
+                "bmc_mac",
+                "bmc_username",
+                "bmc_password",
                 [
-                    'installations', [
-                        'distribution',
-                        'active',
-                        'partition',
-                        'architecture',
-                        'kernelversion'
-                    ]
+                    "installations",
+                    [
+                        "distribution",
+                        "active",
+                        "partition",
+                        "architecture",
+                        "kernelversion",
+                    ],
                 ],
                 [
-                    'networkinterfaces', [
-                        'mac_address',
-                        'name',
-                        'ethernet_type',
-                        'driver_module',
-                        'primary',
-                    ]
+                    "networkinterfaces",
+                    [
+                        "mac_address",
+                        "name",
+                        "ethernet_type",
+                        "driver_module",
+                        "primary",
+                    ],
                 ],
-                [
-                    'annotations', [
-                        'text',
-                        'reporter',
-                        'created'
-                    ]
-                ]
+                ["annotations", ["text", "reporter", "created"]],
             ]
 
-            response['header'] = {'type': 'INFO', 'order': order}
-            response['data'] = machine.data_info
+            response["header"] = {"type": "INFO", "order": order}
+            response["data"] = machine.data_info
         except Exception:
             return ErrorMessage(getException()).as_json
 

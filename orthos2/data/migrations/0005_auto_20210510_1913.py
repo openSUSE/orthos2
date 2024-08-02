@@ -6,16 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0004_auto_20210505_1650'),
+        ("data", "0004_auto_20210505_1650"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='remotepower',
-            name='hypervisor',
+            model_name="remotepower",
+            name="hypervisor",
         ),
         migrations.RemoveField(
-            model_name='remotepower',
-            name='management_bmc',
+            model_name="remotepower",
+            name="management_bmc",
         ),
     ]

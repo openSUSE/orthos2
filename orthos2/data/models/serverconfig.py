@@ -4,15 +4,16 @@ from django.db import models
 
 from orthos2.utils.misc import str_time_to_datetime
 
-logger = logging.getLogger('models')
+logger = logging.getLogger("models")
 
 
 class BaseManager(models.Manager):
-
     def by_key(self, key, fallback=None):
         """Return the value by key."""
         try:
-            obj, created = ServerConfig.objects.get_or_create(key=key, defaults={'value': fallback})
+            obj, created = ServerConfig.objects.get_or_create(
+                key=key, defaults={"value": fallback}
+            )
             if created:
                 logger.info("Created serverconfig entry: %s -> %s", key, fallback)
             return obj.value
@@ -30,13 +31,13 @@ class BaseManager(models.Manager):
         try:
             obj = ServerConfig.objects.get(key=key)
 
-            if obj.value.lower() == 'bool:true':
+            if obj.value.lower() == "bool:true":
                 return True
         except Exception as e:
             logger.exception("Key '%s': %s", key, e)
         return False
 
-    def list_by_key(self, key, delimiter=','):
+    def list_by_key(self, key, delimiter=","):
         """Return a list of strings seperated by `delimiter`."""
         try:
             obj = ServerConfig.objects.get(key=key)
@@ -52,7 +53,7 @@ class BaseManager(models.Manager):
     def get_smtp_relay(self):
         """Return the FQDN of the SMTP relay server."""
         try:
-            obj = ServerConfig.objects.get(key='mail.smtprelay.fqdn')
+            obj = ServerConfig.objects.get(key="mail.smtprelay.fqdn")
 
             if obj.value:
                 return obj.value
@@ -65,10 +66,10 @@ class BaseManager(models.Manager):
     def get_valid_domain_endings(self):
         """Return a list of valid domain endings."""
         try:
-            obj = ServerConfig.objects.get(key='domain.validendings')
+            obj = ServerConfig.objects.get(key="domain.validendings")
 
             if obj.value:
-                return [value.strip() for value in obj.value.split(',')]
+                return [value.strip() for value in obj.value.split(",")]
             else:
                 logger.warning("Valid domain endings entry is empty")
         except ServerConfig.DoesNotExist:
@@ -81,14 +82,16 @@ class BaseManager(models.Manager):
         object.
         """
         try:
-            obj = ServerConfig.objects.get(key='tasks.daily.executiontime')
+            obj = ServerConfig.objects.get(key="tasks.daily.executiontime")
 
             if obj.value:
                 execution_time = str_time_to_datetime(obj.value)
                 if execution_time:
                     return execution_time.time()
                 else:
-                    logger.warning("Daily exection time entry is no valid time string (HH:MM)")
+                    logger.warning(
+                        "Daily exection time entry is no valid time string (HH:MM)"
+                    )
             else:
                 logger.warning("Daily execution time entry is empty")
         except ServerConfig.DoesNotExist:
@@ -97,14 +100,13 @@ class BaseManager(models.Manager):
 
 
 class SSHManager(BaseManager):
-
     def get_keys(self):
         """Return a list of file paths to SSH master keys for SSH authentication."""
         try:
-            obj = ServerConfig.objects.get(key='ssh.keys.paths')
+            obj = ServerConfig.objects.get(key="ssh.keys.paths")
 
             if obj.value:
-                return [value.strip() for value in obj.value.split(',')]
+                return [value.strip() for value in obj.value.split(",")]
             else:
                 logger.warning("SSH key paths entry is empty")
         except ServerConfig.DoesNotExist:
@@ -114,7 +116,7 @@ class SSHManager(BaseManager):
     def get_timeout(self):
         """Return the timeout in seconds for SSH connection attempts as integer."""
         try:
-            obj = ServerConfig.objects.get(key='ssh.timeout.seconds')
+            obj = ServerConfig.objects.get(key="ssh.timeout.seconds")
 
             if obj.value:
                 return int(obj.value)
@@ -129,7 +131,7 @@ class SSHManager(BaseManager):
     def get_remote_scripts_directory(self):
         """Return a path where remote executed scripts (host side) should be placed."""
         try:
-            obj = ServerConfig.objects.get(key='ssh.scripts.remote.directory')
+            obj = ServerConfig.objects.get(key="ssh.scripts.remote.directory")
 
             if obj.value:
                 return obj.value
@@ -142,7 +144,7 @@ class SSHManager(BaseManager):
     def get_local_scripts_directory(self):
         """Return a path to the local scripts directory (server side)."""
         try:
-            obj = ServerConfig.objects.get(key='ssh.scripts.local.directory')
+            obj = ServerConfig.objects.get(key="ssh.scripts.local.directory")
 
             if obj.value:
                 return obj.value
@@ -154,20 +156,13 @@ class SSHManager(BaseManager):
 
 
 class ServerConfig(models.Model):
-
     class Meta:
-        ordering = ['key']
-        verbose_name = 'Server Configuration'
+        ordering = ["key"]
+        verbose_name = "Server Configuration"
 
-    key = models.CharField(
-        max_length=100,
-        unique=True
-    )
+    key = models.CharField(max_length=100, unique=True)
 
-    value = models.CharField(
-        max_length=512,
-        blank=True
-    )
+    value = models.CharField(max_length=512, blank=True)
 
     objects = BaseManager()
     ssh = SSHManager()

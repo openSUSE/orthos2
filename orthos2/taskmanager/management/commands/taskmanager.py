@@ -9,7 +9,7 @@ from django.core.management.base import BaseCommand
 
 from orthos2.taskmanager.executer import TaskExecuter
 
-logger = logging.getLogger('tasks')
+logger = logging.getLogger("tasks")
 taskexecuter = TaskExecuter()
 
 
@@ -21,10 +21,7 @@ class Command(BaseCommand):
     help = "Run Orthos TaskManager"
 
     OPTIONS = (
-        (('--start', ), {
-            'action': 'store_true',
-            'help': "Start Orthos TaskManager"
-        }),
+        (("--start",), {"action": "store_true", "help": "Start Orthos TaskManager"}),
     )
 
     def add_arguments(self, parser):
@@ -39,12 +36,13 @@ class Command(BaseCommand):
         if (not settings.DEBUG) and (run_as_user != settings.RUN_AS_USER):
             logger.error(
                 "TaskManager needs to be run as user '%s', not '%s'! Exit.",
-                settings.RUN_AS_USER, run_as_user
+                settings.RUN_AS_USER,
+                run_as_user,
             )
             sys.exit(1)
         logger.info("TaskManager runs as '%s'...", run_as_user)
 
-        if options['start']:
+        if options["start"]:
             signal.signal(signal.SIGTERM, handler)
             signal.signal(signal.SIGUSR1, handler)
 

@@ -13,6 +13,14 @@ from django.db.models import Q
 from django.utils import timezone
 
 from orthos2.data.exceptions import ReleaseException, ReserveException
+from orthos2.data.models.architecture import Architecture
+from orthos2.data.models.domain import Domain, DomainAdmin, validate_domain_ending
+from orthos2.data.models.enclosure import Enclosure
+from orthos2.data.models.machinegroup import MachineGroup
+from orthos2.data.models.networkinterface import NetworkInterface, validate_mac_address
+from orthos2.data.models.platform import Platform
+from orthos2.data.models.system import System
+from orthos2.data.models.virtualizationapi import VirtualizationAPI
 from orthos2.utils.misc import (
     Serializer,
     get_domain,
@@ -23,16 +31,7 @@ from orthos2.utils.misc import (
     is_dns_resolvable,
 )
 
-from .architecture import Architecture
-from .domain import Domain, DomainAdmin, validate_domain_ending
-from .enclosure import Enclosure
-from .machinegroup import MachineGroup
-from .networkinterface import NetworkInterface, validate_mac_address
-from .platform import Platform
-from .system import System
-from .virtualizationapi import VirtualizationAPI
-
-logger = logging.getLogger('models')
+logger = logging.getLogger("models")
 
 
 def validate_dns(value):
@@ -56,7 +55,7 @@ def check_permission(function):
 
         If no `user` keyword argument is given, access is granted (used for server-side call).
         """
-        user = kwargs.get('user', None)
+        user = kwargs.get("user", None)
 
         if not user:
             # grant access if no user is given for e.g. a server call
@@ -68,29 +67,44 @@ def check_permission(function):
             )
             return function(machine, *args, **kwargs)
 
-        elif user in User.objects.filter(memberships__group__name=machine.group,
-                                         memberships__is_privileged=True):
+        elif user in User.objects.filter(
+            memberships__group__name=machine.group, memberships__is_privileged=True
+        ):
             logger.debug(
-                "Allow %s of %s by %s (privileged user)", function.__name__, machine, user
+                "Allow %s of %s by %s (privileged user)",
+                function.__name__,
+                machine,
+                user,
             )
             return function(machine, *args, **kwargs)
 
         elif machine.reserved_by == user:
             logger.debug(
-                "Allow %s of %s by %s (reservation owner)", function.__name__, machine, user
+                "Allow %s of %s by %s (reservation owner)",
+                function.__name__,
+                machine,
+                user,
             )
             return function(machine, *args, **kwargs)
 
-        elif function.__qualname__ == 'Machine.reserve' and not machine.reserved_by and\
-                not machine.administrative:
+        elif (
+            function.__qualname__ == "Machine.reserve"
+            and not machine.reserved_by
+            and not machine.administrative
+        ):
             logger.debug(
                 "Allow %s of %s by %s (not reserved)", function.__name__, machine, user
             )
             return function(machine, *args, **kwargs)
 
-        elif function.__qualname__ == 'Machine.release' and not machine.reserved_by and\
-                not machine.administrative:
-            logger.debug("Allow %s of %s by %s (not reserved)", function.__name__, machine, user)
+        elif (
+            function.__qualname__ == "Machine.release"
+            and not machine.reserved_by
+            and not machine.administrative
+        ):
+            logger.debug(
+                "Allow %s of %s by %s (not reserved)", function.__name__, machine, user
+            )
             return function(machine, *args, **kwargs)
 
         else:
@@ -101,7 +115,6 @@ def check_permission(function):
 
 
 class RootManager(models.Manager):
-
     def get_queryset(self):
         """Exclude all inactive machines."""
         queryset = super(RootManager, self).get_queryset()
@@ -110,7 +123,6 @@ class RootManager(models.Manager):
 
 
 class ViewManager(RootManager):
-
     def get_queryset(self, user=None):
         """Exclude administrative machines/systems from all view requested by non-superusers."""
         queryset = super(ViewManager, self).get_queryset()
@@ -123,7 +135,6 @@ class ViewManager(RootManager):
 
 
 class SearchManager(ViewManager):
-
     def form(self, parameters, user=None):
         """Filter machine queryset by advanced search parameters."""
         parameters = {key: value for key, value in parameters.items() if value}
@@ -131,15 +142,15 @@ class SearchManager(ViewManager):
         queryset = super(SearchManager, self).get_queryset(user=user)
         query = None
         for key, value in parameters.items():
-            if not key.endswith('__operator'):
-                operator = parameters.get('{}__operator'.format(key), '')
+            if not key.endswith("__operator"):
+                operator = parameters.get("{}__operator".format(key), "")
 
-                if value == '__True':
+                if value == "__True":
                     value = True
-                elif value == '__False':
+                elif value == "__False":
                     value = False
 
-                q = Q(**{'{}{}'.format(key, operator): value})
+                q = Q(**{"{}{}".format(key, operator): value})
                 if query:
                     query = query & q
                 else:
@@ -154,13 +165,12 @@ class SearchManager(ViewManager):
 
 
 class Machine(models.Model):
-
     class Manager(models.Manager):
         def get_by_natural_key(self, fqdn):
             return self.get(fqdn=fqdn)
 
     class Meta:
-        ordering = ['fqdn']
+        ordering = ["fqdn"]
 
     class Connectivity:
         NONE = 0
@@ -178,37 +188,37 @@ class Machine(models.Model):
         AF_DISABLED = 6
 
         CHOICE = (
-            (UNREACHABLE, 'unreachable'),
-            (REACHABLE, 'reachable'),
-            (CONFIRMED, 'confirmed'),
-            (MAC_MISMATCH, 'MAC mismatch'),
-            (ADDRESS_MISMATCH, 'address mismatch'),
-            (NO_ADDRESS, 'no address assigned'),
-            (AF_DISABLED, 'address-family disabled'),
+            (UNREACHABLE, "unreachable"),
+            (REACHABLE, "reachable"),
+            (CONFIRMED, "confirmed"),
+            (MAC_MISMATCH, "MAC mismatch"),
+            (ADDRESS_MISMATCH, "address mismatch"),
+            (NO_ADDRESS, "no address assigned"),
+            (AF_DISABLED, "address-family disabled"),
         )
 
     CONNECTIVITY_CHOICE = (
-        (Connectivity.NONE, 'Disable'),
-        (Connectivity.PING, 'Ping only'),
-        (Connectivity.SSH, 'SSH (includes Ping+SSH)'),
-        (Connectivity.ALL, 'Full (includes Ping+SSH+Login)'),
+        (Connectivity.NONE, "Disable"),
+        (Connectivity.PING, "Ping only"),
+        (Connectivity.SSH, "SSH (includes Ping+SSH)"),
+        (Connectivity.ALL, "Full (includes Ping+SSH+Login)"),
     )
 
     enclosure = models.ForeignKey(
         Enclosure,
         blank=True,
         on_delete=models.CASCADE,
-        help_text="Enclosure/chassis of one or more machines"
+        help_text="Enclosure/chassis of one or more machines",
     )
 
     fqdn = models.CharField(
-        'FQDN',
+        "FQDN",
         max_length=200,
         blank=False,
         unique=True,
         validators=[validate_dns, validate_domain_ending],
         db_index=True,
-        help_text="The Fully Qualified Domain Name of the main network interface of the machine"
+        help_text="The Fully Qualified Domain Name of the main network interface of the machine",
     )
 
     system = models.ForeignKey(System, on_delete=models.CASCADE)
@@ -216,167 +226,141 @@ class Machine(models.Model):
     comment = models.CharField(
         max_length=512,
         blank=True,
-        help_text="Machine specific problems or extras you want to tell others?"
+        help_text="Machine specific problems or extras you want to tell others?",
     )
 
     serial_number = models.CharField(
         max_length=200,
         blank=True,
-        help_text="The serial number can be read from a sticker on the machine's chassis (e.g. GPDRDP5022003)"
+        help_text="The serial number can be read from a sticker on the machine's chassis (e.g. GPDRDP5022003)",
     )
 
     product_code = models.CharField(
         max_length=200,
         blank=True,
-        help_text="The product code can be read from a sticker on the machine's chassis (e.g. S1DL1SEXA)"
+        help_text="The product code can be read from a sticker on the machine's chassis (e.g. S1DL1SEXA)",
     )
 
     architecture = models.ForeignKey(Architecture, on_delete=models.CASCADE)
 
     fqdn_domain = models.ForeignKey(
-        Domain,
-        on_delete=models.CASCADE,
-        help_text="The domain name of the primary NIC"
+        Domain, on_delete=models.CASCADE, help_text="The domain name of the primary NIC"
     )
 
     cpu_model = models.CharField(
-        'CPU model',
+        "CPU model",
         max_length=200,
         blank=True,
-        help_text="The domain name of the primary NIC"
+        help_text="The domain name of the primary NIC",
     )
 
     cpu_flags = models.TextField(
-        'CPU flags',
+        "CPU flags",
         blank=True,
-        help_text="CPU feature/bug flags as exported from the kernel (/proc/cpuinfo)"
+        help_text="CPU feature/bug flags as exported from the kernel (/proc/cpuinfo)",
     )
 
-    cpu_physical = models.IntegerField(
-        'CPU sockets',
-        default=1
-    )
+    cpu_physical = models.IntegerField("CPU sockets", default=1)
 
     cpu_cores = models.IntegerField(
-        'CPU cores',
-        default=1,
-        help_text="Amount of CPU cores"
+        "CPU cores", default=1, help_text="Amount of CPU cores"
     )
 
     cpu_threads = models.IntegerField(
-        'CPU threads',
-        default=1,
-        help_text="Amount of CPU threads"
+        "CPU threads", default=1, help_text="Amount of CPU threads"
     )
 
     cpu_speed = models.DecimalField(
-        'CPU speed (MHz)',
-        default=0,
-        max_digits=10,
-        decimal_places=2
+        "CPU speed (MHz)", default=0, max_digits=10, decimal_places=2
     )
 
     cpu_id = models.CharField(
-        'CPU ID',
+        "CPU ID",
         max_length=200,
         blank=True,
-        help_text="X86 cpuid value which identifies the CPU family/model/stepping and features"
+        help_text="X86 cpuid value which identifies the CPU family/model/stepping and features",
     )
 
-    ram_amount = models.IntegerField(
-        'RAM amount (MB)',
-        default=0
-    )
+    ram_amount = models.IntegerField("RAM amount (MB)", default=0)
 
     efi = models.BooleanField(
-        'EFI boot',
-        default=False,
-        help_text="Installed in EFI (aarch64/x86) mode?"
+        "EFI boot", default=False, help_text="Installed in EFI (aarch64/x86) mode?"
     )
 
     nda = models.BooleanField(
-        'NDA hardware',
+        "NDA hardware",
         default=False,
         help_text="This machine is under NDA and has secret (early development HW?) partner information,"
-                  " do not share any data to the outside world"
+        " do not share any data to the outside world",
     )
 
     ipmi = models.BooleanField(
-        'IPMI capability',
+        "IPMI capability",
         default=False,
-        help_text="IPMI service processor (BMC) detected"
+        help_text="IPMI service processor (BMC) detected",
     )
 
     vm_capable = models.BooleanField(
-        'VM capable',
+        "VM capable",
         default=False,
-        help_text="Do the CPUs support native virtualization (KVM). This field is deprecated"
+        help_text="Do the CPUs support native virtualization (KVM). This field is deprecated",
     )
 
     vm_max = models.IntegerField(
-        'Max. VMs',
+        "Max. VMs",
         default=6,
-        help_text="Maximum amount of virtual hosts allowed to be spawned on this virtual server (ToDo: don't use yet)"
+        help_text="Maximum amount of virtual hosts allowed to be spawned on this virtual server (ToDo: don't use yet)",
     )
 
     vm_dedicated_host = models.BooleanField(
-        'Dedicated VM host',
+        "Dedicated VM host",
         default=False,
-        help_text="Dedicated to serve as physical host for virtual machines (users cannot reserve this machine)"
+        help_text="Dedicated to serve as physical host for virtual machines (users cannot reserve this machine)",
     )
 
     vm_auto_delete = models.BooleanField(
-        'Delete automatically',
+        "Delete automatically",
         default=False,
         help_text="Release and destroy virtual machine instances, once people have released"
-        "(do not reserve anymore) them"
+        "(do not reserve anymore) them",
     )
 
     virt_api_int = models.SmallIntegerField(
-        'Virtualization API',
+        "Virtualization API",
         choices=VirtualizationAPI.TYPE_CHOICES,
         blank=True,
         null=True,
-        help_text="Only supported API currently is libvirt"
+        help_text="Only supported API currently is libvirt",
     )
 
     reserved_by = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
+        User, on_delete=models.SET_NULL, null=True, blank=True
     )
 
-    reserved_at = models.DateTimeField(
-        blank=True,
-        null=True
-    )
+    reserved_at = models.DateTimeField(blank=True, null=True)
 
     reserved_until = models.DateTimeField(
         blank=True,
         null=True,
-        help_text="Reservation expires at xx.yy.zzzz (max 90 days)"
+        help_text="Reservation expires at xx.yy.zzzz (max 90 days)",
     )
 
     reserved_reason = models.CharField(
-        'Reservation reason',
+        "Reservation reason",
         max_length=512,
         blank=True,
         null=True,
-        help_text="Why do you need this machine (bug no, jira feature, what do you test/work on)?"
+        help_text="Why do you need this machine (bug no, jira feature, what do you test/work on)?",
     )
 
     platform = models.ForeignKey(
-        Platform,
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL
+        Platform, blank=True, null=True, on_delete=models.SET_NULL
     )
 
     bios_version = models.CharField(
         max_length=200,
         blank=True,
-        help_text="The firmware BIOS is from ... (on x86 as retrieved from dmidecode -s bios-version"
+        help_text="The firmware BIOS is from ... (on x86 as retrieved from dmidecode -s bios-version",
     )
 
     bios_date = models.DateField(
@@ -384,26 +368,18 @@ class Machine(models.Model):
         blank=True,
         null=True,
         default=None,
-        help_text="The firmware BIOS is from ... (on x86 as retrieved from dmidecode -s bios-version"
+        help_text="The firmware BIOS is from ... (on x86 as retrieved from dmidecode -s bios-version",
     )
 
     disk_primary_size = models.SmallIntegerField(
-        'Disk primary size (GB)',
-        null=True,
-        blank=True
+        "Disk primary size (GB)", null=True, blank=True
     )
 
-    disk_type = models.CharField(
-        max_length=100,
-        blank=True
-    )
+    disk_type = models.CharField(max_length=100, blank=True)
 
     lsmod = models.TextField(blank=True)
 
-    last = models.CharField(
-        max_length=100,
-        blank=True
-    )
+    last = models.CharField(max_length=100, blank=True)
 
     hwinfo = models.TextField(blank=True)
 
@@ -418,92 +394,92 @@ class Machine(models.Model):
     lspci = models.TextField(blank=True)
 
     status_ipv4 = models.SmallIntegerField(
-        'Status IPv4',
+        "Status IPv4",
         choices=StatusIP.CHOICE,
         editable=False,
         default=StatusIP.UNREACHABLE,
-        help_text="Does this IPv4 address respond to ping?"
+        help_text="Does this IPv4 address respond to ping?",
     )
 
     status_ipv6 = models.SmallIntegerField(
-        'Status IPv6',
+        "Status IPv6",
         choices=StatusIP.CHOICE,
         editable=False,
         default=StatusIP.UNREACHABLE,
-        help_text="Does this IPv6 address respond to ping?"
+        help_text="Does this IPv6 address respond to ping?",
     )
 
     status_ssh = models.BooleanField(
-        'SSH',
+        "SSH",
         editable=False,
         default=False,
-        help_text="Is the ssh port (22) on this host address open?"
+        help_text="Is the ssh port (22) on this host address open?",
     )
 
     status_login = models.BooleanField(
-        'Login',
+        "Login",
         editable=False,
         default=False,
-        help_text="Can orthos log into this host via ssh key (if not scanned data might be outdated)?"
+        help_text="Can orthos log into this host via ssh key (if not scanned data might be outdated)?",
     )
 
     autoreinstall = models.BooleanField(
-        'Auto re-install machine',
+        "Auto re-install machine",
         editable=True,
         default=True,
         help_text="Shall this machine be automatically re-installed when its reservation ends?<br>"
-        "The last installation that has been triggered will be used for auto re-installation."
+        "The last installation that has been triggered will be used for auto re-installation.",
     )
 
     administrative = models.BooleanField(
-        'Administrative machine',
+        "Administrative machine",
         editable=True,
         default=False,
-        help_text="Administrative machines cannot be reserved"
+        help_text="Administrative machines cannot be reserved",
     )
 
     check_connectivity = models.SmallIntegerField(
         choices=CONNECTIVITY_CHOICE,
         default=Connectivity.ALL,
         blank=False,
-        help_text='Nightly checks whether the machine responds to ping, ssh port is open or whether orthos can'
-                  'log in via ssh key. Can be triggered manually via command line client: `rescan [fqdn] status`'
+        help_text="Nightly checks whether the machine responds to ping, ssh port is open or whether orthos can"
+        "log in via ssh key. Can be triggered manually via command line client: `rescan [fqdn] status`",
     )
 
     collect_system_information = models.BooleanField(
         default=True,
-        help_text='Shall the system be scanned every night? This only works if the proper ssh key is in place in'
-                  ' authorized_keys and can be triggered manually via command line client: `rescan [fqdn]`'
+        help_text="Shall the system be scanned every night? This only works if the proper ssh key is in place in"
+        " authorized_keys and can be triggered manually via command line client: `rescan [fqdn]`",
     )
 
     dhcp_filename = models.CharField(
-        'DHCP filename',
+        "DHCP filename",
         max_length=64,
         null=True,
         blank=True,
         help_text="Override bootloader binary retrieved from a tftp server (corresponds to the `filename`"
-                  " ISC dhcpd.conf variable)"
+        " ISC dhcpd.conf variable)",
     )
 
     tftp_server = models.ForeignKey(
-        'data.Machine',
-        related_name='tftp_server_for',
-        verbose_name='TFTP server',
+        "data.Machine",
+        related_name="tftp_server_for",
+        verbose_name="TFTP server",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        limit_choices_to={'administrative': True},
+        limit_choices_to={"administrative": True},
         help_text="Override tftp server used for network boot (corresponds to the `next_server` ISC"
-                  " dhcpd.conf variable)"
+        " dhcpd.conf variable)",
     )
 
     hypervisor = models.ForeignKey(
-        'data.Machine',
+        "data.Machine",
         related_name="hypervising",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        help_text="The physical host this virtual machine is running on"
+        help_text="The physical host this virtual machine is running on",
     )
     hostname = None
 
@@ -519,47 +495,36 @@ class Machine(models.Model):
     unknown_mac = models.BooleanField(
         default=False,
         verbose_name="MAC unknwon",
-        help_text="Use this to create a BMC before the mac address of the machine is known"
+        help_text="Use this to create a BMC before the mac address of the machine is known",
     )
 
     active = models.BooleanField(
         default=True,
-        help_text="Machine vanishes from most lists. This is intendend as kind of maintenance/repair state"
+        help_text="Machine vanishes from most lists. This is intendend as kind of maintenance/repair state",
     )
 
     group = models.ForeignKey(
-        MachineGroup,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True
+        MachineGroup, on_delete=models.SET_NULL, blank=True, null=True
     )
 
     contact_email = models.EmailField(
         blank=True,
-        help_text="Override contact email address to whom is in charge for this machine"
+        help_text="Override contact email address to whom is in charge for this machine",
     )
 
     kernel_options = models.CharField(
         max_length=4096,
         blank=True,
-        help_text="Additional kernel command line parameters to pass"
+        help_text="Additional kernel command line parameters to pass",
     )
 
     last_check = models.DateTimeField(
-        'Checked at',
-        editable=False,
-        default='2016-01-01T10:00:00+00:00'
+        "Checked at", editable=False, default="2016-01-01T10:00:00+00:00"
     )
 
-    updated = models.DateTimeField(
-        'Updated at',
-        auto_now=True
-    )
+    updated = models.DateTimeField("Updated at", auto_now=True)
 
-    created = models.DateTimeField(
-        'Created at',
-        auto_now_add=True
-    )
+    created = models.DateTimeField("Created at", auto_now_add=True)
 
     objects = Manager()
     api = RootManager()
@@ -589,7 +554,7 @@ class Machine(models.Model):
         return self.system.allowBMC
 
     def has_bmc(self):
-        return hasattr(self, 'bmc')
+        return hasattr(self, "bmc")
 
     def save(self, *args, **kwargs):
         """
@@ -603,10 +568,16 @@ class Machine(models.Model):
         validate_dns(self.fqdn)
 
         if not self.mac_address and not self.unknown_mac:
-            raise ValidationError("'{}' You must select 'MAC Unkown' for systems without MAC".format(self))
+            raise ValidationError(
+                "'{}' You must select 'MAC Unkown' for systems without MAC".format(self)
+            )
 
         if self.mac_address and self.unknown_mac:
-            raise ValidationError("'{}' You must not select 'MAC Unkown' for systems with a MAC".format(self))
+            raise ValidationError(
+                "'{}' You must not select 'MAC Unkown' for systems with a MAC".format(
+                    self
+                )
+            )
         if self.unknown_mac and not self.bmc_allowed():
             raise ValidationError("You may only skip the MAC for systems with BMC")
         if self.mac_address:
@@ -614,8 +585,10 @@ class Machine(models.Model):
 
         if not self.system.virtual and self.hypervisor:
             raise ValidationError("Only virtual machines may have hypervisors")
-        if hasattr(self, 'bmc') and not self.bmc_allowed():
-            raise ValidationError("{} systems cannot use a BMC".format(self.system.name))
+        if hasattr(self, "bmc") and not self.bmc_allowed():
+            raise ValidationError(
+                "{} systems cannot use a BMC".format(self.system.name)
+            )
         # create & assign network domain and ensure that the FQDN always matches the fqdn_domain
         domain, created = Domain.objects.get_or_create(name=get_domain(self.fqdn))
         if created:
@@ -623,8 +596,8 @@ class Machine(models.Model):
         self.fqdn_domain = domain
 
         # create & assign enclosure according to naming convention if no enclosure given
-        if not hasattr(self, 'enclosure'):
-            name = re.split(r'-(\d|sp)+$', get_hostname(self.fqdn))[0]
+        if not hasattr(self, "enclosure"):
+            name = re.split(r"-(\d|sp)+$", get_hostname(self.fqdn))[0]
             enclosure, created = Enclosure.objects.get_or_create(name=name)
             self.enclosure = enclosure
 
@@ -638,9 +611,7 @@ class Machine(models.Model):
             except ObjectDoesNotExist:
                 if self.mac_address:
                     self.networkinterfaces.get_or_create(
-                        machine=self,
-                        primary=True,
-                        mac_address=self.mac_address
+                        machine=self, primary=True, mac_address=self.mac_address
                     )
                     sync_dhcp = True
                     update_machine = True
@@ -656,51 +627,86 @@ class Machine(models.Model):
                 assert self.group == self._original.group
                 assert self.dhcp_filename == self._original.dhcp_filename
                 assert self.kernel_options == self._original.kernel_options
-                if hasattr(self, 'bmc'):
-                    assert hasattr(self._original, 'bmc')
+                if hasattr(self, "bmc"):
+                    assert hasattr(self._original, "bmc")
                     assert self.bmc.mac == self._original.bmc.mac
                     assert self.bmc.fqdn == self._original.bmc.fqdn
             except AssertionError:
                 sync_dhcp = True
                 update_machine = True
             try:
-                if hasattr(self, 'bmc'):
-                    assert hasattr(self._original, 'bmc')
+                if hasattr(self, "bmc"):
+                    assert hasattr(self._original, "bmc")
                     assert self.bmc.username == self._original.bmc.username
                     assert self.bmc.password == self._original.bmc.password
                 if self.has_remotepower():
-                    assert hasattr(self._original, 'remotepower')
-                    assert self.remotepower.fence_name == self._original.remotepower.fence_name
-                    assert self.remotepower.options == self._original.remotepower.options
-                    if hasattr(self.remotepower, 'remote_power_device'):
-                        assert hasattr(self._original.remotepower, 'remote_power_device')
-                        assert self.remotepower.remote_power_device == \
-                               self._original.remotepower.remote_power_device
+                    assert hasattr(self._original, "remotepower")
+                    assert (
+                        self.remotepower.fence_name
+                        == self._original.remotepower.fence_name
+                    )
+                    assert (
+                        self.remotepower.options == self._original.remotepower.options
+                    )
+                    if hasattr(self.remotepower, "remote_power_device"):
+                        assert hasattr(
+                            self._original.remotepower, "remote_power_device"
+                        )
+                        assert (
+                            self.remotepower.remote_power_device
+                            == self._original.remotepower.remote_power_device
+                        )
                 if self.has_serialconsole():
-                    assert hasattr(self._original, 'serialconsole')
-                    assert self.serialconsole.baud_rate == self._original.serialconsole.baud_rate
-                    assert self.serialconsole.command == self._original.serialconsole.command
-                    assert self.serialconsole.stype == self._original.serialconsole.stype
-                    assert self.serialconsole.kernel_device == self._original.serialconsole.kernel_device
-                    assert self.serialconsole.kernel_device_num == \
-                        self._original.serialconsole.kernel_device_num
+                    assert hasattr(self._original, "serialconsole")
+                    assert (
+                        self.serialconsole.baud_rate
+                        == self._original.serialconsole.baud_rate
+                    )
+                    assert (
+                        self.serialconsole.command
+                        == self._original.serialconsole.command
+                    )
+                    assert (
+                        self.serialconsole.stype == self._original.serialconsole.stype
+                    )
+                    assert (
+                        self.serialconsole.kernel_device
+                        == self._original.serialconsole.kernel_device
+                    )
+                    assert (
+                        self.serialconsole.kernel_device_num
+                        == self._original.serialconsole.kernel_device_num
+                    )
             except AssertionError:
                 update_machine = True
             try:
-                if hasattr(self, 'bmc'):
-                    assert hasattr(self._original, 'bmc')
+                if hasattr(self, "bmc"):
+                    assert hasattr(self._original, "bmc")
                     assert self.bmc.mac == self._original.bmc.mac
                     assert self.bmc.fqdn == self._original.bmc.fqdn
                     assert self.bmc.username == self._original.bmc.username
                     assert self.bmc.password == self._original.bmc.password
                 if self.has_serialconsole():
-                    assert hasattr(self._original, 'serialconsole')
-                    assert self.serialconsole.baud_rate == self._original.serialconsole.baud_rate
-                    assert self.serialconsole.command == self._original.serialconsole.command
-                    assert self.serialconsole.stype == self._original.serialconsole.stype
-                    assert self.serialconsole.kernel_device == self._original.serialconsole.kernel_device
-                    assert self.serialconsole.kernel_device_num == \
-                        self._original.serialconsole.kernel_device_num
+                    assert hasattr(self._original, "serialconsole")
+                    assert (
+                        self.serialconsole.baud_rate
+                        == self._original.serialconsole.baud_rate
+                    )
+                    assert (
+                        self.serialconsole.command
+                        == self._original.serialconsole.command
+                    )
+                    assert (
+                        self.serialconsole.stype == self._original.serialconsole.stype
+                    )
+                    assert (
+                        self.serialconsole.kernel_device
+                        == self._original.serialconsole.kernel_device
+                    )
+                    assert (
+                        self.serialconsole.kernel_device_num
+                        == self._original.serialconsole.kernel_device_num
+                    )
             except AssertionError:
                 update_sconsole = True
 
@@ -715,34 +721,43 @@ class Machine(models.Model):
                 self.__ipv4 = get_ipv4(self.fqdn)
                 self.__ipv6 = get_ipv6(self.fqdn)
                 from orthos2.data.signals import signal_cobbler_machine_update
+
                 signal_cobbler_machine_update.send(
-                    sender=self.__class__, machine_id=self.pk, domain_id=new_domain_id)
+                    sender=self.__class__, machine_id=self.pk, domain_id=new_domain_id
+                )
 
                 # Sync DHCP on the new domain
                 from orthos2.data.signals import signal_cobbler_sync_dhcp
-                signal_cobbler_sync_dhcp.send(sender=self.__class__, domain_id=new_domain_id)
+
+                signal_cobbler_sync_dhcp.send(
+                    sender=self.__class__, domain_id=new_domain_id
+                )
                 return
 
         if update_machine:
             from orthos2.data.signals import signal_cobbler_machine_update
+
             logger.debug("Update machine initiated [%s]", self.fqdn)
             domain_id = self.fqdn_domain.pk
             machine_id = self.pk
             signal_cobbler_machine_update.send(
-                sender=self.__class__, domain_id=domain_id, machine_id=machine_id)
+                sender=self.__class__, domain_id=domain_id, machine_id=machine_id
+            )
         if sync_dhcp:
             from orthos2.data.signals import signal_cobbler_sync_dhcp
 
             # regenerate DHCP on all domains (deletion/registration) if domain changed
             domain_id = self.fqdn_domain.pk
             signal_cobbler_sync_dhcp.send(sender=self.__class__, domain_id=domain_id)
-            self.scan('networkinterfaces')
+            self.scan("networkinterfaces")
         if update_sconsole:
             from orthos2.data.signals import signal_serialconsole_regenerate
-            if hasattr(self.fqdn_domain, 'cscreen_server'):
+
+            if hasattr(self.fqdn_domain, "cscreen_server"):
                 cscreen_server_fqdn = self.fqdn_domain.cscreen_server.fqdn
-                signal_serialconsole_regenerate.send(sender=self.__class__,
-                                                     cscreen_server_fqdn=cscreen_server_fqdn)
+                signal_serialconsole_regenerate.send(
+                    sender=self.__class__, cscreen_server_fqdn=cscreen_server_fqdn
+                )
 
     @property
     def ipv4(self):
@@ -758,21 +773,29 @@ class Machine(models.Model):
 
     @property
     def status_ping(self):
-        return self.status_ipv4 in {Machine.StatusIP.REACHABLE, Machine.StatusIP.CONFIRMED} or\
-            self.status_ipv6 in {Machine.StatusIP.REACHABLE, Machine.StatusIP.CONFIRMED}
+        return self.status_ipv4 in {
+            Machine.StatusIP.REACHABLE,
+            Machine.StatusIP.CONFIRMED,
+        } or self.status_ipv6 in {
+            Machine.StatusIP.REACHABLE,
+            Machine.StatusIP.CONFIRMED,
+        }
 
     def is_reserved(self):
         if self.reserved_by:
             return True
         return False
+
     is_reserved.boolean = True
 
     def is_administrative(self):
         return self.administrative
+
     is_administrative.boolean = True
 
     def is_cobbler_server(self):
         return self.cobbler_server_for.exists()
+
     is_cobbler_server.boolean = True
 
     def is_virtual_machine(self):
@@ -810,7 +833,10 @@ class Machine(models.Model):
         try:
             interface = self.networkinterfaces.get(primary=True)
         except NetworkInterface.DoesNotExist:
-            logger.debug("In 'get_primary_networkinterface': Machine %s has no networkinterfce", self.fqdn)
+            logger.debug(
+                "In 'get_primary_networkinterface': Machine %s has no networkinterfce",
+                self.fqdn,
+            )
             return None
         return interface
 
@@ -823,9 +849,9 @@ class Machine(models.Model):
         """Return kernel options as dict."""
         kernel_options = {}
 
-        if not self.kernel_options.strip().startswith('+'):
+        if not self.kernel_options.strip().startswith("+"):
             for kernel_option in self.kernel_options.strip().split():
-                option = kernel_option.split('=')
+                option = kernel_option.split("=")
                 key = option[0]
                 value = option[1] if len(option) == 2 else None
                 kernel_options[key] = value
@@ -836,9 +862,9 @@ class Machine(models.Model):
         """Return kernel options append as dict."""
         kernel_options = {}
 
-        if self.kernel_options.strip().startswith('+'):
+        if self.kernel_options.strip().startswith("+"):
             for kernel_option in self.kernel_options.strip()[1:].split():
-                option = kernel_option.split('=')
+                option = kernel_option.split("=")
                 key = option[0]
                 value = option[1] if len(option) == 2 else None
                 kernel_options[key] = value
@@ -846,17 +872,17 @@ class Machine(models.Model):
         return kernel_options
 
     def get_s390_hostname(self, use_uppercase=False):
-        if self.system.name == 'zVM':
+        if self.system.name == "zVM":
             return get_s390_hostname(self.hostname, use_uppercase=use_uppercase)
         return None
 
     def has_remotepower(self):
         """Check for available remote power."""
-        return hasattr(self, 'remotepower')
+        return hasattr(self, "remotepower")
 
     def has_serialconsole(self):
         """Check for available serial console."""
-        return hasattr(self, 'serialconsole')
+        return hasattr(self, "serialconsole")
 
     def is_reserved_infinite(self):
         """Return true if machine is reserved infinite `datetime.date(9999, 12, 31)`."""
@@ -874,10 +900,10 @@ class Machine(models.Model):
     @check_permission
     def reserve(self, reason, until, user=None, reserve_for_user=None):
         """Reserve machine."""
+        from .reservationhistory import ReservationHistory
+
         from orthos2.taskmanager import tasks
         from orthos2.taskmanager.models import TaskManager
-
-        from .reservationhistory import ReservationHistory
 
         if not reserve_for_user:
             reserve_for_user = user
@@ -897,7 +923,9 @@ class Machine(models.Model):
                 reserved_by=self.reserved_by,
                 reserved_at=self.reserved_at,
                 reserved_until=timezone.now(),
-                reserved_reason='{} (taken away by {})'.format(self.reserved_reason, user)
+                reserved_reason="{} (taken away by {})".format(
+                    self.reserved_reason, user
+                ),
             )
             reservationhistory.save()
             self.reserved_at = None
@@ -921,7 +949,9 @@ class Machine(models.Model):
         # new `datetime.datetime` object time zone aware using the default time zone (see
         # `TIME_ZONE` in the django settings).
         if until == datetime.date.max:
-            until = timezone.datetime.combine(datetime.date.max, timezone.datetime.min.time())
+            until = timezone.datetime.combine(
+                datetime.date.max, timezone.datetime.min.time()
+            )
             until = timezone.make_aware(until, timezone.utc)
         else:
             until = timezone.datetime.combine(until, timezone.datetime.max.time())
@@ -945,7 +975,9 @@ class Machine(models.Model):
             raise ReleaseException("Machine is not reserved.")
 
         if self.administrative:
-            raise Exception("Administrative machines must not be released, remove admin flag first")
+            raise Exception(
+                "Administrative machines must not be released, remove admin flag first"
+            )
 
         logger.debug("Release VM %s", self.fqdn)
         if self.is_vm_managed() and self.hypervisor.vm_auto_delete:
@@ -958,7 +990,7 @@ class Machine(models.Model):
             reserved_by=self.reserved_by,
             reserved_at=self.reserved_at,
             reserved_until=timezone.now(),
-            reserved_reason=self.reserved_reason
+            reserved_reason=self.reserved_reason,
         )
 
         self.reserved_by = None
@@ -980,7 +1012,9 @@ class Machine(models.Model):
         from .remotepower import RemotePower
 
         if (action is None) or (action not in RemotePower.Action.as_list):
-            raise Exception("Power cycling failed: unknown action ('{}')!".format(action))
+            raise Exception(
+                "Power cycling failed: unknown action ('{}')!".format(action)
+            )
 
         if not self.has_remotepower():
             raise Exception("No remotepower available!")
@@ -1018,13 +1052,13 @@ class Machine(models.Model):
         from orthos2.utils.ssh import SSH
 
         if reboot:
-            option = '--reboot'
+            option = "--reboot"
         else:
-            option = '--poweroff'
+            option = "--poweroff"
 
         machine = SSH(self.fqdn)
         machine.connect()
-        command = 'shutdown {} now'.format(option)
+        command = "shutdown {} now".format(option)
         _stdout, _stderr, exitstatus = machine.execute(command, retry=False)
         machine.close()
 
@@ -1133,7 +1167,7 @@ class Machine(models.Model):
             return RemotePower.Status.to_str(status)
         return status
 
-    def scan(self, action='all', user=None):
+    def scan(self, action="all", user=None):
         """Start scanning/checking the machine by creating a task."""
         from orthos2.taskmanager import tasks
         from orthos2.taskmanager.models import TaskManager
@@ -1165,7 +1199,7 @@ class Machine(models.Model):
         if self.has_serialconsole():
             signal_serialconsole_regenerate.send(
                 sender=self.__class__,
-                cscreen_server_fqdn=self.fqdn_domain.cscreen_server.fqdn
+                cscreen_server_fqdn=self.fqdn_domain.cscreen_server.fqdn,
             )
 
     @check_permission
@@ -1173,7 +1207,9 @@ class Machine(models.Model):
         """Call respective signal."""
         from orthos2.data.signals import signal_cobbler_regenerate
 
-        signal_cobbler_regenerate.send(sender=self.__class__, domain_id=self.fqdn_domain.pk)
+        signal_cobbler_regenerate.send(
+            sender=self.__class__, domain_id=self.fqdn_domain.pk
+        )
 
     def get_support_contact(self):
         """
@@ -1224,13 +1260,15 @@ class Machine(models.Model):
             if queryset is None:
                 continue
 
-            chunks.append(serializer.serialize(
-                queryset,
-                indent=4,
-                use_natural_foreign_keys=True,
-                use_natural_primary_keys=True
-            ))
+            chunks.append(
+                serializer.serialize(
+                    queryset,
+                    indent=4,
+                    use_natural_foreign_keys=True,
+                    use_natural_primary_keys=True,
+                )
+            )
 
-        data = '\n'.join(chunks)
+        data = "\n".join(chunks)
 
         return (data, output_format)

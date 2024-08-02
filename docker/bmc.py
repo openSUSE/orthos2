@@ -15,7 +15,10 @@ def shutdownHandler(msg, evt):
     global server
 
     if server is not None:
-        print("shutdown handler called. shutting down on thread id:%x" % (id(threading.current_thread())))
+        print(
+            "shutdown handler called. shutting down on thread id:%x"
+            % (id(threading.current_thread()))
+        )
         server.shutdown()
         server.server_close()
         print("shutdown complete")
@@ -27,7 +30,7 @@ def shutdownHandler(msg, evt):
 
 def terminate(signal, frame):
     print("terminate handle on thread id:%x" % (id(threading.current_thread())))
-    t = threading.Thread(target=shutdownHandler, args=('SIGTERM received', done_event))
+    t = threading.Thread(target=shutdownHandler, args=("SIGTERM received", done_event))
     t.start()
 
 

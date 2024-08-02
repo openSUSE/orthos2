@@ -13,14 +13,13 @@ from typing import List, Optional, Tuple, Union
 import validators
 from django.conf import settings
 
-logger = logging.getLogger('utils')
+logger = logging.getLogger("utils")
 
 
 class Serializer:
-
     class Format:
-        JSON = 'json'
-        YAML = 'yaml'
+        JSON = "json"
+        YAML = "yaml"
 
         @classmethod
         def is_valid(cls, output_format):
@@ -30,12 +29,12 @@ class Serializer:
 
 def get_domain(fqdn: str) -> str:
     """Return domain of FQDN."""
-    return '.'.join(fqdn.split('.')[1:])
+    return ".".join(fqdn.split(".")[1:])
 
 
 def get_hostname(fqdn: str) -> str:
     """Return hostname of FQDN."""
-    return fqdn.split('.')[0]
+    return fqdn.split(".")[0]
 
 
 def get_ip(fqdn: str, ip_version=4) -> Optional[Union[Tuple[str, str], str]]:
@@ -53,13 +52,7 @@ def get_ip(fqdn: str, ip_version=4) -> Optional[Union[Tuple[str, str], str]]:
     ipv6 = []
 
     try:
-        result = socket.getaddrinfo(
-            fqdn,
-            None,
-            0,
-            socket.SOCK_STREAM,
-            socket.SOL_TCP
-        )
+        result = socket.getaddrinfo(fqdn, None, 0, socket.SOCK_STREAM, socket.SOL_TCP)
 
         for address_family in result:
             if address_family[0] == socket.AF_INET:
@@ -67,7 +60,9 @@ def get_ip(fqdn: str, ip_version=4) -> Optional[Union[Tuple[str, str], str]]:
             elif address_family[0] == socket.AF_INET6:
                 ipv6.append(address_family[4][0])
     except (IndexError, socket.gaierror) as e:
-        logger.exception("DNS lookup for '%s': NXDOMAIN (non-existing domain) (%s)", fqdn, str(e))
+        logger.exception(
+            "DNS lookup for '%s': NXDOMAIN (non-existing domain) (%s)", fqdn, str(e)
+        )
         return None
 
     if not ipv4:
@@ -159,7 +154,7 @@ def str_time_to_datetime(time):
         '12:34'
     """
     try:
-        return datetime.strptime(time, '%H:%M')
+        return datetime.strptime(time, "%H:%M")
     except ValueError:
         pass
     return None
@@ -169,27 +164,27 @@ def send_email(to_addr, subject, message, from_addr=None):
     """Send an email."""
     from orthos2.data.models import ServerConfig
 
-    if not ServerConfig.objects.bool_by_key('orthos.debug.mail.send'):
+    if not ServerConfig.objects.bool_by_key("orthos.debug.mail.send"):
         logger.warning("Disabled: set 'orthos.debug.mail.send' to 'true'")
         return
 
     try:
         if from_addr is None:
-            from_addr = ServerConfig.objects.by_key('mail.from.address')
+            from_addr = ServerConfig.objects.by_key("mail.from.address")
 
         msg = MIMEMultipart()
-        msg['To'] = to_addr
-        msg['X-BeenThere'] = 'orthos'
-        msg['From'] = from_addr
-        msg['Subject'] = ServerConfig.objects.by_key('mail.subject.prefix') + subject
+        msg["To"] = to_addr
+        msg["X-BeenThere"] = "orthos"
+        msg["From"] = from_addr
+        msg["Subject"] = ServerConfig.objects.by_key("mail.subject.prefix") + subject
         text = MIMEText(message)
         text.add_header("Content-Disposition", "inline")
-        msg['Date'] = formatdate(localtime=True)
+        msg["Date"] = formatdate(localtime=True)
         msg.attach(text)
 
-        s = smtplib.SMTP(ServerConfig.objects.by_key('mail.smtprelay.fqdn'))
-        logger.info("Sending mail to '%s' (subject: '%s')", msg['To'], msg['Subject'])
-        s.sendmail(msg['From'], [to_addr], msg.as_string())
+        s = smtplib.SMTP(ServerConfig.objects.by_key("mail.smtprelay.fqdn"))
+        logger.info("Sending mail to '%s' (subject: '%s')", msg["To"], msg["Subject"])
+        s.sendmail(msg["From"], [to_addr], msg.as_string())
         s.quit()
     except Exception:
         logger.exception("Something went wrong while sending E-Mail!")
@@ -202,19 +197,16 @@ def execute(command):
     With `shell=True` the command needs to be a string. Otherwise the first element is set as shell
     which leads to issues.
     """
-    result = ('', '', 1)
+    result = ("", "", 1)
 
     try:
         process = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
         )
         data = process.communicate()
 
         # stdout, stderr, exitcode
-        result = data[0].decode('utf-8'), data[1].decode('utf-8'), process.returncode
+        result = data[0].decode("utf-8"), data[1].decode("utf-8"), process.returncode
     except FileNotFoundError:
         logger.exception("No such file or directory: %s", command)
     except Exception as e:
@@ -226,9 +218,9 @@ def execute(command):
 def get_s390_hostname(hostname, use_uppercase=True):
     """Return the 'linux...' name of the s390 machine."""
     if use_uppercase:
-        linux = 'LINUX'
+        linux = "LINUX"
     else:
-        linux = 'linux'
+        linux = "linux"
 
     if not isinstance(hostname, str) or len(hostname) < 10:
         logger.error("Invalid s390 name: %s", hostname)
@@ -247,10 +239,13 @@ def sync(original, temp):
     differences = []
 
     for key in temp.__dict__.keys():
-        if not key.startswith('_') and original.__class__().__dict__[key] != temp.__dict__[key]:
+        if (
+            not key.startswith("_")
+            and original.__class__().__dict__[key] != temp.__dict__[key]
+        ):
             differences.append(key)
 
-    logger.debug("Set values for '%s': %s", original, ', '.join(differences))
+    logger.debug("Set values for '%s': %s", original, ", ".join(differences))
 
     original.refresh_from_db()
 
@@ -292,8 +287,15 @@ def get_random_mac_address() -> str:
     # oct5-6: randomized
     #
     # This way we avoid running into conflicts with non-Orthos-created KVM machines.
-    mac = [0x52, 0x54, 0x00, 0x42, random.randint(0x00, 0xff), random.randint(0x00, 0xff)]
-    mac = ':'.join(map(lambda x: "{:02x}".format(x), mac))
+    mac = [
+        0x52,
+        0x54,
+        0x00,
+        0x42,
+        random.randint(0x00, 0xFF),
+        random.randint(0x00, 0xFF),
+    ]
+    mac = ":".join(map(lambda x: "{:02x}".format(x), mac))
     return mac.upper()
 
 
@@ -303,26 +305,26 @@ def normalize_ascii(string: str) -> str:
 
     In that case, the character is set to ` ` (space).
     """
-    result = ''
+    result = ""
     for char in string:
-        result += char if (ord(char) > 0 and ord(char) < 127) else ' '
+        result += char if (ord(char) > 0 and ord(char) < 127) else " "
     return result
 
 
 def format_cli_form_errors(form):
     """Format form errors for CLI."""
-    output = ''
+    output = ""
     for field_name, errors in form.errors.items():
         if field_name in form.fields:
             label = form.fields[field_name].label
             if not label:
                 label = field_name.capitalize()
         else:
-            label = '*'
+            label = "*"
 
         for error in errors:
-            output += '* {} [{}]\n'.format(error, label)
-    return output.rstrip('\n')
+            output += "* {} [{}]\n".format(error, label)
+    return output.rstrip("\n")
 
 
 def safe_get_or_default(model, key, value, field, default=None):

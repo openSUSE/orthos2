@@ -1,0 +1,5 @@
+[tool.isort]
+profile = "black"
+known_cobbler="orthos2"
+known_tests="tests"
+sections="FUTURE,STDLIB,FIRSTPARTY,THIRDPARTY,LOCALFOLDER,COBBLER,TESTS"

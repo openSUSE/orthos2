@@ -41,30 +41,41 @@ Also see: https://docs.djangoproject.com/en/3.2/topics/serialization
 Modules = {}
 
 # General also includes taskmanager.dailytask and basic arch.suse.de domain
-Modules['general'] = ("Serverconfig", "System", "Architecture", "Vendor", "Platform", "Serialconsoletype")
+Modules["general"] = (
+    "Serverconfig",
+    "System",
+    "Architecture",
+    "Vendor",
+    "Platform",
+    "Serialconsoletype",
+)
 
-Modules['domain'] = ("Domain", "Domainadmin")
+Modules["domain"] = ("Domain", "Domainadmin")
 
 # Modules['remote' ] = ( "Remotepower", "Bmc", "Remotepowerdevice", "Serialconsole", "Serialconsoletype" )
 
 added_machines = []
-domains = ['test-100.arch.suse.de',
-           'test-10.arch.suse.de',
-           'test-20.arch.suse.de',
-           'test-30.arch.suse.de',
-           'test-40.arch.suse.de',
-           'devlab.prv.suse.com'
-           ]
+domains = [
+    "test-100.arch.suse.de",
+    "test-10.arch.suse.de",
+    "test-20.arch.suse.de",
+    "test-30.arch.suse.de",
+    "test-40.arch.suse.de",
+    "devlab.prv.suse.com",
+]
 
 
 def show_help():
     print("Use --script-args to specify what you want to dump:")
     print("")
-    print("\tgeneral \t-- Dump general DB data [ %s ] " % ", ".join(Modules['general']))
+    print("\tgeneral \t-- Dump general DB data [ %s ] " % ", ".join(Modules["general"]))
     print("")
     # print("\tremote  \t-- Dump remote management HW DB data [ %s ] " % ", ".join(Modules['remote']))
     # print("")
-    print("\t<domain>\t-- Dump data of a specific domain [ %s ] " % ", ".join(Modules['domain']))
+    print(
+        "\t<domain>\t-- Dump data of a specific domain [ %s ] "
+        % ", ".join(Modules["domain"])
+    )
     print()
     print(USAGE)
     exit(1)
@@ -147,13 +158,30 @@ class Command(BaseCommand):
         exit(1)
 
     def add_arguments(self, parser):
-        parser.add_argument('domain', nargs='*', default=domains, help="Dump domain tables")
-        parser.add_argument('--natural', action='store_true', help="Store natural PK keys", default=False)
-        parser.add_argument('--filename', default="db_dump", help="Dump tables filename.json")
+        parser.add_argument(
+            "domain", nargs="*", default=domains, help="Dump domain tables"
+        )
+        parser.add_argument(
+            "--natural",
+            action="store_true",
+            help="Store natural PK keys",
+            default=False,
+        )
+        parser.add_argument(
+            "--filename", default="db_dump", help="Dump tables filename.json"
+        )
         group = parser.add_mutually_exclusive_group()
-        group.add_argument('--machinesonly', action='store_true',
-                           help="Dump only systems/machines of specified domains")
-        group.add_argument('--general', action='store_true', help="Store general DB metadata", default=False)
+        group.add_argument(
+            "--machinesonly",
+            action="store_true",
+            help="Dump only systems/machines of specified domains",
+        )
+        group.add_argument(
+            "--general",
+            action="store_true",
+            help="Store general DB metadata",
+            default=False,
+        )
 
     def handle(self, *args, **options):
 
@@ -190,6 +218,13 @@ class Command(BaseCommand):
         # print(queries)
         with open(self.file, "w") as out:
             from django.core import serializers
-            serializers.serialize("json", self.queries, indent=2, stream=out,
-                                  use_natural_foreign_keys=self.natural, use_natural_primary_keys=self.natural)
+
+            serializers.serialize(
+                "json",
+                self.queries,
+                indent=2,
+                stream=out,
+                use_natural_foreign_keys=self.natural,
+                use_natural_primary_keys=self.natural,
+            )
             print("File dumped: %s" % os.path.abspath(self.file))

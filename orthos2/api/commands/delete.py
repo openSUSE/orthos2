@@ -21,25 +21,23 @@ from orthos2.api.serializers.misc import (
 from orthos2.data.models import Machine, RemotePowerDevice
 from orthos2.utils.misc import format_cli_form_errors
 
-logger = logging.getLogger('api')
+logger = logging.getLogger("api")
 
 
 class Delete:
-    MACHINE = 'machine'
-    SERIALCONSOLE = 'serialconsole'
-    REMOTEPOWER = 'remotepower'
-    REMOTEPOWERDEVICE = 'remotepowerdevice'
+    MACHINE = "machine"
+    SERIALCONSOLE = "serialconsole"
+    REMOTEPOWER = "remotepower"
+    REMOTEPOWERDEVICE = "remotepowerdevice"
 
     as_list = [MACHINE, SERIALCONSOLE, REMOTEPOWER, REMOTEPOWERDEVICE]
 
 
 class DeleteCommand(BaseAPIView):
 
-    METHOD = 'GET'
-    URL = '/delete'
-    ARGUMENTS = (
-        ['args*'],
-    )
+    METHOD = "GET"
+    URL = "/delete"
+    ARGUMENTS = (["args*"],)
 
     HELP_SHORT = "Removes information from the database."
     HELP = """Deletes items from the database.
@@ -64,7 +62,7 @@ Example:
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^delete$', DeleteCommand.as_view(), name='delete'),
+            re_path(r"^delete$", DeleteCommand.as_view(), name="delete"),
         ]
 
     @staticmethod
@@ -73,7 +71,7 @@ Example:
 
     def get(self, request, *args, **kwargs):
         """Dispatcher for the 'delete' command."""
-        arguments = request.GET.get('args', None)
+        arguments = request.GET.get("args", None)
 
         if arguments:
             arguments = arguments.split()
@@ -84,39 +82,51 @@ Example:
 
         if item == Delete.MACHINE:
             if sub_arguments:
-                return ErrorMessage("Invalid number of arguments for 'machine'!").as_json
+                return ErrorMessage(
+                    "Invalid number of arguments for 'machine'!"
+                ).as_json
 
-            return redirect(reverse('api:machine_delete'))
+            return redirect(reverse("api:machine_delete"))
 
         elif item == Delete.SERIALCONSOLE:
             if sub_arguments:
-                return ErrorMessage("Invalid number of arguments for 'serialconsole'!").as_json
+                return ErrorMessage(
+                    "Invalid number of arguments for 'serialconsole'!"
+                ).as_json
 
-            return redirect(reverse('api:serialconsole_delete'))
+            return redirect(reverse("api:serialconsole_delete"))
 
         elif item == Delete.REMOTEPOWER:
             if sub_arguments:
-                return ErrorMessage("Invalid number of arguments for 'remotepower'!").as_json
+                return ErrorMessage(
+                    "Invalid number of arguments for 'remotepower'!"
+                ).as_json
 
-            return redirect(reverse('api:remotepower_delete'))
+            return redirect(reverse("api:remotepower_delete"))
 
         elif item == Delete.REMOTEPOWERDEVICE:
             if sub_arguments:
-                return ErrorMessage("Invalid number of arguments for 'remotepowerdevice'!").as_json
+                return ErrorMessage(
+                    "Invalid number of arguments for 'remotepowerdevice'!"
+                ).as_json
 
-            return redirect(reverse('api:remotepowerdevice_delete'))
+            return redirect(reverse("api:remotepowerdevice_delete"))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
 
 class DeleteMachineCommand(BaseAPIView):
 
-    URL_POST = '/machine/delete'
+    URL_POST = "/machine/delete"
 
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^machine/delete', DeleteMachineCommand.as_view(), name='machine_delete'),
+            re_path(
+                r"^machine/delete",
+                DeleteMachineCommand.as_view(),
+                name="machine_delete",
+            ),
         ]
 
     def get(self, request, *args, **kwargs):
@@ -125,23 +135,23 @@ class DeleteMachineCommand(BaseAPIView):
             return AuthRequiredSerializer().as_json
 
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
         form = DeleteMachineAPIForm()
 
-        input = InputSerializer(
-            form.as_dict(),
-            self.URL_POST,
-            form.get_order()
-        )
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
         return input.as_json
 
     def post(self, request, *args, **kwargs):
         """Delete machine."""
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
-        data = json.loads(request.body.decode('utf-8'))['form']
+        data = json.loads(request.body.decode("utf-8"))["form"]
         form = DeleteMachineAPIForm(data)
 
         if form.is_valid():
@@ -149,29 +159,27 @@ class DeleteMachineCommand(BaseAPIView):
             try:
                 cleaned_data = form.cleaned_data
 
-                machine = Machine.objects.get(fqdn__iexact=cleaned_data['fqdn'])
+                machine = Machine.objects.get(fqdn__iexact=cleaned_data["fqdn"])
 
                 if not machine:
-                    return ErrorMessage("Unknown machine '{}'!".format(
-                        cleaned_data['fqdn'])).as_json
+                    return ErrorMessage(
+                        "Unknown machine '{}'!".format(cleaned_data["fqdn"])
+                    ).as_json
 
                 result = machine.delete()
 
                 theader = [
-                    {'objects': 'Deleted objects'},
-                    {'count': '#'},
+                    {"objects": "Deleted objects"},
+                    {"count": "#"},
                 ]
 
                 response = {
-                    'header': {'type': 'TABLE', 'theader': theader},
-                    'data': [],
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": [],
                 }
                 for key, value in result[1].items():
-                    response['data'].append(
-                        {
-                            'objects': key.replace('data.', ''),
-                            'count': value
-                        }
+                    response["data"].append(
+                        {"objects": key.replace("data.", ""), "count": value}
                     )
                 return JsonResponse(response)
 
@@ -184,15 +192,15 @@ class DeleteMachineCommand(BaseAPIView):
 
 class DeleteSerialConsoleCommand(BaseAPIView):
 
-    URL_POST = '/serialconsole/delete'
+    URL_POST = "/serialconsole/delete"
 
     @staticmethod
     def get_urls():
         return [
             re_path(
-                r'^serialconsole/delete',
+                r"^serialconsole/delete",
                 DeleteSerialConsoleCommand.as_view(),
-                name='serialconsole_delete'
+                name="serialconsole_delete",
             ),
         ]
 
@@ -202,23 +210,23 @@ class DeleteSerialConsoleCommand(BaseAPIView):
             return AuthRequiredSerializer().as_json
 
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
         form = DeleteSerialConsoleAPIForm()
 
-        input = InputSerializer(
-            form.as_dict(),
-            self.URL_POST,
-            form.get_order()
-        )
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
         return input.as_json
 
     def post(self, request, *args, **kwargs):
         """Delete serial console."""
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
-        data = json.loads(request.body.decode('utf-8'))['form']
+        data = json.loads(request.body.decode("utf-8"))["form"]
         form = DeleteSerialConsoleAPIForm(data)
 
         if form.is_valid():
@@ -226,7 +234,7 @@ class DeleteSerialConsoleCommand(BaseAPIView):
             try:
                 cleaned_data = form.cleaned_data
 
-                machine = Machine.objects.get(fqdn__iexact=cleaned_data['fqdn'])
+                machine = Machine.objects.get(fqdn__iexact=cleaned_data["fqdn"])
 
                 if not machine.has_serialconsole():
                     return ErrorMessage("Machine has no serial console!").as_json
@@ -234,20 +242,17 @@ class DeleteSerialConsoleCommand(BaseAPIView):
                 result = machine.serialconsole.delete()
 
                 theader = [
-                    {'objects': 'Deleted objects'},
-                    {'count': '#'},
+                    {"objects": "Deleted objects"},
+                    {"count": "#"},
                 ]
 
                 response = {
-                    'header': {'type': 'TABLE', 'theader': theader},
-                    'data': [],
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": [],
                 }
                 for key, value in result[1].items():
-                    response['data'].append(
-                        {
-                            'objects': key.replace('data.', ''),
-                            'count': value
-                        }
+                    response["data"].append(
+                        {"objects": key.replace("data.", ""), "count": value}
                     )
                 return JsonResponse(response)
 
@@ -260,15 +265,15 @@ class DeleteSerialConsoleCommand(BaseAPIView):
 
 class DeleteRemotePowerCommand(BaseAPIView):
 
-    URL_POST = '/remotepower/delete'
+    URL_POST = "/remotepower/delete"
 
     @staticmethod
     def get_urls():
         return [
             re_path(
-                r'^remotepower/delete',
+                r"^remotepower/delete",
                 DeleteRemotePowerCommand.as_view(),
-                name='remotepower_delete'
+                name="remotepower_delete",
             ),
         ]
 
@@ -278,23 +283,23 @@ class DeleteRemotePowerCommand(BaseAPIView):
             return AuthRequiredSerializer().as_json
 
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
         form = DeleteRemotePowerAPIForm()
 
-        input = InputSerializer(
-            form.as_dict(),
-            self.URL_POST,
-            form.get_order()
-        )
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
         return input.as_json
 
     def post(self, request, *args, **kwargs):
         """Delete remote power."""
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
-        data = json.loads(request.body.decode('utf-8'))['form']
+        data = json.loads(request.body.decode("utf-8"))["form"]
         form = DeleteRemotePowerAPIForm(data)
 
         if form.is_valid():
@@ -302,7 +307,7 @@ class DeleteRemotePowerCommand(BaseAPIView):
             try:
                 cleaned_data = form.cleaned_data
 
-                machine = Machine.objects.get(fqdn__iexact=cleaned_data['fqdn'])
+                machine = Machine.objects.get(fqdn__iexact=cleaned_data["fqdn"])
 
                 if not machine.has_remotepower():
                     return ErrorMessage("Machine has no remote power!").as_json
@@ -310,20 +315,17 @@ class DeleteRemotePowerCommand(BaseAPIView):
                 result = machine.remotepower.delete()
 
                 theader = [
-                    {'objects': 'Deleted objects'},
-                    {'count': '#'},
+                    {"objects": "Deleted objects"},
+                    {"count": "#"},
                 ]
 
                 response = {
-                    'header': {'type': 'TABLE', 'theader': theader},
-                    'data': [],
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": [],
                 }
                 for key, value in result[1].items():
-                    response['data'].append(
-                        {
-                            'objects': key.replace('data.', ''),
-                            'count': value
-                        }
+                    response["data"].append(
+                        {"objects": key.replace("data.", ""), "count": value}
                     )
                 return JsonResponse(response)
 
@@ -336,15 +338,15 @@ class DeleteRemotePowerCommand(BaseAPIView):
 
 class DeleteRemotePowerDeviceCommand(BaseAPIView):
 
-    URL_POST = '/remotepowerdevice/delete'
+    URL_POST = "/remotepowerdevice/delete"
 
     @staticmethod
     def get_urls():
         return [
             re_path(
-                r'^remotepowerdevice/delete',
+                r"^remotepowerdevice/delete",
                 DeleteRemotePowerDeviceCommand.as_view(),
-                name='remotepowerdevice_delete'
+                name="remotepowerdevice_delete",
             ),
         ]
 
@@ -354,23 +356,23 @@ class DeleteRemotePowerDeviceCommand(BaseAPIView):
             return AuthRequiredSerializer().as_json
 
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
         form = DeleteRemotePowerDeviceAPIForm()
 
-        input = InputSerializer(
-            form.as_dict(),
-            self.URL_POST,
-            form.get_order()
-        )
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
         return input.as_json
 
     def post(self, request, *args, **kwargs):
         """Delete remote power."""
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
-        data = json.loads(request.body.decode('utf-8'))['form']
+        data = json.loads(request.body.decode("utf-8"))["form"]
         form = DeleteRemotePowerDeviceAPIForm(data)
 
         if form.is_valid():
@@ -378,25 +380,24 @@ class DeleteRemotePowerDeviceCommand(BaseAPIView):
             try:
                 cleaned_data = form.cleaned_data
 
-                device = RemotePowerDevice.objects.get(fqdn__iexact=cleaned_data['fqdn'])
+                device = RemotePowerDevice.objects.get(
+                    fqdn__iexact=cleaned_data["fqdn"]
+                )
 
                 result = device.delete()
 
                 theader = [
-                    {'objects': 'Deleted objects'},
-                    {'count': '#'},
+                    {"objects": "Deleted objects"},
+                    {"count": "#"},
                 ]
 
                 response = {
-                    'header': {'type': 'TABLE', 'theader': theader},
-                    'data': [],
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": [],
                 }
                 for key, value in result[1].items():
-                    response['data'].append(
-                        {
-                            'objects': key.replace('data.', ''),
-                            'count': value
-                        }
+                    response["data"].append(
+                        {"objects": key.replace("data.", ""), "count": value}
                     )
                 return JsonResponse(response)
 

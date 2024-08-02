@@ -5,73 +5,69 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.template import Context, Template
 
+from orthos2.data.models.architecture import Architecture
+from orthos2.data.models.serverconfig import ServerConfig
 from orthos2.utils.misc import has_valid_domain_ending
 
-from .architecture import Architecture
-from .serverconfig import ServerConfig
-
-logger = logging.getLogger('models')
+logger = logging.getLogger("models")
 
 
 def validate_domain_ending(value):
     valid_domain_endings = ServerConfig.objects.get_valid_domain_endings()
 
     if not has_valid_domain_ending(value, valid_domain_endings):
-        raise ValidationError("'{}' has no valid domain ending ({}).".format(
-            value,
-            ', '.join(valid_domain_endings)
-        ))
+        raise ValidationError(
+            "'{}' has no valid domain ending ({}).".format(
+                value, ", ".join(valid_domain_endings)
+            )
+        )
 
 
 class Domain(models.Model):
-
     class Manager(models.Manager):
         def get_by_natural_key(self, name):
             return self.get(name=name)
 
     name = models.CharField(
-        max_length=200,
-        blank=False,
-        unique=True,
-        validators=[validate_domain_ending]
+        max_length=200, blank=False, unique=True, validators=[validate_domain_ending]
     )
 
     cobbler_server = models.ForeignKey(
-        'data.Machine',
-        related_name='cobbler_server_for',
-        verbose_name='Cobbler server',
+        "data.Machine",
+        related_name="cobbler_server_for",
+        verbose_name="Cobbler server",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        limit_choices_to={'administrative': True}
+        limit_choices_to={"administrative": True},
     )
 
     tftp_server = models.ForeignKey(
-        'data.Machine',
-        related_name='tftp_server_for_domain',
-        verbose_name='TFTP server',
+        "data.Machine",
+        related_name="tftp_server_for_domain",
+        verbose_name="TFTP server",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        limit_choices_to={'administrative': True}
+        limit_choices_to={"administrative": True},
     )
 
     cscreen_server = models.ForeignKey(
-        'data.Machine',
-        verbose_name='CScreen server',
-        related_name='+',
+        "data.Machine",
+        verbose_name="CScreen server",
+        related_name="+",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        limit_choices_to={'administrative': True},
+        limit_choices_to={"administrative": True},
     )
 
     supported_architectures = models.ManyToManyField(
-        'data.Architecture',
-        related_name='supported_domains',
-        verbose_name='Supported architectures',
-        through='DomainAdmin',
-        blank=False
+        "data.Architecture",
+        related_name="supported_domains",
+        verbose_name="Supported architectures",
+        through="DomainAdmin",
+        blank=False,
     )
 
     objects = Manager()
@@ -95,9 +91,10 @@ class Domain(models.Model):
 
     def get_machine_count(self):
         return self.machine_set.count()
-    get_machine_count.short_description = 'Machines'
 
-    def get_setup_records(self, architecture, grouped=True, delimiter=':'):
+    get_machine_count.short_description = "Machines"
+
+    def get_setup_records(self, architecture, grouped=True, delimiter=":"):
         """
         Collect domain and architecture or machine group specific setup records.
 
@@ -161,17 +158,17 @@ class Domain(models.Model):
             logger.warning("No TFTP server available for '%s'", self.name)
             return {}
 
-        list_command_template = ServerConfig.objects.by_key('setup.list.command')
+        list_command_template = ServerConfig.objects.by_key("setup.list.command")
 
-        context = Context({
-            'architecture': architecture
-        })
+        context = Context({"architecture": architecture})
         list_command = Template(list_command_template).render(context)
 
         try:
             conn = SSH(self.tftp_server.fqdn)
             conn.connect()
-            logger.debug("Fetch setup records: %s:%s", self.tftp_server.fqdn, list_command)
+            logger.debug(
+                "Fetch setup records: %s:%s", self.tftp_server.fqdn, list_command
+            )
             stdout, stderr, exitstatus = conn.execute(list_command)
             conn.close()
 
@@ -179,7 +176,9 @@ class Domain(models.Model):
                 logger.warning(str(stderr))
                 return {}
 
-            logger.debug("Found %s setup records on %s", len(stdout), self.tftp_server.fqdn)
+            logger.debug(
+                "Found %s setup records on %s", len(stdout), self.tftp_server.fqdn
+            )
         except Exception as e:
             logger.warning("Couldn't fetch record list for setup: %s", str(e))
             return {}
@@ -187,7 +186,7 @@ class Domain(models.Model):
             if conn:
                 conn.close()
 
-        records = [record.strip('\n') for record in stdout]
+        records = [record.strip("\n") for record in stdout]
         logger.debug("Records:\n%s", records)
         if grouped:
             groups = {}
@@ -223,10 +222,7 @@ class Domain(models.Model):
 
     def is_valid_setup_choice(self, choice, architecture):
         """Check if `choice` is a valid setup record."""
-        choices = self.get_setup_records(
-            architecture,
-            grouped=False
-        )
+        choices = self.get_setup_records(architecture, grouped=False)
         result = choice in choices
         logger.debug(result)
         return result
@@ -237,9 +233,7 @@ class DomainAdmin(models.Model):
     domain = models.ForeignKey(Domain, on_delete=models.CASCADE, blank=False)
     arch = models.ForeignKey(Architecture, on_delete=models.CASCADE, blank=False)
 
-    contact_email = models.EmailField(
-        blank=False
-    )
+    contact_email = models.EmailField(blank=False)
 
     def natural_key(self):
         return (self.domain.name, self.arch.name)

@@ -9,7 +9,9 @@ class ReserveMachineAPIFormTests(TestCase):
     def test_form(self):
         """Test the machine reservation API form"""
         # Arrange & Act
-        form = ReserveMachineAPIForm({"reason": "my reason", "until": "9999-12-31", "user": "testuser"})
+        form = ReserveMachineAPIForm(
+            {"reason": "my reason", "until": "9999-12-31", "user": "testuser"}
+        )
 
         # Assert
         self.assertTrue(form.is_valid())
@@ -45,20 +47,22 @@ class VirtualMachineAPIFormTests(TestCase):
 class MachineAPIFormTests(TestCase):
     fixtures = [
         "orthos2/data/fixtures/architectures.json",
-        "orthos2/data/fixtures/systems.json"
+        "orthos2/data/fixtures/systems.json",
     ]
 
     def test_form(self):
         """Test the machine creation API form"""
         # Arrange & Act
-        form = MachineAPIForm({
-            "fqdn": "test.foo.de",
-            "enclosure": "",
-            "architecture_id": "1",
-            "system_id": "1",
-            "group_id": "none",
-            "check_connectivity": "3"
-        })
+        form = MachineAPIForm(
+            {
+                "fqdn": "test.foo.de",
+                "enclosure": "",
+                "architecture_id": "1",
+                "system_id": "1",
+                "group_id": "none",
+                "check_connectivity": "3",
+            }
+        )
         # This is removing the "validate_dns" validator, mocking this is not
         # possible since the validator is part of the class definition.
         form.fields["fqdn"].validators.pop(0)
@@ -72,7 +76,7 @@ class DeleteMachineAPIFormTests(TestCase):
     fixtures = [
         "orthos2/data/fixtures/systems.json",
         "orthos2/data/fixtures/vendors.json",
-        "orthos2/data/fixtures/tests/test_machines.json"
+        "orthos2/data/fixtures/tests/test_machines.json",
     ]
 
     def test_form(self):
@@ -90,12 +94,14 @@ class SerialConsoleAPIFormTests(TestCase):
     def test_form(self):
         """Test the serial console creation API form"""
         # Arrange & Act
-        form = SerialConsoleAPIForm({
-            "stype": "1",
-            "baud_rate": "57600",
-            "kernel_device": "ttyS",
-            "kernel_device_num": "5"
-        })
+        form = SerialConsoleAPIForm(
+            {
+                "stype": "1",
+                "baud_rate": "57600",
+                "kernel_device": "ttyS",
+                "kernel_device_num": "5",
+            }
+        )
 
         # Assert
         self.assertTrue(form.is_valid())
@@ -114,12 +120,12 @@ class AnnotationAPIFormTests(TestCase):
 class BMCAPIFormTests(TestCase):
     remote_power_types = [
         {
-            'fence': 'ipmilanplus',
-            'device': 'bmc',
-            'username': 'xxx',
-            'password': 'XXX',
-            'arch': ['x86_64', 'aarch64'],
-            'system': ['Bare Metal']
+            "fence": "ipmilanplus",
+            "device": "bmc",
+            "username": "xxx",
+            "password": "XXX",
+            "arch": ["x86_64", "aarch64"],
+            "system": ["Bare Metal"],
         },
     ]
 
@@ -127,7 +133,13 @@ class BMCAPIFormTests(TestCase):
     def test_form(self):
         """Test the BMC creation API form"""
         # Arrange & Act
-        form = BMCAPIForm({"fqdn": "test.foo.de", "mac": "AA:BB:CC:DD:EE", "fence_name": "ipmilanplus"})
+        form = BMCAPIForm(
+            {
+                "fqdn": "test.foo.de",
+                "mac": "AA:BB:CC:DD:EE",
+                "fence_name": "ipmilanplus",
+            }
+        )
 
         # Assert
         self.assertTrue(form.is_valid())
@@ -137,7 +149,9 @@ class RemotePowerAPIFormTests(TestCase):
     def test_form(self):
         """Test the remote power creation API form"""
         # Arrange & Act
-        form = RemotePowerAPIForm({"fence_name": "", "remote_power_device": "", "port": ""})
+        form = RemotePowerAPIForm(
+            {"fence_name": "", "remote_power_device": "", "port": ""}
+        )
 
         # Assert
         self.assertTrue(form.is_valid())
@@ -146,12 +160,12 @@ class RemotePowerAPIFormTests(TestCase):
 class RemotePowerDeviceAPIFormTests(TestCase):
     remote_power_types = [
         {
-            'fence': 'apc',
-            'device': 'rpower_device',
-            'username': 'xxx',
-            'password': 'XXX',
-            'port': True,
-            'system': ['Bare Metal']
+            "fence": "apc",
+            "device": "rpower_device",
+            "username": "xxx",
+            "password": "XXX",
+            "port": True,
+            "system": ["Bare Metal"],
         },
     ]
 
@@ -159,13 +173,15 @@ class RemotePowerDeviceAPIFormTests(TestCase):
     def test_form(self):
         """Test the remote power device creation API form"""
         # Arrange & Act
-        form = RemotePowerDeviceAPIForm({
-            "fqdn": "TODO",
-            "password": "test",
-            "mac": "AA:BB:CC:DD:EE",
-            "username": "TODO",
-            "fence_name": "apc"
-        })
+        form = RemotePowerDeviceAPIForm(
+            {
+                "fqdn": "TODO",
+                "password": "test",
+                "mac": "AA:BB:CC:DD:EE",
+                "username": "TODO",
+                "fence_name": "apc",
+            }
+        )
 
         # Assert
         self.assertTrue(form.is_valid())
@@ -176,7 +192,7 @@ class DeleteRemotePowerAPIFormTests(TestCase):
     fixtures = [
         "orthos2/data/fixtures/systems.json",
         "orthos2/data/fixtures/vendors.json",
-        "orthos2/data/fixtures/tests/test_machines.json"
+        "orthos2/data/fixtures/tests/test_machines.json",
     ]
 
     def test_form(self):
@@ -190,9 +206,7 @@ class DeleteRemotePowerAPIFormTests(TestCase):
 
 class DeleteRemotePowerDeviceAPIFormTests(TestCase):
 
-    fixtures = [
-        "orthos2/api/fixtures/forms/delete_remote_power_device_api_form.json"
-    ]
+    fixtures = ["orthos2/api/fixtures/forms/delete_remote_power_device_api_form.json"]
 
     def test_form(self):
         """Test the remote power device deletion API form"""

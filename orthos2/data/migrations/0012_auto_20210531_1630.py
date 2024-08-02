@@ -8,50 +8,77 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0011_auto_20210522_1537'),
+        ("data", "0011_auto_20210522_1537"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='serialconsole',
-            old_name='type',
-            new_name='stype',
+            model_name="serialconsole",
+            old_name="type",
+            new_name="stype",
         ),
         migrations.RemoveField(
-            model_name='domain',
-            name='setup_machinegroups',
+            model_name="domain",
+            name="setup_machinegroups",
         ),
         migrations.RemoveField(
-            model_name='serialconsole',
-            name='device',
+            model_name="serialconsole",
+            name="device",
         ),
         migrations.RemoveField(
-            model_name='serialconsole',
-            name='management_bmc',
+            model_name="serialconsole",
+            name="management_bmc",
         ),
         migrations.AddField(
-            model_name='serialconsole',
-            name='kernel_device_num',
-            field=models.SmallIntegerField(default=0, validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(1024)], verbose_name='Kernel Device number'),
+            model_name="serialconsole",
+            name="kernel_device_num",
+            field=models.SmallIntegerField(
+                default=0,
+                validators=[
+                    django.core.validators.MinValueValidator(0),
+                    django.core.validators.MaxValueValidator(1024),
+                ],
+                verbose_name="Kernel Device number",
+            ),
         ),
         migrations.AlterField(
-            model_name='domain',
-            name='supported_architectures',
-            field=models.ManyToManyField(related_name='supported_domains', through='data.DomainAdmin', to='data.Architecture', verbose_name='Supported architectures'),
+            model_name="domain",
+            name="supported_architectures",
+            field=models.ManyToManyField(
+                related_name="supported_domains",
+                through="data.DomainAdmin",
+                to="data.Architecture",
+                verbose_name="Supported architectures",
+            ),
         ),
         migrations.AlterField(
-            model_name='serialconsole',
-            name='console_server',
-            field=models.CharField(blank=True, max_length=1024, null=True, verbose_name='Dedicated console server'),
+            model_name="serialconsole",
+            name="console_server",
+            field=models.CharField(
+                blank=True,
+                max_length=1024,
+                null=True,
+                verbose_name="Dedicated console server",
+            ),
         ),
         migrations.AlterField(
-            model_name='serialconsole',
-            name='cscreen_server',
-            field=models.ForeignKey(blank=True, limit_choices_to={'administrative': True}, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to='data.machine', verbose_name='CScreen server'),
+            model_name="serialconsole",
+            name="cscreen_server",
+            field=models.ForeignKey(
+                blank=True,
+                limit_choices_to={"administrative": True},
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="+",
+                to="data.machine",
+                verbose_name="CScreen server",
+            ),
         ),
         migrations.AlterField(
-            model_name='serialconsole',
-            name='kernel_device',
-            field=models.CharField(blank=True, default='ttyS', max_length=255, verbose_name='Kernel Device'),
+            model_name="serialconsole",
+            name="kernel_device",
+            field=models.CharField(
+                blank=True, default="ttyS", max_length=255, verbose_name="Kernel Device"
+            ),
         ),
     ]

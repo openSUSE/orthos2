@@ -25,10 +25,12 @@ def getException():
     filename = f.f_code.co_filename
     linecache.checkcache(filename)
     line = linecache.getline(filename, lineno, f.f_globals)
-    return 'EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj)
+    return 'EXCEPTION IN ({}, LINE {} "{}"): {}'.format(
+        filename, lineno, line.strip(), exc_obj
+    )
 
 
-def get_machine(fqdn, redirect_to, data=None, redirect_key_replace='fqdn'):
+def get_machine(fqdn, redirect_to, data=None, redirect_key_replace="fqdn"):
     """
     Look up FQDN in the database and return one machine object if found or raise corresponding
     exception if something went wrong.
@@ -39,7 +41,7 @@ def get_machine(fqdn, redirect_to, data=None, redirect_key_replace='fqdn'):
         raise ValueError("Requires <fqdn> argument!")
 
     try:
-        machines = [Machine.api.get(fqdn__startswith=fqdn + '.')]
+        machines = [Machine.api.get(fqdn__startswith=fqdn + ".")]
     except Exception:
         machines = list(Machine.api.filter(fqdn__startswith=fqdn))
 
@@ -47,7 +49,7 @@ def get_machine(fqdn, redirect_to, data=None, redirect_key_replace='fqdn'):
         machine = machines[0]
 
     elif machines:
-        selection = SelectSerializer(machines, 'Please specify:')
+        selection = SelectSerializer(machines, "Please specify:")
         return selection
 
     else:
@@ -59,7 +61,7 @@ def get_machine(fqdn, redirect_to, data=None, redirect_key_replace='fqdn'):
             if redirect_key_replace is not None:
                 data = data.copy()
                 data.__setitem__(redirect_key_replace, machine.fqdn)
-            response['Location'] += '?{}'.format(data.urlencode())
+            response["Location"] += "?{}".format(data.urlencode())
 
         return response
 
@@ -67,7 +69,6 @@ def get_machine(fqdn, redirect_to, data=None, redirect_key_replace='fqdn'):
 
 
 class BaseAPIView(APIView):
-
     @staticmethod
     def get_urls():
         raise NotImplementedError
@@ -79,10 +80,10 @@ class BaseAPIView(APIView):
     @classmethod
     def description(cls):
         return {
-            'help': cls.HELP_SHORT,
-            'docstring': cls.HELP,
-            'tabcompletion': cls.get_tabcompletion(),
-            'url': cls.URL,
-            'arguments': cls.ARGUMENTS,
-            'method': cls.METHOD
+            "help": cls.HELP_SHORT,
+            "docstring": cls.HELP,
+            "tabcompletion": cls.get_tabcompletion(),
+            "url": cls.URL,
+            "arguments": cls.ARGUMENTS,
+            "method": cls.METHOD,
         }

@@ -13,11 +13,9 @@ from orthos2.api.serializers.misc import (
 
 class ReleaseCommand(BaseAPIView):
 
-    METHOD = 'GET'
-    URL = '/release'
-    ARGUMENTS = (
-        ['fqdn'],
-    )
+    METHOD = "GET"
+    URL = "/release"
+    ARGUMENTS = (["fqdn"],)
 
     HELP_SHORT = "Release machines."
     HELP = """Releases a machine.
@@ -35,19 +33,15 @@ Example:
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^release$', ReleaseCommand.as_view(), name='release'),
+            re_path(r"^release$", ReleaseCommand.as_view(), name="release"),
         ]
 
     def get(self, request, *args, **kwargs):
         """Release a machine."""
-        fqdn = request.GET.get('fqdn', None)
+        fqdn = request.GET.get("fqdn", None)
 
         try:
-            result = get_machine(
-                fqdn,
-                redirect_to='api:release',
-                data=request.GET
-            )
+            result = get_machine(fqdn, redirect_to="api:release", data=request.GET)
             if isinstance(result, Serializer):
                 return result.as_json
             elif isinstance(result, HttpResponseRedirect):
@@ -61,6 +55,6 @@ Example:
 
         try:
             machine.release(user=request.user)
-            return Message('OK.').as_json
+            return Message("OK.").as_json
         except Exception as e:
             return ErrorMessage(str(e)).as_json

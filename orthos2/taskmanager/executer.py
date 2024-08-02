@@ -11,11 +11,10 @@ from django.db.utils import InterfaceError
 from django.utils import timezone
 
 from orthos2.data.models import ServerConfig
+from orthos2.taskmanager import Priority
+from orthos2.taskmanager.models import BaseTask, DailyTask, SingleTask
 
-from . import Priority
-from .models import BaseTask, DailyTask, SingleTask
-
-logger = logging.getLogger('tasks')
+logger = logging.getLogger("tasks")
 
 PRIORITIES = [Priority.HIGH, Priority.NORMAL]
 
@@ -28,18 +27,15 @@ class TaskExecuter(Thread):
         self._stop_execution = False
         self.daily_check_run = timezone.localtime()
 
-        self.queue = {
-            Priority.HIGH: Queue(),
-            Priority.NORMAL: Queue()
-        }
-        self.concurrency = int(ServerConfig.objects.by_key('tasks.concurrency.max'))
+        self.queue = {Priority.HIGH: Queue(), Priority.NORMAL: Queue()}
+        self.concurrency = int(ServerConfig.objects.by_key("tasks.concurrency.max"))
 
     def get_daily_tasks(self):
         """Check for daily tasks and store them in the queue for processing."""
         now = timezone.localtime()
         today = timezone.localdate()
 
-        dailytasks = DailyTask.objects.filter(enabled=True).order_by('priority')
+        dailytasks = DailyTask.objects.filter(enabled=True).order_by("priority")
         for dailytask in dailytasks:
             if timezone.localdate(dailytask.executed_at) < today:
                 if now.time() > ServerConfig.objects.get_daily_execution_time():
@@ -50,7 +46,7 @@ class TaskExecuter(Thread):
 
     def get_single_tasks(self):
         """Get all single tasks from database and store them in the queue for processing."""
-        singletasks = SingleTask.objects.filter(running=False).order_by('priority')
+        singletasks = SingleTask.objects.filter(running=False).order_by("priority")
         for singletask in singletasks:
             singletask.running = True
             singletask.save()
@@ -135,17 +131,16 @@ class TaskExecuter(Thread):
                         task.basetask_type = BaseTask.Type.DAILY
 
                     # take parent execute function to catch and print exceptions in the log file
-                    thread = Thread(
-                        target=super(TaskClass, task).execute
-                    )
+                    thread = Thread(target=super(TaskClass, task).execute)
                     thread.start()
 
                     running_threads[basetask.hash] = (thread, task)
-                    logger.debug("Thread [%s] %s:%s started...",
-                                 basetask.hash[:8],
-                                 basetask.name,
-                                 basetask.arguments
-                                 )
+                    logger.debug(
+                        "Thread [%s] %s:%s started...",
+                        basetask.hash[:8],
+                        basetask.name,
+                        basetask.arguments,
+                    )
             except InterfaceError:
                 # InterfaceError is raised when the connection is closed from the db side.
                 # Closing it in django forces the creation of a new connection for the next access.

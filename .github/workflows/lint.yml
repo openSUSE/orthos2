@@ -71,6 +71,15 @@ jobs:
         with:
           configuration: "--check-only --diff --profile black"
           requirementsFiles: "pyproject.toml"
+  black:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: psf/black@stable
+        # Version see in .pre-commit-config.yaml
+        with:
+          options: "--check --diff --safe --verbose"
+          version: "22.3.0"
   pylint:
     runs-on: ubuntu-latest
     strategy:

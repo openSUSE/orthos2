@@ -11,7 +11,7 @@ from orthos2.utils.ssh import SSH
 if TYPE_CHECKING:
     from orthos2.data.models import Domain
 
-logger = logging.getLogger('utils')
+logger = logging.getLogger("utils")
 
 
 class CobblerException(Exception):
@@ -22,7 +22,9 @@ def get_default_profile(machine):
     default = machine.architecture.default_profile
     if default:
         return default
-    raise ValueError("Machine {machine} has no default profile".format(machine=machine.fqdn))
+    raise ValueError(
+        "Machine {machine} has no default profile".format(machine=machine.fqdn)
+    )
 
 
 def get_tftp_server(machine: Machine):
@@ -46,14 +48,16 @@ def get_tftp_server(machine: Machine):
 def create_cobbler_options(machine: Machine):
     tftp_server = get_tftp_server(machine)
     kernel_options = machine.kernel_options if machine.kernel_options else ""
-    options = " --name={name} --ip-address={ipv4}".format(name=machine.fqdn, ipv4=machine.ipv4)
+    options = " --name={name} --ip-address={ipv4}".format(
+        name=machine.fqdn, ipv4=machine.ipv4
+    )
     options += " --hostname={host} ".format(host=get_hostname(machine.fqdn))
     if machine.mac_address:
         options += " --interface=default --management=True --interface-master=True"
         options += " --dns-name={dns} ".format(dns=machine.fqdn)
         options += " --mac-address={mac} ".format(mac=machine.mac_address)
-        options += " --ipv6-address={ipv6}".format(ipv6=machine.ipv6 or '')
-    options += " --filename={filename}".format(filename=get_filename(machine) or '')
+        options += " --ipv6-address={ipv6}".format(ipv6=machine.ipv6 or "")
+    options += " --filename={filename}".format(filename=get_filename(machine) or "")
     if tftp_server:
         ipv4 = get_ipv4(tftp_server)
         if ipv4:
@@ -69,16 +73,20 @@ def create_cobbler_options(machine: Machine):
 
 
 def get_bmc_command(machine: Machine, cobbler_path: str):
-    if not hasattr(machine, 'bmc') or not machine.bmc:
-        logger.error("Tried to get bmc command for %s, which does not have one", machine.fqdn)
+    if not hasattr(machine, "bmc") or not machine.bmc:
+        logger.error(
+            "Tried to get bmc command for %s, which does not have one", machine.fqdn
+        )
     bmc = machine.bmc
-    bmc_command = """{cobbler} system edit --name={name} --interface=bmc --interface-type=bmc"""\
-        .format(cobbler=cobbler_path, name=machine.fqdn)
+    bmc_command = """{cobbler} system edit --name={name} --interface=bmc --interface-type=bmc""".format(
+        cobbler=cobbler_path, name=machine.fqdn
+    )
     bmc_command += """ --ip-address="{ip}" --mac="{mac}" --dns-name="{dns}" --ipv6-address="{ipv6}" """.format(
-        ip=get_ipv4(bmc.fqdn) or '',
-        mac=bmc.mac or '',
-        dns=get_hostname(bmc.fqdn) or '',
-        ipv6=get_ipv6(bmc.fqdn) or '')
+        ip=get_ipv4(bmc.fqdn) or "",
+        mac=bmc.mac or "",
+        dns=get_hostname(bmc.fqdn) or "",
+        ipv6=get_ipv6(bmc.fqdn) or "",
+    )
     return bmc_command
 
 
@@ -92,11 +100,13 @@ def get_power_options(machine):
 
     if fence.use_identity_file:
         options += " --power-user={user} --power-identity-file={key}".format(
-            user=fence.username, key=fence.identity_file)
+            user=fence.username, key=fence.identity_file
+        )
     else:
         username, password = remotepower.get_credentials()
-        options += " --power-user={username} --power-pass={password} ".format(username=username,
-                                                                              password=password)
+        options += " --power-user={username} --power-pass={password} ".format(
+            username=username, password=password
+        )
     if fence.use_hostname_as_port:
         options += " --power-id={port}".format(port=get_hostname(machine.hostname))
     elif fence.use_port:
@@ -105,7 +115,9 @@ def get_power_options(machine):
             options += " --power-id=system1/outlet{port}".format(port=remotepower.port)
         options += " --power-id={port}".format(port=remotepower.port)
 
-    options += " --power-address={address}".format(address=remotepower.get_power_address())
+    options += " --power-address={address}".format(
+        address=remotepower.get_power_address()
+    )
     if fence.use_options:
         options += " --power-options={options}".format(options=remotepower.options)
     return options
@@ -113,29 +125,38 @@ def get_power_options(machine):
 
 def get_serial_options(machine):
     console = machine.serialconsole
-    options = """ --serial-device="{device}" """.format(device=console.kernel_device_num)
+    options = """ --serial-device="{device}" """.format(
+        device=console.kernel_device_num
+    )
     options += """--serial-baud-rate="{baud}" """.format(baud=console.baud_rate)
     kernel_option = ""
     if console.kernel_device != "None":
-        kernel_option += " console={device}{num},{baud} ".format(device=console.kernel_device,
-                                                                 num=console.kernel_device_num,
-                                                                 baud=console.baud_rate)
+        kernel_option += " console={device}{num},{baud} ".format(
+            device=console.kernel_device,
+            num=console.kernel_device_num,
+            baud=console.baud_rate,
+        )
     return (options, kernel_option)
 
 
 def get_cobbler_add_command(machine, cobber_path):
     profile = get_default_profile(machine)
     if not profile:
-        raise CobblerException("could not determine default profile for machine {machine}".format(
-                               machine=machine.fqdn))
+        raise CobblerException(
+            "could not determine default profile for machine {machine}".format(
+                machine=machine.fqdn
+            )
+        )
     command = "{cobbler} system add {options} --netboot-enabled=False --profile={profile}".format(
-        cobbler=cobber_path, options=create_cobbler_options(machine), profile=profile)
+        cobbler=cobber_path, options=create_cobbler_options(machine), profile=profile
+    )
     return command
 
 
 def get_cobbler_update_command(machine, cobber_path):
-    command = "{cobbler} system edit {options}".format(cobbler=cobber_path,
-                                                       options=create_cobbler_options(machine))
+    command = "{cobbler} system edit {options}".format(
+        cobbler=cobber_path, options=create_cobbler_options(machine)
+    )
     return command
 
 
@@ -145,7 +166,7 @@ def get_filename(machine):
 
     Machine > Group > Architecture > None
     """
-    context = Context({'machine': machine})
+    context = Context({"machine": machine})
 
     if machine.dhcp_filename:
         filename = machine.dhcp_filename
@@ -160,7 +181,6 @@ def get_filename(machine):
 
 
 class CobblerServer:
-
     def __init__(self, fqdn: str, domain: "Domain"):
         self._fqdn = fqdn
         self._conn: Optional[SSH] = None
@@ -197,16 +217,22 @@ class CobblerServer:
         if not self.is_installed():
             raise CobblerException("No Cobbler service found: {}".format(self._fqdn))
         if not self.is_running():
-            raise CobblerException("Cobbler server is not running: {}".format(self._fqdn))
+            raise CobblerException(
+                "Cobbler server is not running: {}".format(self._fqdn)
+            )
         machines = Machine.active_machines.filter(fqdn_domain=self._domain.pk)
         cobbler_machines = self.get_machines()
         cobbler_commands = []
         for machine in machines:
             if machine.fqdn in cobbler_machines:
-                cobbler_commands.append(get_cobbler_update_command(machine, self._cobbler_path))
+                cobbler_commands.append(
+                    get_cobbler_update_command(machine, self._cobbler_path)
+                )
             else:
-                cobbler_commands.append(get_cobbler_add_command(machine, self._cobbler_path))
-            if hasattr(machine, 'bmc') and machine.bmc:
+                cobbler_commands.append(
+                    get_cobbler_add_command(machine, self._cobbler_path)
+                )
+            if hasattr(machine, "bmc") and machine.bmc:
                 cobbler_commands.append(get_bmc_command(machine, self._cobbler_path))
 
         logger.info("=======================")
@@ -215,12 +241,19 @@ class CobblerServer:
         logger.info(cobbler_commands)
         logger.info("=======================")
 
-        for command in cobbler_commands:  # TODO: Convert this to a single ssh call (performance)
+        for (
+            command
+        ) in cobbler_commands:  # TODO: Convert this to a single ssh call (performance)
             logger.debug("executing %s ", command)
             stdout, stderr, exitcode = self._conn.execute(command)
             if exitcode:
-                logger.error("failed to execute %s on %s with error '%s' and stdout '%s'",
-                             command, self._fqdn, stderr, stdout)
+                logger.error(
+                    "failed to execute %s on %s with error '%s' and stdout '%s'",
+                    command,
+                    self._fqdn,
+                    stderr,
+                    stdout,
+                )
 
         self.close()
 
@@ -235,17 +268,22 @@ class CobblerServer:
         stdout, stderr, exitcode = self._conn.execute(command)
         if exitcode:
             logger.error(
-                "Update or Add with command \n '%s'\n failed, giving \n '%s',\nand stdout '%s'", command, stderr, stdout
+                "Update or Add with command \n '%s'\n failed, giving \n '%s',\nand stdout '%s'",
+                command,
+                stderr,
+                stdout,
             )
         self._conn.execute(command)
-        if hasattr(machine, 'bmc') and machine.bmc:
+        if hasattr(machine, "bmc") and machine.bmc:
             command = get_bmc_command(machine, self._cobbler_path)
             logger.debug("Executing Cobbler command %s", command)
             stdout, stderr, exitcode = self._conn.execute(command)
             if exitcode:
                 logger.error(
                     "writing BMC data to cobbler with \n'%s' failed, giving \n '%s',\nand stdout '%s'",
-                    command, stderr, stdout
+                    command,
+                    stderr,
+                    stdout,
                 )
 
     def remove(self, machine: Machine):
@@ -253,26 +291,38 @@ class CobblerServer:
         if not self.is_installed():
             raise CobblerException("No Cobbler service found: {}".format(self._fqdn))
         if not self.is_running():
-            raise CobblerException("Cobbler server is not running: {}".format(self._fqdn))
+            raise CobblerException(
+                "Cobbler server is not running: {}".format(self._fqdn)
+            )
         command = "{cobbler} system remove --name {fqdn}".format(
-            cobbler=self._cobbler_path, fqdn=machine.fqdn)
+            cobbler=self._cobbler_path, fqdn=machine.fqdn
+        )
         stdout, stderr, exitcode = self._conn.execute(command)
         if exitcode:
-            logging.error("Removing %s failed with '%s' and stdout '%s'",
-                          machine.fqdn, stderr, stdout)
+            logging.error(
+                "Removing %s failed with '%s' and stdout '%s'",
+                machine.fqdn,
+                stderr,
+                stdout,
+            )
 
     def sync_dhcp(self):
         self.connect()
         self._check()
         stdout, stderr, exitcode = self._conn.execute(
-            "{cobbler} sync --dhcp".format(cobbler=self._cobbler_path))
+            "{cobbler} sync --dhcp".format(cobbler=self._cobbler_path)
+        )
         if exitcode:
-            logging.error("Dhcp sync on %s failed with '%s' and stdout '%s'",
-                          self._fqdn, stderr, stdout)
+            logging.error(
+                "Dhcp sync on %s failed with '%s' and stdout '%s'",
+                self._fqdn,
+                stderr,
+                stdout,
+            )
 
     def is_installed(self):
         """Check if Cobbler server is available."""
-        if self._conn.check_path(self._cobbler_path, '-x'):
+        if self._conn.check_path(self._cobbler_path, "-x"):
             return True
         return False
 
@@ -286,36 +336,57 @@ class CobblerServer:
 
     def get_machines(self):
         stdout, stderr, exitstatus = self._conn.execute(
-            "{cobbler} system list".format(cobbler=self._cobbler_path))
+            "{cobbler} system list".format(cobbler=self._cobbler_path)
+        )
         if exitstatus:
             logger.warning("system list failed on %s with %s", self._fqdn, stderr)
-            raise CobblerException("system list failed on {server}".format(server=self._fqdn))
-        clean_out = [system.strip(' \n\t') for system in stdout]
+            raise CobblerException(
+                "system list failed on {server}".format(server=self._fqdn)
+            )
+        clean_out = [system.strip(" \n\t") for system in stdout]
         return clean_out
 
     def setup(self, machine: Machine, choice: str):
-        logger.info("setup called for %s with %s on cobbler server %s ",
-                    machine.fqdn, self._fqdn, choice)
+        logger.info(
+            "setup called for %s with %s on cobbler server %s ",
+            machine.fqdn,
+            self._fqdn,
+            choice,
+        )
         if choice:
             cobbler_profile = " --profile={arch}:{profile}".format(
-                arch=machine.architecture, profile=choice)
+                arch=machine.architecture, profile=choice
+            )
         else:
             cobbler_profile = ""
 
-        command = "{cobbler} system edit --name={machine} {profile}  --netboot=True".format(
-            cobbler=self._cobbler_path,
-            machine=machine.fqdn,
-            profile=cobbler_profile)
+        command = (
+            "{cobbler} system edit --name={machine} {profile}  --netboot=True".format(
+                cobbler=self._cobbler_path,
+                machine=machine.fqdn,
+                profile=cobbler_profile,
+            )
+        )
         logger.debug("command for setup: %s", command)
         self.connect()
         try:
             _stdout, stderr, exitstatus = self._conn.execute(command)
             if exitstatus:
-                logger.warning("setup of  %s with %s failed on %s with %s", machine.fqdn,
-                               cobbler_profile, self._fqdn, stderr)
+                logger.warning(
+                    "setup of  %s with %s failed on %s with %s",
+                    machine.fqdn,
+                    cobbler_profile,
+                    self._fqdn,
+                    stderr,
+                )
                 raise CobblerException(
                     "setup of {machine} with {profile} failed on {server} with {error}".format(
-                        machine=machine.fqdn, profile=cobbler_profile, server=self._fqdn, error=stderr))
+                        machine=machine.fqdn,
+                        profile=cobbler_profile,
+                        server=self._fqdn,
+                        error=stderr,
+                    )
+                )
         except Exception:
             pass
         finally:
@@ -330,22 +401,34 @@ class CobblerServer:
         else:
             cobbler_action = "power" + action
 
-        command = "{cobbler} system {action} --name  {fqdn}".format(cobbler=self._cobbler_path,
-                                                                    action=cobbler_action,
-                                                                    fqdn=machine.fqdn)
+        command = "{cobbler} system {action} --name  {fqdn}".format(
+            cobbler=self._cobbler_path, action=cobbler_action, fqdn=machine.fqdn
+        )
         out, stderr, exitcode = self._conn.execute(command)
         logger.debug("powerswitching of %s called with action %s", machine.fqdn, action)
         logger.debug("Execute on cobbler: %s", command)
         if exitcode:
-            logger.warning("Powerswitching of  %s with %s failed on %s with %s", machine.fqdn,
-                           command, self._fqdn, stderr)
+            logger.warning(
+                "Powerswitching of  %s with %s failed on %s with %s",
+                machine.fqdn,
+                command,
+                self._fqdn,
+                stderr,
+            )
             raise CobblerException(
                 "Powerswitching of {machine} with {command} failed on {server} with {error}".format(
-                    machine=machine.fqdn, command=command, server=self._fqdn, error=stderr))
+                    machine=machine.fqdn,
+                    command=command,
+                    server=self._fqdn,
+                    error=stderr,
+                )
+            )
         return out
 
     def _check(self):
         if not self.is_installed():
             raise CobblerException("No Cobbler service found: {}".format(self._fqdn))
         if not self.is_running():
-            raise CobblerException("Cobbler server is not running: {}".format(self._fqdn))
+            raise CobblerException(
+                "Cobbler server is not running: {}".format(self._fqdn)
+            )

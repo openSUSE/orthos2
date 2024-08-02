@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0014_auto_20210610_1246'),
+        ("data", "0014_auto_20210610_1246"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='machine',
-            name='bios_date',
-            field=models.DateField(default='1990-10-03', editable=False, help_text='The firmware BIOS is from ... (on x86 as retrieved from dmidecode -s bios-version'),
+            model_name="machine",
+            name="bios_date",
+            field=models.DateField(
+                default="1990-10-03",
+                editable=False,
+                help_text="The firmware BIOS is from ... (on x86 as retrieved from dmidecode -s bios-version",
+            ),
         ),
     ]

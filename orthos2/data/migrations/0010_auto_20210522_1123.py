@@ -7,22 +7,47 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0009_remove_domain_setup_architectures'),
+        ("data", "0009_remove_domain_setup_architectures"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='DomainAdmin',
+            name="DomainAdmin",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('contact_email', models.EmailField(blank=True, max_length=254)),
-                ('arch', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='data.architecture')),
-                ('domain', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='data.domain')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("contact_email", models.EmailField(blank=True, max_length=254)),
+                (
+                    "arch",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="data.architecture",
+                    ),
+                ),
+                (
+                    "domain",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="data.domain"
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='domain',
-            name='supported_architectures',
-            field=models.ManyToManyField(blank=True, related_name='supported_domains', through='data.DomainAdmin', to='data.Architecture', verbose_name='Supported architectures'),
+            model_name="domain",
+            name="supported_architectures",
+            field=models.ManyToManyField(
+                blank=True,
+                related_name="supported_domains",
+                through="data.DomainAdmin",
+                to="data.Architecture",
+                verbose_name="Supported architectures",
+            ),
         ),
     ]

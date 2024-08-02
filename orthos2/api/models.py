@@ -25,13 +25,12 @@ from orthos2.data.models import (
     Vendor,
 )
 
-logger = logging.getLogger('api')
+logger = logging.getLogger("api")
 
 Field.register_lookup(NotEqual)
 
 
 class HelperFunctions:
-
     @staticmethod
     def get_ipv4(machine_id):
         """
@@ -40,7 +39,7 @@ class HelperFunctions:
         This value gets set after initialising a machine.
         """
         machine = Machine.objects.get(pk=machine_id)
-        value = getattr(machine, 'ipv4', None)
+        value = getattr(machine, "ipv4", None)
         return value
 
     @staticmethod
@@ -51,7 +50,7 @@ class HelperFunctions:
         This value gets set after initialising a machine.
         """
         machine = Machine.objects.get(pk=machine_id)
-        value = getattr(machine, 'ipv6', None)
+        value = getattr(machine, "ipv6", None)
         return value
 
     @staticmethod
@@ -66,177 +65,163 @@ class HelperFunctions:
     def get_status_ping(machine_id):
         """Return the ping status of a machine."""
         machine = Machine.objects.get(pk=machine_id)
-        value = getattr(machine, 'status_ping', None)
+        value = getattr(machine, "status_ping", None)
         return value
 
 
 class QueryField:
 
-    LENGTH_SUFFIX = '_length'
+    LENGTH_SUFFIX = "_length"
 
     # non-database fields
     DYNAMIC_FIELDS = {
-        'ipv4': {
-            'verbose_name': 'IPv4',
-            'function': HelperFunctions.get_ipv4
+        "ipv4": {"verbose_name": "IPv4", "function": HelperFunctions.get_ipv4},
+        "ipv6": {"verbose_name": "IPv6", "function": HelperFunctions.get_ipv6},
+        "status_ping": {
+            "verbose_name": "Ping",
+            "function": HelperFunctions.get_status_ping,
         },
-        'ipv6': {
-            'verbose_name': 'IPv6',
-            'function': HelperFunctions.get_ipv6
-        },
-        'status_ping': {
-            'verbose_name': 'Ping',
-            'function': HelperFunctions.get_status_ping
-        }
     }
 
     MAPPING = {
         # Aliases
-        'architecture': {
-            'field': Architecture._meta.get_field('name'),
-            'related_name': 'architecture',
-            'verbose_name': 'Architecture'
+        "architecture": {
+            "field": Architecture._meta.get_field("name"),
+            "related_name": "architecture",
+            "verbose_name": "Architecture",
         },
-        'name': {
-            'field': Machine._meta.get_field('fqdn')
+        "name": {"field": Machine._meta.get_field("fqdn")},
+        "domain": {
+            "field": Domain._meta.get_field("name"),
+            "related_name": "fqdn_domain",
+            "verbose_name": "Domain",
         },
-        'domain': {
-            'field': Domain._meta.get_field('name'),
-            'related_name': 'fqdn_domain',
-            'verbose_name': 'Domain'
+        "enclosure": {
+            "field": Machine._meta.get_field("enclosure"),
+            "pre": lambda x: Enclosure.objects.get(name__iexact=x)
+            if isinstance(x, str)
+            else x,
+            "post": lambda x: Enclosure.objects.get(pk=x).name,
         },
-        'enclosure': {
-            'field': Machine._meta.get_field('enclosure'),
-            'pre': lambda x:
-                Enclosure.objects.get(name__iexact=x) if isinstance(x, str) else x,
-            'post': lambda x:
-                Enclosure.objects.get(pk=x).name
+        "group": {
+            "field": Machine._meta.get_field("group"),
+            "pre": lambda x: MachineGroup.objects.get(name__iexact=x)
+            if isinstance(x, str)
+            else x,
+            "post": lambda x: MachineGroup.objects.get(pk=x).name,
         },
-        'group': {
-            'field': Machine._meta.get_field('group'),
-            'pre': lambda x:
-                MachineGroup.objects.get(name__iexact=x) if isinstance(x, str) else x,
-            'post': lambda x:
-                MachineGroup.objects.get(pk=x).name
+        "system": {
+            "field": System._meta.get_field("name"),
+            "related_name": "system",
+            "verbose_name": "System",
+            "pre": lambda x: x,
+            "post": lambda x: x,
         },
-        'system': {
-            'field': System._meta.get_field('name'),
-            'related_name': 'system',
-            'verbose_name': 'System',
-            'pre': lambda x:
-                x,
-            'post': lambda x:
-                x
+        "ram": {"field": Machine._meta.get_field("ram_amount")},
+        "cobbler_server": {
+            "field": Domain._meta.get_field("cobbler_server"),
+            "related_name": "fqdn_domain",
+            "verbose_name": "Cobbler server",
+            "pre": lambda x: Machine.objects.get(fqdn__iexact=x)
+            if isinstance(x, str)
+            else x,
+            "post": lambda x: Machine.objects.get(pk=x).fqdn,
         },
-        'ram': {
-            'field': Machine._meta.get_field('ram_amount')
+        "reserved_by": {
+            "field": Machine._meta.get_field("reserved_by"),
+            "pre": lambda x: HelperFunctions.username_to_id(x)
+            if isinstance(x, str)
+            else x,
+            "post": lambda x: User.objects.get(pk=x).username,
         },
-        'cobbler_server': {
-            'field': Domain._meta.get_field('cobbler_server'),
-            'related_name': 'fqdn_domain',
-            'verbose_name': 'Cobbler server',
-            'pre': lambda x:
-                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x,
-            'post': lambda x:
-                Machine.objects.get(pk=x).fqdn
+        "res_by": {
+            "field": Machine._meta.get_field("reserved_by"),
+            "pre": lambda x: HelperFunctions.username_to_id(x)
+            if isinstance(x, str)
+            else x,
+            "post": lambda x: User.objects.get(pk=x).username,
         },
-        'reserved_by': {
-            'field': Machine._meta.get_field('reserved_by'),
-            'pre': lambda x:
-                HelperFunctions.username_to_id(x) if isinstance(x, str) else x,
-            'post': lambda x:
-                User.objects.get(pk=x).username
+        "reserved_by_email": {
+            "field": User._meta.get_field("email"),
+            "related_name": "reserved_by",
+            "verbose_name": "Email",
         },
-        'res_by': {
-            'field': Machine._meta.get_field('reserved_by'),
-            'pre': lambda x:
-                HelperFunctions.username_to_id(x) if isinstance(x, str) else x,
-            'post': lambda x:
-                User.objects.get(pk=x).username
+        "status_ipv4": {
+            "field": Machine._meta.get_field("status_ipv4"),
+            "pre": lambda x: dict(
+                {value: key for key, value in dict(Machine.StatusIP.CHOICE).items()}
+            ).get(x)
+            if isinstance(x, str)
+            else x,
+            "post": lambda x: dict(Machine.StatusIP.CHOICE).get(x),
         },
-        'reserved_by_email': {
-            'field': User._meta.get_field('email'),
-            'related_name': 'reserved_by',
-            'verbose_name': 'Email'
+        "status_ipv6": {
+            "field": Machine._meta.get_field("status_ipv6"),
+            "pre": lambda x: dict(
+                {value: key for key, value in dict(Machine.StatusIP.CHOICE).items()}
+            ).get(x)
+            if isinstance(x, str)
+            else x,
+            "post": lambda x: dict(Machine.StatusIP.CHOICE).get(x),
         },
-        'status_ipv4': {
-            'field': Machine._meta.get_field('status_ipv4'),
-            'pre': lambda x:
-                dict({
-                    value: key for key, value in dict(Machine.StatusIP.CHOICE).items()
-                }).get(x) if isinstance(x, str) else x,
-            'post': lambda x:
-                dict(Machine.StatusIP.CHOICE).get(x)
-        },
-        'status_ipv6': {
-            'field': Machine._meta.get_field('status_ipv6'),
-            'pre': lambda x:
-                dict({
-                    value: key for key, value in dict(Machine.StatusIP.CHOICE).items()
-                }).get(x) if isinstance(x, str) else x,
-            'post': lambda x:
-                dict(Machine.StatusIP.CHOICE).get(x)
-        },
-
         # SerialConsole
-        'serial_console_server': {
-            'field': SerialConsole._meta.get_field('console_server'),
-            'related_name': 'serialconsole',
-            'verbose_name': 'Console server',
-            'pre': lambda x:
-                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x,
-            'post': lambda x:
-                Machine.objects.get(pk=x).fqdn
+        "serial_console_server": {
+            "field": SerialConsole._meta.get_field("console_server"),
+            "related_name": "serialconsole",
+            "verbose_name": "Console server",
+            "pre": lambda x: Machine.objects.get(fqdn__iexact=x)
+            if isinstance(x, str)
+            else x,
+            "post": lambda x: Machine.objects.get(pk=x).fqdn,
         },
-        'serial_type': {
-            'field': SerialConsole._meta.get_field('stype'),
-            'related_name': 'serialconsole',
-            'verbose_name': 'Serial console',
-            'pre': lambda x:
-                SerialConsoleType.Type.to_int(x) if isinstance(x, str) else x,
-            'post': lambda x:
-                SerialConsoleType.Type.to_str(x)
+        "serial_type": {
+            "field": SerialConsole._meta.get_field("stype"),
+            "related_name": "serialconsole",
+            "verbose_name": "Serial console",
+            "pre": lambda x: SerialConsoleType.Type.to_int(x)
+            if isinstance(x, str)
+            else x,
+            "post": lambda x: SerialConsoleType.Type.to_str(x),
         },
-        'sconsole': {
-            'field': SerialConsole._meta.get_field('stype'),
-            'related_name': 'serialconsole',
-            'verbose_name': 'Serial console',
-            'pre': lambda x:
-                SerialConsoleType.Type.to_int(x) if isinstance(x, str) else x,
-            'post': lambda x:
-                SerialConsoleType.Type.to_str(x)
+        "sconsole": {
+            "field": SerialConsole._meta.get_field("stype"),
+            "related_name": "serialconsole",
+            "verbose_name": "Serial console",
+            "pre": lambda x: SerialConsoleType.Type.to_int(x)
+            if isinstance(x, str)
+            else x,
+            "post": lambda x: SerialConsoleType.Type.to_str(x),
         },
-        'serial_baud': {
-            'field': SerialConsole._meta.get_field('baud_rate'),
-            'related_name': 'serialconsole',
-            'verbose_name': 'Baud rate',
+        "serial_baud": {
+            "field": SerialConsole._meta.get_field("baud_rate"),
+            "related_name": "serialconsole",
+            "verbose_name": "Baud rate",
         },
-        'serial_command': {
-            'field': SerialConsole._meta.get_field('command'),
-            'related_name': 'serialconsole',
-            'verbose_name': 'Command',
+        "serial_command": {
+            "field": SerialConsole._meta.get_field("command"),
+            "related_name": "serialconsole",
+            "verbose_name": "Command",
         },
-        'serial_kernel_device': {
-            'field': SerialConsole._meta.get_field('kernel_device'),
-            'related_name': 'serialconsole',
-            'verbose_name': 'Kernel Device',
+        "serial_kernel_device": {
+            "field": SerialConsole._meta.get_field("kernel_device"),
+            "related_name": "serialconsole",
+            "verbose_name": "Kernel Device",
         },
-        'serial_kernel_device_num': {
-            'field': SerialConsole._meta.get_field('kernel_device_num'),
-            'related_name': 'serialconsole',
-            'verbose_name': 'Kernel Device number',
+        "serial_kernel_device_num": {
+            "field": SerialConsole._meta.get_field("kernel_device_num"),
+            "related_name": "serialconsole",
+            "verbose_name": "Kernel Device number",
         },
-        'serial_port': {
-            'field': SerialConsole._meta.get_field('port'),
-            'related_name': 'serialconsole',
-            'verbose_name': 'Port',
+        "serial_port": {
+            "field": SerialConsole._meta.get_field("port"),
+            "related_name": "serialconsole",
+            "verbose_name": "Port",
         },
-        'serial_comment': {
-            'field': SerialConsole._meta.get_field('comment'),
-            'related_name': 'serialconsole',
-            'verbose_name': 'Comment',
+        "serial_comment": {
+            "field": SerialConsole._meta.get_field("comment"),
+            "related_name": "serialconsole",
+            "verbose_name": "Comment",
         },
-
         # RemotePower
         # 'management_bmc': {
         #     'field': Machine._meta.get_field('management_bmc'),
@@ -247,186 +232,180 @@ class QueryField:
         #     'post': lambda x:
         #         Machine.objects.get(pk=x).fqdn
         # },
-        'rpower_device': {
-            'field': RemotePower._meta.get_field('remote_power_device'),
-            'related_name': 'remotepower',
-            'verbose_name': 'Remote power device',
-            'pre': lambda x:
-                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x,
-            'post': lambda x:
-                Machine.objects.get(pk=x).fqdn
+        "rpower_device": {
+            "field": RemotePower._meta.get_field("remote_power_device"),
+            "related_name": "remotepower",
+            "verbose_name": "Remote power device",
+            "pre": lambda x: Machine.objects.get(fqdn__iexact=x)
+            if isinstance(x, str)
+            else x,
+            "post": lambda x: Machine.objects.get(pk=x).fqdn,
         },
-        'rpower_port': {
-            'field': RemotePower._meta.get_field('port'),
-            'related_name': 'remotepower',
-            'verbose_name': 'Port',
+        "rpower_port": {
+            "field": RemotePower._meta.get_field("port"),
+            "related_name": "remotepower",
+            "verbose_name": "Port",
         },
         # TODO: adapt this to new implementation
-
-        'rpower_type': {
-            'field': RemotePower._meta.get_field('fence_name'),
-            'related_name': 'remotepower',
-            'verbose_name': 'Remotepower type',
+        "rpower_type": {
+            "field": RemotePower._meta.get_field("fence_name"),
+            "related_name": "remotepower",
+            "verbose_name": "Remotepower type",
         },
-
         # Installation
-        'inst_active': {
-            'field': Installation._meta.get_field('active'),
-            'related_name': 'installations',
-            'verbose_name': 'Active inst.'
+        "inst_active": {
+            "field": Installation._meta.get_field("active"),
+            "related_name": "installations",
+            "verbose_name": "Active inst.",
         },
-        'inst_arch': {
-            'field': Installation._meta.get_field('architecture'),
-            'related_name': 'installations',
-            'verbose_name': 'Inst. architecture'
+        "inst_arch": {
+            "field": Installation._meta.get_field("architecture"),
+            "related_name": "installations",
+            "verbose_name": "Inst. architecture",
         },
-        'inst_dist': {
-            'field': Installation._meta.get_field('distribution'),
-            'related_name': 'installations',
-            'verbose_name': 'Distribution'
+        "inst_dist": {
+            "field": Installation._meta.get_field("distribution"),
+            "related_name": "installations",
+            "verbose_name": "Distribution",
         },
-        'inst_kernel': {
-            'field': Installation._meta.get_field('kernelversion'),
-            'related_name': 'installations',
-            'verbose_name': 'Kernel version'
+        "inst_kernel": {
+            "field": Installation._meta.get_field("kernelversion"),
+            "related_name": "installations",
+            "verbose_name": "Kernel version",
         },
-        'inst_partition': {
-            'field': Installation._meta.get_field('partition'),
-            'related_name': 'installations',
-            'verbose_name': 'Partition'
+        "inst_partition": {
+            "field": Installation._meta.get_field("partition"),
+            "related_name": "installations",
+            "verbose_name": "Partition",
         },
-
         # NetworkInterface
-        'iface_driver_module': {
-            'field': NetworkInterface._meta.get_field('driver_module'),
-            'related_name': 'networkinterfaces',
-            'verbose_name': 'IF driver module'
+        "iface_driver_module": {
+            "field": NetworkInterface._meta.get_field("driver_module"),
+            "related_name": "networkinterfaces",
+            "verbose_name": "IF driver module",
         },
-        'iface_ethernet_type': {
-            'field': NetworkInterface._meta.get_field('ethernet_type'),
-            'related_name': 'networkinterfaces',
-            'verbose_name': 'IF ethernet type'
+        "iface_ethernet_type": {
+            "field": NetworkInterface._meta.get_field("ethernet_type"),
+            "related_name": "networkinterfaces",
+            "verbose_name": "IF ethernet type",
         },
-        'iface_mac_address': {
-            'field': NetworkInterface._meta.get_field('mac_address'),
-            'related_name': 'networkinterfaces',
-            'verbose_name': 'IF MAC address'
+        "iface_mac_address": {
+            "field": NetworkInterface._meta.get_field("mac_address"),
+            "related_name": "networkinterfaces",
+            "verbose_name": "IF MAC address",
         },
-        'iface_name': {
-            'field': NetworkInterface._meta.get_field('name'),
-            'related_name': 'networkinterfaces',
-            'verbose_name': 'IF name'
+        "iface_name": {
+            "field": NetworkInterface._meta.get_field("name"),
+            "related_name": "networkinterfaces",
+            "verbose_name": "IF name",
         },
-        'iface_primary': {
-            'field': NetworkInterface._meta.get_field('primary'),
-            'related_name': 'networkinterfaces',
-            'verbose_name': 'IF primary'
+        "iface_primary": {
+            "field": NetworkInterface._meta.get_field("primary"),
+            "related_name": "networkinterfaces",
+            "verbose_name": "IF primary",
         },
-
         # PCIDevice
-        'pci_slot': {
-            'field': PCIDevice._meta.get_field('slot'),
-            'related_name': 'pcidevice',
-            'verbose_name': 'Slot'
+        "pci_slot": {
+            "field": PCIDevice._meta.get_field("slot"),
+            "related_name": "pcidevice",
+            "verbose_name": "Slot",
         },
-        'pci_vendorid': {
-            'field': PCIDevice._meta.get_field('vendor_id'),
-            'related_name': 'pcidevice',
-            'verbose_name': 'Vendor ID'
+        "pci_vendorid": {
+            "field": PCIDevice._meta.get_field("vendor_id"),
+            "related_name": "pcidevice",
+            "verbose_name": "Vendor ID",
         },
-        'pci_vendor': {
-            'field': PCIDevice._meta.get_field('vendor'),
-            'related_name': 'pcidevice',
-            'verbose_name': 'Vendor'
+        "pci_vendor": {
+            "field": PCIDevice._meta.get_field("vendor"),
+            "related_name": "pcidevice",
+            "verbose_name": "Vendor",
         },
-        'pci_deviceid': {
-            'field': PCIDevice._meta.get_field('device_id'),
-            'related_name': 'pcidevice',
-            'verbose_name': 'Device ID'
+        "pci_deviceid": {
+            "field": PCIDevice._meta.get_field("device_id"),
+            "related_name": "pcidevice",
+            "verbose_name": "Device ID",
         },
-        'pci_device': {
-            'field': PCIDevice._meta.get_field('device'),
-            'related_name': 'pcidevice',
-            'verbose_name': 'Device'
+        "pci_device": {
+            "field": PCIDevice._meta.get_field("device"),
+            "related_name": "pcidevice",
+            "verbose_name": "Device",
         },
-        'pci_classid': {
-            'field': PCIDevice._meta.get_field('class_id'),
-            'related_name': 'pcidevice',
-            'verbose_name': 'Class ID'
+        "pci_classid": {
+            "field": PCIDevice._meta.get_field("class_id"),
+            "related_name": "pcidevice",
+            "verbose_name": "Class ID",
         },
-        'pci_classname': {
-            'field': PCIDevice._meta.get_field('classname'),
-            'related_name': 'pcidevice',
-            'verbose_name': 'Class name'
+        "pci_classname": {
+            "field": PCIDevice._meta.get_field("classname"),
+            "related_name": "pcidevice",
+            "verbose_name": "Class name",
         },
-        'pci_svendorid': {
-            'field': PCIDevice._meta.get_field('subvendor_id'),
-            'related_name': 'pcidevice',
-            'verbose_name': 'Subvendor ID'
+        "pci_svendorid": {
+            "field": PCIDevice._meta.get_field("subvendor_id"),
+            "related_name": "pcidevice",
+            "verbose_name": "Subvendor ID",
         },
-        'pci_svendorname': {
-            'field': PCIDevice._meta.get_field('subvendor'),
-            'related_name': 'pcidevice',
-            'verbose_name': 'Subvendor'
+        "pci_svendorname": {
+            "field": PCIDevice._meta.get_field("subvendor"),
+            "related_name": "pcidevice",
+            "verbose_name": "Subvendor",
         },
-        'pci_sdeviceid': {
-            'field': PCIDevice._meta.get_field('subdevice_id'),
-            'related_name': 'pcidevice',
-            'verbose_name': 'Subdevice ID'
+        "pci_sdeviceid": {
+            "field": PCIDevice._meta.get_field("subdevice_id"),
+            "related_name": "pcidevice",
+            "verbose_name": "Subdevice ID",
         },
-        'pci_sdevicename': {
-            'field': PCIDevice._meta.get_field('subdevice'),
-            'related_name': 'pcidevice',
-            'verbose_name': 'Subdevice'
+        "pci_sdevicename": {
+            "field": PCIDevice._meta.get_field("subdevice"),
+            "related_name": "pcidevice",
+            "verbose_name": "Subdevice",
         },
-        'pci_revision': {
-            'field': PCIDevice._meta.get_field('revision'),
-            'related_name': 'pcidevice',
-            'verbose_name': 'Revision'
+        "pci_revision": {
+            "field": PCIDevice._meta.get_field("revision"),
+            "related_name": "pcidevice",
+            "verbose_name": "Revision",
         },
-        'pci_driver': {
-            'field': PCIDevice._meta.get_field('drivermodule'),
-            'related_name': 'pcidevice',
-            'verbose_name': 'Drivermodule'
+        "pci_driver": {
+            "field": PCIDevice._meta.get_field("drivermodule"),
+            "related_name": "pcidevice",
+            "verbose_name": "Drivermodule",
         },
-
         # Platform
-        'platform': {
-            'field': Platform._meta.get_field('name'),
-            'related_name': 'platform',
-            'verbose_name': 'Platform'
+        "platform": {
+            "field": Platform._meta.get_field("name"),
+            "related_name": "platform",
+            "verbose_name": "Platform",
         },
-        'platform_vendor': {
-            'field': Vendor._meta.get_field('name'),
-            'related_name': 'platform__vendor',
-            'verbose_name': 'Vendor'
+        "platform_vendor": {
+            "field": Vendor._meta.get_field("name"),
+            "related_name": "platform__vendor",
+            "verbose_name": "Vendor",
         },
-        'platform_description': {
-            'field': Platform._meta.get_field('description'),
-            'related_name': 'platform',
-            'verbose_name': 'Platform description'
+        "platform_description": {
+            "field": Platform._meta.get_field("description"),
+            "related_name": "platform",
+            "verbose_name": "Platform description",
         },
-
         # Annotation
-        'annotation_text': {
-            'field': Annotation._meta.get_field('text'),
-            'related_name': 'annotations',
-            'verbose_name': 'Annotation'
+        "annotation_text": {
+            "field": Annotation._meta.get_field("text"),
+            "related_name": "annotations",
+            "verbose_name": "Annotation",
         },
-        'annotation_reporter': {
-            'field': Annotation._meta.get_field('reporter'),
-            'related_name': 'annotations',
-            'verbose_name': 'Reporter',
-            'pre': lambda x:
-                HelperFunctions.username_to_id(x) if isinstance(x, str) else x,
-            'post': lambda x:
-                User.objects.get(pk=x).username
+        "annotation_reporter": {
+            "field": Annotation._meta.get_field("reporter"),
+            "related_name": "annotations",
+            "verbose_name": "Reporter",
+            "pre": lambda x: HelperFunctions.username_to_id(x)
+            if isinstance(x, str)
+            else x,
+            "post": lambda x: User.objects.get(pk=x).username,
         },
-        'annotation_created': {
-            'field': Annotation._meta.get_field('created'),
-            'related_name': 'annotations',
-            'verbose_name': 'Created',
-        }
+        "annotation_created": {
+            "field": Annotation._meta.get_field("created"),
+            "related_name": "annotations",
+            "verbose_name": "Created",
+        },
     }
 
     def __init__(self, token):
@@ -450,26 +429,30 @@ class QueryField:
         self._post_function = None
 
         if self.LENGTH_SUFFIX in token:
-            token = token.replace(self.LENGTH_SUFFIX, '')
+            token = token.replace(self.LENGTH_SUFFIX, "")
             self._annotation = self.LENGTH_SUFFIX
         else:
             self._annotation = None
 
         try:
-            self._field = self.MAPPING[token]['field']
-            self._verbose_name = self.MAPPING[token].get('verbose_name')
+            self._field = self.MAPPING[token]["field"]
+            self._verbose_name = self.MAPPING[token].get("verbose_name")
             if not self._verbose_name:
-                self._verbose_name = Machine._meta.get_field(self._field.name).verbose_name
-            self._related_name = self.MAPPING[token].get('related_name')
-            self._pre_function = self.MAPPING[token].get('pre')
-            self._post_function = self.MAPPING[token].get('post')
+                self._verbose_name = Machine._meta.get_field(
+                    self._field.name
+                ).verbose_name
+            self._related_name = self.MAPPING[token].get("related_name")
+            self._pre_function = self.MAPPING[token].get("pre")
+            self._post_function = self.MAPPING[token].get("post")
         except KeyError:
             pass
 
         if not self._field and (token in self.DYNAMIC_FIELDS):
             self._field = Field(name=token)
-            self._verbose_name = self.DYNAMIC_FIELDS[self._field.name]['verbose_name']
-            self._dynamic_field_function = self.DYNAMIC_FIELDS[self._field.name]['function']
+            self._verbose_name = self.DYNAMIC_FIELDS[self._field.name]["verbose_name"]
+            self._dynamic_field_function = self.DYNAMIC_FIELDS[self._field.name][
+                "function"
+            ]
             self._dynamic = True
 
         if not self._field:
@@ -480,18 +463,18 @@ class QueryField:
                 pass
 
         if not self._field:
-            related_name = '__'.join(token.split('__')[:-1])
-            field_name = token.split('__')[-1]
+            related_name = "__".join(token.split("__")[:-1])
+            field_name = token.split("__")[-1]
 
             if related_name:
                 for token, values in self.MAPPING.items():
-                    if related_name == values.get('related_name'):
-                        if field_name == values['field'].name:
-                            self._field = self.MAPPING[token]['field']
+                    if related_name == values.get("related_name"):
+                        if field_name == values["field"].name:
+                            self._field = self.MAPPING[token]["field"]
                             self._related_name = related_name
-                            self._verbose_name = self.MAPPING[token]['verbose_name']
-                            self._pre_function = self.MAPPING[token].get('pre')
-                            self._post_function = self.MAPPING[token].get('post')
+                            self._verbose_name = self.MAPPING[token]["verbose_name"]
+                            self._pre_function = self.MAPPING[token].get("pre")
+                            self._post_function = self.MAPPING[token].get("post")
 
         if not self._field:
             raise ValueError("Unknown field '{}'!".format(token))
@@ -501,8 +484,8 @@ class QueryField:
 
     def __repr__(self):
         if not self.is_dynamic:
-            return '<{}: {}>'.format(self.__class__.__name__, self.db_field_name)
-        return '<{}: {} (dynamic)>'.format(self.__class__.__name__, self.db_field_name)
+            return "<{}: {}>".format(self.__class__.__name__, self.db_field_name)
+        return "<{}: {} (dynamic)>".format(self.__class__.__name__, self.db_field_name)
 
     @classmethod
     def get_valid_field_names(cls):
@@ -521,7 +504,7 @@ class QueryField:
     def db_field_name(self):
         """Return a valid field name for querying the DB."""
         if self._related_name:
-            field_name = '{}__{}'.format(self._related_name, self._field.name)
+            field_name = "{}__{}".format(self._related_name, self._field.name)
         else:
             field_name = self._field.name
 
@@ -554,27 +537,27 @@ class QueryField:
 
     def is_BooleanField(self):
         """Check if a `QueryField` object is a boolean field."""
-        return 'BooleanField' in self._field.get_internal_type()
+        return "BooleanField" in self._field.get_internal_type()
 
     def is_CharField(self):
         """Check if a `QueryField` object is a character field."""
-        return 'CharField' in self._field.get_internal_type()
+        return "CharField" in self._field.get_internal_type()
 
     def is_TextField(self):
         """Check if a `QueryField` object is a character field."""
-        return 'TextField' in self._field.get_internal_type()
+        return "TextField" in self._field.get_internal_type()
 
     def is_ForeignKey(self):
         """Check if a `QueryField` object is a foreign key."""
-        return 'ForeignKey' in self._field.get_internal_type()
+        return "ForeignKey" in self._field.get_internal_type()
 
     def is_DateField(self):
         """Check if a `QueryField` object is a date field."""
-        return 'DateField' in self._field.get_internal_type()
+        return "DateField" in self._field.get_internal_type()
 
     def is_DateTimeField(self):
         """Check if a `QueryField` object is a datetime field."""
-        return 'DateTimeField' in self._field.get_internal_type()
+        return "DateTimeField" in self._field.get_internal_type()
 
     def get_db_function_length(self):
         """
@@ -630,47 +613,46 @@ class QueryField:
 
 
 class APIQuery:
-
     class EmptyResult(Exception):
         pass
 
     OPERATORS = {
-        '=': {
-            '__default__': '__iexact',
-            'DateTimeField': '',
-            'ForeignKey': '',
+        "=": {
+            "__default__": "__iexact",
+            "DateTimeField": "",
+            "ForeignKey": "",
         },
-        '==': {
-            '__default__': '__iexact',
-            'DateTimeField': '',
-            'ForeignKey': '',
+        "==": {
+            "__default__": "__iexact",
+            "DateTimeField": "",
+            "ForeignKey": "",
         },
-        '=~': {
-            '__default__': '__icontains',
+        "=~": {
+            "__default__": "__icontains",
         },
-        '=*': {
-            '__default__': '__istartswith',
+        "=*": {
+            "__default__": "__istartswith",
         },
-        '!=': {
-            '__default__': '__ne',
+        "!=": {
+            "__default__": "__ne",
         },
-        '>': {
-            '__default__': '__gt',
+        ">": {
+            "__default__": "__gt",
         },
-        '>=': {
-            '__default__': '__gte',
+        ">=": {
+            "__default__": "__gte",
         },
-        '<': {
-            '__default__': '__lt',
+        "<": {
+            "__default__": "__lt",
         },
-        '<=': {
-            '__default__': '__lte',
-        }
+        "<=": {
+            "__default__": "__lte",
+        },
     }
 
-    AND = 'and'
-    OR = 'or'
-    WHERE = 'where'
+    AND = "and"
+    OR = "or"
+    WHERE = "where"
 
     def __init__(self, query_str):
         self._query_str = query_str.strip()
@@ -712,7 +694,7 @@ class APIQuery:
         """Strip query string in query fields."""
         fields = []
 
-        for token in fields_str.split(','):
+        for token in fields_str.split(","):
             field = QueryField(token.strip())
             fields.append(field.db_field_name)
 
@@ -745,7 +727,9 @@ class APIQuery:
         state = -1
 
         tokens = []
-        for token in re.split(''' (?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', conditions_str.strip()):
+        for token in re.split(
+            """ (?=(?:[^'"]|'[^']*'|"[^"]*")*$)""", conditions_str.strip()
+        ):
             tokens.append(token.strip('"').strip("'"))
 
         for i, token in enumerate(tokens):
@@ -764,12 +748,14 @@ class APIQuery:
                 condition = (field,)
                 state = 0
 
-            elif state == -1 and\
-                    (not next_token or (next_token in {self.AND, self.OR}))\
-                    and token not in {self.AND, self.OR}:
+            elif (
+                state == -1
+                and (not next_token or (next_token in {self.AND, self.OR}))
+                and token not in {self.AND, self.OR}
+            ):
                 # single field without condition
                 # where <field> and ...
-                if token[0] == '!':
+                if token[0] == "!":
                     token = token[1:]
                     is_not = True
                 else:
@@ -778,25 +764,25 @@ class APIQuery:
                 field = QueryField(token)
 
                 if field.null:
-                    filter = '__isnull'
+                    filter = "__isnull"
                     value = is_not
 
                 elif field.is_BooleanField():
-                    filter = ''
+                    filter = ""
                     value = not is_not
 
                 elif field.is_CharField() or field.is_TextField():
                     field, annotation = field.get_db_function_length()
                     annotations.append(annotation)
                     if is_not:
-                        filter = ''
+                        filter = ""
                         value = 0
                     else:
-                        filter = '__gt'
+                        filter = "__gt"
                         value = 0
 
                 else:
-                    filter = '__isnull'
+                    filter = "__isnull"
                     value = is_not
 
                 condition = (field, filter, value)
@@ -810,7 +796,7 @@ class APIQuery:
                 try:
                     operator = self.OPERATORS[token][field.type]
                 except KeyError:
-                    operator = self.OPERATORS[token]['__default__']
+                    operator = self.OPERATORS[token]["__default__"]
 
                 condition = condition + (operator,)
                 state = 1
@@ -819,23 +805,23 @@ class APIQuery:
                 # where field = <value> ...
                 # replace '%20' with whitespace; Example:
                 #   query ... where inst_dist =* 'sles 12' -> 'sles%2012' -> 'sles 12'
-                token = token.replace('%20', ' ')
+                token = token.replace("%20", " ")
 
-                if condition[0].is_DateTimeField() and token.lower() == 'infinite':
-                    if condition[1] == '__iexact':
+                if condition[0].is_DateTimeField() and token.lower() == "infinite":
+                    if condition[1] == "__iexact":
                         # no timezone offset here
-                        token = '9999-12-31 00:00:00'
+                        token = "9999-12-31 00:00:00"
                     else:
-                        token = '9999-12-31 00:00+0000'
+                        token = "9999-12-31 00:00+0000"
 
                 condition = condition + (token,)
                 state = -1
 
-                if condition[0].type == 'ForeignKey' and condition[1] == '__ne':
+                if condition[0].type == "ForeignKey" and condition[1] == "__ne":
                     # for foreign keys use '<' (__lt) and '>' (__gt) for '!='
-                    conditions.append((condition[0], '__gt', condition[2]))
+                    conditions.append((condition[0], "__gt", condition[2]))
                     conjunctions.append(self.OR)
-                    conditions.append((condition[0], '__lt', condition[2]))
+                    conditions.append((condition[0], "__lt", condition[2]))
                 else:
                     conditions.append(condition)
 
@@ -859,19 +845,23 @@ class APIQuery:
             field, op, value = self._conditions[0]
 
             if field.is_dynamic:
-                raise NotImplementedError("Non-database (dynamic) fields are not supported!")
+                raise NotImplementedError(
+                    "Non-database (dynamic) fields are not supported!"
+                )
 
-            query = Q(**{'{}{}'.format(field.db_field_name, op): value})
+            query = Q(**{"{}{}".format(field.db_field_name, op): value})
 
             for i in range(0, len(self._conditions) - 1):
                 field, op, value = self._conditions[i + 1]
 
                 if field.is_dynamic:
-                    raise NotImplementedError("Non-database (dynamic) fields are not supported!")
+                    raise NotImplementedError(
+                        "Non-database (dynamic) fields are not supported!"
+                    )
 
                 try:
                     left = query
-                    right = Q(**{'{}{}'.format(field.db_field_name, op): value})
+                    right = Q(**{"{}{}".format(field.db_field_name, op): value})
                 except IndexError:
                     raise Exception("Invalid query!")
 
@@ -909,7 +899,7 @@ class APIQuery:
         if queryset:
             result = list(
                 queryset.values(
-                    *list(set(self._fields) - set(QueryField.DYNAMIC_FIELDS)) + ['pk']
+                    *list(set(self._fields) - set(QueryField.DYNAMIC_FIELDS)) + ["pk"]
                 )
             )
         else:
@@ -931,12 +921,14 @@ class APIQuery:
             for dynamic_field, _values in QueryField.DYNAMIC_FIELDS.items():
                 field = QueryField(dynamic_field)
                 if field.db_field_name in self._fields:
-                    machine[field.db_field_name] = field.dynamic_field_function(machine['pk'])
+                    machine[field.db_field_name] = field.dynamic_field_function(
+                        machine["pk"]
+                    )
 
         # removal needs to be done here due to multiple pk lookups above
         for machine in rows:
-            if 'pk' not in self._fields:
-                machine.pop('pk', None)
+            if "pk" not in self._fields:
+                machine.pop("pk", None)
 
         return rows
 
@@ -958,7 +950,7 @@ class APIQuery:
             self._conditions[i] = (
                 condition[0],
                 condition[1],
-                field.pre_function(value)
+                field.pre_function(value),
             )
 
     def _apply_post_functions(self, rows):
@@ -998,6 +990,6 @@ class APIQuery:
         """Return fields, operators, etc. for tab completion as list."""
         options = QueryField.get_valid_field_names()
         options += list(APIQuery.OPERATORS.keys())
-        options += [APIQuery.WHERE, APIQuery.AND, APIQuery.OR, 'infinite']
+        options += [APIQuery.WHERE, APIQuery.AND, APIQuery.OR, "infinite"]
 
         return options

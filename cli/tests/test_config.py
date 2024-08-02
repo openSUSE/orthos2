@@ -36,5 +36,5 @@ class ConfigTests(OrthosCliTestCase):
         self.assertEqual(configuration.get("Protocol"), "http")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
