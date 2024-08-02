@@ -12,14 +12,13 @@ from django.db.models.signals import (
 )
 from django.dispatch import Signal, receiver
 
-from .models import (
+from orthos2.data.models import (
     Machine,
     NetworkInterface,
     SerialConsole,
     ServerConfig,
     is_unique_mac_address,
 )
-
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.cobbler import CobblerServer

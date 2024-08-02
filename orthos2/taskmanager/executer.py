@@ -10,10 +10,9 @@ from django import db
 from django.db.utils import InterfaceError
 from django.utils import timezone
 
-from . import Priority
-from .models import BaseTask, DailyTask, SingleTask
-
 from orthos2.data.models import ServerConfig
+from orthos2.taskmanager import Priority
+from orthos2.taskmanager.models import BaseTask, DailyTask, SingleTask
 
 logger = logging.getLogger("tasks")
 

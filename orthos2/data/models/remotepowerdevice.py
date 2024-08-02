@@ -1,8 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
-from . import ServerConfig
-
+from orthos2.data.models.serverconfig import ServerConfig
 from orthos2.utils.remotepowertype import get_remote_power_type_choices
 
 

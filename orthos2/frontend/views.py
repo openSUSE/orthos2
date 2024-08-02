@@ -27,17 +27,6 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import ListView
 from rest_framework.authtoken.models import Token
 
-from .decorators import check_permissions
-from .forms import (
-    NewUserForm,
-    PasswordRestoreForm,
-    PreferencesForm,
-    ReserveMachineForm,
-    SearchForm,
-    SetupMachineForm,
-    VirtualMachineForm,
-)
-
 from orthos2.data.models import (
     Architecture,
     Domain,
@@ -45,6 +34,16 @@ from orthos2.data.models import (
     MachineGroup,
     ReservationHistory,
     ServerConfig,
+)
+from orthos2.frontend.decorators import check_permissions
+from orthos2.frontend.forms import (
+    NewUserForm,
+    PasswordRestoreForm,
+    PreferencesForm,
+    ReserveMachineForm,
+    SearchForm,
+    SetupMachineForm,
+    VirtualMachineForm,
 )
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager

@@ -1,10 +1,9 @@
 from rest_framework import serializers
 
-from .annotation import AnnotationSerializer
-from .bmc import BMCSerializer
-from .installation import InstallationSerializer
-from .networkinterface import NetworkInterfaceSerializer
-
+from orthos2.api.serializers.annotation import AnnotationSerializer
+from orthos2.api.serializers.bmc import BMCSerializer
+from orthos2.api.serializers.installation import InstallationSerializer
+from orthos2.api.serializers.networkinterface import NetworkInterfaceSerializer
 from orthos2.data.models import Machine
 
 

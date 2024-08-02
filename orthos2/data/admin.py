@@ -9,7 +9,8 @@ from django.shortcuts import redirect
 from django.urls import re_path, reverse
 from django.utils.html import format_html
 
-from .models import (
+from orthos2.api.forms import RemotePowerDeviceAPIForm
+from orthos2.data.models import (
     BMC,
     Annotation,
     Architecture,
@@ -31,8 +32,6 @@ from .models import (
     is_unique_mac_address,
     validate_mac_address,
 )
-
-from orthos2.api.forms import RemotePowerDeviceAPIForm
 from orthos2.utils.remotepowertype import RemotePowerType
 
 

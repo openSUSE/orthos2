@@ -4,9 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.template.defaultfilters import urlize
 
-from .decorators import check_permissions
-
 from orthos2.data.models import Annotation, Machine, RemotePower
+from orthos2.frontend.decorators import check_permissions
 from orthos2.frontend.templatetags.tags import vm_record
 
 logger = logging.getLogger("views")

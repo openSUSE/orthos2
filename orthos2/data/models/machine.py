@@ -12,16 +12,15 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-from .architecture import Architecture
-from .domain import Domain, DomainAdmin, validate_domain_ending
-from .enclosure import Enclosure
-from .machinegroup import MachineGroup
-from .networkinterface import NetworkInterface, validate_mac_address
-from .platform import Platform
-from .system import System
-from .virtualizationapi import VirtualizationAPI
-
 from orthos2.data.exceptions import ReleaseException, ReserveException
+from orthos2.data.models.architecture import Architecture
+from orthos2.data.models.domain import Domain, DomainAdmin, validate_domain_ending
+from orthos2.data.models.enclosure import Enclosure
+from orthos2.data.models.machinegroup import MachineGroup
+from orthos2.data.models.networkinterface import NetworkInterface, validate_mac_address
+from orthos2.data.models.platform import Platform
+from orthos2.data.models.system import System
+from orthos2.data.models.virtualizationapi import VirtualizationAPI
 from orthos2.utils.misc import (
     Serializer,
     get_domain,

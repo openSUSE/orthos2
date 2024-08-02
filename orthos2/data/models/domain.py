@@ -5,9 +5,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.template import Context, Template
 
-from .architecture import Architecture
-from .serverconfig import ServerConfig
-
+from orthos2.data.models.architecture import Architecture
+from orthos2.data.models.serverconfig import ServerConfig
 from orthos2.utils.misc import has_valid_domain_ending
 
 logger = logging.getLogger("models")

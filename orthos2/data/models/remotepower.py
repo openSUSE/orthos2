@@ -3,8 +3,7 @@ import logging
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from . import ServerConfig
-
+from orthos2.data.models.serverconfig import ServerConfig
 from orthos2.utils.remotepowertype import RemotePowerType, get_remote_power_type_choices
 
 
