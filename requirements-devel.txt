@@ -15,7 +15,7 @@ django-stubs[compatible-mypy]
 types-netaddr
 types-pytz
 pexpect
-black==22.3.0  # See .pre-commit-config.yaml
+black==24.3.0  # See .pre-commit-config.yaml
 
 # generate UML diagram:
 # pygraphviz
