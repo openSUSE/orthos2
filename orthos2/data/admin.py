@@ -618,8 +618,6 @@ class ArchsInline(admin.TabularInline):
 
 class DomainAdmin(admin.ModelAdmin):
     list_display = ("name", "cobbler_server_list", "tftp_server", "cscreen_server")
-    # enables nifty unobtrusive JavaScript “filter” interface
-    filter_horizontal = ("supported_architectures",)
     inlines = (ArchsInline,)
 
     def cobbler_server_list(self, obj):
