@@ -20,17 +20,17 @@ from orthos2.utils.misc import get_domain, get_hostname
 
 class RegenerateCommand(BaseAPIView):
 
-    METHOD = 'GET'
-    URL = '/regenerate'
+    METHOD = "GET"
+    URL = "/regenerate"
     ARGUMENTS = (
-        ['service'],
-        ['service', 'fqdn'],
+        ["service"],
+        ["service", "fqdn"],
     )
 
-    MOTD = 'motd'
-    COBBLER = 'cobbler'
-    COBBLER_D = 'cobbler_domain'
-    SERIALCONSOLE = 'serialconsole'
+    MOTD = "motd"
+    COBBLER = "cobbler"
+    COBBLER_D = "cobbler_domain"
+    SERIALCONSOLE = "serialconsole"
 
     SERVICES = [MOTD, COBBLER, COBBLER_D, SERIALCONSOLE]
 
@@ -76,7 +76,7 @@ Example:
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^regenerate$', RegenerateCommand.as_view(), name='regenerate'),
+            re_path(r"^regenerate$", RegenerateCommand.as_view(), name="regenerate"),
         ]
 
     @classmethod
@@ -85,15 +85,17 @@ Example:
 
     def get(self, request, *args, **kwargs):
         """Trigger regeneration of machine-related/service files."""
-        service = request.GET.get('service', None)
-        fqdn = request.GET.get('fqdn', None)
+        service = request.GET.get("service", None)
+        fqdn = request.GET.get("fqdn", None)
         machine = None
 
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
         if not service:
             return ErrorMessage("Service not set").as_json
@@ -101,9 +103,7 @@ Example:
         if fqdn:
             try:
                 machine = get_machine(
-                    fqdn,
-                    redirect_to='api:regenerate',
-                    data=request.GET
+                    fqdn, redirect_to="api:regenerate", data=request.GET
                 )
                 if not machine:
                     return ErrorMessage("machine {} not found".format(fqdn)).as_json
@@ -123,17 +123,21 @@ Example:
                     o_machine = Machine.objects.get(fqdn=fqdn)
                 except Machine.DoesNotExist:
                     return ErrorMessage("Machine not found: " + fqdn).as_json
-                machine_id = getattr(o_machine, 'id', None)
+                machine_id = getattr(o_machine, "id", None)
                 if not machine_id:
                     return ErrorMessage("Could not find id for machine").as_json
-                domain_id = getattr(o_machine.fqdn_domain, 'id', None)
+                domain_id = getattr(o_machine.fqdn_domain, "id", None)
                 if not domain_id:
                     return ErrorMessage("Could not find id for domain").as_json
-                msg = ' machine %s (%s) network %s (%s)' % \
-                      (get_hostname(fqdn), machine_id, o_machine.fqdn_domain, domain_id)
-                signal_cobbler_machine_update.send(sender=None,
-                                                   domain_id=domain_id,
-                                                   machine_id=machine_id)
+                msg = " machine %s (%s) network %s (%s)" % (
+                    get_hostname(fqdn),
+                    machine_id,
+                    o_machine.fqdn_domain,
+                    domain_id,
+                )
+                signal_cobbler_machine_update.send(
+                    sender=None, domain_id=domain_id, machine_id=machine_id
+                )
                 return Message("Regenerate Cobbler entry for" + msg).as_json
             else:
                 signal_cobbler_regenerate.send(sender=None, domain_id=None)
@@ -142,39 +146,50 @@ Example:
         if service.lower() == RegenerateCommand.COBBLER_D:
             domain_id = None
             if not fqdn:
-                return ErrorMessage("regenerate cobbler_domain needs a cobbler server or host as argument"
-                                    + msg).as_json
+                return ErrorMessage(
+                    "regenerate cobbler_domain needs a cobbler server or host as argument"
+                    + msg
+                ).as_json
             domain = get_domain(fqdn)
             if not domain:
                 return ErrorMessage("No domain found for machine: " + fqdn).as_json
             o_domain = Domain.objects.get(name=domain)
             if not o_domain:
-                return ErrorMessage("No orthos domain found for domain: " + domain).as_json
-            domain_id = getattr(o_domain, 'id', None)
+                return ErrorMessage(
+                    "No orthos domain found for domain: " + domain
+                ).as_json
+            domain_id = getattr(o_domain, "id", None)
             if not domain_id:
-                return ErrorMessage("Could not find id for orthos domain: " + domain).as_json
-            msg = 'domain ' + domain
+                return ErrorMessage(
+                    "Could not find id for orthos domain: " + domain
+                ).as_json
+            msg = "domain " + domain
             signal_cobbler_regenerate.send(sender=None, domain_id=domain_id)
             return Message("Regenerate Cobbler entries for " + msg).as_json
 
         # regenerate serial console entries iterating over all cscreen servers
         elif service.lower() == RegenerateCommand.SERIALCONSOLE:
             machines = Domain.objects.all().values_list(
-                'cscreen_server__fqdn', flat=True
+                "cscreen_server__fqdn", flat=True
             )
             if fqdn:
                 if fqdn in machines.distinct():
-                    signal_serialconsole_regenerate.send(sender=None, cscreen_server_fqdn=fqdn)
+                    signal_serialconsole_regenerate.send(
+                        sender=None, cscreen_server_fqdn=fqdn
+                    )
                     msg = fqdn
                 else:
                     return ErrorMessage("Not a serial console server: " + fqdn).as_json
             else:
-                msg = ''
+                msg = ""
                 for fqdn in machines.distinct():
-                    signal_serialconsole_regenerate.send(sender=None, cscreen_server_fqdn=fqdn)
-                    msg += ' ' + fqdn
-            return Message("Regenerated serial console entries for serial console servers: "
-                           + msg).as_json
+                    signal_serialconsole_regenerate.send(
+                        sender=None, cscreen_server_fqdn=fqdn
+                    )
+                    msg += " " + fqdn
+            return Message(
+                "Regenerated serial console entries for serial console servers: " + msg
+            ).as_json
 
         # regenerate MOTD (only works per machine atm)
         elif service.lower() == RegenerateCommand.MOTD:
@@ -185,4 +200,6 @@ Example:
         else:
             return ErrorMessage("Unknown service {}".format(service)).as_json
 
-        return ErrorMessage("Unknown error - params: {} - {}".format(service, fqdn)).as_json
+        return ErrorMessage(
+            "Unknown error - params: {} - {}".format(service, fqdn)
+        ).as_json

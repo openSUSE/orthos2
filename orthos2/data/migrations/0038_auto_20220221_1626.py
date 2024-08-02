@@ -6,33 +6,46 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0037_remotepowerdevice_url'),
+        ("data", "0037_remotepowerdevice_url"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='machine',
-            name='autoreinstall',
-            field=models.BooleanField(default=True, help_text='Shall this machine be automatically re-installed when its reservation ends?', verbose_name='Auto re-install machine'),
+            model_name="machine",
+            name="autoreinstall",
+            field=models.BooleanField(
+                default=True,
+                help_text="Shall this machine be automatically re-installed when its reservation ends?",
+                verbose_name="Auto re-install machine",
+            ),
         ),
         migrations.AddField(
-            model_name='machine',
-            name='installed_distro',
-            field=models.CharField(blank=True, editable=False, help_text='The installation which got triggered the last time<br>This could have happen manually via setup or via an auto re-installationafter reservation expired<br>If not overridden, this is the default installation used when auto re-installed.', max_length=255, verbose_name='Last triggered Installation'),
+            model_name="machine",
+            name="installed_distro",
+            field=models.CharField(
+                blank=True,
+                editable=False,
+                help_text="The installation which got triggered the last time<br>This could have happen manually via setup or via an auto re-installationafter reservation expired<br>If not overridden, this is the default installation used when auto re-installed.",
+                max_length=255,
+                verbose_name="Last triggered Installation",
+            ),
         ),
         migrations.AlterField(
-            model_name='remotepowerdevice',
-            name='password',
+            model_name="remotepowerdevice",
+            name="password",
             field=models.CharField(max_length=256, null=True),
         ),
         migrations.AlterField(
-            model_name='remotepowerdevice',
-            name='url',
-            field=models.URLField(blank=True, help_text='URL of the Webinterface to configure this Power Device.<br>Power devices should be in a separate management network only reachable via the cobbler server.<br>In this case the Webinterface might be port forwarded, also check <a href="https://w3.suse.de/~trenn/orthos_internal_docs/powerswitches.html" target="_blank">Documentation</a><br>'),
+            model_name="remotepowerdevice",
+            name="url",
+            field=models.URLField(
+                blank=True,
+                help_text='URL of the Webinterface to configure this Power Device.<br>Power devices should be in a separate management network only reachable via the cobbler server.<br>In this case the Webinterface might be port forwarded, also check <a href="https://w3.suse.de/~trenn/orthos_internal_docs/powerswitches.html" target="_blank">Documentation</a><br>',
+            ),
         ),
         migrations.AlterField(
-            model_name='remotepowerdevice',
-            name='username',
+            model_name="remotepowerdevice",
+            name="username",
             field=models.CharField(max_length=256, null=True),
         ),
     ]

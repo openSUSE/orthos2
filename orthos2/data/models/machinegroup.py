@@ -5,51 +5,34 @@ from django.db import models
 
 
 class MachineGroup(models.Model):
-
     class Meta:
-        ordering = ['-name']
-        verbose_name = 'Machine Group'
+        ordering = ["-name"]
+        verbose_name = "Machine Group"
 
-    name = models.CharField(
-        max_length=100,
-        blank=False,
-        unique=True
-    )
+    name = models.CharField(max_length=100, blank=False, unique=True)
 
-    members = models.ManyToManyField(
-        User,
-        through='MachineGroupMembership'
-    )
+    members = models.ManyToManyField(User, through="MachineGroupMembership")
 
-    comment = models.CharField(
-        max_length=512,
-        blank=True
-    )
+    comment = models.CharField(max_length=512, blank=True)
 
-    contact_email = models.EmailField(
-        blank=True
-    )
+    contact_email = models.EmailField(blank=True)
 
     dhcp_filename = models.CharField(
-        'DHCP filename',
-        max_length=64,
-        null=True,
-        blank=True
+        "DHCP filename", max_length=64, null=True, blank=True
     )
 
     tftp_server = models.ForeignKey(
-        'data.Machine',
-        related_name='tftp_server_for_group',
-        verbose_name='TFTP server',
+        "data.Machine",
+        related_name="tftp_server_for_group",
+        verbose_name="TFTP server",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        limit_choices_to={'administrative': True}
+        limit_choices_to={"administrative": True},
     )
 
     setup_use_architecture = models.BooleanField(
-        'Use machines architecture for setup',
-        default=False
+        "Use machines architecture for setup", default=False
     )
 
     def natural_key(self):
@@ -88,9 +71,11 @@ class MachineGroup(models.Model):
         remove whitespaces during edit.
         """
         if self.pk is None:
-            self.name = ''.join(char for char in self.name.title() if not char.isspace())
+            self.name = "".join(
+                char for char in self.name.title() if not char.isspace()
+            )
         else:
-            self.name = self.name.replace(' ', '')
+            self.name = self.name.replace(" ", "")
 
     def get_support_contact(self):
         """Return email address for responsible support contact."""
@@ -101,18 +86,11 @@ class MachineGroup(models.Model):
 
 
 class MachineGroupMembership(models.Model):
-    user = models.ForeignKey(
-        User,
-        related_name='memberships',
-        on_delete=models.CASCADE
-    )
+    user = models.ForeignKey(User, related_name="memberships", on_delete=models.CASCADE)
 
     group = models.ForeignKey(MachineGroup, on_delete=models.CASCADE)
 
-    is_privileged = models.BooleanField(
-        default=False,
-        null=False
-    )
+    is_privileged = models.BooleanField(default=False, null=False)
 
     def __str__(self):
-        return '{} | {}'.format(self.user, self.group)
+        return "{} | {}".format(self.user, self.group)

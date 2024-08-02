@@ -24,5 +24,5 @@ class ExitTests(OrthosCliTestCase):
         self.assertEqual(self.process.exitstatus, 0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

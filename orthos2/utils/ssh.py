@@ -10,7 +10,7 @@ from paramiko.channel import ChannelFile, ChannelStderrFile
 
 from orthos2.data.models import Machine, ServerConfig
 
-logger = logging.getLogger('utils')
+logger = logging.getLogger("utils")
 
 
 class SSH(object):
@@ -29,7 +29,7 @@ class SSH(object):
         """
         self._fqdn = fqdn
         if self._fqdn in {socket.getfqdn(), settings.SERVER_FQDN}:
-            self._fqdn = 'localhost'
+            self._fqdn = "localhost"
         self._client = paramiko.SSHClient()
         self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self._sftp: Optional[SFTPClient] = None
@@ -42,10 +42,12 @@ class SSH(object):
     def get_system_user_configuration(self):
         """Return SSH configuration of system user as Paramiko dict for `connect()`."""
         ssh_configuration = paramiko.SSHConfig()
-        user_configuration_file = '{}/.ssh/config'.format(os.getenv('HOME'))
+        user_configuration_file = "{}/.ssh/config".format(os.getenv("HOME"))
 
         if not os.path.exists(user_configuration_file):
-            logger.warning("Couldn't read SSH configuration: %s", user_configuration_file)
+            logger.warning(
+                "Couldn't read SSH configuration: %s", user_configuration_file
+            )
             return None
 
         with open(user_configuration_file) as f:
@@ -58,15 +60,21 @@ class SSH(object):
                 return None
 
         configuration = {}
-        hostname = self._fqdn.split('.')[0]
+        hostname = self._fqdn.split(".")[0]
 
         user_configuration = ssh_configuration.lookup(hostname)
-        for keys in (('user', 'username'), ('identityfile', 'key_filename'), ('port', 'port')):
+        for keys in (
+            ("user", "username"),
+            ("identityfile", "key_filename"),
+            ("port", "port"),
+        ):
             if keys[0] in user_configuration:
                 configuration[keys[1]] = user_configuration[keys[0]]
 
-        if 'proxycommand' in user_configuration:
-            configuration['sock'] = paramiko.ProxyCommand(ssh_configuration['proxycommand'])
+        if "proxycommand" in user_configuration:
+            configuration["sock"] = paramiko.ProxyCommand(
+                ssh_configuration["proxycommand"]
+            )
 
         return configuration
 
@@ -77,7 +85,7 @@ class SSH(object):
         self._client.close()
         self._open = False
 
-    def connect(self, user: str = 'root', timeout: Optional[int] = None):
+    def connect(self, user: str = "root", timeout: Optional[int] = None):
         """
         Connect to the specified server (in SSH.__init__()).
 
@@ -95,23 +103,23 @@ class SSH(object):
             fqdn_or_ipv4 = self._machine.ipv4
 
         configuration = {
-            'hostname': fqdn_or_ipv4,
-            'port': 22,
-            'username': user,
-            'key_filename': [],
+            "hostname": fqdn_or_ipv4,
+            "port": 22,
+            "username": user,
+            "key_filename": [],
             # paramiko wants timeout to be a float
-            'timeout': float(timeout) if timeout else None
+            "timeout": float(timeout) if timeout else None,
         }
 
         try:
-            if ServerConfig.ssh.bool_by_key('ssh.use.systemuser'):
+            if ServerConfig.ssh.bool_by_key("ssh.use.systemuser"):
                 user_configuration = self.get_system_user_configuration()
                 if user_configuration:
                     tmp = configuration.copy()
                     tmp.update(user_configuration)
                     configuration = tmp
             else:
-                configuration['key_filename'] = ServerConfig.ssh.get_keys()
+                configuration["key_filename"] = ServerConfig.ssh.get_keys()
 
             self._client.connect(**configuration)
             self._open = True
@@ -123,9 +131,9 @@ class SSH(object):
 
         raise SSH.Exception(last_exception)
 
-    def execute(self, command: str, retry: bool = True, timeout: Optional[float] = None) -> Tuple[
-        Union[Iterable, ChannelFile], Union[Iterable, ChannelStderrFile], int
-    ]:
+    def execute(
+        self, command: str, retry: bool = True, timeout: Optional[float] = None
+    ) -> Tuple[Union[Iterable, ChannelFile], Union[Iterable, ChannelStderrFile], int]:
         """
         Execute the given command.
 
@@ -166,7 +174,7 @@ class SSH(object):
         """Read the given file contents."""
         if not self._sftp:
             self._sftp = self._client.open_sftp()
-        f = self._sftp.file(filename, 'r')
+        f = self._sftp.file(filename, "r")
         retval = f.readlines()
         f.close()
         return retval
@@ -178,17 +186,21 @@ class SSH(object):
         f = self._sftp.file(filename=filename, mode=mode)
         return f
 
-    def execute_script_remote(self, script: str, arguments: str = '') -> Optional[Tuple[str, str, int]]:
+    def execute_script_remote(
+        self, script: str, arguments: str = ""
+    ) -> Optional[Tuple[str, str, int]]:
         """
         Execute the given script on the remote side.
 
         Return a tuple containing stdout (list), stderr (list) and exit status (int).
         """
-        retval = ('', '', 1)
+        retval = ("", "", 1)
 
         remotescript_directory = ServerConfig.ssh.get_remote_scripts_directory()
         remotescript = os.path.join(remotescript_directory, script)
-        localscript = os.path.join(ServerConfig.ssh.get_local_scripts_directory(), script)
+        localscript = os.path.join(
+            ServerConfig.ssh.get_local_scripts_directory(), script
+        )
 
         if not self._sftp:
             self._sftp = self._client.open_sftp()
@@ -206,7 +218,9 @@ class SSH(object):
         try:
             retval = self.execute("{} {}".format(remotescript, arguments))
         except SSH.Exception as e:
-            logger.warning("Error while executing command %s on %s: %s", script, self._fqdn, str(e))
+            logger.warning(
+                "Error while executing command %s on %s: %s", script, self._fqdn, str(e)
+            )
 
         try:
             for f in self._sftp.listdir(remotescript_directory):
@@ -214,13 +228,19 @@ class SSH(object):
             self._sftp.rmdir(remotescript_directory)
         except paramiko.SSHException as e:
             logger.exception(e)
-            logger.warning("Error while executing command %s on %s: %s", script, self._fqdn, str(e))
+            logger.warning(
+                "Error while executing command %s on %s: %s", script, self._fqdn, str(e)
+            )
         except paramiko.SFTPError as e:
             logger.exception(e)
-            logger.warning("Error while executing command %s on %s: %s", script, self._fqdn, str(e))
+            logger.warning(
+                "Error while executing command %s on %s: %s", script, self._fqdn, str(e)
+            )
         except IOError as e:
             logger.exception(e)
-            logger.warning("Error while executing command %s on %s: %s", script, self._fqdn, str(e))
+            logger.warning(
+                "Error while executing command %s on %s: %s", script, self._fqdn, str(e)
+            )
 
         return retval
 
@@ -240,10 +260,10 @@ class SSH(object):
             if not parents:
                 raise e
 
-            directories = directory.lstrip('/').split('/')
+            directories = directory.lstrip("/").split("/")
 
             for i, _part in enumerate(directories):
-                directory = '/' + '/'.join(directories[0:i + 1])
+                directory = "/" + "/".join(directories[0 : i + 1])
                 try:
                     self._sftp.chdir(directory)
                 except FileNotFoundError:

@@ -16,7 +16,7 @@ from orthos2.utils.machinechecks import (
 from orthos2.utils.misc import sync, wrap80
 from orthos2.utils.ssh import SSH
 
-logger = logging.getLogger('tasks')
+logger = logging.getLogger("tasks")
 
 
 class MachineCheck(Task):
@@ -25,12 +25,11 @@ class MachineCheck(Task):
     """
 
     class Scan:
-
         class Action:
-            STATUS = 'status'
-            NETWORKINTERFACES = 'networkinterfaces'
-            INSTALLATIONS = 'installations'
-            ALL = 'all'
+            STATUS = "status"
+            NETWORKINTERFACES = "networkinterfaces"
+            INSTALLATIONS = "installations"
+            ALL = "all"
 
             as_list = [STATUS, NETWORKINTERFACES, INSTALLATIONS, ALL]
 
@@ -79,22 +78,18 @@ class MachineCheck(Task):
         Returns all check-methods for the respective scans.
         """
         methods = {
-            self.Scan.STATUS: (
-                self.status,
-            ),
+            self.Scan.STATUS: (self.status,),
             self.Scan.NETWORKINTERFACES: (
                 self.network,
                 self.status_ip,
             ),
-            self.Scan.INSTALLATIONS: (
-                self.installations,
-            ),
+            self.Scan.INSTALLATIONS: (self.installations,),
             self.Scan.ALL: (
                 self.status,
                 self.network,
                 self.status_ip,
                 self.installations,
-            )
+            ),
         }
 
         return methods[self.scan]
@@ -120,12 +115,16 @@ class MachineCheck(Task):
             if ping_check_ipv6(self.fqdn, timeout=1):
                 self.machine.status_ipv6 = Machine.StatusIP.REACHABLE
 
-            if self.machine.status_ping and\
-                    self.machine.check_connectivity > Machine.Connectivity.PING:
+            if (
+                self.machine.status_ping
+                and self.machine.check_connectivity > Machine.Connectivity.PING
+            ):
                 self.machine.status_ssh = nmap_check(self.fqdn)
 
-                if self.machine.status_ssh and\
-                        self.machine.check_connectivity > Machine.Connectivity.SSH:
+                if (
+                    self.machine.status_ssh
+                    and self.machine.check_connectivity > Machine.Connectivity.SSH
+                ):
                     self.machine.status_login = login_test(self.fqdn)
         self.online = bool(self.machine.status_login)
         self.machine.save()
@@ -135,7 +134,9 @@ class MachineCheck(Task):
         Collect information about network interfaces.
         """
         if not self.machine.collect_system_information:
-            logger.debug("Network interfaces: collecting system information disabled... skip")
+            logger.debug(
+                "Network interfaces: collecting system information disabled... skip"
+            )
             return
 
         if self.online is False:
@@ -148,8 +149,7 @@ class MachineCheck(Task):
 
         for interface in networkinterfaces_:
             networkinterface, _created = NetworkInterface.objects.get_or_create(
-                machine=self.machine,
-                mac_address=interface.mac_address
+                machine=self.machine, mac_address=interface.mac_address
             )
             networkinterface.ethernet_type = interface.ethernet_type
             networkinterface.driver_module = interface.driver_module
@@ -158,8 +158,9 @@ class MachineCheck(Task):
             networkinterface.save()
 
         for networkinterface in self.machine.networkinterfaces.all():
-            if networkinterface.mac_address not in\
-                    {item.mac_address for item in networkinterfaces_}:
+            if networkinterface.mac_address not in {
+                item.mac_address for item in networkinterfaces_
+            }:
 
                 if not networkinterface.primary:
                     networkinterface.delete()
@@ -185,7 +186,9 @@ class MachineCheck(Task):
         Collect all installations/distributions.
         """
         if not self.machine.collect_system_information:
-            logger.debug("Installations: collecting system information disabled... skip")
+            logger.debug(
+                "Installations: collecting system information disabled... skip"
+            )
             return
 
         if self.online is False:
@@ -231,13 +234,13 @@ class RegenerateMOTD(Task):
         """
         Executes the task.
         """
-        if not ServerConfig.objects.bool_by_key('orthos.debug.motd.write'):
+        if not ServerConfig.objects.bool_by_key("orthos.debug.motd.write"):
             logger.warning("Disabled: set 'orthos.debug.motd.write' to 'true'")
             return
 
-        BEGIN = '-' * 69 + ' Orthos{ --'
-        LINE = '-' * 80
-        END = '-' * 69 + ' Orthos} --'
+        BEGIN = "-" * 69 + " Orthos{ --"
+        LINE = "-" * 80
+        END = "-" * 69 + " Orthos} --"
 
         try:
             machine = Machine.objects.get(fqdn=self.fqdn)
@@ -249,34 +252,43 @@ class RegenerateMOTD(Task):
         try:
             conn = SSH(machine.fqdn)
             conn.connect()
-            motd = conn.get_file('/etc/motd.orthos', 'w')
+            motd = conn.get_file("/etc/motd.orthos", "w")
             print(BEGIN, file=motd)
             print(
                 "Machine of the ARCH team. Contact <{}> for problems.".format(
                     machine.get_support_contact()
                 ),
-                file=motd
+                file=motd,
             )
             if machine.comment:
                 print("INFO: " + machine.comment, file=motd)
             if machine.administrative:
-                print("This machine is an administrative machine. DON\'T TOUCH!", file=motd)
+                print(
+                    "This machine is an administrative machine. DON'T TOUCH!", file=motd
+                )
             if machine.reserved_by:
                 print(LINE, file=motd)
                 if machine.is_reserved_infinite():
-                    print("This machine is RESERVED by {} (infinite).".format(machine.reserved_by), file=motd)
+                    print(
+                        "This machine is RESERVED by {} (infinite).".format(
+                            machine.reserved_by
+                        ),
+                        file=motd,
+                    )
                 else:
                     print(
                         "This machine is RESERVED by {} until {}.".format(
-                            machine.reserved_by,
-                            machine.reserved_until
-                        ), file=motd
+                            machine.reserved_by, machine.reserved_until
+                        ),
+                        file=motd,
                     )
-                print('', file=motd)
+                print("", file=motd)
                 print(wrap80(machine.reserved_reason), file=motd)
             print(END, file=motd)
             motd.close()
-            _stdout, stderr, exitstatus = conn.execute_script_remote('machine_sync_motd.sh')
+            _stdout, stderr, exitstatus = conn.execute_script_remote(
+                "machine_sync_motd.sh"
+            )
 
             if exitstatus != 0:
                 logger.exception("(%s) %s", machine.fqdn, stderr)

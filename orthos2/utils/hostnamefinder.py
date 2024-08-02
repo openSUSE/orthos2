@@ -6,7 +6,7 @@ from django.conf import settings
 
 from orthos2.data.models import Machine
 
-logger = logging.getLogger('utils')
+logger = logging.getLogger("utils")
 
 
 class HostnameFinder(object):
@@ -24,14 +24,16 @@ class HostnameFinder(object):
     """
 
     @staticmethod
-    def by_domain(domain: str, arch: str = 'x86_64'):
+    def by_domain(domain: str, arch: str = "x86_64"):
         """
         Returns a HostnameFinder instance by domain.
         """
-        if not hasattr(settings, 'HOSTNAMEFINDER'):
+        if not hasattr(settings, "HOSTNAMEFINDER"):
             logger.info("Config file is missing HOSTNAMEFINDER variable")
             return None
-        config = next((x for x in settings.HOSTNAMEFINDER if x['network'] == domain), None)
+        config = next(
+            (x for x in settings.HOSTNAMEFINDER if x["network"] == domain), None
+        )
         if not config:
             logger.info("Domain %s has no hostfinder configuration", domain)
             return None
@@ -41,13 +43,13 @@ class HostnameFinder(object):
         """
         Creates a new object with the given domain model object.
         """
-        self.domain = config['network']
-        self.arch = config['arch']
-        self.sections = config['section']
-        if not hasattr(config, 'ip_range'):
+        self.domain = config["network"]
+        self.arch = config["arch"]
+        self.sections = config["section"]
+        if not hasattr(config, "ip_range"):
             self.ip_range = range(1, 254)
         else:
-            self.ip_range = config['ip_range']
+            self.ip_range = config["ip_range"]
 
     def free_hostnames(self) -> Tuple[List[str], List[str]]:
         """
@@ -57,10 +59,14 @@ class HostnameFinder(object):
         used: List[str] = []
         unused: List[str] = []
         # get the hostnames in the database
-        Machines = set(Machine.objects.filter(fqdn_domain__name=self.domain).values_list('fqdn', flat=True))
+        Machines = set(
+            Machine.objects.filter(fqdn_domain__name=self.domain).values_list(
+                "fqdn", flat=True
+            )
+        )
         for i in self.sections:
             for j in self.ip_range:
-                ip = '10.161.%d.%d' % (i, j)
+                ip = "10.161.%d.%d" % (i, j)
                 try:
                     res = socket.gethostbyaddr(ip)
                 except socket.error:

@@ -6,33 +6,48 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0005_auto_20210510_1913'),
+        ("data", "0005_auto_20210510_1913"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='system',
-            name='allowBMC',
-            field=models.BooleanField(default=False, help_text='Can a network interface be assigned to such a system serving as BMC?'),
+            model_name="system",
+            name="allowBMC",
+            field=models.BooleanField(
+                default=False,
+                help_text="Can a network interface be assigned to such a system serving as BMC?",
+            ),
         ),
         migrations.AddField(
-            model_name='system',
-            name='allowHypervisor',
-            field=models.BooleanField(default=False, help_text='Can such systems host virtual machines?'),
+            model_name="system",
+            name="allowHypervisor",
+            field=models.BooleanField(
+                default=False, help_text="Can such systems host virtual machines?"
+            ),
         ),
         migrations.AlterField(
-            model_name='system',
-            name='administrative',
-            field=models.BooleanField(default=False, help_text='Are these machines administrative systems (cannot be installed or reserved)?'),
+            model_name="system",
+            name="administrative",
+            field=models.BooleanField(
+                default=False,
+                help_text="Are these machines administrative systems (cannot be installed or reserved)?",
+            ),
         ),
         migrations.AlterField(
-            model_name='system',
-            name='name',
-            field=models.CharField(help_text='What kind of system are these machines?', max_length=200, unique=True),
+            model_name="system",
+            name="name",
+            field=models.CharField(
+                help_text="What kind of system are these machines?",
+                max_length=200,
+                unique=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='system',
-            name='virtual',
-            field=models.BooleanField(default=False, help_text='Are these machines virtual systems (can have a hypervisor)?'),
+            model_name="system",
+            name="virtual",
+            field=models.BooleanField(
+                default=False,
+                help_text="Are these machines virtual systems (can have a hypervisor)?",
+            ),
         ),
     ]

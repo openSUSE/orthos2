@@ -13,11 +13,9 @@ from orthos2.data.models import ServerConfig
 
 class ServerConfigCommand(BaseAPIView):
 
-    METHOD = 'GET'
-    URL = '/serverconfig'
-    ARGUMENTS = (
-        [],
-    )
+    METHOD = "GET"
+    URL = "/serverconfig"
+    ARGUMENTS = ([],)
 
     HELP_SHORT = "Show server configuration."
     HELP = """Show server configuration (superusers only).
@@ -32,7 +30,9 @@ Example:
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^serverconfig$', ServerConfigCommand.as_view(), name='serverconfig'),
+            re_path(
+                r"^serverconfig$", ServerConfigCommand.as_view(), name="serverconfig"
+            ),
         ]
 
     def get(self, request, *args, **kwargs):
@@ -41,28 +41,19 @@ Example:
             return AuthRequiredSerializer().as_json
 
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
         config = ServerConfig.objects.all()
 
         if config.count() == 0:
             return InfoMessage("No configurations available.").as_json
 
-        theader = [
-            {'key': 'Key'},
-            {'value': 'Value'}
-        ]
-        response = {
-            'header': {'type': 'TABLE', 'theader': theader},
-            'data': []
-        }
+        theader = [{"key": "Key"}, {"value": "Value"}]
+        response = {"header": {"type": "TABLE", "theader": theader}, "data": []}
 
         for item in config:
-            response['data'].append(
-                {
-                    'key': item.key,
-                    'value': item.value
-                }
-            )
+            response["data"].append({"key": item.key, "value": item.value})
 
         return JsonResponse(response)

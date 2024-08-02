@@ -18,32 +18,40 @@ class AddBMCTest(APITestCase):
     fixtures = [
         "orthos2/data/fixtures/systems.json",
         "orthos2/data/fixtures/vendors.json",
-        "orthos2/data/fixtures/tests/test_machines.json"
+        "orthos2/data/fixtures/tests/test_machines.json",
     ]
 
     remote_power_types = [
         {
-            'fence': 'ipmilanplus',
-            'device': 'bmc',
-            'username': 'xxx',
-            'password': 'XXX',
-            'arch': ['x86_64', 'aarch64'],
-            'system': ['Bare Metal']
+            "fence": "ipmilanplus",
+            "device": "bmc",
+            "username": "xxx",
+            "password": "XXX",
+            "arch": ["x86_64", "aarch64"],
+            "system": ["Bare Metal"],
         },
     ]
 
     def setUp(self) -> None:
-        self.user = User.objects.create_superuser(username='testuser', email="test@test.de", password='12345')
+        self.user = User.objects.create_superuser(
+            username="testuser", email="test@test.de", password="12345"
+        )
         self.client.force_authenticate(user=self.user)
 
     def test_add_bmc_get(self):
         # Arrange
-        url = reverse('api:bmc_add')
+        url = reverse("api:bmc_add")
         url += "/test"
-        data = {'fqdn': 'test.testing.suse.de', 'mac': 'DabApps', 'username': '', 'password': '', 'fence_name': ''}
+        data = {
+            "fqdn": "test.testing.suse.de",
+            "mac": "DabApps",
+            "username": "",
+            "password": "",
+            "fence_name": "",
+        }
 
         # Act
-        response = self.client.get(url, data, format='json')
+        response = self.client.get(url, data, format="json")
 
         # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -55,20 +63,20 @@ class AddBMCTest(APITestCase):
     def test_add_bmc_post(self):
         """Test the route /bmc/add/{fqdn}"""
         # Arrange
-        url = reverse('api:bmc_add')
+        url = reverse("api:bmc_add")
         url += "/test%2Etesting%2Esuse%2Ede"
         data = {
             "form": {
-                'fqdn': 'test.testing.suse.de',
-                'mac': 'DabApps',
-                'username': '',
-                'password': '',
-                'fence_name': 'ipmilanplus'
+                "fqdn": "test.testing.suse.de",
+                "mac": "DabApps",
+                "username": "",
+                "password": "",
+                "fence_name": "ipmilanplus",
             }
         }
 
         # Act
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format="json")
 
         # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)

@@ -8,7 +8,7 @@ from orthos2.taskmanager.models import Task
 from orthos2.utils.cobbler import CobblerServer
 from orthos2.utils.ssh import SSH
 
-logger = logging.getLogger('tasks')
+logger = logging.getLogger("tasks")
 
 
 class RegenerateCobbler(Task):
@@ -34,7 +34,9 @@ class RegenerateCobbler(Task):
         Executes the task.
         """
 
-        if settings.DEBUG and not ServerConfig.objects.bool_by_key('orthos.debug.dhcp.write'):
+        if settings.DEBUG and not ServerConfig.objects.bool_by_key(
+            "orthos.debug.dhcp.write"
+        ):
             logger.warning("Disabled: set 'orthos.debug.dhcp.write' to 'true'")
             return
 
@@ -44,7 +46,9 @@ class RegenerateCobbler(Task):
             for domain in domains:
 
                 if not domain.cobbler_server:
-                    logger.info("Domain '%s' has no Cobbler server... skip", domain.name)
+                    logger.info(
+                        "Domain '%s' has no Cobbler server... skip", domain.name
+                    )
                     continue
 
                 if domain.machine_set.count() == 0:
@@ -86,9 +90,13 @@ class UpdateCobblerMachine(Task):
             machine = Machine.objects.get(pk=self._machine_id)
             logger.info("Cobbler update started")
             if not domain.cobbler_server:
-                logger.info("Domain '%s' has no Cobbler server... aborting", domain.name)
+                logger.info(
+                    "Domain '%s' has no Cobbler server... aborting", domain.name
+                )
                 return
-            logger.info("Generate Cobbler update configuration for '%s'...", machine.fqdn)
+            logger.info(
+                "Generate Cobbler update configuration for '%s'...", machine.fqdn
+            )
             # deploy generated DHCP files on all servers belonging to one domain
             cobbler_server = domain.cobbler_server
             cobbler_server_obj = CobblerServer(cobbler_server.fqdn, domain)
@@ -127,7 +135,9 @@ class SyncCobblerDHCP(Task):
         try:
             domain = Domain.objects.get(pk=self._domain_id)
             if not domain.cobbler_server:
-                logger.info("Domain '%s' has no Cobbler server... aborting", domain.name)
+                logger.info(
+                    "Domain '%s' has no Cobbler server... aborting", domain.name
+                )
                 return
             cobbler_server = domain.cobbler_server
             cobbler_server_obj = CobblerServer(cobbler_server.fqdn, domain)

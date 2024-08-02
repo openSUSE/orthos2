@@ -7,80 +7,128 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0001_initial'),
+        ("data", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='RemotePowerType',
+            name="RemotePowerType",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('switching_device', models.CharField(choices=[('rpower_device', 'Remotepower Device (e. g. Raritan)'), ('bmc', 'BMC'), ('hypervisor', 'Hypervisor (physical host)')], max_length=64)),
-                ('name', models.CharField(max_length=255)),
-                ('use_key', models.BooleanField(verbose_name='Use SSH Key')),
-                ('use_port', models.BooleanField(verbose_name='Use Port')),
-                ('fence', models.CharField(choices=[('virsh', 'virsh'), ('ipmitool', 'ipmitool'), ('raritan', 'raritan')], max_length=255, verbose_name='Fencing Agent')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "switching_device",
+                    models.CharField(
+                        choices=[
+                            ("rpower_device", "Remotepower Device (e. g. Raritan)"),
+                            ("bmc", "BMC"),
+                            ("hypervisor", "Hypervisor (physical host)"),
+                        ],
+                        max_length=64,
+                    ),
+                ),
+                ("name", models.CharField(max_length=255)),
+                ("use_key", models.BooleanField(verbose_name="Use SSH Key")),
+                ("use_port", models.BooleanField(verbose_name="Use Port")),
+                (
+                    "fence",
+                    models.CharField(
+                        choices=[
+                            ("virsh", "virsh"),
+                            ("ipmitool", "ipmitool"),
+                            ("raritan", "raritan"),
+                        ],
+                        max_length=255,
+                        verbose_name="Fencing Agent",
+                    ),
+                ),
             ],
         ),
         migrations.DeleteModel(
-            name='DominionPX',
+            name="DominionPX",
         ),
         migrations.DeleteModel(
-            name='ILO',
+            name="ILO",
         ),
         migrations.DeleteModel(
-            name='IPMI',
+            name="IPMI",
         ),
         migrations.DeleteModel(
-            name='LibvirtLXC',
+            name="LibvirtLXC",
         ),
         migrations.DeleteModel(
-            name='LibvirtQEMU',
+            name="LibvirtQEMU",
         ),
         migrations.DeleteModel(
-            name='S390',
+            name="S390",
         ),
         migrations.DeleteModel(
-            name='Sentry',
+            name="Sentry",
         ),
         migrations.DeleteModel(
-            name='Telnet',
+            name="Telnet",
         ),
         migrations.DeleteModel(
-            name='WEBCurl',
+            name="WEBCurl",
         ),
         migrations.RemoveField(
-            model_name='remotepower',
-            name='device',
+            model_name="remotepower",
+            name="device",
         ),
         migrations.RemoveField(
-            model_name='remotepower',
-            name='type',
+            model_name="remotepower",
+            name="type",
         ),
         migrations.AddField(
-            model_name='machine',
-            name='hypervisor',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='hypervising', to='data.machine'),
+            model_name="machine",
+            name="hypervisor",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="hypervising",
+                to="data.machine",
+            ),
         ),
         migrations.AddField(
-            model_name='machine',
-            name='use_bmc',
-            field=models.BooleanField(default=True, verbose_name='Use BMC for powerswitching'),
+            model_name="machine",
+            name="use_bmc",
+            field=models.BooleanField(
+                default=True, verbose_name="Use BMC for powerswitching"
+            ),
         ),
         migrations.AddField(
-            model_name='remotepower',
-            name='hypervisor',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to='data.machine'),
+            model_name="remotepower",
+            name="hypervisor",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="+",
+                to="data.machine",
+            ),
         ),
         migrations.AlterField(
-            model_name='remotepower',
-            name='port',
+            model_name="remotepower",
+            name="port",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AddField(
-            model_name='remotepower',
-            name='kind',
-            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, to='data.remotepowertype', verbose_name='Powerswitch Type'),
+            model_name="remotepower",
+            name="kind",
+            field=models.ForeignKey(
+                default=None,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="data.remotepowertype",
+                verbose_name="Powerswitch Type",
+            ),
             preserve_default=False,
         ),
     ]

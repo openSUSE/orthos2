@@ -13,14 +13,14 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath(".."))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'Orthos2'
-copyright = '2020, openSUSE Orthos2 Team'
-author = 'openSUSE Orthos2 Team'
+project = "Orthos2"
+copyright = "2020, openSUSE Orthos2 Team"
+author = "openSUSE Orthos2 Team"
 
 
 # -- General configuration ---------------------------------------------------
@@ -29,23 +29,23 @@ author = 'openSUSE Orthos2 Team'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.doctest",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.todo",
+    "sphinx.ext.coverage",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.ifconfig",
+    "sphinx.ext.viewcode",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -53,12 +53,12 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # -- Options for Autodoc ------------------------------------------------------
 
@@ -72,11 +72,18 @@ cli_cmd_name = "orthos2"
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('commandline', cli_cmd_name, u'Orthos Command Line Client Documenation',
-     [u'Thomas Renninger'], 1),
+    (
+        "commandline",
+        cli_cmd_name,
+        "Orthos Command Line Client Documenation",
+        ["Thomas Renninger"],
+        1,
+    ),
 ]
 
 rst_prolog = """
 .. |orthosrc_loc| replace:: {0}
 .. |cli_cmd_name| replace:: {1}
-""".format(docs_location + cli_pkg_name + "orthosrc", cli_cmd_name)
+""".format(
+    docs_location + cli_pkg_name + "orthosrc", cli_cmd_name
+)

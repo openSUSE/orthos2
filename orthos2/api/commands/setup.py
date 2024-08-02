@@ -13,16 +13,14 @@ from orthos2.api.serializers.misc import (
     Serializer,
 )
 
-logger = logging.getLogger('api')
+logger = logging.getLogger("api")
 
 
 class SetupCommand(BaseAPIView):
 
-    METHOD = 'GET'
-    URL = '/setup'
-    ARGUMENTS = (
-        ['fqdn', 'option_or_choice'],
-    )
+    METHOD = "GET"
+    URL = "/setup"
+    ARGUMENTS = (["fqdn", "option_or_choice"],)
 
     HELP_SHORT = "Automatic machine setup."
     HELP = """Command to setup (re-install) a machine.
@@ -43,12 +41,12 @@ Example:
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^setup$', SetupCommand.as_view(), name='setup'),
+            re_path(r"^setup$", SetupCommand.as_view(), name="setup"),
         ]
 
     @staticmethod
     def get_tabcompletion():
-        return ['list']
+        return ["list"]
 
     def _list(self, request, machine):
         """Return list of available distributions for `machine`."""
@@ -62,22 +60,17 @@ Example:
         if not grouped_records:
             return ErrorMessage("No setup records found!").as_json
 
-        response = ''
+        response = ""
 
-        theader = [
-            {'full': 'Available Distributions'}
-        ]
-        response = {
-            'header': {'type': 'TABLE', 'theader': theader},
-            'data': []
-        }
+        theader = [{"full": "Available Distributions"}]
+        response = {"header": {"type": "TABLE", "theader": theader}, "data": []}
 
         for distribution, records in grouped_records.items():
             logger.info("Distros: %s - records: %s", distribution, records)
             for record in records:
-                response['data'].append(
+                response["data"].append(
                     {
-                        'full': distribution + ':' + record,
+                        "full": distribution + ":" + record,
                     }
                 )
 
@@ -89,8 +82,7 @@ Example:
             return AuthRequiredSerializer().as_json
 
         valid = machine.fqdn_domain.is_valid_setup_choice(
-            distribution,
-            machine.architecture.name
+            distribution, machine.architecture.name
         )
 
         if not valid:
@@ -105,8 +97,10 @@ Example:
                 message = "OK."
 
                 if not machine.has_remotepower():
-                    message += " This machine has no remote power - "\
+                    message += (
+                        " This machine has no remote power - "
                         "a manuall reboot may be required."
+                    )
 
                 return Message(message).as_json
             else:
@@ -120,16 +114,12 @@ Example:
 
     def get(self, request, *args, **kwargs):
         """Perform machine setup."""
-        fqdn = request.GET.get('fqdn', None)
-        option_or_choice = request.GET.get('option_or_choice', None)
+        fqdn = request.GET.get("fqdn", None)
+        option_or_choice = request.GET.get("option_or_choice", None)
         choice = None
 
         try:
-            result = get_machine(
-                fqdn,
-                redirect_to='api:setup',
-                data=request.GET
-            )
+            result = get_machine(fqdn, redirect_to="api:setup", data=request.GET)
             if isinstance(result, Serializer):
                 return result.as_json
             elif isinstance(result, HttpResponseRedirect):
@@ -138,7 +128,7 @@ Example:
         except Exception as e:
             return ErrorMessage(str(e)).as_json
 
-        if option_or_choice.lower() == 'list':
+        if option_or_choice.lower() == "list":
             return self._list(request, machine)
         else:
             choice = option_or_choice

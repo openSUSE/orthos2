@@ -6,13 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0031_auto_20211006_1005'),
+        ("data", "0031_auto_20211006_1005"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='domain',
-            name='cobbler_server',
-            field=models.ManyToManyField(blank=True, limit_choices_to={'administrative': True}, null=True, related_name='cobbler_server_for', to='data.Machine', verbose_name='Cobbler server'),
+            model_name="domain",
+            name="cobbler_server",
+            field=models.ManyToManyField(
+                blank=True,
+                limit_choices_to={"administrative": True},
+                null=True,
+                related_name="cobbler_server_for",
+                to="data.Machine",
+                verbose_name="Cobbler server",
+            ),
         ),
     ]

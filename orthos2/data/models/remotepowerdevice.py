@@ -1,9 +1,9 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
-from orthos2.utils.remotepowertype import get_remote_power_type_choices
-
 from . import ServerConfig
+
+from orthos2.utils.remotepowertype import get_remote_power_type_choices
 
 
 class RemotePowerDevice(models.Model):
@@ -14,16 +14,14 @@ class RemotePowerDevice(models.Model):
     url = models.URLField(
         blank=True,
         help_text="URL of the Webinterface to configure this Power Device.<br>"
-                  " Power devices should be in a separate management network only reachable via the cobbler server.<br>"
-                  " In this case the Webinterface might be port forwarded, also check Documentation<br>"
+        " Power devices should be in a separate management network only reachable via the cobbler server.<br>"
+        " In this case the Webinterface might be port forwarded, also check Documentation<br>",
     )
 
     remotepower_type_choices = get_remote_power_type_choices("rpower_device")
 
     fence_name = models.CharField(
-        choices=remotepower_type_choices,
-        max_length=255,
-        verbose_name="Fence Agent"
+        choices=remotepower_type_choices, max_length=255, verbose_name="Fence Agent"
     )
 
     def __init__(self, *args, **kwargs):
@@ -32,14 +30,16 @@ class RemotePowerDevice(models.Model):
             + "/"
             + "powerswitches.html"
         )
-        self._meta.get_field("url").help_text += '<a href="' + power_doc + '" target="_blank"></a><br>'
+        self._meta.get_field("url").help_text += (
+            '<a href="' + power_doc + '" target="_blank"></a><br>'
+        )
         super().__init__(*args, **kwargs)
 
     @staticmethod
     def get_by_str(fqdn_dev):
         if not fqdn_dev:
             return
-        fqdn = fqdn_dev.split('[')[0]
+        fqdn = fqdn_dev.split("[")[0]
         try:
             return RemotePowerDevice.objects.get(fqdn=fqdn)
         except ObjectDoesNotExist:

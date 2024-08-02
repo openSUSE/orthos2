@@ -8,7 +8,7 @@ import logging
 
 from orthos2.utils.misc import execute
 
-logger = logging.getLogger('utils')
+logger = logging.getLogger("utils")
 
 
 def single_quote(buf):
@@ -25,7 +25,7 @@ def single_quote(buf):
     return buf
 
 
-def ssh_execute(cmd, host, user='root', log_error=True):
+def ssh_execute(cmd, host, user="root", log_error=True):
     """
     Get the output of a command remotly via SSH.
 
@@ -44,12 +44,13 @@ def ssh_execute(cmd, host, user='root', log_error=True):
     @rtype:           int
     @return:          The exit code of the executed command
     """
-    ssh_command = 'ssh -o UserKnownHostsFile=/dev/null ' \
-        '-o StrictHostKeyChecking=no ' \
-        '-o ConnectTimeout=5 ' \
-        + user + '@' + host + ' ' + single_quote(cmd)
+    ssh_command = (
+        "ssh -o UserKnownHostsFile=/dev/null "
+        "-o StrictHostKeyChecking=no "
+        "-o ConnectTimeout=5 " + user + "@" + host + " " + single_quote(cmd)
+    )
     (stdout, stderr, err) = execute(ssh_command)
-    if (err and log_error):
+    if err and log_error:
         logger.warning("stderr: %s", stderr)
         logger.warning("ssh command: %s", ssh_command)
         logger.warning("stdout: %s", stdout)
@@ -62,7 +63,7 @@ def ssh_execute(cmd, host, user='root', log_error=True):
     return (stdout, stderr, err)
 
 
-def scp_execute(source, target, user='root'):
+def scp_execute(source, target, user="root"):
     """
     Copy a file via SSH without host key checking.
 
@@ -73,18 +74,21 @@ def scp_execute(source, target, user='root'):
     @rtype:         int
     @return:        0 if everything went well.
     """
-    command = 'scp -o UserKnownHostsFile=/dev/null ' \
-              '-o StrictHostKeyChecking=no ' \
-              '-o ConnectTimeout=5 ' \
-              '{} {}@{}'.format(source, user, target)
+    command = (
+        "scp -o UserKnownHostsFile=/dev/null "
+        "-o StrictHostKeyChecking=no "
+        "-o ConnectTimeout=5 "
+        "{} {}@{}".format(source, user, target)
+    )
     return execute(command)
 
 
 # Test ssh code above by passing:
 # cmd:  arg[0]
 # host: arg[1]
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     if len(sys.argv) == 3:
         args = sys.argv[1:]
         cmd = args[0]

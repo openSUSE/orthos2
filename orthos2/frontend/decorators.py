@@ -4,7 +4,7 @@ from django.http import Http404
 from orthos2.data.models import Machine
 
 
-def check_permissions(key='id'):
+def check_permissions(key="id"):
     def decorator(function):
         def wrapper(request, *args, **kwargs):
             """
@@ -17,9 +17,9 @@ def check_permissions(key='id'):
                 ident = kwargs.get(key, None)
                 if ident is None:
                     raise PermissionDenied("Bad key %s", key)
-                if key == 'fqdn':
+                if key == "fqdn":
                     machine = Machine.objects.get(fqdn=ident)
-                elif key == 'id':
+                elif key == "id":
                     machine = Machine.objects.get(pk=ident)
             except Machine.DoesNotExist:
                 raise Http404("Machine does not exist!")
@@ -30,4 +30,5 @@ def check_permissions(key='id'):
             return function(request, *args, **kwargs)
 
         return wrapper
+
     return decorator

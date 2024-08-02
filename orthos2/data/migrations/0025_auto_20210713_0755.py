@@ -6,56 +6,56 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0024_auto_20210713_0538'),
+        ("data", "0024_auto_20210713_0538"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='domain',
-            name='created',
+            model_name="domain",
+            name="created",
         ),
         migrations.RemoveField(
-            model_name='domain',
-            name='updated',
+            model_name="domain",
+            name="updated",
         ),
         migrations.RemoveField(
-            model_name='enclosure',
-            name='created',
+            model_name="enclosure",
+            name="created",
         ),
         migrations.RemoveField(
-            model_name='enclosure',
-            name='updated',
+            model_name="enclosure",
+            name="updated",
         ),
         migrations.RemoveField(
-            model_name='machinegroup',
-            name='created',
+            model_name="machinegroup",
+            name="created",
         ),
         migrations.RemoveField(
-            model_name='machinegroup',
-            name='updated',
+            model_name="machinegroup",
+            name="updated",
         ),
         migrations.RemoveField(
-            model_name='remotepower',
-            name='created',
+            model_name="remotepower",
+            name="created",
         ),
         migrations.RemoveField(
-            model_name='remotepower',
-            name='updated',
+            model_name="remotepower",
+            name="updated",
         ),
         migrations.RemoveField(
-            model_name='serialconsole',
-            name='created',
+            model_name="serialconsole",
+            name="created",
         ),
         migrations.RemoveField(
-            model_name='serialconsole',
-            name='updated',
+            model_name="serialconsole",
+            name="updated",
         ),
         migrations.RemoveField(
-            model_name='serialconsoletype',
-            name='created',
+            model_name="serialconsoletype",
+            name="created",
         ),
         migrations.RemoveField(
-            model_name='serialconsoletype',
-            name='updated',
+            model_name="serialconsoletype",
+            name="updated",
         ),
     ]

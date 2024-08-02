@@ -6,62 +6,30 @@ from orthos2.utils.misc import safe_get_or_default
 
 
 class Architecture(models.Model):
-
     class Manager(models.Manager):
         def get_by_natural_key(self, name):
             return self.get(name=name)
 
     class Type:
-
         @classmethod
         def prep(cls):
             """Prepare const variables for fast and developer-friendly handling."""
-            cls.X86_64 = safe_get_or_default(
-                Architecture,
-                'name',
-                'x86_64',
-                'pk',
-                -1
-            )
-            cls.PPC64LE = safe_get_or_default(
-                Architecture,
-                'name',
-                'ppc64le',
-                'pk',
-                -1
-            )
+            cls.X86_64 = safe_get_or_default(Architecture, "name", "x86_64", "pk", -1)
+            cls.PPC64LE = safe_get_or_default(Architecture, "name", "ppc64le", "pk", -1)
 
-    name = models.CharField(
-        max_length=200,
-        blank=False,
-        unique=True
-    )
+    name = models.CharField(max_length=200, blank=False, unique=True)
 
     dhcp_filename = models.CharField(
-        'DHCP filename',
-        max_length=64,
-        null=True,
-        blank=True
+        "DHCP filename", max_length=64, null=True, blank=True
     )
 
-    contact_email = models.EmailField(
-        blank=True
-    )
+    contact_email = models.EmailField(blank=True)
 
-    updated = models.DateTimeField(
-        'Updated at',
-        auto_now=True
-    )
+    updated = models.DateTimeField("Updated at", auto_now=True)
 
-    created = models.DateTimeField(
-        'Created at',
-        auto_now_add=True
-    )
+    created = models.DateTimeField("Created at", auto_now_add=True)
     default_profile = models.CharField(
-        'Default profile',
-        max_length=128,
-        null=True,
-        blank=True
+        "Default profile", max_length=128, null=True, blank=True
     )
 
     objects = Manager()
@@ -96,7 +64,8 @@ class Architecture(models.Model):
 
     def get_machine_count(self):
         return self.machine_set.count()
-    get_machine_count.short_description = 'Machines'
+
+    get_machine_count.short_description = "Machines"
 
     def get_support_contact(self):
         """Return email address for responsible support contact."""

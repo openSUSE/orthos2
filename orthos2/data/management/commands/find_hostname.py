@@ -17,8 +17,8 @@ class Command(BaseCommand):
         self.machinesonly = False
 
     def add_arguments(self, parser: CommandParser):
-        parser.add_argument('--domain', default="arch.suse.de", help="Domainname")
-        parser.add_argument('--arch', default="x86_64", help="architecture")
+        parser.add_argument("--domain", default="arch.suse.de", help="Domainname")
+        parser.add_argument("--arch", default="x86_64", help="architecture")
 
     def handle(self, *args, **options):
         domain = options["domain"]

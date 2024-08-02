@@ -5,7 +5,7 @@ from orthos2.taskmanager.models import Task
 from orthos2.utils.cobbler import CobblerException, CobblerServer
 from orthos2.utils.ssh import SSH
 
-logger = logging.getLogger('tasks')
+logger = logging.getLogger("tasks")
 
 
 class SetupMachine(Task):
@@ -17,18 +17,20 @@ class SetupMachine(Task):
 
     def execute(self):
         """Execute the task."""
-        if not ServerConfig.objects.bool_by_key('orthos.debug.setup.execute'):
+        if not ServerConfig.objects.bool_by_key("orthos.debug.setup.execute"):
             logger.warning("Disabled: set 'orthos.debug.setup.execute' to 'true'")
             return
 
-        logger.debug('Executing setup')
+        logger.debug("Executing setup")
 
         try:
             machine = Machine.objects.get(fqdn=self.fqdn)
             domain = machine.fqdn_domain
             server = domain.cobbler_server
             if not server:
-                logger.warning("No cobbler server available for '%s'", machine.fqdn_domain.name)
+                logger.warning(
+                    "No cobbler server available for '%s'", machine.fqdn_domain.name
+                )
                 return
 
             try:
@@ -37,8 +39,13 @@ class SetupMachine(Task):
                 cobbler_server.setup(machine, self.choice)
 
             except CobblerException as e:
-                logger.warning("Setup of %s with %s failed on %s with %s", machine.fqdn,
-                               self.choice, server.fqdn, e)
+                logger.warning(
+                    "Setup of %s with %s failed on %s with %s",
+                    machine.fqdn,
+                    self.choice,
+                    server.fqdn,
+                    e,
+                )
             else:
                 logger.debug("success")
                 machine.reboot()

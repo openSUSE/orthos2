@@ -8,7 +8,7 @@ from orthos2.data.models import Domain, DomainAdmin, Machine
 from orthos2.taskmanager.models import Task
 from orthos2.utils.misc import get_domain, send_email
 
-logger = logging.getLogger('tasks')
+logger = logging.getLogger("tasks")
 
 
 class SendRestoredPassword(Task):
@@ -34,8 +34,7 @@ Your Orthos password has been restored.
 
 Regards,
 Orthos""".format(
-                username=user.username,
-                password=self.new_password
+                username=user.username, password=self.new_password
             )
 
             send_email(user.email, subject, message)
@@ -70,7 +69,7 @@ If you have any problems, contact <{support_contact}>.""".format(
                 username=user.username,
                 fqdn=machine.fqdn,
                 ip=machine.ipv4,
-                support_contact=machine.get_support_contact()
+                support_contact=machine.get_support_contact(),
             )
 
             if machine.has_remotepower():
@@ -84,8 +83,8 @@ switch capability. Just use the Orthos web interface at:
 Or use the following commandline interface command:
 
   (orthos) POWER {fqdn} REBOOT""".format(
-                    url=settings.BASE_URL + '/machine/' + str(machine.pk),
-                    fqdn=machine.fqdn
+                    url=settings.BASE_URL + "/machine/" + str(machine.pk),
+                    fqdn=machine.fqdn,
                 )
 
             if machine.has_serialconsole():
@@ -143,7 +142,9 @@ class CheckReservationExpiration(Task):
             delta = timezone.localdate(machine.reserved_until) - today
 
             if delta.days > 5 or delta.days in {4, 3}:
-                logger.debug("%sd left for %s@%s", delta.days, user.username, machine.fqdn)
+                logger.debug(
+                    "%sd left for %s@%s", delta.days, user.username, machine.fqdn
+                )
                 return
 
             if delta.days < 0:
@@ -156,7 +157,9 @@ class CheckReservationExpiration(Task):
             elif delta.days == 0:
                 subject = "Reservation of {} expires today".format(machine.fqdn)
             else:
-                subject = "Reservation of {} expires in {} days".format(machine.fqdn, delta.days)
+                subject = "Reservation of {} expires in {} days".format(
+                    machine.fqdn, delta.days
+                )
 
             message = """Hi {username},
 
@@ -181,8 +184,8 @@ Orthos""".format(
                 username=user.username,
                 fqdn=machine.fqdn,
                 reserved_until=machine.reserved_until,
-                url=settings.BASE_URL + '/machine/' + str(machine.pk),
-                support_contact=machine.get_support_contact()
+                url=settings.BASE_URL + "/machine/" + str(machine.pk),
+                support_contact=machine.get_support_contact(),
             )
 
             send_email(user.email, subject, message)
@@ -212,9 +215,11 @@ class CheckMultipleAccounts(Task):
         try:
             user = User.objects.get(pk=self.user_id)
 
-            prefix = user.email.split('@')[0] + '@'
+            prefix = user.email.split("@")[0] + "@"
             usernames = list(
-                User.objects.filter(email__startswith=prefix).values('username', 'email')
+                User.objects.filter(email__startswith=prefix).values(
+                    "username", "email"
+                )
             )
 
             if len(usernames) <= 1:
@@ -237,9 +242,12 @@ Regards,
 Orthos""".format(
                 username=user.username,
                 usernames="\n".join(
-                    ['  {} ({})'.format(user_['username'], user_['email']) for user_ in usernames]
+                    [
+                        "  {} ({})".format(user_["username"], user_["email"])
+                        for user_ in usernames
+                    ]
                 ),
-                contact=settings.CONTACT
+                contact=settings.CONTACT,
             )
 
             send_email(user.email, subject, message)
@@ -262,7 +270,9 @@ class CheckForPrimaryNetwork(Task):
     def send_warning_mail(self, machine: Machine):
         domain: Domain = Domain.objects.get(name=get_domain(self.fqdn))
         subject = "{fqdn} has no primary MAC".format(fqdn=self.fqdn)
-        domain_admin: DomainAdmin = DomainAdmin.objects.get(domain=domain, arch=machine.architecture)
+        domain_admin: DomainAdmin = DomainAdmin.objects.get(
+            domain=domain, arch=machine.architecture
+        )
         admin_mail = domain_admin.contact_email
 
         message = """"Hi, {admin}
@@ -273,14 +283,18 @@ Please enter a valid MAC address as soon as possible.
 
 Regards,
 Orthos
-""".format(fqdn=self.fqdn, admin=admin_mail.split('@')[0])
+""".format(
+            fqdn=self.fqdn, admin=admin_mail.split("@")[0]
+        )
         send_email(admin_mail, subject, message)
 
     def execute(self):
         try:
             machine = Machine.objects.get(fqdn=self.fqdn)
             if not machine.get_primary_networkinterface():
-                logger.debug("%s has no Primary Networkinterface, sending mail", self.fqdn)
+                logger.debug(
+                    "%s has no Primary Networkinterface, sending mail", self.fqdn
+                )
                 self.send_warning_mail(machine)
 
         except Machine.DoesNotExist:

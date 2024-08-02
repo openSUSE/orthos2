@@ -27,7 +27,7 @@ class HelpTests(OrthosCliTestCase):
         for line in output[2:19]:
             self.assertIsNotNone(
                 re.match(r"^\t[A-Z]+\s", line),
-                msg="Line didn't start with tab and capslock!"
+                msg="Line didn't start with tab and capslock!",
             )
         # 20 lines + the line the shell starts to match again
         self.assertEqual(len(output), 21)

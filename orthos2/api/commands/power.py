@@ -14,11 +14,9 @@ from orthos2.data.models import RemotePower
 
 class PowerCommand(BaseAPIView):
 
-    METHOD = 'GET'
-    URL = '/powercycle'
-    ARGUMENTS = (
-        ['fqdn', 'action'],
-    )
+    METHOD = "GET"
+    URL = "/powercycle"
+    ARGUMENTS = (["fqdn", "action"],)
 
     HELP_SHORT = "Power cycles a machine."
     HELP = """Command to power cycle machines or the get the current status.
@@ -46,7 +44,7 @@ Example:
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^powercycle$', PowerCommand.as_view(), name='powercycle'),
+            re_path(r"^powercycle$", PowerCommand.as_view(), name="powercycle"),
         ]
 
     @staticmethod
@@ -55,18 +53,14 @@ Example:
 
     def get(self, request, *args, **kwargs):
         """Perform machine power cycle."""
-        fqdn = request.GET.get('fqdn', None)
-        action = request.GET.get('action', None)
+        fqdn = request.GET.get("fqdn", None)
+        action = request.GET.get("action", None)
 
         if action.lower() not in RemotePower.Action.as_list:
             return ErrorMessage("Unknown action '{}'!".format(action)).as_json
 
         try:
-            result = get_machine(
-                fqdn,
-                redirect_to='api:powercycle',
-                data=request.GET
-            )
+            result = get_machine(fqdn, redirect_to="api:powercycle", data=request.GET)
             if isinstance(result, Serializer):
                 return result.as_json
             elif isinstance(result, HttpResponseRedirect):
@@ -85,10 +79,11 @@ Example:
             result = machine.powercycle(action.lower(), user=request.user)
 
             if action.lower() == RemotePower.Action.STATUS:
-                return Message("Status: {} ({})".format(
-                    result.capitalize(),
-                    machine.remotepower.name
-                )).as_json
+                return Message(
+                    "Status: {} ({})".format(
+                        result.capitalize(), machine.remotepower.name
+                    )
+                ).as_json
 
             if result:
                 return Message("OK.").as_json

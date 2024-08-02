@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0017_auto_20210622_1848'),
+        ("data", "0017_auto_20210622_1848"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='remotepowerdevice',
-            name='fqdn',
+            model_name="remotepowerdevice",
+            name="fqdn",
             field=models.CharField(max_length=256, unique=True),
         ),
         migrations.AlterField(
-            model_name='remotepowerdevice',
-            name='mac',
+            model_name="remotepowerdevice",
+            name="mac",
             field=models.CharField(max_length=17, unique=True),
         ),
     ]

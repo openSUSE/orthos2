@@ -7,17 +7,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0020_auto_20210625_1935'),
+        ("data", "0020_auto_20210625_1935"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='remotepower',
-            name='id',
+            model_name="remotepower",
+            name="id",
         ),
         migrations.AlterField(
-            model_name='remotepower',
-            name='machine',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to='data.machine'),
+            model_name="remotepower",
+            name="machine",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                primary_key=True,
+                serialize=False,
+                to="data.machine",
+            ),
         ),
     ]

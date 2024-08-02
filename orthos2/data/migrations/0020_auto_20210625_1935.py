@@ -7,24 +7,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0019_auto_20210624_1910'),
+        ("data", "0019_auto_20210624_1910"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='remotepower',
-            name='machine',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='data.machine'),
+            model_name="remotepower",
+            name="machine",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE, to="data.machine"
+            ),
         ),
         migrations.AddField(
-            model_name='remotepower',
-            name='id',
-            field=models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID'),
+            model_name="remotepower",
+            name="id",
+            field=models.AutoField(
+                auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+            ),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='remotepowerdevice',
-            name='fence_name',
-            field=models.CharField(choices=[('raritan', 'raritan'), ('cdu', 'cdu'), ('apc', 'apc')], max_length=255, verbose_name='Fence Agent'),
+            model_name="remotepowerdevice",
+            name="fence_name",
+            field=models.CharField(
+                choices=[("raritan", "raritan"), ("cdu", "cdu"), ("apc", "apc")],
+                max_length=255,
+                verbose_name="Fence Agent",
+            ),
         ),
     ]

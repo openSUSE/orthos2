@@ -12,11 +12,6 @@ from django.db.models.signals import (
 )
 from django.dispatch import Signal, receiver
 
-from orthos2.taskmanager import tasks
-from orthos2.taskmanager.models import TaskManager
-from orthos2.utils.cobbler import CobblerServer
-from orthos2.utils.misc import Serializer, get_hostname
-
 from .models import (
     Machine,
     NetworkInterface,
@@ -25,7 +20,12 @@ from .models import (
     is_unique_mac_address,
 )
 
-logger = logging.getLogger('orthos')
+from orthos2.taskmanager import tasks
+from orthos2.taskmanager.models import TaskManager
+from orthos2.utils.cobbler import CobblerServer
+from orthos2.utils.misc import Serializer, get_hostname
+
+logger = logging.getLogger("orthos")
 
 
 signal_cobbler_regenerate = Signal()
@@ -40,14 +40,16 @@ def machine_pre_save(sender, instance: Machine, *args, **kwargs):
     """Prevent saving machine object if MAC address is already in use (exclude own interfaces)."""
 
     exclude = []
-    if hasattr(instance, 'networkinterfaces') and instance.pk:
-        exclude = instance.networkinterfaces.all().values_list('mac_address', flat=True)
+    if hasattr(instance, "networkinterfaces") and instance.pk:
+        exclude = instance.networkinterfaces.all().values_list("mac_address", flat=True)
 
     if not is_unique_mac_address(instance.mac_address, exclude=exclude):
         raise ValidationError(
             "MAC address '{}' is already used by '{}'!".format(
                 instance.mac_address,
-                NetworkInterface.objects.get(mac_address=instance.mac_address).machine.fqdn
+                NetworkInterface.objects.get(
+                    mac_address=instance.mac_address
+                ).machine.fqdn,
             )
         )
 
@@ -67,15 +69,16 @@ def machine_post_save(sender, instance: Machine, *args, **kwargs):
         return
 
     try:
-        primary_networkinterface = NetworkInterface.objects.get(machine=instance, primary=True)
+        primary_networkinterface = NetworkInterface.objects.get(
+            machine=instance, primary=True
+        )
     except ObjectDoesNotExist:
         primary_networkinterface = None
     if primary_networkinterface:
         if primary_networkinterface.mac_address.upper() != instance.mac_address.upper():
 
             networkinterface, _created = instance.networkinterfaces.get_or_create(
-                machine=instance,
-                mac_address=instance.mac_address
+                machine=instance, mac_address=instance.mac_address
             )
 
             networkinterface.primary = True
@@ -89,7 +92,7 @@ def machine_post_save(sender, instance: Machine, *args, **kwargs):
             if instance.system.administrative:
                 primary_networkinterface.delete()
             else:
-                instance.scan('networkinterfaces')
+                instance.scan("networkinterfaces")
 
 
 @receiver(post_init, sender=Machine)
@@ -108,7 +111,7 @@ def machine_post_init(sender, instance: Machine, *args, **kwargs):
 @receiver(pre_delete, sender=Machine)
 def machine_pre_delete(sender, instance: Machine, *args, **kwargs):
     """Pre delete action for machine. Save deleted machine object as file for archiving.
-       Also remove the machine from the cobbler Server.
+    Also remove the machine from the cobbler Server.
     """
     server = CobblerServer.from_machine(instance)
     if server:
@@ -117,35 +120,38 @@ def machine_pre_delete(sender, instance: Machine, *args, **kwargs):
     if instance.is_vm_managed():
         instance.hypervisor.virtualization_api.remove(instance)
 
-    if not ServerConfig.objects.bool_by_key('serialization.execute'):
+    if not ServerConfig.objects.bool_by_key("serialization.execute"):
         return
 
-    output_format = ServerConfig.objects.by_key('serialization.output.format')
+    output_format = ServerConfig.objects.by_key("serialization.output.format")
 
     if output_format is None:
-        logger.warning("No output format configured. Use 'json' for serialization output format...")
+        logger.warning(
+            "No output format configured. Use 'json' for serialization output format..."
+        )
         output_format = Serializer.Format.JSON
 
-    output_directory = ServerConfig.objects.by_key('serialization.output.directory')
+    output_directory = ServerConfig.objects.by_key("serialization.output.directory")
 
     if output_directory is None:
-        logger.warning("No output directory configured. Use '/tmp' for serialization output...")
-        output_directory = '/tmp'
+        logger.warning(
+            "No output directory configured. Use '/tmp' for serialization output..."
+        )
+        output_directory = "/tmp"
 
     if not os.access(output_directory, os.W_OK):
-        logger.warning("Target directory '%s' does not exist/is not writeable!", output_directory)
-        output_directory = '/tmp'
+        logger.warning(
+            "Target directory '%s' does not exist/is not writeable!", output_directory
+        )
+        output_directory = "/tmp"
 
     serialized_data, output_format = instance.serialize(output_format=output_format)
 
-    filename = '{}/{}-{}.{}'.format(
-        output_directory.rstrip('/'),
-        instance.fqdn,
-        str(time.time()),
-        output_format
+    filename = "{}/{}-{}.{}".format(
+        output_directory.rstrip("/"), instance.fqdn, str(time.time()), output_format
     )
 
-    with open(filename, 'w') as machine_description:
+    with open(filename, "w") as machine_description:
         machine_description.write(serialized_data)
 
     logger.info("Machine object serialized (target: '%s')", filename)
@@ -153,23 +159,23 @@ def machine_pre_delete(sender, instance: Machine, *args, **kwargs):
 
 @receiver(post_save, sender=SerialConsole)
 def serialconsole_post_save(sender, instance: SerialConsole, *args, **kwargs):
-    """ Regenerate cscreen server configs if a serial console info got changed """
+    """Regenerate cscreen server configs if a serial console info got changed"""
     if not instance.machine.fqdn_domain.cscreen_server:
         return
     signal_serialconsole_regenerate.send(
         sender=SerialConsole,
-        cscreen_server_fqdn=instance.machine.fqdn_domain.cscreen_server.fqdn
+        cscreen_server_fqdn=instance.machine.fqdn_domain.cscreen_server.fqdn,
     )
 
 
 @receiver(post_delete, sender=SerialConsole)
 def serialconsole_post_delete(sender, instance: SerialConsole, *args, **kwargs):
-    """ Regenerate cscreen server configs if a serial console got deleted """
+    """Regenerate cscreen server configs if a serial console got deleted"""
     if not instance.machine.fqdn_domain.cscreen_server:
         return
     signal_serialconsole_regenerate.send(
         sender=SerialConsole,
-        cscreen_server_fqdn=instance.machine.fqdn_domain.cscreen_server.fqdn
+        cscreen_server_fqdn=instance.machine.fqdn_domain.cscreen_server.fqdn,
     )
 
 

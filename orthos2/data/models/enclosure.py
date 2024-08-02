@@ -9,7 +9,7 @@ from django.template import Context, Template
 from .platform import Platform
 from .serverconfig import ServerConfig
 
-logger = logging.getLogger('models')
+logger = logging.getLogger("models")
 
 
 class Enclosure(models.Model):
@@ -20,19 +20,16 @@ class Enclosure(models.Model):
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        limit_choices_to={'is_cartridge': False}
+        limit_choices_to={"is_cartridge": False},
     )
 
-    description = models.CharField(
-        max_length=512,
-        blank=True
-    )
+    description = models.CharField(max_length=512, blank=True)
 
-    location_room = 'unknown'
+    location_room = "unknown"
 
-    location_rack = 'unknown'
+    location_rack = "unknown"
 
-    location_rack_position = 'unknown'
+    location_rack_position = "unknown"
 
     def natural_key(self):
         return (self.name,)
@@ -69,11 +66,9 @@ class Enclosure(models.Model):
             if pk is None:
                 pk = self.machine_set.first().pk
 
-            template = ServerConfig.objects.by_key('racktables.url.query')
+            template = ServerConfig.objects.by_key("racktables.url.query")
 
-            context = Context({
-                'id': pk
-            })
+            context = Context({"id": pk})
 
             url = Template(template).render(context)
 
@@ -87,13 +82,15 @@ class Enclosure(models.Model):
                 if data is None:
                     return
 
-                room = data[str(pk)]['Location']
-                rack = data[str(pk)]['Rackname']
-                rack_position = data[str(pk)]['Position']
+                room = data[str(pk)]["Location"]
+                rack = data[str(pk)]["Rackname"]
+                rack_position = data[str(pk)]["Position"]
 
                 self.location_room = room
                 self.location_rack = rack
                 self.location_rack_position = rack_position
 
         except Exception as e:
-            logger.warning("Couldn't fetch location information for enclosure '%s': %s", self, e)
+            logger.warning(
+                "Couldn't fetch location information for enclosure '%s': %s", self, e
+            )

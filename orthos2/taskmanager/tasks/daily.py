@@ -5,7 +5,7 @@ from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import Task, TaskManager
 from orthos2.taskmanager.tasks.ansible import Ansible
 
-logger = logging.getLogger('tasks')
+logger = logging.getLogger("tasks")
 
 
 class DailyMachineChecks(Task):
@@ -24,12 +24,13 @@ class DailyMachineChecks(Task):
         for machine in Machine.objects.all():
             # only status check for administrative machines
             if machine.administrative or machine.system.administrative:
-                action = 'status'
+                action = "status"
             else:
-                action = 'all'
+                action = "all"
                 ansible_scan.append(machine.fqdn)
-            task = tasks.MachineCheck(machine.fqdn,
-                                      tasks.MachineCheck.Scan.to_int(action))
+            task = tasks.MachineCheck(
+                machine.fqdn, tasks.MachineCheck.Scan.to_int(action)
+            )
             TaskManager.add(task)
         """
         for machine in Machine.objects.all():
@@ -66,7 +67,7 @@ class DailyCheckReservationExpirations(Task):
 
 
 class DailyCheckForPrimaryNetwork(Task):
-    """ Check for machines without primary network interfaces and complain via email."""
+    """Check for machines without primary network interfaces and complain via email."""
 
     def __init_(self):
         pass

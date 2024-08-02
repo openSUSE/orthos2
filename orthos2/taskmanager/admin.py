@@ -9,16 +9,12 @@ from .models import DailyTask, SingleTask
 
 
 class BaseTaskAdmin(admin.ModelAdmin):
-    readonly_fields = (
-        'hash',
-        'running',
-        'created'
-    )
+    readonly_fields = ("hash", "running", "created")
     list_display = (
-        'name',
-        'arguments',
-        'running',
-        'priority',
+        "name",
+        "arguments",
+        "running",
+        "priority",
     )
 
 
@@ -28,8 +24,8 @@ admin.site.register(SingleTask, BaseTaskAdmin)
 class DailyTaskAdmin(BaseTaskAdmin):
     readonly_fields = BaseTaskAdmin.readonly_fields
     list_display = BaseTaskAdmin.list_display + (
-        'enabled',
-        'task_actions',
+        "enabled",
+        "task_actions",
     )
 
     # https://medium.com/@hakibenita/how-to-add-custom-action-buttons-to-django-admin-8d266f5b0d41
@@ -38,14 +34,14 @@ class DailyTaskAdmin(BaseTaskAdmin):
         urls = super(DailyTaskAdmin, self).get_urls()
         custom_urls = [
             re_path(
-                r'^(?P<dailytask_id>.+)/execute/$',
+                r"^(?P<dailytask_id>.+)/execute/$",
                 self.admin_site.admin_view(self.process_execute),
-                name='dailytask_execute'
+                name="dailytask_execute",
             ),
             re_path(
-                r'^(?P<dailytask_id>.+)/switch$',
+                r"^(?P<dailytask_id>.+)/switch$",
                 self.admin_site.admin_view(self.process_task_switch),
-                name='dailytask_switch'
+                name="dailytask_switch",
             ),
         ]
         return custom_urls + urls
@@ -58,39 +54,47 @@ class DailyTaskAdmin(BaseTaskAdmin):
                 if task.running:
                     messages.warning(request, "Task is already running!")
                 else:
-                    task.executed_at = datetime.date.today() - datetime.timedelta(days=1)
+                    task.executed_at = datetime.date.today() - datetime.timedelta(
+                        days=1
+                    )
                     task.save()
-                    messages.info(request, "Executing daily task '{}'...".format(task.name))
+                    messages.info(
+                        request, "Executing daily task '{}'...".format(task.name)
+                    )
             else:
-                messages.warning(request, "Daily task '{}' is disabled.".format(task.name))
+                messages.warning(
+                    request, "Daily task '{}' is disabled.".format(task.name)
+                )
         except Exception as e:
-            messages.error(request, str(e), extra_tags='error')
+            messages.error(request, str(e), extra_tags="error")
 
-        return redirect('admin:taskmanager_dailytask_changelist')
+        return redirect("admin:taskmanager_dailytask_changelist")
 
     def process_task_switch(self, request, dailytask_id, *args, **kwargs):
         """Enable/disable task."""
-        action = request.GET.get('action', None)
+        action = request.GET.get("action", None)
 
-        if (action is not None) and (action in {'enable', 'disable'}):
+        if (action is not None) and (action in {"enable", "disable"}):
             try:
                 task = DailyTask.objects.get(pk=dailytask_id)
 
-                if action == 'enable':
+                if action == "enable":
                     task.enabled = True
                     # prevent task from start running immediately
                     task.executed_at = datetime.datetime.now()
-                elif action == 'disable':
+                elif action == "disable":
                     task.enabled = False
                     task.running = False
 
                 task.save()
-                messages.info(request, "Successfully {}d task '{}'.".format(action, task.name))
+                messages.info(
+                    request, "Successfully {}d task '{}'.".format(action, task.name)
+                )
 
             except Exception as e:
-                messages.error(request, str(e), extra_tags='error')
+                messages.error(request, str(e), extra_tags="error")
 
-        return redirect('admin:taskmanager_dailytask_changelist')
+        return redirect("admin:taskmanager_dailytask_changelist")
 
     def task_actions(self, obj):
         """Add buttons for custom daily task actions."""
@@ -101,8 +105,8 @@ class DailyTaskAdmin(BaseTaskAdmin):
 
         return format_html(
             '<a class="button" href="{}">Execute Now</a>&nbsp;' + button,
-            reverse('admin:dailytask_execute', args=[obj.pk]),
-            reverse('admin:dailytask_switch', args=[obj.pk])
+            reverse("admin:dailytask_execute", args=[obj.pk]),
+            reverse("admin:dailytask_switch", args=[obj.pk]),
         )
 
 

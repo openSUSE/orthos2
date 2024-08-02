@@ -8,11 +8,9 @@ from orthos2.data.models import ReservationHistory
 
 class ReservationHistoryCommand(BaseAPIView):
 
-    METHOD = 'GET'
-    URL = '/reservationhistory'
-    ARGUMENTS = (
-        ['fqdn'],
-    )
+    METHOD = "GET"
+    URL = "/reservationhistory"
+    ARGUMENTS = (["fqdn"],)
 
     HELP_SHORT = "Show reservation history of a machine."
     HELP = """Show reservation history of a machine.
@@ -30,19 +28,19 @@ Example:
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^reservationhistory$', ReservationHistoryCommand.as_view(), name='history'),
+            re_path(
+                r"^reservationhistory$",
+                ReservationHistoryCommand.as_view(),
+                name="history",
+            ),
         ]
 
     def get(self, request, *args, **kwargs):
         """Return reservation history of machine."""
-        fqdn = request.GET.get('fqdn', None)
+        fqdn = request.GET.get("fqdn", None)
 
         try:
-            result = get_machine(
-                fqdn,
-                redirect_to='api:history',
-                data=request.GET
-            )
+            result = get_machine(fqdn, redirect_to="api:history", data=request.GET)
             if isinstance(result, Serializer):
                 return result.as_json
             elif isinstance(result, HttpResponseRedirect):
@@ -57,23 +55,20 @@ Example:
             return InfoMessage("No history available yet.").as_json
 
         theader = [
-            {'user': 'User'},
-            {'at': 'Reserved at'},
-            {'until': 'Reserved until'},
-            {'reason': 'Reason'}
+            {"user": "User"},
+            {"at": "Reserved at"},
+            {"until": "Reserved until"},
+            {"reason": "Reason"},
         ]
-        response = {
-            'header': {'type': 'TABLE', 'theader': theader},
-            'data': []
-        }
+        response = {"header": {"type": "TABLE", "theader": theader}, "data": []}
 
         for item in history:
-            response['data'].append(
+            response["data"].append(
                 {
-                    'user': item.reserved_by,
-                    'at': item.reserved_at,
-                    'until': item.reserved_until,
-                    'reason': item.reserved_reason.replace('\n', '')
+                    "user": item.reserved_by,
+                    "at": item.reserved_at,
+                    "until": item.reserved_until,
+                    "reason": item.reserved_reason.replace("\n", ""),
                 }
             )
 

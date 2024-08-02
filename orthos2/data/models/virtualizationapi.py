@@ -8,11 +8,10 @@ from orthos2.utils.misc import get_random_mac_address
 if TYPE_CHECKING:
     from orthos2.data.models import Machine
 
-logger = logging.getLogger('models')
+logger = logging.getLogger("models")
 
 
 class VirtualizationAPI:
-
     class Type:
         LIBVIRT = 0
 
@@ -22,7 +21,9 @@ class VirtualizationAPI:
             for type_tuple in VirtualizationAPI.TYPE_CHOICES:
                 if int(index) == type_tuple[0]:
                     return type_tuple[1]
-            raise Exception("Virtualization API type with ID '{}' doesn't exist!".format(index))
+            raise Exception(
+                "Virtualization API type with ID '{}' doesn't exist!".format(index)
+            )
 
         @classmethod
         def to_int(cls, name):
@@ -32,9 +33,7 @@ class VirtualizationAPI:
                     return type_tuple[0]
             raise Exception("Virtualization API type '{}' not found!".format(name))
 
-    TYPE_CHOICES = (
-        (Type.LIBVIRT, 'libvirt'),
-    )
+    TYPE_CHOICES = ((Type.LIBVIRT, "libvirt"),)
 
     def __init__(self, type, host: "Machine", *args, **kwargs):
         """
@@ -43,15 +42,22 @@ class VirtualizationAPI:
         Subclasses getting collected automatically by inheritance of `VirtualizationAPI` class.
         """
         subclasses = {
-            sub.__name__.replace(self.__class__.__name__, '').lower(): sub
+            sub.__name__.replace(self.__class__.__name__, "").lower(): sub
             for sub in self.__class__.__subclasses__()
         }
         self._virtualizationapis = dict(
-            map(lambda x: (
-                x[0], {
-                    'class': subclasses[x[1].lower().replace(' ', '').replace('/', '')],
-                    'name': x[1]
-                }), self.TYPE_CHOICES)
+            map(
+                lambda x: (
+                    x[0],
+                    {
+                        "class": subclasses[
+                            x[1].lower().replace(" ", "").replace("/", "")
+                        ],
+                        "name": x[1],
+                    },
+                ),
+                self.TYPE_CHOICES,
+            )
         )
         super(VirtualizationAPI, self).__init__(*args, **kwargs)
 
@@ -62,12 +68,12 @@ class VirtualizationAPI:
 
     def _set_virtualization_api(self, type):
         """Set virtualization API type."""
-        self.__class__ = self._virtualizationapis[type]['class']
+        self.__class__ = self._virtualizationapis[type]["class"]
 
     def __setattr__(self, attr, value):
         """If `type` attribute changes, set respective subclass."""
         # check for `None` explicitly because type 0 results in false
-        if attr == 'type' and value is not None:
+        if attr == "type" and value is not None:
             self._set_virtualization_api(value)
         super(VirtualizationAPI, self).__setattr__(attr, value)
 
@@ -98,8 +104,8 @@ class VirtualizationAPI:
         vm = Machine()
         vm.unsaved_networkinterfaces = []
 
-        vm.architecture = Architecture.objects.get(name=kwargs['architecture'])
-        vm.system = System.objects.get(pk=kwargs['system'])
+        vm.architecture = Architecture.objects.get(name=kwargs["architecture"])
+        vm.system = System.objects.get(pk=kwargs["system"])
 
         self._create(vm, *args, **kwargs)
 
@@ -115,19 +121,16 @@ class VirtualizationAPI:
         vm.remotepower.save()
 
         if self.host.has_serialconsole():
-            stype = SerialConsoleType.objects.get(name='libvirt/qemu')
+            stype = SerialConsoleType.objects.get(name="libvirt/qemu")
             if not stype:
                 raise Exception("Bug: SerialConsoleType not found")
-            vm.serialconsole = SerialConsole(
-                stype=stype,
-                baud_rate=115200
-            )
+            vm.serialconsole = SerialConsole(stype=stype, baud_rate=115200)
             vm.serialconsole.save()
 
-        if vm.vnc['enabled']:
+        if vm.vnc["enabled"]:
             vm.annotations.create(
-                text='VNC enabled: {}:{}'.format(self.host.fqdn, vm.vnc['port']),
-                reporter=User.objects.get(username='admin')
+                text="VNC enabled: {}:{}".format(self.host.fqdn, vm.vnc["port"]),
+                reporter=User.objects.get(username="admin"),
             )
 
         return vm
@@ -142,20 +145,18 @@ class VirtualizationAPI:
         return self.Type.to_str(self.type)
 
     def __repr__(self):
-        return '<VirtualizationAPI: {} ({})>'.format(self, self.host.fqdn)
+        return "<VirtualizationAPI: {} ({})>".format(self, self.host.fqdn)
 
 
 class Libvirt(VirtualizationAPI):
-
     class Meta:
         proxy = True
 
-    VIRSH = 'virsh -c qemu:///system'
-    IGNORE_STDERR = [
-        'domain is not running',
-        'no domain with matching name'
-    ]
-    QEMU_IMG_CONVERT = '/usr/bin/qemu-img convert -O qcow2 -o preallocation=metadata {0}.tmp {0}'
+    VIRSH = "virsh -c qemu:///system"
+    IGNORE_STDERR = ["domain is not running", "no domain with matching name"]
+    QEMU_IMG_CONVERT = (
+        "/usr/bin/qemu-img convert -O qcow2 -o preallocation=metadata {0}.tmp {0}"
+    )
 
     def __init__(self):
         self.conn = None
@@ -174,14 +175,13 @@ class Libvirt(VirtualizationAPI):
 
         architectures = [self.host.architecture.name]
         image_directory = ServerConfig.objects.by_key(
-            'virtualization.libvirt.images.directory',
-            '/var/lib/libvirt/images'
+            "virtualization.libvirt.images.directory", "/var/lib/libvirt/images"
         )
         image_list = []
 
         try:
             for architecture in architectures:
-                directory = '{}/{}/'.format(image_directory.rstrip('/'), architecture)
+                directory = "{}/{}/".format(image_directory.rstrip("/"), architecture)
                 for image in os.listdir(directory):
                     path = directory + image
                     size = os.path.getsize(path)
@@ -189,14 +189,16 @@ class Libvirt(VirtualizationAPI):
 
                     if size < (1024**3):
                         size = int(size / (1024**2))
-                        size = '{}M'.format(size)
+                        size = "{}M".format(size)
                     else:
                         size = int(size / (1024**3))
-                        size = '{}G'.format(size)
+                        size = "{}G".format(size)
 
-                    pretty_image = image.split('.')[0]
+                    pretty_image = image.split(".")[0]
 
-                    image_list.append((image, '{} ({} {})'.format(pretty_image, atime, size)))
+                    image_list.append(
+                        (image, "{} ({} {})".format(pretty_image, atime, size))
+                    )
 
         except FileNotFoundError as e:
             logger.exception(e)
@@ -205,6 +207,7 @@ class Libvirt(VirtualizationAPI):
 
     def connect(function):
         """Create SSH connection if needed."""
+
         def decorator(self, *args, **kwargs):
             from orthos2.utils.ssh import SSH
 
@@ -221,37 +224,39 @@ class Libvirt(VirtualizationAPI):
 
     def check_connection(self):
         """Check libvirt connection (running libvirt)."""
-        _stdout, _stderr, exitstatus = self._execute('{} version'.format(self.VIRSH))
+        _stdout, _stderr, exitstatus = self._execute("{} version".format(self.VIRSH))
         if exitstatus == 0:
             return True
         return False
 
-    def get_list(self, parameters='--all'):
+    def get_list(self, parameters="--all"):
         """Return `virsh list` output."""
-        stdout, stderr, exitstatus = self._execute('{} list {}'.format(self.VIRSH, parameters))
+        stdout, stderr, exitstatus = self._execute(
+            "{} list {}".format(self.VIRSH, parameters)
+        )
 
         if exitstatus == 0:
-            return ''.join(stdout)
+            return "".join(stdout)
         else:
-            raise Exception(''.join(stderr))
+            raise Exception("".join(stderr))
 
         return False
 
-    def check_network_bridge(self, bridge='br0'):
+    def check_network_bridge(self, bridge="br0"):
         """
         Execute `create_bridge.sh` script remotely and try to set up bridge if it doesn't exist.
 
         Returns true if the bridge is available, false otherwise.
         """
-        stdout, stderr, exitstatus = self.conn.execute_script_remote('create_bridge.sh')
+        stdout, stderr, exitstatus = self.conn.execute_script_remote("create_bridge.sh")
 
         if exitstatus != 0:
-            raise Exception(''.join(stderr))
+            raise Exception("".join(stderr))
 
-        stdout, stderr, exitstatus = self.conn.execute('bridge vlan')
+        stdout, stderr, exitstatus = self.conn.execute("bridge vlan")
 
         if exitstatus != 0:
-            raise Exception(''.join(stderr))
+            raise Exception("".join(stderr))
 
         for line in stdout:
             if line.startswith(bridge):
@@ -269,14 +274,14 @@ class Libvirt(VirtualizationAPI):
         occupied_hostnames = {vm.hostname for vm in self.host.get_virtual_machines()}
 
         libvirt_list = self.get_list()
-        for line in libvirt_list.split('\n')[2:]:
+        for line in libvirt_list.split("\n")[2:]:
             columns = line.strip().split()
             if columns:
                 domain_name = columns[1]
                 occupied_hostnames.add(domain_name)
 
         for i in range(1, self.host.vm_max + 1):
-            hostname_ = '{}-{}'.format(self.host.hostname, i)
+            hostname_ = "{}-{}".format(self.host.hostname, i)
             if hostname_ not in occupied_hostnames:
                 hostname = hostname_
                 break
@@ -286,7 +291,7 @@ class Libvirt(VirtualizationAPI):
 
         return hostname
 
-    def generate_networkinterfaces(self, amount=1, bridge='br0', model='virtio'):
+    def generate_networkinterfaces(self, amount=1, bridge="br0", model="virtio"):
         """Generate networkinterfaces."""
         from orthos2.data.models import NetworkInterface
 
@@ -306,17 +311,23 @@ class Libvirt(VirtualizationAPI):
 
     def copy_image(self, image, disk_image):
         """Copy and allocate disk image."""
-        _stdout, _stderr, exitstatus = self.conn.execute('cp {} {}.tmp'.format(image, disk_image))
+        _stdout, _stderr, exitstatus = self.conn.execute(
+            "cp {} {}.tmp".format(image, disk_image)
+        )
 
         if exitstatus != 0:
             return False
 
-        _stdout, _stderr, exitstatus = self.conn.execute(self.QEMU_IMG_CONVERT.format(disk_image))
+        _stdout, _stderr, exitstatus = self.conn.execute(
+            self.QEMU_IMG_CONVERT.format(disk_image)
+        )
 
         if exitstatus != 0:
             return False
 
-        _stdout, _stderr, exitstatus = self.conn.execute('rm -rf {}.tmp'.format(disk_image))
+        _stdout, _stderr, exitstatus = self.conn.execute(
+            "rm -rf {}.tmp".format(disk_image)
+        )
 
         if exitstatus != 0:
             return False
@@ -325,7 +336,7 @@ class Libvirt(VirtualizationAPI):
 
     def delete_disk_image(self, disk_image):
         """Delete the old disk image."""
-        _stdout, _stderr, exitstatus = self.conn.execute('rm -rf {}'.format(disk_image))
+        _stdout, _stderr, exitstatus = self.conn.execute("rm -rf {}".format(disk_image))
 
         if exitstatus != 0:
             return False
@@ -355,50 +366,54 @@ class Libvirt(VirtualizationAPI):
 
         if host_ram_amount:
             if memory_amount > (host_ram_amount - host_reserved_ram_amount):
-                raise Exception("Host system has only {}MB of memory!".format(memory_amount))
+                raise Exception(
+                    "Host system has only {}MB of memory!".format(memory_amount)
+                )
         else:
-            raise Exception("Can't detect memory size of host system '{}'".format(self.host))
+            raise Exception(
+                "Can't detect memory size of host system '{}'".format(self.host)
+            )
 
         return True
 
     def execute_virt_install(self, *args, dry_run=True, **kwargs):
         """Run `virt-install` command."""
-        command = '/usr/bin/virt-install '
-        command += '--name {hostname} '
-        command += '--vcpus {vcpu} '
-        command += '--memory {memory} '
-        command += '--osinfo detect=on,require=off '
+        command = "/usr/bin/virt-install "
+        command += "--name {hostname} "
+        command += "--vcpus {vcpu} "
+        command += "--memory {memory} "
+        command += "--osinfo detect=on,require=off "
 
-        disk_ = '--disk {},'.format(kwargs['disk']['image'])
-        disk_ += 'size={},'.format(kwargs['disk']['size'])
-        disk_ += 'format={},'.format(kwargs['disk']['format'])
-        disk_ += 'sparse={},'.format(kwargs['disk']['sparse'])
-        disk_ += 'bus={} '.format(kwargs['disk']['bus'])
+        disk_ = "--disk {},".format(kwargs["disk"]["image"])
+        disk_ += "size={},".format(kwargs["disk"]["size"])
+        disk_ += "format={},".format(kwargs["disk"]["format"])
+        disk_ += "sparse={},".format(kwargs["disk"]["sparse"])
+        disk_ += "bus={} ".format(kwargs["disk"]["bus"])
         command += disk_
 
-        for networkinterface in kwargs.get('networkinterfaces', []):
-            networkinterface_ = '--network model={},'.format(networkinterface.model)
-            networkinterface_ += 'bridge={},'.format(networkinterface.bridge)
-            networkinterface_ += 'mac={} '.format(networkinterface.mac_address)
+        for networkinterface in kwargs.get("networkinterfaces", []):
+            networkinterface_ = "--network model={},".format(networkinterface.model)
+            networkinterface_ += "bridge={},".format(networkinterface.bridge)
+            networkinterface_ += "mac={} ".format(networkinterface.mac_address)
             command += networkinterface_
 
-        command += '{boot} '
+        command += "{boot} "
 
-        vnc = kwargs.get('vnc', None)
-        if vnc and vnc['enabled']:
-            command += '--graphics vnc,listen=0.0.0.0,port={} '.format(vnc['port'])
+        vnc = kwargs.get("vnc", None)
+        if vnc and vnc["enabled"]:
+            command += "--graphics vnc,listen=0.0.0.0,port={} ".format(vnc["port"])
 
-        command += kwargs.get('parameters', '')
+        command += kwargs.get("parameters", "")
 
         if dry_run:
-            command += '--dry-run'
+            command += "--dry-run"
 
         command = command.format(**kwargs)
         logger.debug(command)
         _stdout, stderr, exitstatus = self.conn.execute(command)
 
         if exitstatus != 0:
-            raise Exception(''.join(stderr))
+            raise Exception("".join(stderr))
 
         return True
 
@@ -420,15 +435,18 @@ class Libvirt(VirtualizationAPI):
 
         from orthos2.data.models import ServerConfig
 
-        bridge = ServerConfig.objects.by_key('virtualization.libvirt.bridge')
-        image_directory = ServerConfig.objects.by_key('virtualization.libvirt.images.directory')
-        disk_image_directory = ServerConfig.objects.by_key('virtualization.libvirt.images.install_directory')
-        disk_image = '{}/{}.qcow2'.format(disk_image_directory.rstrip('/'), '{}')
-        ovmf = ServerConfig.objects.by_key('virtualization.libvirt.ovmf.path')
+        bridge = ServerConfig.objects.by_key("virtualization.libvirt.bridge")
+        image_directory = ServerConfig.objects.by_key(
+            "virtualization.libvirt.images.directory"
+        )
+        disk_image_directory = ServerConfig.objects.by_key(
+            "virtualization.libvirt.images.install_directory"
+        )
+        disk_image = "{}/{}.qcow2".format(disk_image_directory.rstrip("/"), "{}")
+        ovmf = ServerConfig.objects.by_key("virtualization.libvirt.ovmf.path")
 
-        image_directory = '{}/{}/'.format(
-            image_directory.rstrip('/'),
-            kwargs['architecture']
+        image_directory = "{}/{}/".format(
+            image_directory.rstrip("/"), kwargs["architecture"]
         )
 
         if not self.check_connection():
@@ -440,68 +458,69 @@ class Libvirt(VirtualizationAPI):
         if not self.check_network_bridge(bridge=bridge):
             raise Exception("Network bridge setup failed!")
 
-        if kwargs['image'] is not None:
-            if not self.conn.check_path(image_directory, '-e'):
+        if kwargs["image"] is not None:
+            if not self.conn.check_path(image_directory, "-e"):
                 raise Exception("Image source directory missing on host system!")
 
-        if not self.conn.check_path(disk_image_directory, '-w'):
-            _stdout, stderr, exitstatus = self._execute('mkdir -p {}'.format(disk_image_directory))
+        if not self.conn.check_path(disk_image_directory, "-w"):
+            _stdout, stderr, exitstatus = self._execute(
+                "mkdir -p {}".format(disk_image_directory)
+            )
             if exitstatus != 0:
                 raise Exception(
                     "Image disk directory {} could not get created on host system: {}!".format(
-                        disk_image_directory, stderr)
+                        disk_image_directory, stderr
+                    )
                 )
-        if kwargs['uefi_boot']:
-            if not self.conn.check_path(ovmf, '-e'):
+        if kwargs["uefi_boot"]:
+            if not self.conn.check_path(ovmf, "-e"):
                 raise Exception("OVMF file not found: '{}'!".format(ovmf))
-            boot = '--boot loader={},network,hd'.format(ovmf)
+            boot = "--boot loader={},network,hd".format(ovmf)
         else:
-            boot = '--boot network,hd,menu=off,useserial=on'
+            boot = "--boot network,hd,menu=off,useserial=on"
 
-        self.check_memory(kwargs['ram_amount'])
+        self.check_memory(kwargs["ram_amount"])
 
         vm.hostname = self.generate_hostname()
         vm.hypervisor = self.host
-        vm.fqdn = '{}.{}'.format(vm.hostname, self.host.fqdn_domain.name)
+        vm.fqdn = "{}.{}".format(vm.hostname, self.host.fqdn_domain.name)
 
-        vnc_port = 5900 + int(vm.hostname.split('-')[1])
-        vm.vnc = {
-            'enabled': kwargs['vnc'],
-            'port': vnc_port
-        }
+        vnc_port = 5900 + int(vm.hostname.split("-")[1])
+        vm.vnc = {"enabled": kwargs["vnc"], "port": vnc_port}
 
         vm.cpu_cores = self.calculate_vcpu()
 
-        vm.ram_amount = kwargs['ram_amount']
+        vm.ram_amount = kwargs["ram_amount"]
 
         disk_image = disk_image.format(vm.hostname)
 
-        if kwargs['image'] is not None:
-            image = '{}/{}'.format(image_directory.rstrip('/'), kwargs['image'])
+        if kwargs["image"] is not None:
+            image = "{}/{}".format(image_directory.rstrip("/"), kwargs["image"])
 
             if not self.copy_image(image, disk_image):
-                raise Exception("Couldn't copy image: {} > {}!".format(image, disk_image))
+                raise Exception(
+                    "Couldn't copy image: {} > {}!".format(image, disk_image)
+                )
         else:
             self.delete_disk_image(disk_image)
 
         disk = {
-            'image': disk_image,
-            'size': kwargs['disk_size'],
-            'format': 'qcow2',
-            'sparse': True,
-            'bus': 'virtio'
+            "image": disk_image,
+            "size": kwargs["disk_size"],
+            "format": "qcow2",
+            "sparse": True,
+            "bus": "virtio",
         }
 
         networkinterfaces = self.generate_networkinterfaces(
-            amount=kwargs['networkinterfaces'],
-            bridge=bridge
+            amount=kwargs["networkinterfaces"], bridge=bridge
         )
 
-        parameters = '--events on_reboot=restart,on_poweroff=destroy '
-        parameters += '--import '
-        parameters += '--noautoconsole '
-        parameters += '--autostart '
-        parameters += kwargs['parameters']
+        parameters = "--events on_reboot=restart,on_poweroff=destroy "
+        parameters += "--import "
+        parameters += "--noautoconsole "
+        parameters += "--autostart "
+        parameters += kwargs["parameters"]
 
         self.execute_virt_install(
             hostname=vm.hostname,
@@ -523,7 +542,7 @@ class Libvirt(VirtualizationAPI):
             boot=boot,
             vnc=vm.vnc,
             parameters=parameters,
-            dry_run=False
+            dry_run=False,
         )
 
         vm.unsaved_networkinterfaces = []
@@ -544,16 +563,21 @@ class Libvirt(VirtualizationAPI):
             self.destroy(vm)
             self.undefine(vm)
         except Exception:
-            logger.warning("Could not remove VM %s via from Hypervisor %s",
-                           vm.hostname, self.host.fqdn)
+            logger.warning(
+                "Could not remove VM %s via from Hypervisor %s",
+                vm.hostname,
+                self.host.fqdn,
+            )
             return False
         return True
 
     def destroy(self, vm):
         """Destroy VM on host system. Ignore `domain is not running` error and proceed."""
-        _stdout, stderr, exitstatus = self._execute('{} destroy {}'.format(self.VIRSH, vm.hostname))
+        _stdout, stderr, exitstatus = self._execute(
+            "{} destroy {}".format(self.VIRSH, vm.hostname)
+        )
         if exitstatus != 0:
-            stderr = ''.join(stderr)
+            stderr = "".join(stderr)
 
             if not any(line in stderr for line in self.IGNORE_STDERR):
                 raise Exception(stderr)
@@ -562,9 +586,11 @@ class Libvirt(VirtualizationAPI):
 
     def undefine(self, vm):
         """Undefine VM on host system."""
-        _stdout, stderr, exitstatus = self._execute('{} undefine {}'.format(self.VIRSH, vm.hostname))
+        _stdout, stderr, exitstatus = self._execute(
+            "{} undefine {}".format(self.VIRSH, vm.hostname)
+        )
         if exitstatus != 0:
-            stderr = ''.join(stderr)
+            stderr = "".join(stderr)
 
             if not any(line in stderr for line in self.IGNORE_STDERR):
                 raise Exception(stderr)

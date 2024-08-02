@@ -35,29 +35,34 @@ from orthos2.data.models import (
 )
 from orthos2.utils.misc import add_offset_to_date, format_cli_form_errors
 
-logger = logging.getLogger('api')
+logger = logging.getLogger("api")
 
 
 class Add:
-    MACHINE = 'machine'
-    VIRTUALMACHINE = 'virtualmachine'
-    SERIALCONSOLE = 'serialconsole'
-    ANNOTATION = 'annotation'
-    REMOTEPOWER = 'remotepower'
-    BMC = 'bmc'
-    REMOTEPOWERDEVICE = 'remotepowerdevice'
+    MACHINE = "machine"
+    VIRTUALMACHINE = "virtualmachine"
+    SERIALCONSOLE = "serialconsole"
+    ANNOTATION = "annotation"
+    REMOTEPOWER = "remotepower"
+    BMC = "bmc"
+    REMOTEPOWERDEVICE = "remotepowerdevice"
 
-    as_list = [MACHINE, VIRTUALMACHINE, SERIALCONSOLE, ANNOTATION, REMOTEPOWER,
-               BMC, REMOTEPOWERDEVICE]
+    as_list = [
+        MACHINE,
+        VIRTUALMACHINE,
+        SERIALCONSOLE,
+        ANNOTATION,
+        REMOTEPOWER,
+        BMC,
+        REMOTEPOWERDEVICE,
+    ]
 
 
 class AddCommand(BaseAPIView):
 
-    METHOD = 'GET'
-    URL = '/add'
-    ARGUMENTS = (
-        ['args*'],
-    )
+    METHOD = "GET"
+    URL = "/add"
+    ARGUMENTS = (["args*"],)
 
     HELP_SHORT = "Adds information to the database."
     HELP = """Adds items to the database. All information will be queried interactively.
@@ -91,7 +96,7 @@ class AddCommand(BaseAPIView):
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^add$', AddCommand.as_view(), name='add'),
+            re_path(r"^add$", AddCommand.as_view(), name="add"),
         ]
 
     @staticmethod
@@ -100,7 +105,7 @@ class AddCommand(BaseAPIView):
 
     def get(self, request, *args, **kwargs):
         """Dispatcher for the 'add' command."""
-        arguments = request.GET.get('args', None)
+        arguments = request.GET.get("args", None)
 
         if arguments:
             arguments = arguments.split()
@@ -111,86 +116,116 @@ class AddCommand(BaseAPIView):
 
         if item == Add.VIRTUALMACHINE:
             if len(sub_arguments) != 1:
-                return ErrorMessage("Invalid number of arguments for 'virtualmachine'!").as_json
+                return ErrorMessage(
+                    "Invalid number of arguments for 'virtualmachine'!"
+                ).as_json
 
-            return redirect('{}?arch={}'.format(reverse('api:vm_add'), sub_arguments[0]))
+            return redirect(
+                "{}?arch={}".format(reverse("api:vm_add"), sub_arguments[0])
+            )
 
         elif item == Add.MACHINE:
             if sub_arguments:
-                return ErrorMessage("Invalid number of arguments for 'machine'!").as_json
+                return ErrorMessage(
+                    "Invalid number of arguments for 'machine'!"
+                ).as_json
 
-            return redirect(reverse('api:machine_add'))
+            return redirect(reverse("api:machine_add"))
 
         elif item == Add.SERIALCONSOLE:
             if len(sub_arguments) != 1:
-                return ErrorMessage("Invalid number of arguments for 'serialconsole'!").as_json
+                return ErrorMessage(
+                    "Invalid number of arguments for 'serialconsole'!"
+                ).as_json
 
-            return redirect('{}?fqdn={}'.format(reverse('api:serialconsole_add'), sub_arguments[0]))
+            return redirect(
+                "{}?fqdn={}".format(reverse("api:serialconsole_add"), sub_arguments[0])
+            )
 
         elif item == Add.ANNOTATION:
             if len(sub_arguments) != 1:
-                return ErrorMessage("Invalid number of arguments for 'annotation'!").as_json
+                return ErrorMessage(
+                    "Invalid number of arguments for 'annotation'!"
+                ).as_json
 
-            return redirect('{}?fqdn={}'.format(reverse('api:annotation_add'), sub_arguments[0]))
+            return redirect(
+                "{}?fqdn={}".format(reverse("api:annotation_add"), sub_arguments[0])
+            )
 
         elif item == Add.REMOTEPOWER:
             if len(sub_arguments) != 1:
-                return ErrorMessage("Invalid number of arguments for 'remotepower'!").as_json
+                return ErrorMessage(
+                    "Invalid number of arguments for 'remotepower'!"
+                ).as_json
 
-            return redirect('{}?fqdn={}'.format(reverse('api:remotepower_add'), sub_arguments[0]))
+            return redirect(
+                "{}?fqdn={}".format(reverse("api:remotepower_add"), sub_arguments[0])
+            )
         elif item == Add.REMOTEPOWERDEVICE:
             if sub_arguments:
-                return ErrorMessage("Invalid number of arguments for 'remotepowerdevice'!").as_json
-            return redirect(reverse('api:remotepowerdevice_add'))
+                return ErrorMessage(
+                    "Invalid number of arguments for 'remotepowerdevice'!"
+                ).as_json
+            return redirect(reverse("api:remotepowerdevice_add"))
 
         elif item == Add.BMC:
             if len(sub_arguments) != 1:
                 return ErrorMessage("Invalid number of arguments for 'bmc'!").as_json
 
-            return redirect('{}?fqdn={}'.format(reverse('api:bmc_add'), sub_arguments[0]))
+            return redirect(
+                "{}?fqdn={}".format(reverse("api:bmc_add"), sub_arguments[0])
+            )
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
 
 class AddVMCommand(BaseAPIView):
 
-    URL_POST = '/vm/{arch}/add'
+    URL_POST = "/vm/{arch}/add"
 
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^vm/add', AddVMCommand.as_view(), name='vm_add'),
+            re_path(r"^vm/add", AddVMCommand.as_view(), name="vm_add"),
             re_path(
-                r'^vm/(?P<architecture>[a-z0-9\.-_]+)/add$',
+                r"^vm/(?P<architecture>[a-z0-9\.-_]+)/add$",
                 AddVMCommand.as_view(),
-                name='vm_add'
+                name="vm_add",
             ),
         ]
 
     def _get_available_architectures(self):
         """Return list of available architectures for virtual machines."""
-        architectures = list(Machine.api.filter(vm_dedicated_host=True).order_by().values_list(
-            'architecture__name',
-            flat=True
-        ).distinct())
+        architectures = list(
+            Machine.api.filter(vm_dedicated_host=True)
+            .order_by()
+            .values_list("architecture__name", flat=True)
+            .distinct()
+        )
         return architectures
 
     def get(self, request, *args, **kwargs):
         """Return form for adding a virtual machine."""
         architectures = self._get_available_architectures()
-        architecture = request.GET.get('arch', None)
+        architecture = request.GET.get("arch", None)
 
         if architecture.lower() not in architectures:
-            return Message("Available architectures: {}".format('|'.join(architectures))).as_json
+            return Message(
+                "Available architectures: {}".format("|".join(architectures))
+            ).as_json
 
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
-        hosts = Machine.api.filter(vm_dedicated_host=True, architecture__name=architecture)
+        hosts = Machine.api.filter(
+            vm_dedicated_host=True, architecture__name=architecture
+        )
         host = None
 
         for host_ in hosts:
-            if host_.virtualization_api and (host_.get_virtual_machines().count() < host_.vm_max):
+            if host_.virtualization_api and (
+                host_.get_virtual_machines().count() < host_.vm_max
+            ):
                 host = host_
                 break
 
@@ -202,16 +237,16 @@ class AddVMCommand(BaseAPIView):
         input = InputSerializer(
             form.as_dict(host),
             self.URL_POST.format(arch=architecture),
-            form.get_order()
+            form.get_order(),
         )
         return input.as_json
 
     def post(self, request, architecture, *args, **kwargs):
         """Add virtual machine for specific `architecture`."""
-        data = json.loads(request.body.decode('utf-8'))['form']
+        data = json.loads(request.body.decode("utf-8"))["form"]
 
         try:
-            host = Machine.api.get(fqdn__iexact=data['host'], vm_dedicated_host=True)
+            host = Machine.api.get(fqdn__iexact=data["host"], vm_dedicated_host=True)
         except Machine.DoesNotExist:
             return ErrorMessage("Host doesn't exist!").as_json
         except Exception as e:
@@ -227,27 +262,26 @@ class AddVMCommand(BaseAPIView):
                 vm = host.virtualization_api.create(**form.cleaned_data)
 
                 vm.reserve(
-                    reason='VM of {}'.format(request.user),
+                    reason="VM of {}".format(request.user),
                     until=add_offset_to_date(30),
-                    user=request.user
+                    user=request.user,
                 )
 
                 theader = [
-                    {'fqdn': 'FQDN'},
-                    {'mac_address': 'MAC address'},
+                    {"fqdn": "FQDN"},
+                    {"mac_address": "MAC address"},
                 ]
-                if vm.vnc['enabled']:
-                    theader.append({'vnc': 'VNC'})
+                if vm.vnc["enabled"]:
+                    theader.append({"vnc": "VNC"})
 
                 response = {
-                    'header': {'type': 'TABLE', 'theader': theader},
-                    'data': [{
-                        'fqdn': vm.fqdn,
-                        'mac_address': vm.mac_address
-                    }],
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": [{"fqdn": vm.fqdn, "mac_address": vm.mac_address}],
                 }
-                if vm.vnc['enabled']:
-                    response['data'][0]['vnc'] = '{}:{}'.format(host.fqdn, vm.vnc['port'])
+                if vm.vnc["enabled"]:
+                    response["data"][0]["vnc"] = "{}:{}".format(
+                        host.fqdn, vm.vnc["port"]
+                    )
 
                 return JsonResponse(response)
 
@@ -259,12 +293,12 @@ class AddVMCommand(BaseAPIView):
 
 class AddMachineCommand(BaseAPIView):
 
-    URL_POST = '/machine/add'
+    URL_POST = "/machine/add"
 
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^machine/add', AddMachineCommand.as_view(), name='machine_add'),
+            re_path(r"^machine/add", AddMachineCommand.as_view(), name="machine_add"),
         ]
 
     def get(self, request, *args, **kwargs):
@@ -273,38 +307,42 @@ class AddMachineCommand(BaseAPIView):
             return AuthRequiredSerializer().as_json
 
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
         form = MachineAPIForm()
 
-        input = InputSerializer(
-            form.as_dict(),
-            self.URL_POST,
-            form.get_order()
-        )
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
         return input.as_json
 
     def post(self, request, *args, **kwargs):
         """Add machine."""
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
-        data = json.loads(request.body.decode('utf-8'))['form']
+        data = json.loads(request.body.decode("utf-8"))["form"]
         form = MachineAPIForm(data)
 
         if form.is_valid():
 
             cleaned_data = form.cleaned_data
-            mac_address = cleaned_data['mac_address']
-            del cleaned_data['mac_address']
+            mac_address = cleaned_data["mac_address"]
+            del cleaned_data["mac_address"]
             hypervisor = None
-            if cleaned_data['hypervisor_fqdn']:
+            if cleaned_data["hypervisor_fqdn"]:
                 try:
-                    hypervisor = Machine.objects.get(fqdn=cleaned_data['hypervisor_fqdn'])
+                    hypervisor = Machine.objects.get(
+                        fqdn=cleaned_data["hypervisor_fqdn"]
+                    )
                 except Machine.DoesNotExist:
-                    return ErrorMessage("Hypervisor [%s] does not exist" %
-                                        cleaned_data['hypervisor_fqdn']).as_json
-            del cleaned_data['hypervisor_fqdn']
+                    return ErrorMessage(
+                        "Hypervisor [%s] does not exist"
+                        % cleaned_data["hypervisor_fqdn"]
+                    ).as_json
+            del cleaned_data["hypervisor_fqdn"]
             new_machine = Machine(**cleaned_data)
             new_machine.hypervisor = hypervisor
             new_machine.mac_address = mac_address
@@ -314,35 +352,31 @@ class AddMachineCommand(BaseAPIView):
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json
 
-            return Message('Ok.').as_json
+            return Message("Ok.").as_json
 
         return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
 
 
 class AddBMCCommand(BaseAPIView):
     permission_classes = [IsAuthenticated]
-    URL_POST = '/bmc/add/{fqdn}'
+    URL_POST = "/bmc/add/{fqdn}"
 
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^bmc/add', AddBMCCommand.as_view(), name='bmc_add'),
+            re_path(r"^bmc/add", AddBMCCommand.as_view(), name="bmc_add"),
             re_path(
-                r'^bmc/add/(?P<fqdn>[a-z0-9.-]+)/$',
+                r"^bmc/add/(?P<fqdn>[a-z0-9.-]+)/$",
                 AddBMCCommand.as_view(),
-                name='bmc_add'
+                name="bmc_add",
             ),
         ]
 
     def get(self, request, *args, **kwargs):
         """Return form for adding an BMC."""
-        fqdn = request.GET.get('fqdn', None)
+        fqdn = request.GET.get("fqdn", None)
         try:
-            result = get_machine(
-                fqdn,
-                redirect_to='api:bmc_add',
-                data=request.GET
-            )
+            result = get_machine(fqdn, redirect_to="api:bmc_add", data=request.GET)
             if isinstance(result, Serializer):
                 return result.as_json
             elif isinstance(result, HttpResponseRedirect):
@@ -354,9 +388,7 @@ class AddBMCCommand(BaseAPIView):
         form = BMCAPIForm(machine=machine)
 
         input_serializer = InputSerializer(
-            form.as_dict(),
-            self.URL_POST.format(fqdn=machine.fqdn),
-            form.get_order()
+            form.as_dict(), self.URL_POST.format(fqdn=machine.fqdn), form.get_order()
         )
         return input_serializer.as_json
 
@@ -365,11 +397,7 @@ class AddBMCCommand(BaseAPIView):
         try:
             # FIXME: When you call /bmc/add/ the machine is add
             fqdn = request.path.split("/")[-1]
-            result = get_machine(
-                fqdn,
-                redirect_to='api:bmc_add',
-                data=request.GET
-            )
+            result = get_machine(fqdn, redirect_to="api:bmc_add", data=request.GET)
             if isinstance(result, Serializer):
                 return result.as_json
             elif isinstance(result, HttpResponseRedirect):
@@ -378,7 +406,7 @@ class AddBMCCommand(BaseAPIView):
         except Exception as e:
             return ErrorMessage(str(e)).as_json
 
-        data = json.loads(request.body.decode('utf-8')).get("form", "")
+        data = json.loads(request.body.decode("utf-8")).get("form", "")
         form = BMCAPIForm(data, machine=machine)
 
         if form.is_valid():
@@ -386,49 +414,47 @@ class AddBMCCommand(BaseAPIView):
                 cleaned_data = form.cleaned_data
                 bmc = BMC(
                     machine=machine,
-                    fqdn=cleaned_data['fqdn'],
-                    mac=cleaned_data['mac'],
-                    username=cleaned_data['username'],
-                    password=cleaned_data['password'],
-                    fence_name=cleaned_data['fence_name']
+                    fqdn=cleaned_data["fqdn"],
+                    mac=cleaned_data["mac"],
+                    username=cleaned_data["username"],
+                    password=cleaned_data["password"],
+                    fence_name=cleaned_data["fence_name"],
                 )
                 bmc.save()
             except Exception as e:
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json
 
-            return Message('Ok.').as_json
+            return Message("Ok.").as_json
 
         return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
 
 
 class AddSerialConsoleCommand(BaseAPIView):
 
-    URL_POST = '/serialconsole/{fqdn}/add'
+    URL_POST = "/serialconsole/{fqdn}/add"
 
     @staticmethod
     def get_urls():
         return [
             re_path(
-                r'^serialconsole/add',
+                r"^serialconsole/add",
                 AddSerialConsoleCommand.as_view(),
-                name='serialconsole_add'
+                name="serialconsole_add",
             ),
             re_path(
-                r'^serialconsole/(?P<fqdn>[a-z0-9\.-]+)/add$',
+                r"^serialconsole/(?P<fqdn>[a-z0-9\.-]+)/add$",
                 AddSerialConsoleCommand.as_view(),
-                name='serialconsole_add'
+                name="serialconsole_add",
             ),
         ]
 
     def get(self, request, *args, **kwargs):
         """Return form for adding a machine."""
-        fqdn = request.GET.get('fqdn', None)
+        fqdn = request.GET.get("fqdn", None)
         try:
             result = get_machine(
-                fqdn,
-                redirect_to='api:serialconsole_add',
-                data=request.GET
+                fqdn, redirect_to="api:serialconsole_add", data=request.GET
             )
             if isinstance(result, Serializer):
                 return result.as_json
@@ -442,7 +468,9 @@ class AddSerialConsoleCommand(BaseAPIView):
             return AuthRequiredSerializer().as_json
 
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
         if machine.has_serialconsole():
             return InfoMessage("Machine has already a serial console.").as_json
@@ -450,22 +478,20 @@ class AddSerialConsoleCommand(BaseAPIView):
         form = SerialConsoleAPIForm(machine=machine)
 
         input = InputSerializer(
-            form.as_dict(),
-            self.URL_POST.format(fqdn=machine.fqdn),
-            form.get_order()
+            form.as_dict(), self.URL_POST.format(fqdn=machine.fqdn), form.get_order()
         )
         return input.as_json
 
     def post(self, request, fqdn, *args, **kwargs):
         """Add serial console to machine."""
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
         try:
             result = get_machine(
-                fqdn,
-                redirect_to='api:serialconsole_add',
-                data=request.GET
+                fqdn, redirect_to="api:serialconsole_add", data=request.GET
             )
             if isinstance(result, Serializer):
                 return result.as_json
@@ -478,7 +504,7 @@ class AddSerialConsoleCommand(BaseAPIView):
         if machine.has_serialconsole():
             return InfoMessage("Machine has already a serial console.").as_json
 
-        data = json.loads(request.body.decode('utf-8'))['form']
+        data = json.loads(request.body.decode("utf-8"))["form"]
         form = SerialConsoleAPIForm(data, machine=machine)
 
         if form.is_valid():
@@ -489,34 +515,36 @@ class AddSerialConsoleCommand(BaseAPIView):
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json
 
-            return Message('Ok.').as_json
+            return Message("Ok.").as_json
 
         return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
 
 
 class AddAnnotationCommand(BaseAPIView):
 
-    URL_POST = '/annotation/{fqdn}/add'
+    URL_POST = "/annotation/{fqdn}/add"
 
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^annotation/add', AddAnnotationCommand.as_view(), name='annotation_add'),
             re_path(
-                r'^annotation/(?P<fqdn>[a-z0-9\.-]+)/add$',
+                r"^annotation/add",
                 AddAnnotationCommand.as_view(),
-                name='annotation_add'
+                name="annotation_add",
+            ),
+            re_path(
+                r"^annotation/(?P<fqdn>[a-z0-9\.-]+)/add$",
+                AddAnnotationCommand.as_view(),
+                name="annotation_add",
             ),
         ]
 
     def get(self, request, *args, **kwargs):
         """Return form for adding an annotation."""
-        fqdn = request.GET.get('fqdn', None)
+        fqdn = request.GET.get("fqdn", None)
         try:
             result = get_machine(
-                fqdn,
-                redirect_to='api:annotation_add',
-                data=request.GET
+                fqdn, redirect_to="api:annotation_add", data=request.GET
             )
             if isinstance(result, Serializer):
                 return result.as_json
@@ -532,9 +560,7 @@ class AddAnnotationCommand(BaseAPIView):
         form = AnnotationAPIForm(machine=machine)
 
         input = InputSerializer(
-            form.as_dict(),
-            self.URL_POST.format(fqdn=machine.fqdn),
-            form.get_order()
+            form.as_dict(), self.URL_POST.format(fqdn=machine.fqdn), form.get_order()
         )
         return input.as_json
 
@@ -542,9 +568,7 @@ class AddAnnotationCommand(BaseAPIView):
         """Add annotation to machine."""
         try:
             result = get_machine(
-                fqdn,
-                redirect_to='api:annotation_add',
-                data=request.GET
+                fqdn, redirect_to="api:annotation_add", data=request.GET
             )
             if isinstance(result, Serializer):
                 return result.as_json
@@ -554,7 +578,7 @@ class AddAnnotationCommand(BaseAPIView):
         except Exception as e:
             return ErrorMessage(str(e)).as_json
 
-        data = json.loads(request.body.decode('utf-8'))['form']
+        data = json.loads(request.body.decode("utf-8"))["form"]
         form = AnnotationAPIForm(data, machine=machine)
 
         if form.is_valid():
@@ -563,41 +587,43 @@ class AddAnnotationCommand(BaseAPIView):
                 annotation = Annotation(
                     machine_id=machine.pk,
                     reporter=request.user,
-                    text=cleaned_data['text']
+                    text=cleaned_data["text"],
                 )
                 annotation.save()
             except Exception as e:
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json
 
-            return Message('Ok.').as_json
+            return Message("Ok.").as_json
 
         return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
 
 
 class AddRemotePowerCommand(BaseAPIView):
 
-    URL_POST = '/remotepower/add/{fqdn}'
+    URL_POST = "/remotepower/add/{fqdn}"
 
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^remotepower/add', AddRemotePowerCommand.as_view(), name='remotepower_add'),
             re_path(
-                r'^remotepower/add/(?P<fqdn>[a-z0-9\.-]+)$/',
+                r"^remotepower/add",
                 AddRemotePowerCommand.as_view(),
-                name='remotepower_add'
+                name="remotepower_add",
+            ),
+            re_path(
+                r"^remotepower/add/(?P<fqdn>[a-z0-9\.-]+)$/",
+                AddRemotePowerCommand.as_view(),
+                name="remotepower_add",
             ),
         ]
 
     def get(self, request, *args, **kwargs):
         """Return form for adding a remotepower."""
-        fqdn = request.GET.get('fqdn', None)
+        fqdn = request.GET.get("fqdn", None)
         try:
             result = get_machine(
-                fqdn,
-                redirect_to='api:remotepower_add',
-                data=request.GET
+                fqdn, redirect_to="api:remotepower_add", data=request.GET
             )
             if isinstance(result, Serializer):
                 return result.as_json
@@ -611,7 +637,9 @@ class AddRemotePowerCommand(BaseAPIView):
             return AuthRequiredSerializer().as_json
 
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
         if machine.has_remotepower():
             return InfoMessage("Machine has already a remote power.").as_json
@@ -619,23 +647,21 @@ class AddRemotePowerCommand(BaseAPIView):
         form = RemotePowerAPIForm(machine=machine)
 
         input = InputSerializer(
-            form.as_dict(),
-            self.URL_POST.format(fqdn=machine.fqdn),
-            form.get_order()
+            form.as_dict(), self.URL_POST.format(fqdn=machine.fqdn), form.get_order()
         )
         return input.as_json
 
     def post(self, request, *args, **kwargs):
         """Add remote power to machine."""
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
         try:
             fqdn = request.path.split("/")[-1]
             result = get_machine(
-                fqdn,
-                redirect_to='api:remotepower_add',
-                data=request.GET
+                fqdn, redirect_to="api:remotepower_add", data=request.GET
             )
             if isinstance(result, Serializer):
                 return result.as_json
@@ -648,7 +674,7 @@ class AddRemotePowerCommand(BaseAPIView):
         if machine.has_remotepower():
             return InfoMessage("Machine has already a remote power.").as_json
 
-        data = json.loads(request.body.decode('utf-8'))['form']
+        data = json.loads(request.body.decode("utf-8"))["form"]
         form = RemotePowerAPIForm(data, machine=machine)
 
         if form.is_valid():
@@ -659,21 +685,23 @@ class AddRemotePowerCommand(BaseAPIView):
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json
 
-            return Message('Ok.').as_json
+            return Message("Ok.").as_json
 
         return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
 
 
 class AddRemotePowerDeviceCommand(BaseAPIView):
 
-    URL_POST = '/remotepowerdevice/add'
+    URL_POST = "/remotepowerdevice/add"
 
     @staticmethod
     def get_urls():
         return [
-            re_path(r'^remotepowerdevice/add',
-                    AddRemotePowerDeviceCommand.as_view(),
-                    name='remotepowerdevice_add'),
+            re_path(
+                r"^remotepowerdevice/add",
+                AddRemotePowerDeviceCommand.as_view(),
+                name="remotepowerdevice_add",
+            ),
         ]
 
     def get(self, request, *args, **kwargs):
@@ -682,33 +710,35 @@ class AddRemotePowerDeviceCommand(BaseAPIView):
             return AuthRequiredSerializer().as_json
 
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
         form = RemotePowerDeviceAPIForm()
 
-        input = InputSerializer(
-            form.as_dict(),
-            self.URL_POST,
-            form.get_order()
-        )
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
         return input.as_json
 
     def post(self, request, *args, **kwargs):
         """Add remotepowerdevice."""
         if not request.user.is_superuser:
-            return ErrorMessage("Only superusers are allowed to perform this action!").as_json
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
 
-        data = json.loads(request.body.decode('utf-8'))['form']
+        data = json.loads(request.body.decode("utf-8"))["form"]
         form = RemotePowerDeviceAPIForm(data)
 
         if form.is_valid():
 
             cleaned_data = form.cleaned_data
-            new_device = RemotePowerDevice(username=cleaned_data['username'],
-                                           password=cleaned_data['password'],
-                                           mac=cleaned_data['mac'],
-                                           fqdn=cleaned_data['fqdn'],
-                                           fence_name=cleaned_data['fence_name'])
+            new_device = RemotePowerDevice(
+                username=cleaned_data["username"],
+                password=cleaned_data["password"],
+                mac=cleaned_data["mac"],
+                fqdn=cleaned_data["fqdn"],
+                fence_name=cleaned_data["fence_name"],
+            )
 
             try:
                 new_device.save()
@@ -716,6 +746,6 @@ class AddRemotePowerDeviceCommand(BaseAPIView):
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json
 
-            return Message('Ok.').as_json
+            return Message("Ok.").as_json
 
         return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json

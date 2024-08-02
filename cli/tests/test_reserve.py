@@ -23,5 +23,5 @@ class ReserveTests(OrthosCliTestCase):
         self.assertTrue(False)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
