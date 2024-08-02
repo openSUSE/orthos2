@@ -21,6 +21,7 @@ RUN zypper in -y \
     python3-djangorestframework \
     python3-validators \
     python3-netaddr \
+    python3-pytz \
     python3-django-auth-ldap
 
 # Test dependencies
