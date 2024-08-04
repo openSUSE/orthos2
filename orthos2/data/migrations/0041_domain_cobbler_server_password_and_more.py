@@ -8,7 +8,7 @@ def delete_setup_list_commands(apps: Apps, schema_editor: BaseDatabaseSchemaEdit
     """
     Drop the row "setup.list.command". It is not required anymore due to the switch to the Cobbler XML-RPC API.
     """
-    model = apps.get_model("orthos2", "ServerConfig")
+    model = apps.get_model("data", "ServerConfig")
     list_command = model.objects.filter(key="setup.list.command")
     if list_command.exists():
         list_command.delete()
