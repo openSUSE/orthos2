@@ -112,7 +112,7 @@ def machine_pre_delete(sender, instance: Machine, *args, **kwargs):
     """Pre delete action for machine. Save deleted machine object as file for archiving.
     Also remove the machine from the cobbler Server.
     """
-    server = CobblerServer.from_machine(instance)
+    server = CobblerServer(instance.fqdn_domain)
     if server:
         server.remove(instance)
 

@@ -53,7 +53,7 @@ Example:
         if not machine.has_setup_capability():
             return InfoMessage("Machine has no setup capability.").as_json
 
-        grouped_records = machine.fqdn_domain.get_setup_records(
+        grouped_records = machine.fqdn_domain.get_setup_records_grouped(
             machine.architecture.name,
         )
 

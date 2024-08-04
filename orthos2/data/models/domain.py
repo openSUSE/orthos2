@@ -1,12 +1,13 @@
 import collections
 import logging
+from typing import Dict, List, Union
 
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.template import Context, Template
 
 from orthos2.data.models.architecture import Architecture
 from orthos2.data.models.serverconfig import ServerConfig
+from orthos2.utils.cobbler import CobblerServer
 from orthos2.utils.misc import has_valid_domain_ending
 
 logger = logging.getLogger("models")
@@ -40,6 +41,20 @@ class Domain(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         limit_choices_to={"administrative": True},
+    )
+
+    cobbler_server_username = models.CharField(
+        default="cobbler",
+        help_text="The username to login to Cobbler via XML-RPC.",
+        verbose_name="Cobbler server username",
+        max_length=255,
+    )
+
+    cobbler_server_password = models.CharField(
+        default="cobbler",
+        help_text="The password to login to Cobbler via XML-RPC.",
+        verbose_name="Cobbler server password",
+        max_length=255,
     )
 
     tftp_server = models.ForeignKey(
@@ -94,137 +109,76 @@ class Domain(models.Model):
 
     get_machine_count.short_description = "Machines"
 
-    def get_setup_records(self, architecture, grouped=True, delimiter=":"):
+    def get_setup_records(
+        self, architecture: str, delimiter: str = ":"
+    ) -> Union[List[str], Dict[str, List[str]]]:
         """
         Collect domain and architecture or machine group specific setup records.
 
         Each domain has one optional TFTP server providing available records for machine setup.
 
-        If `grouped` is False, a list of all records gets returned (no grouping).
-
-        Expects as return value when executing 'setup.list.command' below:
-
-            ['<architecture|machinegroup:>DISTRIBUTION:FLAVOUR', ...]
-
-        e.g.:
-
-            [
-                'x86_64:SLES12-SP3:install\n',
-                'x86_64:SLES12-SP3:install-ssh\n',
-                ...
-                'x86_64:SLES12-SP2:install\n',
-                'x86_64:SLES12-SP2:rescue\n',
-                ...,
-                'x86_64:local\n',
-                ...,
-            ]
-
-
-        Returns (grouped is `True`):
-
-            OrderedDict([
-                ('SLES12-SP3', [
-                    'install',
-                    'install-ssh',
-                    ...
-                ]),
-                ('SLES12-SP2', [
-                    'install',
-                    'rescue',
-                    ...
-                ]),
-                ('local', [
-                    ''
-                ])
-            )
-
-
-        Returns (grouped is `False`):
-
-            [
-                'SLES12-SP3:install',
-                'SLES12-SP3:install-ssh',
-                ...
-                'SLES12-SP2:install',
-                'SLES12-SP2:rescue',
-                ...,
-                'local',
-                ...,
-            ]
+        :returns: The list of setup records from the TFTP server.
         """
-        from orthos2.utils.ssh import SSH
 
         if not self.tftp_server:
             logger.warning("No TFTP server available for '%s'", self.name)
             return {}
 
-        list_command_template = ServerConfig.objects.by_key("setup.list.command")
-
-        context = Context({"architecture": architecture})
-        list_command = Template(list_command_template).render(context)
-
-        try:
-            conn = SSH(self.tftp_server.fqdn)
-            conn.connect()
-            logger.debug(
-                "Fetch setup records: %s:%s", self.tftp_server.fqdn, list_command
-            )
-            stdout, stderr, exitstatus = conn.execute(list_command)
-            conn.close()
-
-            if exitstatus != 0:
-                logger.warning(str(stderr))
-                return {}
-
-            logger.debug(
-                "Found %s setup records on %s", len(stdout), self.tftp_server.fqdn
-            )
-        except Exception as e:
-            logger.warning("Couldn't fetch record list for setup: %s", str(e))
-            return {}
-        finally:
-            if conn:
-                conn.close()
-
-        records = [record.strip("\n") for record in stdout]
+        server = CobblerServer(self.tftp_server.fqdn_domain)
+        records = server.get_profiles(architecture)
         logger.debug("Records:\n%s", records)
-        if grouped:
-            groups = {}
-            for record in records:
-                delim_c = record.count(delimiter)
-                # <distro>:<profile>
-                if delim_c == 1:
-                    (distro, profile) = record.split(delimiter)
-                # <arch>:<distro>:<profile>
-                elif delim_c == 2:
-                    (_arch, distro, profile) = record.split(delimiter)
-                else:
-                    logger.debug("Setup record has invalid format: '%s'", record)
-                    continue
-
-                if distro not in groups:
-                    groups[distro] = []
-
-                groups[distro].append(profile)
-            records = collections.OrderedDict(sorted(groups.items()))
-            logger.debug("Grouped and parsed:\n%s", records)
-        else:
-            delim_c = records[0].count(delimiter)
-            if delim_c == 1:
-                # <distro>:<profile>
-                pass
-            elif delim_c == 2:
-                # <arch>:<distro>:<profile>
-                records = [record.split(delimiter, maxsplit=1)[1] for record in records]
-            logger.debug("Not grouped and parsed:\n%s", records)
+        delim_c = records[0].count(delimiter)
+        if delim_c == 1:
+            # <distro>:<profile>
+            pass
+        elif delim_c == 2:
+            # <arch>:<distro>:<profile>
+            records = [record.split(delimiter, maxsplit=1)[1] for record in records]
+        logger.debug("Not grouped and parsed:\n%s", records)
 
         return records
 
-    def is_valid_setup_choice(self, choice, architecture):
+    def get_setup_records_grouped(
+        self, architecture: str, delimiter: str = ":"
+    ) -> Dict[str, List[str]]:
+        """
+        Collect domain and architecture or machine group specific setup records.
+
+        Each domain has one optional TFTP server providing available records for machine setup.
+
+        :returns: The list of setup records from the TFTP server grouped. They key is the distribution and the value is
+                  a list of profile suffixes.
+        """
+        server = CobblerServer(self.tftp_server.fqdn_domain)
+        profiles = server.get_profiles(architecture)
+
+        groups = {}
+        for record in profiles:
+            delim_c = record.count(delimiter)
+            # <distro>:<profile>
+            if delim_c == 1:
+                (distro, profile) = record.split(delimiter)
+            # <arch>:<distro>:<profile>
+            elif delim_c == 2:
+                (_arch, distro, profile) = record.split(delimiter)
+            else:
+                logger.debug("Setup record has invalid format: '%s'", record)
+                continue
+
+            if distro not in groups:
+                groups[distro] = []
+
+            groups[distro].append(profile)
+        records = collections.OrderedDict(sorted(groups.items()))
+        logger.debug("Grouped and parsed:\n%s", records)
+
+        return records
+
+    def is_valid_setup_choice(self, choice: str, architecture: str):
         """Check if `choice` is a valid setup record."""
-        choices = self.get_setup_records(architecture, grouped=False)
+        choices = self.get_setup_records(architecture)
         result = choice in choices
-        logger.debug(result)
+        logger.debug('Is valid setup choice? - "%s"', result)
         return result
 
 
@@ -236,4 +190,4 @@ class DomainAdmin(models.Model):
     contact_email = models.EmailField(blank=False)
 
     def natural_key(self):
-        return (self.domain.name, self.arch.name)
+        return self.domain.name, self.arch.name

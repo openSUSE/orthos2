@@ -490,7 +490,7 @@ class SetupMachineForm(forms.Form):
            SLE-12-SP5-Server-LATEST:install-auto
            ...
         """
-        records = domain.get_setup_records(architecture, grouped=True)
+        records = domain.get_setup_records_grouped(architecture)
         logger.debug(
             "Setup choices for %s.%s [%s]:\n%s\n",
             machine,
