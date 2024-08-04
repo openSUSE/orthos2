@@ -183,7 +183,7 @@ class RemotePower(models.Model):
         from orthos2.utils.cobbler import CobblerServer
 
         result = "No Cobbler server found"
-        server = CobblerServer.from_machine(self.machine)
+        server = CobblerServer(self.machine.fqdn_domain)
         if server:
             result = server.powerswitch(self.machine, action)
         return result

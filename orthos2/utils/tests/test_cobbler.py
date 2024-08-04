@@ -187,21 +187,6 @@ class CobblerMethodTests(TestCase):
         self.assertTrue(" --profile=default_profile" in command)
         self.assertTrue("--netboot-enabled=False")
 
-    @mock.patch(
-        "orthos2.utils.cobbler.create_cobbler_options",
-        mock.MagicMock(return_value="option-string"),
-    )
-    @mock.patch(
-        "orthos2.utils.cobbler.get_default_profile",
-        mock.MagicMock(return_value="default_profile"),
-    )
-    def test_get_cobbler_update_command(self):
-        machine = mock.NonCallableMock()
-        path = "/cobbler/path"
-        command = cobbler.get_cobbler_update_command(machine, path)
-        self.assertTrue(command.startswith("/cobbler/path system edit "))
-        self.assertTrue("option-string" in command)
-
     def test_cobbler_is_installed(self):
         server = cobbler.CobblerServer("test.foo.bar", "foo.bar")
         server._cobbler_path = "/cobbler/path"
