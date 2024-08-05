@@ -34,10 +34,11 @@ Command line client that provides a shell like command
 line interface based on readline.
 
 %prep
-
-%autosetup
+%autosetup -n orthos2-%{version}
 
 %build
+# Patch the line that is required to make the CLI work in a venv
+sed -i '1 s/^.*$/#!\/usr\/bin\/python3/' cli/orthos2
 
 %install
 mkdir -p %{buildroot}/%{_bindir}

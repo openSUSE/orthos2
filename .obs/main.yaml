@@ -1,0 +1,13 @@
+workflow:
+  steps:
+    - trigger_services:
+      project: systemsmanagement:orthos2:master
+      package: orthos2
+    - trigger_services:
+      project: systemsmanagement:orthos2:master
+      package: orthos-client
+  filters:
+    event: push
+    branches:
+      only:
+        - master
