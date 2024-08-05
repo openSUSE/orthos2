@@ -12,7 +12,7 @@
 # Please submit bugfixes or comments via https://bugs.opensuse.org/
 
 Name:           orthos2
-Version:        0.1+git20210714.216cadb
+Version:        1.4
 Release:        0
 Summary:        Machine administration
 Url:            https://github.com/openSUSE/orthos2
