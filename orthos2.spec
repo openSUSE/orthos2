@@ -33,6 +33,8 @@ BuildRequires:  systemd-rpm-macros
 BuildRequires:  nginx
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-devel
+# Required for python3-asgiref
+BuildRequires:  %{python_module typing_extensions if %python-base < 3.8}
 Requires(post): sudo
 %if 0%{?suse_version}
 BuildRequires:  python-rpm-macros
