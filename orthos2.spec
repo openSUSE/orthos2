@@ -52,7 +52,7 @@ BuildRequires:  python-rpm-macros
 %endif
 %{?python_enable_dependency_generator}
 %if ! (%{defined python_enable_dependency_generator} || %{defined python_disable_dependency_generator})
-Requires:  python3-Django >= 3.2
+Requires:  python3-Django >= 4.2
 Requires:  python3-django-extensions
 Requires:  python3-django-auth-ldap
 Requires:  python3-djangorestframework
@@ -63,7 +63,7 @@ Requires:  python3-ldap
 Requires:  python3-validators
 %endif
 # Needed to install /etc/logrotate.d/orthos2
-Requires:  python3-Django >= 3.2
+Requires:  python3-Django >= 4.2
 Requires:  logrotate
 Requires:  nginx
 Requires:  ansible
