@@ -1,6 +1,6 @@
 import logging
+from unittest import mock
 
-import mock
 from django.test import TestCase
 
 from orthos2.utils.machinechecks import nmap_check, ping_check
