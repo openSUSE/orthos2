@@ -2,7 +2,7 @@ services:
   orthos2:
     build:
       context: .
-      dockerfile: docker/develop.dockerfile
+      dockerfile: docker/develop-tw.dockerfile
     hostname: orthos2.orthos2.test
     cap_add:
       - NET_RAW
