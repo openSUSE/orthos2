@@ -57,7 +57,7 @@ class ChangeView(WebTest):
         )
 
         # Assert
-        self.assertContains(page, "<h2>Serial Console</h2>")
+        self.assertContains(page, "Add another Serial Console")
         self.assertContains(page, "Remote Power")
 
     def test_visible_fieldsets_administrative_systems(self):
@@ -78,5 +78,5 @@ class ChangeView(WebTest):
         )
 
         # Assert
-        self.assertContains(page, "<h2>Serial Console</h2>")
+        self.assertContains(page, "Add another Serial Console")
         self.assertContains(page, "Remote Power")

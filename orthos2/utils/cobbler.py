@@ -6,7 +6,7 @@ has version 3.3.6 or newer.
 import enum
 import logging
 import time
-import xmlrpc.client
+import xmlrpc.client  # nosec: B411
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional
 
 from django.template import Context, Template
@@ -122,7 +122,8 @@ class CobblerServer:
         self._xmlrpc_server = xmlrpc.client.Server(
             f"http://{self._cobbler_server.fqdn}/cobbler_api"
         )
-        self._token = ""
+        # We ignore this line because this is just the initial value so the variable is not None.
+        self._token = ""  # nosec B105
 
     def deploy(self, machines: Iterable["Machine"]):
         """
