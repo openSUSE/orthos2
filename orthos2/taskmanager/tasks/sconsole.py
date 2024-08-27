@@ -136,8 +136,17 @@ class RegenerateSerialConsole(Task):
                 raise Exception(
                     "Couldn't unlock CScreen ('rm /dev/shm/.cscreenrc_allow_update)"
                 )
-            logger.info("CScreen update for %s finished", self.fqdn)
 
+            # Restart cscreend server
+            _stdout, stderr, exitstatus = conn.execute(
+                "sudo systemctl restart cscreend.service",
+                timeout=30.0,
+            )
+
+            if exitstatus != 0:
+                raise Exception("Couldn't restart cscreen")
+
+            logger.info("CScreen update for %s finished", self.fqdn)
         except SSH.Exception as exception:
             logger.exception(exception)
         except IOError as exception:

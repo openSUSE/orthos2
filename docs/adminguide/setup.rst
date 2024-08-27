@@ -59,3 +59,17 @@ Installation/Setup (Production system)
         systemctl start orthos2.socket
         systemctl start orthos2.service
         systemctl start orthos2_taskmanager
+
+Optional: Setup cscreen server
+##############################
+
+The Domain feature of "cscreen" server (`github.com/openSUSE/cscreen <https://github.com/openSUSE/cscreen>`_) requires
+the manual setup of a cscreen server. Follow these steps to ensure that Orthos can regenerate the configuration:
+
+1. Install cscreen (openSUSE ``zypper in cscreen``)
+
+2. Install the cscreen sudoers configuration
+
+3. Setup passwordless SSH keys between the ``orthos`` (Orthos server) to the ``_cscreen`` user (console server).
+
+4. Enable and start the systemd service for cscreen ``systemctl enable --now cscreend.service``
