@@ -19,7 +19,7 @@ def check_permissions(key="id"):
                     raise PermissionDenied("Bad key %s", key)
                 if key == "fqdn":
                     machine = Machine.objects.get(fqdn=ident)
-                elif key == "id":
+                elif key in ("id", "machine_id"):
                     machine = Machine.objects.get(pk=ident)
             except Machine.DoesNotExist:
                 raise Http404("Machine does not exist!")
