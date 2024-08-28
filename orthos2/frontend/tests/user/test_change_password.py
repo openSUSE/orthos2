@@ -15,7 +15,9 @@ class ChangePassword(WebTest):
     def test_successful_change_password(self):
         """Test if a new user can create an account."""
         with self.settings(AUTH_ALLOW_USER_CREATION=True):
-            form = self.app.get(reverse("frontend:preferences_user"), user="user").form
+            form = self.app.get(
+                reverse("frontend:preferences_user"), user="user"
+            ).forms[1]
             form["old_password"] = "linux"
             form["new_password"] = "linux1234"
             form["new_password2"] = "linux1234"
@@ -32,7 +34,7 @@ class ChangePassword(WebTest):
         """Check current (old) password."""
         with self.settings(AUTH_ALLOW_USER_CREATION=True):
             page = self.app.get(reverse("frontend:preferences_user"), user="user")
-            form = page.form
+            form = page.forms[1]
             form["old_password"] = "wrongpassword"
             form["new_password"] = "linux1234"
             form["new_password2"] = "linux1234"
@@ -45,7 +47,9 @@ class ChangePassword(WebTest):
     def test_password_too_short(self):
         """Check if password is too short (at least 8 characters)."""
         with self.settings(AUTH_ALLOW_USER_CREATION=True):
-            form = self.app.get(reverse("frontend:preferences_user"), user="user").form
+            form = self.app.get(
+                reverse("frontend:preferences_user"), user="user"
+            ).forms[1]
             form["old_password"] = "linux"
             form["new_password"] = "1234"
             form["new_password2"] = "1234"
@@ -58,7 +62,9 @@ class ChangePassword(WebTest):
     def test_password_confirmation_not_match(self):
         """Check if passwords do match."""
         with self.settings(AUTH_ALLOW_USER_CREATION=True):
-            form = self.app.get(reverse("frontend:preferences_user"), user="user").form
+            form = self.app.get(
+                reverse("frontend:preferences_user"), user="user"
+            ).forms[1]
             form["old_password"] = "wrongpassword"
             form["new_password"] = "linux1234"
             form["new_password2"] = "1234linux"

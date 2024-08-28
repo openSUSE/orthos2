@@ -58,11 +58,11 @@ class RegenerateCobbler(Task):
                 logger.info("Generate Cobbler configuration for '%s'...", domain.name)
 
                 # deploy generated DHCP files on all servers belonging to one domain
-                cobbler_server = domain.cobbler_server
-                cobbler_server_obj = CobblerServer(cobbler_server.fqdn, domain)
                 try:
                     logger.info("* Cobbler deployment started...")
-                    cobbler_server_obj.deploy()
+                    machines = Machine.active_machines.filter(fqdn_domain=domain.pk)
+                    server_obj = CobblerServer(domain)
+                    server_obj.deploy(machines)
                     logger.info("* Cobbler deployment finished successfully")
                 except Exception as e:
                     message = "* Cobbler deployment failed; {}".format(e)
@@ -98,8 +98,7 @@ class UpdateCobblerMachine(Task):
                 "Generate Cobbler update configuration for '%s'...", machine.fqdn
             )
             # deploy generated DHCP files on all servers belonging to one domain
-            cobbler_server = domain.cobbler_server
-            cobbler_server_obj = CobblerServer(cobbler_server.fqdn, domain)
+            cobbler_server_obj = CobblerServer(domain)
             try:
                 logger.info("* Cobbler deployment started...")
                 cobbler_server_obj.update_or_add(machine)
@@ -140,7 +139,8 @@ class SyncCobblerDHCP(Task):
                 )
                 return
             cobbler_server = domain.cobbler_server
-            cobbler_server_obj = CobblerServer(cobbler_server.fqdn, domain)
+            # Fake machine since "sync_dhcp" works without touching it
+            cobbler_server_obj = CobblerServer(cobbler_server, domain)
             cobbler_server_obj.sync_dhcp()
         except Domain.DoesNotExist:
             logger.error("No Domain with id %s, aborting", self._domain_id)

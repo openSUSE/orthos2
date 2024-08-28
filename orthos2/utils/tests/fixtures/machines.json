@@ -3,7 +3,7 @@
   "model": "data.Domain",
   "pk": 1,
   "fields": {
-    "name": "foo.bar.de"
+    "name": "orthos2.test"
   }
 },
 {
@@ -55,9 +55,9 @@
   "fields": {
     "username": "test",
     "password": "test",
-    "fqdn": "rpower.foo.de",
+    "fqdn": "bmc.orthos2.test",
     "mac": "AA:BB:CC:DD:EE",
-    "url": "https://rpower.foo.de"
+    "url": "https://rpower.orthos2.test"
   }
 },
 {
@@ -85,7 +85,7 @@
   "pk": null,
   "fields": {
     "enclosure": 1,
-    "fqdn": "test.foo.bar.de",
+    "fqdn": "cobbler.orthos2.test",
     "system": 1,
     "comment": "",
     "serial_number": "",

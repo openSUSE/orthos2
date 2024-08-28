@@ -1,17 +1,38 @@
+"""
+Utility module that wraps functionality that is related to Cobbler. This is assuming that the used Cobbler server
+has version 3.3.6 or newer.
+"""
+
+import enum
 import logging
-from typing import TYPE_CHECKING, Optional
+import time
+import xmlrpc.client  # nosec: B411
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional
 
 from django.template import Context, Template
 
-from orthos2.data.models import Machine, ServerConfig
 from orthos2.utils.misc import get_hostname, get_ipv4, get_ipv6
 from orthos2.utils.remotepowertype import RemotePowerType
-from orthos2.utils.ssh import SSH
 
 if TYPE_CHECKING:
-    from orthos2.data.models import Domain
+    from orthos2.data.models import Domain, Machine
 
 logger = logging.getLogger("utils")
+
+
+class CobblerSaveModes(enum.Enum):
+    SKIP = ""
+    """
+    This mode skips saving the item.
+    """
+    NEW = "new"
+    """
+    This mode saves the item in case it was never added to Cobbler before.
+    """
+    BYPASS = "bypass"
+    """
+    This mode saves the item in case it was already added to Cobbler before.
+    """
 
 
 class CobblerException(Exception):
@@ -27,7 +48,7 @@ def get_default_profile(machine):
     )
 
 
-def get_tftp_server(machine: Machine):
+def get_tftp_server(machine: "Machine") -> Optional[str]:
     """
     Return the corresponding tftp server attribute for the DHCP record.
 
@@ -45,122 +66,7 @@ def get_tftp_server(machine: Machine):
     return server.fqdn if server else None
 
 
-def create_cobbler_options(machine: Machine):
-    tftp_server = get_tftp_server(machine)
-    kernel_options = machine.kernel_options if machine.kernel_options else ""
-    options = " --name={name} --ip-address={ipv4}".format(
-        name=machine.fqdn, ipv4=machine.ipv4
-    )
-    options += " --hostname={host} ".format(host=get_hostname(machine.fqdn))
-    if machine.mac_address:
-        options += " --interface=default --management=True --interface-master=True"
-        options += " --dns-name={dns} ".format(dns=machine.fqdn)
-        options += " --mac-address={mac} ".format(mac=machine.mac_address)
-        options += " --ipv6-address={ipv6}".format(ipv6=machine.ipv6 or "")
-    options += " --filename={filename}".format(filename=get_filename(machine) or "")
-    if tftp_server:
-        ipv4 = get_ipv4(tftp_server)
-        if ipv4:
-            options += " --next-server-v4={server}".format(server=ipv4)
-    if machine.has_remotepower():
-        options += get_power_options(machine)
-    if machine.has_serialconsole():
-        serial_options, serial_kernel_option = get_serial_options(machine)
-        options += serial_options
-        kernel_options += serial_kernel_option
-    options += """ --kernel-options="{options}" """.format(options=kernel_options)
-    return options
-
-
-def get_bmc_command(machine: Machine, cobbler_path: str):
-    if not hasattr(machine, "bmc") or not machine.bmc:
-        logger.error(
-            "Tried to get bmc command for %s, which does not have one", machine.fqdn
-        )
-    bmc = machine.bmc
-    bmc_command = """{cobbler} system edit --name={name} --interface=bmc --interface-type=bmc""".format(
-        cobbler=cobbler_path, name=machine.fqdn
-    )
-    bmc_command += """ --ip-address="{ip}" --mac="{mac}" --dns-name="{dns}" --ipv6-address="{ipv6}" """.format(
-        ip=get_ipv4(bmc.fqdn) or "",
-        mac=bmc.mac or "",
-        dns=get_hostname(bmc.fqdn) or "",
-        ipv6=get_ipv6(bmc.fqdn) or "",
-    )
-    return bmc_command
-
-
-def get_power_options(machine):
-    if not machine.remotepower:
-        logger.error("machine %s has no remotepower", machine.fqdn)
-        raise ValueError("machine {0} has no remotepower".format(machine.fqdn))
-    remotepower = machine.remotepower
-    fence = RemotePowerType.from_fence(remotepower.fence_name)
-    options = " --power-type={} ".format(fence.fence)
-
-    if fence.use_identity_file:
-        options += " --power-user={user} --power-identity-file={key}".format(
-            user=fence.username, key=fence.identity_file
-        )
-    else:
-        username, password = remotepower.get_credentials()
-        options += " --power-user={username} --power-pass={password} ".format(
-            username=username, password=password
-        )
-    if fence.use_hostname_as_port:
-        options += " --power-id={port}".format(port=get_hostname(machine.hostname))
-    elif fence.use_port:
-        # Temporary workaround until fence raritan accepts port as --plug param
-        if fence.fence == "raritan":
-            options += " --power-id=system1/outlet{port}".format(port=remotepower.port)
-        options += " --power-id={port}".format(port=remotepower.port)
-
-    options += " --power-address={address}".format(
-        address=remotepower.get_power_address()
-    )
-    if fence.use_options:
-        options += " --power-options={options}".format(options=remotepower.options)
-    return options
-
-
-def get_serial_options(machine):
-    console = machine.serialconsole
-    options = """ --serial-device="{device}" """.format(
-        device=console.kernel_device_num
-    )
-    options += """--serial-baud-rate="{baud}" """.format(baud=console.baud_rate)
-    kernel_option = ""
-    if console.kernel_device != "None":
-        kernel_option += " console={device}{num},{baud} ".format(
-            device=console.kernel_device,
-            num=console.kernel_device_num,
-            baud=console.baud_rate,
-        )
-    return (options, kernel_option)
-
-
-def get_cobbler_add_command(machine, cobber_path):
-    profile = get_default_profile(machine)
-    if not profile:
-        raise CobblerException(
-            "could not determine default profile for machine {machine}".format(
-                machine=machine.fqdn
-            )
-        )
-    command = "{cobbler} system add {options} --netboot-enabled=False --profile={profile}".format(
-        cobbler=cobber_path, options=create_cobbler_options(machine), profile=profile
-    )
-    return command
-
-
-def get_cobbler_update_command(machine, cobber_path):
-    command = "{cobbler} system edit {options}".format(
-        cobbler=cobber_path, options=create_cobbler_options(machine)
-    )
-    return command
-
-
-def get_filename(machine):
+def get_filename(machine: "Machine") -> Optional[str]:
     """
     Return the corresponding filename attribute for the DHCP record.
 
@@ -180,255 +86,453 @@ def get_filename(machine):
     return filename
 
 
+def login_required(func):
+    """
+    Decorator to ensure that the user is logged in. This only works for "CobblerServer".
+    """
+
+    # noinspection PyProtectedMember
+    def wrapper(*args, **kwargs):
+        if not (args[0]._token or args[0]._xmlrpc_server.token_check(args[0]._token)):
+            # Empty or invalid token.
+            args[0]._login()
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
 class CobblerServer:
-    def __init__(self, fqdn: str, domain: "Domain"):
-        self._fqdn = fqdn
-        self._conn: Optional[SSH] = None
+    """
+    A short-lived class that will execute a required task related to a machine and should be thrown away after the task
+    has finished.
+    """
+
+    def __init__(self, domain: "Domain"):
+        """
+        Constructor for CobblerServer.
+
+        :param domain: Domain object for the Cobbler server that should be talked to.
+        """
         self._domain = domain
-        self._cobbler_path = ServerConfig.objects.by_key("cobbler.command")
-
-    @staticmethod
-    def from_machine(machine: Machine):
-        """
-        Return the cobbler server associated to a machine
-
-        :param machine: Machine object which is managed by the cobbler server to fetch
-        :returns: The corresponding cobbler server or None
-        """
-        domain = machine.fqdn_domain
-        server = domain.cobbler_server
-        if server:
-            return CobblerServer(server.fqdn, domain)
-        return None
-
-    def connect(self):
-        """Connect to DHCP server via SSH."""
-        if not self._conn:
-            self._conn = SSH(self._fqdn)
-            self._conn.connect()
-
-    def close(self):
-        """Close connection to DHCP server."""
-        if self._conn:
-            self._conn.close()
-
-    def deploy(self):
-        self.connect()
-        if not self.is_installed():
-            raise CobblerException("No Cobbler service found: {}".format(self._fqdn))
-        if not self.is_running():
-            raise CobblerException(
-                "Cobbler server is not running: {}".format(self._fqdn)
+        self._cobbler_server = self._domain.cobbler_server
+        if not self._cobbler_server:
+            raise ValueError(
+                f'Cobbler Server not configured for domain "{self._domain.name}"!'
             )
-        machines = Machine.active_machines.filter(fqdn_domain=self._domain.pk)
-        cobbler_machines = self.get_machines()
-        cobbler_commands = []
+        self._xmlrpc_server = xmlrpc.client.Server(
+            f"http://{self._cobbler_server.fqdn}/cobbler_api"
+        )
+        # We ignore this line because this is just the initial value so the variable is not None.
+        self._token = ""  # nosec B105
+
+    def deploy(self, machines: Iterable["Machine"]):
+        """
+        Deploy or update all machines of a single Cobbler server.
+        """
         for machine in machines:
-            if machine.fqdn in cobbler_machines:
-                cobbler_commands.append(
-                    get_cobbler_update_command(machine, self._cobbler_path)
+            if self._domain.pk != machine.fqdn_domain.pk:
+                logger.warning(
+                    'Skipping machine "%s" since it doesn\'t belong to the domain of the Cobbler server "%s"!',
+                    machine.fqdn,
+                    self._domain.name,
+                )
+            try:
+                self.update_or_add(machine)
+            except xmlrpc.client.Fault as fault:
+                logger.error(
+                    "Deploying of machine %s failed with the following error: %s",
+                    machine.fqdn,
+                    fault.faultString,
+                    exc_info=fault,
+                )
+
+    def _login(self):
+        try:
+            self._token = self._xmlrpc_server.login(
+                self._domain.cobbler_server_username,
+                self._domain.cobbler_server_password,
+            )
+        except xmlrpc.client.Fault as xmlrpc_fault:
+            logger.error("Error logging in!", exc_info=xmlrpc_fault)
+
+    @login_required
+    def add_machine(
+        self, machine: "Machine", save: CobblerSaveModes = CobblerSaveModes.SKIP
+    ):
+        """
+        Add or update a machine. If the machine has a BMC, Remote Power or Serial Console add that as well.
+
+        :param machine: Machine to be added or updated.
+        :param save: Whether to save the machine or not.
+        """
+        default_profile = get_default_profile(machine)
+        if not default_profile:
+            raise CobblerException(
+                "could not determine default profile for machine {machine}".format(
+                    machine=machine.fqdn
+                )
+            )
+        tftp_server = get_tftp_server(machine)
+        kernel_options = machine.kernel_options if machine.kernel_options else ""
+
+        object_id = self._xmlrpc_server.new_system(self._token)
+        self._xmlrpc_server.modify_system(object_id, "name", machine.fqdn, self._token)
+        self._xmlrpc_server.modify_system(
+            object_id, "profile", default_profile, self._token
+        )
+
+        if machine.mac_address:
+            self.add_primary_network_interface(machine)
+        self._xmlrpc_server.modify_system(
+            object_id, "filename", get_filename(machine) or "", self._token
+        )
+        if tftp_server:
+            ipv4 = get_ipv4(tftp_server)
+            if ipv4:
+                self._xmlrpc_server.modify_system(
+                    object_id, "next_server_v4", ipv4, self._token
+                )
+        if machine.has_bmc():
+            self.add_bmc(machine)
+        if machine.has_remotepower():
+            self.add_power_options(machine)
+        if machine.has_serialconsole():
+            self.add_serial_console(machine)
+        self._xmlrpc_server.modify_system(
+            object_id, "kernel_options", kernel_options, self._token
+        )
+
+        if save != CobblerSaveModes.SKIP:
+            self._xmlrpc_server.save_system(object_id, self._token, save.value)
+
+    @login_required
+    def add_primary_network_interface(
+        self, machine: "Machine", save: CobblerSaveModes = CobblerSaveModes.SKIP
+    ):
+        """
+        Add the primary network interface of the machine to Cobbler.
+
+        :param machine: Machine that should be added or updated.
+        :param save: Whether to save the machine or not.
+        """
+        system_handle = self._xmlrpc_server.get_system_handle(machine.fqdn)
+        interface_options = {
+            "interfacemaster-default": True,
+            "macaddress-default": machine.mac_address,
+            "ipaddress-default": machine.ipv4 or "",
+            "ipv6address-default": machine.ipv6 or "",
+            "hostname-default": get_hostname(machine.fqdn),
+            "dnsname-default": machine.fqdn,
+            "management-default": True,
+        }
+        self._xmlrpc_server.modify_system(
+            system_handle, "modify_interface", interface_options, self._token
+        )
+        if save != CobblerSaveModes.SKIP:
+            self._xmlrpc_server.save_system(system_handle, self._token, save.value)
+
+    @login_required
+    def add_bmc(
+        self, machine: "Machine", save: CobblerSaveModes = CobblerSaveModes.SKIP
+    ):
+        """
+        Add the BMC of the machine to Cobbler.
+
+        :param machine: Machine that should be added or updated.
+        :param save: Whether to save the machine or not.
+        """
+        bmc = machine.bmc
+        system_handle = self._xmlrpc_server.get_system_handle(machine.fqdn)
+        interface_options = {
+            "interfacetype-bmc": "bmc",
+            "macaddress-bmc": bmc.mac,
+            "ipaddress-bmc": get_ipv4(bmc.fqdn),
+            "ipv6address-bmc": get_ipv6(bmc.fqdn),
+            "hostname-bmc": get_hostname(bmc.fqdn),
+        }
+        self._xmlrpc_server.modify_system(
+            system_handle, "modify_interface", interface_options, self._token
+        )
+        if save != CobblerSaveModes.SKIP:
+            self._xmlrpc_server.save_system(system_handle, self._token, save.value)
+
+    @login_required
+    def add_serial_console(
+        self, machine: "Machine", save: CobblerSaveModes = CobblerSaveModes.SKIP
+    ):
+        """
+        Add the Serial Console of the machine to Cobbler.
+
+        :param machine: Machine that should be added or updated.
+        :param save: Whether to save the machine or not.
+        """
+        console = machine.serialconsole
+
+        system_handle = self._xmlrpc_server.get_system_handle(machine.fqdn)
+        self._xmlrpc_server.modify_system(
+            system_handle, "serial_device", console.kernel_device_num, self._token
+        )
+        self._xmlrpc_server.modify_system(
+            system_handle, "serial_baud_rate", console.baud_rate, self._token
+        )
+        if console.kernel_device != "None":
+            system_dict = self._xmlrpc_server.get_system(machine.fqdn)
+            current_kernel_options = system_dict.get("kernel_options", {})
+            if current_kernel_options == "<<inherit>>":
+                new_kernel_options = {}
+            else:
+                new_kernel_options = current_kernel_options.copy()
+            new_kernel_options[
+                "console"
+            ] = f"{console.kernel_device}{console.kernel_device_num},{console.baud_rate}"
+            self._xmlrpc_server.modify_system(
+                system_handle, "kernel_options", new_kernel_options, self._token
+            )
+        if save != CobblerSaveModes.SKIP:
+            self._xmlrpc_server.save_system(system_handle, self._token, save.value)
+
+    @login_required
+    def add_power_options(
+        self, machine: "Machine", save: CobblerSaveModes = CobblerSaveModes.SKIP
+    ):
+        """
+        Add the out-of-band power management of the machine to Cobbler.
+
+        :param machine: Machine that should be added or updated.
+        :param save: Whether to save the machine or not.
+        """
+        remotepower = machine.remotepower
+        fence = RemotePowerType.from_fence(remotepower.fence_name)
+        system_handle = self._xmlrpc_server.get_system_handle(machine.fqdn)
+
+        self._xmlrpc_server.modify_system(
+            system_handle, "power_type", fence.fence, self._token
+        )
+
+        if fence.use_identity_file:
+            self._xmlrpc_server.modify_system(
+                system_handle, "power_user", fence.username, self._token
+            )
+            self._xmlrpc_server.modify_system(
+                system_handle, "power_identity_file", fence.identity_file, self._token
+            )
+        else:
+            username, password = remotepower.get_credentials()
+            self._xmlrpc_server.modify_system(
+                system_handle, "power_user", username, self._token
+            )
+            self._xmlrpc_server.modify_system(
+                system_handle, "power_pass", password, self._token
+            )
+
+        if fence.use_hostname_as_port:
+            self._xmlrpc_server.modify_system(
+                system_handle, "power_id", get_hostname(machine.hostname), self._token
+            )
+        elif fence.use_port:
+            # Temporary workaround until fence raritan accepts port as --plug param
+            if fence.fence == "raritan":
+                self._xmlrpc_server.modify_system(
+                    system_handle,
+                    "power_id",
+                    f"system1/outlet{remotepower.port}",
+                    self._token,
                 )
             else:
-                cobbler_commands.append(
-                    get_cobbler_add_command(machine, self._cobbler_path)
-                )
-            if hasattr(machine, "bmc") and machine.bmc:
-                cobbler_commands.append(get_bmc_command(machine, self._cobbler_path))
-
-        logger.info("=======================")
-        logger.info(machines)
-        logger.info(cobbler_machines)
-        logger.info(cobbler_commands)
-        logger.info("=======================")
-
-        for (
-            command
-        ) in cobbler_commands:  # TODO: Convert this to a single ssh call (performance)
-            logger.debug("executing %s ", command)
-            stdout, stderr, exitcode = self._conn.execute(command)
-            if exitcode:
-                logger.error(
-                    "failed to execute %s on %s with error '%s' and stdout '%s'",
-                    command,
-                    self._fqdn,
-                    stderr,
-                    stdout,
+                self._xmlrpc_server.modify_system(
+                    system_handle, "power_id", remotepower.port, self._token
                 )
 
-        self.close()
-
-    def update_or_add(self, machine: Machine):
-        self.connect()
-        self._check()
-        if machine.fqdn in self.get_machines():
-            command = get_cobbler_update_command(machine, self._cobbler_path)
-        else:
-            command = get_cobbler_add_command(machine, self._cobbler_path)
-        logger.debug("Executing Cobbler command %s", command)
-        stdout, stderr, exitcode = self._conn.execute(command)
-        if exitcode:
-            logger.error(
-                "Update or Add with command \n '%s'\n failed, giving \n '%s',\nand stdout '%s'",
-                command,
-                stderr,
-                stdout,
+        self._xmlrpc_server.modify_system(
+            system_handle, "power_address", remotepower.get_power_address(), self._token
+        )
+        if fence.use_options:
+            self._xmlrpc_server.modify_system(
+                system_handle, "power_options", remotepower.options, self._token
             )
-        self._conn.execute(command)
-        if hasattr(machine, "bmc") and machine.bmc:
-            command = get_bmc_command(machine, self._cobbler_path)
-            logger.debug("Executing Cobbler command %s", command)
-            stdout, stderr, exitcode = self._conn.execute(command)
-            if exitcode:
-                logger.error(
-                    "writing BMC data to cobbler with \n'%s' failed, giving \n '%s',\nand stdout '%s'",
-                    command,
-                    stderr,
-                    stdout,
-                )
 
-    def remove(self, machine: Machine):
-        self.connect()
-        if not self.is_installed():
-            raise CobblerException("No Cobbler service found: {}".format(self._fqdn))
+        if save != CobblerSaveModes.SKIP:
+            self._xmlrpc_server.save_system(system_handle, self._token, save.value)
+
+    @login_required
+    def _get_cobbler_datastructure(self, machine: "Machine") -> Dict[str, Any]:
+        """
+        Get a Cobbler system struct.
+
+        :param machine: Machine that should be retrieved.
+        """
+        return self._xmlrpc_server.get_system(machine.fqdn, False, False, self._token)
+
+    @login_required
+    def set_netboot_state(
+        self,
+        machine: "Machine",
+        netboot_state: bool,
+        save: CobblerSaveModes = CobblerSaveModes.SKIP,
+    ):
+        """
+        Enable or disable the netboot state.
+
+        :param machine: Machine that should be enabled/disabled.
+        :param netboot_state: Whether to enable or disable the netboot state.
+        :param save: Whether to save the machine or not.
+        """
+        system_handle = self._xmlrpc_server.get_system_handle(machine.fqdn)
+        self._xmlrpc_server.modify_system(
+            system_handle, "netboot_enabled", netboot_state, self._token
+        )
+        if save != CobblerSaveModes.SKIP:
+            self._xmlrpc_server.save_system(system_handle, self._token, save.value)
+
+    @login_required
+    def machine_deployed(self, machine: "Machine") -> bool:
+        """
+        Method to signal if a machine has been deployed.
+
+        :returns: True in case the machine is present by its FQDN in Cobbler, otherwise False.
+        """
+        return self._xmlrpc_server.has_item("system", machine.fqdn, self._token)
+
+    def update_or_add(self, machine: "Machine"):
+        """
+        Add or update a given machine to a Cobbler server.
+
+        :machine: The machine to be added or updated.
+        """
+        if machine.fqdn in self.get_machines():
+            self.add_machine(machine, save=CobblerSaveModes.BYPASS)
+        else:
+            self.add_machine(machine, save=CobblerSaveModes.NEW)
+
+    @login_required
+    def remove(self, machine: "Machine"):
+        """
+        Remove a given machine from a Cobbler server.
+
+        :param machine: Machine to be removed.
+        """
         if not self.is_running():
             raise CobblerException(
-                "Cobbler server is not running: {}".format(self._fqdn)
+                "Cobbler server is not running: {}".format(self._cobbler_server.fqdn)
             )
-        command = "{cobbler} system remove --name {fqdn}".format(
-            cobbler=self._cobbler_path, fqdn=machine.fqdn
-        )
-        stdout, stderr, exitcode = self._conn.execute(command)
-        if exitcode:
+        try:
+            self._xmlrpc_server.remove_system(machine.fqdn, self._token, False)
+        except xmlrpc.client.Fault as xmlrpc_fault:
             logging.error(
-                "Removing %s failed with '%s' and stdout '%s'",
+                'Removing %s failed with "%s"',
                 machine.fqdn,
-                stderr,
-                stdout,
+                xmlrpc_fault.faultString,
             )
 
+    @login_required
     def sync_dhcp(self):
-        self.connect()
-        self._check()
-        stdout, stderr, exitcode = self._conn.execute(
-            "{cobbler} sync --dhcp".format(cobbler=self._cobbler_path)
-        )
-        if exitcode:
-            logging.error(
-                "Dhcp sync on %s failed with '%s' and stdout '%s'",
-                self._fqdn,
-                stderr,
-                stdout,
-            )
-
-    def is_installed(self):
-        """Check if Cobbler server is available."""
-        if self._conn.check_path(self._cobbler_path, "-x"):
-            return True
-        return False
-
-    def is_running(self):
-        """Check if the Cobbler daemon is running via the cobbler version command."""
-        command = "{} version".format(self._cobbler_path)
-        _, _, exitstatus = self._conn.execute(command)
-        if exitstatus == 0:
-            return True
-        return False
-
-    def get_machines(self):
-        stdout, stderr, exitstatus = self._conn.execute(
-            "{cobbler} system list".format(cobbler=self._cobbler_path)
-        )
-        if exitstatus:
-            logger.warning("system list failed on %s with %s", self._fqdn, stderr)
+        """
+        Synchronize the DHCP server configuration on the Cobbler server.
+        """
+        if not self.is_running():
             raise CobblerException(
-                "system list failed on {server}".format(server=self._fqdn)
+                "Cobbler server is not running: {}".format(self._cobbler_server.fqdn)
             )
-        clean_out = [system.strip(" \n\t") for system in stdout]
-        return clean_out
+        try:
+            self._xmlrpc_server.sync_dhcp(self._token)
+        except xmlrpc.client.Fault as xmlrpc_fault:
+            logging.error(
+                "Dhcp sync on %s failed with exception: %s",
+                self._cobbler_server.fqdn,
+                xmlrpc_fault,
+            )
 
-    def setup(self, machine: Machine, choice: str):
+    def is_running(self) -> bool:
+        """
+        Check if the Cobbler daemon is running via the cobbler ping command.
+
+        :returns: True if the Cobbler daemon is running, otherwise False.
+        """
+        try:
+            self._xmlrpc_server.ping()
+        except xmlrpc.client.Fault:
+            return False
+        return True
+
+    @login_required
+    def get_profiles(self, architecture: str) -> List[str]:
+        """
+        Get all profiles for a given architecture. This assumes that the architecture is part of the profile name
+        prefix in Cobbler.
+
+        :param architecture: Architecture name.
+        """
+        return self._xmlrpc_server.find_profile(
+            {"name": architecture + "*"}, False, self._token
+        )
+
+    def get_machines(self) -> List[str]:
+        """
+        Get the names of all machines. A machine corresponds to a single Cobbler System.
+        """
+        if not self.is_running():
+            raise CobblerException(
+                "Cobbler server is not running: {}".format(self._cobbler_server.fqdn)
+            )
+        return self._xmlrpc_server.get_item_names("system")
+
+    @login_required
+    def setup(self, machine: "Machine", choice: str):
+        """
+        Setup a machine with a given Cobbler profile.
+
+        :machine: Machine to setup.
+        :choice: Cobbler profile name.
+        """
         logger.info(
             "setup called for %s with %s on cobbler server %s ",
             machine.fqdn,
-            self._fqdn,
+            self._cobbler_server.fqdn,
             choice,
         )
+        object_id = self._xmlrpc_server.get_system_handle(machine.fqdn)
         if choice:
-            cobbler_profile = " --profile={arch}:{profile}".format(
-                arch=machine.architecture, profile=choice
+            self._xmlrpc_server.modify_system(
+                object_id, "profile", f"{machine.architecture}:{choice}", self._token
             )
-        else:
-            cobbler_profile = ""
 
-        command = (
-            "{cobbler} system edit --name={machine} {profile}  --netboot=True".format(
-                cobbler=self._cobbler_path,
-                machine=machine.fqdn,
-                profile=cobbler_profile,
+        self.set_netboot_state(machine, True)
+        self._xmlrpc_server.save_system(object_id, self._token, "bypass")
+
+    def powerswitch(self, machine: "Machine", action: str) -> str:
+        if not self.is_running():
+            raise CobblerException(
+                "Cobbler server is not running: {}".format(self._cobbler_server.fqdn)
             )
+
+        logger.debug("powerswitching of %s called with action %s", machine.fqdn, action)
+        background_power_options = {"systems": [machine.fqdn], "power": action}
+        task_id = self._xmlrpc_server.background_power_system(
+            background_power_options, self._token
         )
-        logger.debug("command for setup: %s", command)
-        self.connect()
         try:
-            _stdout, stderr, exitstatus = self._conn.execute(command)
-            if exitstatus:
-                logger.warning(
-                    "setup of  %s with %s failed on %s with %s",
-                    machine.fqdn,
-                    cobbler_profile,
-                    self._fqdn,
-                    stderr,
-                )
-                raise CobblerException(
-                    "setup of {machine} with {profile} failed on {server} with {error}".format(
-                        machine=machine.fqdn,
-                        profile=cobbler_profile,
-                        server=self._fqdn,
-                        error=stderr,
-                    )
-                )
-        except Exception:
-            pass
-        finally:
-            self.close()
-
-    def powerswitch(self, machine: Machine, action: str):
-        logger.debug("powerswitching of %s called with action %s", machine.fqdn, action)
-        self.connect()
-        cobbler_action = ""
-        if action == "reboot":
-            cobbler_action = "reboot"
-        else:
-            cobbler_action = "power" + action
-
-        command = "{cobbler} system {action} --name  {fqdn}".format(
-            cobbler=self._cobbler_path, action=cobbler_action, fqdn=machine.fqdn
-        )
-        out, stderr, exitcode = self._conn.execute(command)
-        logger.debug("powerswitching of %s called with action %s", machine.fqdn, action)
-        logger.debug("Execute on cobbler: %s", command)
-        if exitcode:
+            max_tries = 30
+            tries = 0
+            while (
+                self._xmlrpc_server.get_task_status(task_id)[2] == "running"
+                and tries < max_tries
+            ):
+                tries += 1
+                logger.debug("Waiting for power task to finish (%s)", tries)
+                time.sleep(2)
+            return self._xmlrpc_server.get_event_log(task_id)
+        except xmlrpc.client.Fault as xmlrpc_fault:
             logger.warning(
-                "Powerswitching of  %s with %s failed on %s with %s",
+                "Powerswitching of %s with %s failed on %s",
                 machine.fqdn,
-                command,
-                self._fqdn,
-                stderr,
+                action,
+                self._cobbler_server.fqdn,
             )
             raise CobblerException(
                 "Powerswitching of {machine} with {command} failed on {server} with {error}".format(
                     machine=machine.fqdn,
-                    command=command,
-                    server=self._fqdn,
-                    error=stderr,
+                    command=action,
+                    server=self._cobbler_server.fqdn,
+                    error=xmlrpc_fault.faultString,
                 )
-            )
-        return out
-
-    def _check(self):
-        if not self.is_installed():
-            raise CobblerException("No Cobbler service found: {}".format(self._fqdn))
-        if not self.is_running():
-            raise CobblerException(
-                "Cobbler server is not running: {}".format(self._fqdn)
-            )
+            ) from xmlrpc_fault

@@ -2,30 +2,31 @@ services:
   orthos2:
     build:
       context: .
-      dockerfile: docker/develop.dockerfile
-    hostname: orthos2.test.de
+      dockerfile: docker/develop-tw.dockerfile
+    hostname: orthos2.orthos2.test
     cap_add:
       - NET_RAW
     volumes:
       - ./:/code
     ports:
-      - 8000:8000
+      - "8000:8000"
   cobbler:
     image: registry.opensuse.org/systemsmanagement/cobbler/github-ci/containers/cobbler-test-github:release33
-    hostname: cobbler.test.de
+    hostname: cobbler.orthos2.test
     command: >
       bash -c "zypper --gpg-auto-import-keys ref
-      && zypper in -y cobbler
+      && zypper in -y cobbler lynx w3m
       && /usr/bin/ssh-keygen -A
       && /usr/sbin/sshd
-      && cobblerd -F"
-    #ports:
-    #  - 22:22
-    #  - 80:80
-    #  - 443:443
+      && cobblerd
+      && apachectl -D FOREGROUND"
+    ports:
+      # - "22:22"
+      - "80:80"
+      - "443:443"
   serial_console:
     image: registry.opensuse.org/opensuse/tumbleweed:latest
-    hostname: sconsole.test.de
+    hostname: sconsole.orthos2.test
     # https://github.com/openSUSE/cscreen
     command: >
       bash -c "zypper in -y cscreen openssh-server
@@ -34,9 +35,9 @@ services:
     #ports:
     #  - 22:22
   machine_bmc:
-    hostname: bmc.test.de
+    hostname: bmc.orthos2.test
     build:
       context: docker
       dockerfile: bmc.dockerfile
     ports:
-      - 9001:9001
+      - "9001:9001"

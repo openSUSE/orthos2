@@ -20,7 +20,8 @@ class Logout(WebTest):
         self.assertEqual(page.context["user"].username, "user")
 
         # Act
-        page = page.click("Logout").maybe_follow()
+        logout_form = page.forms[0]
+        res = logout_form.submit("Logout").maybe_follow()
 
         # Assert
-        self.assertContains(page, "Login")
+        self.assertContains(res, "Login")

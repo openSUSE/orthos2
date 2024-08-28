@@ -1,6 +1,8 @@
 import datetime
 import functools
 import logging
+import secrets
+import string
 import warnings
 
 from django.conf import settings
@@ -631,7 +633,8 @@ def users_password_restore(request):
                 messages.error(request, "E-Mail/login does not exist.")
                 return redirect("frontend:password_restore")
 
-            password = User.objects.make_random_password()
+            alphabet = string.ascii_letters + string.digits
+            password = "".join(secrets.choice(alphabet) for i in range(10))
             user.set_password(password)
             user.save()
 

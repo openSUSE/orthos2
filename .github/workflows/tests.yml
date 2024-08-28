@@ -21,50 +21,26 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    - uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-devel.txt', '**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    - name: Install Dependencies
+    - name: Allow writing from inside the container
       run: |
-        sudo apt-get install python3-setuptools libldap2-dev libsasl2-dev jq
-        python3 -m pip install --upgrade pip
-        python3 -m pip install -r requirements-devel.txt
-    - name: Create required directories
+        chmod g+w,o+w .
+    - name: Build images
       run: |
-        sudo mkdir -p /var/log/orthos2
-        sudo mkdir -p /var/lib/orthos2/database
-    - name: Create required files
+        docker compose build
+    - name: Start Compose Stack
       run: |
-        sudo touch /var/log/orthos2/default.log
-        sudo touch /var/lib/orthos2/database/db.sqlite3
-    - name: Adjust permissions for files
+        docker compose up -d
+    - name: Wait for Cobbler to run
       run: |
-        CURRENT_USER=$(whoami)
-        CURRENT_GROUP=$(id -gn)
-        sudo chown -R $CURRENT_USER:$CURRENT_GROUP /var/lib/orthos2
-        sudo chown -R $CURRENT_USER:$CURRENT_GROUP /var/log/orthos2
-    - name: Migrate database
-      env:
-        ORTHOS_USER: runner
-      run: |
-        python3 manage.py migrate
+        sleep 60
     - name: Run Tests
-      env:
-        ORTHOS_USER: runner
       run: |
-        coverage run --source='.' manage.py test orthos2
-        coverage report
+        docker compose exec -it orthos2 bash -c 'coverage run --source="." manage.py test orthos2'
+        docker compose exec -it orthos2 bash -c 'coverage report'
     - name: Check coverage goal
       run: |
         # Coverage goal is atm 25% or greater
-        coverage json
+        docker compose exec -it orthos2 bash -c 'coverage json'
         coverage_percent=$(jq -r ".totals.percent_covered_display" < coverage.json)
         [ "$coverage_percent" -gt "25" ]
   integration:
