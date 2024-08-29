@@ -16,8 +16,8 @@ class BMC(models.Model):
         choices=remotepower_type_choices, max_length=255, verbose_name="Fence agent"
     )
 
-    def natural_key(self):
+    def natural_key(self) -> str:
         return self.fqdn
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.fqdn

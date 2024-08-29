@@ -1,6 +1,7 @@
 import collections
 import datetime
 import logging
+from typing import Any, Dict, List, Tuple, Union
 
 from django import forms
 from django.conf import settings
@@ -36,7 +37,7 @@ class NewUserForm(forms.Form):
         max_length=64, widget=forms.TextInput(attrs={"class": "form-control"})
     )
 
-    def clean(self):
+    def clean(self) -> None:
         cleaned_data = super(NewUserForm, self).clean()
         login = cleaned_data.get("login")
         password = cleaned_data.get("password")
@@ -80,7 +81,7 @@ class NewUserForm(forms.Form):
 
 
 class ReserveMachineForm(forms.Form):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         reason = kwargs.pop("reason", None)
         until = kwargs.pop("until", None)
         username = kwargs.pop("username", None)
@@ -108,7 +109,7 @@ class ReserveMachineForm(forms.Form):
 
     username = forms.CharField(widget=forms.HiddenInput(), required=False)
 
-    def clean(self):
+    def clean(self) -> None:
         cleaned_data = super(ReserveMachineForm, self).clean()
         reserved_until = cleaned_data.get("until")
 
@@ -131,7 +132,7 @@ class ReserveMachineForm(forms.Form):
 
 
 class SearchForm(forms.Form):
-    def clean(self):
+    def clean(self) -> None:
         cleaned_data = super(SearchForm, self).clean()
 
         empty = True
@@ -159,15 +160,17 @@ class SearchForm(forms.Form):
             except ValueError:
                 self.add_error("cpu_cores", "Value must be a number.")
 
-    def get_vendors():
-        vendors = [("", "--all--")]
+    def get_vendors() -> List[Tuple[str, str]]:
+        vendors: List[Tuple[str, str]] = [("", "--all--")]
         for vendor in Vendor.objects.all().values("id", "name"):
             vendors.append((vendor["id"], vendor["name"]))
         return vendors
 
-    def get_platforms():
-        platforms = [("", "--all--")]
-        groups = {}
+    def get_platforms() -> List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]]:
+        platforms: List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]] = [
+            ("", "--all--")
+        ]
+        groups: Dict[str, Tuple[Tuple[int, str], ...]] = {}
         for platform in Platform.objects.all():
             id = platform.id
             name = platform.name
@@ -411,7 +414,7 @@ class SearchForm(forms.Form):
 
 
 class PasswordRestoreForm(forms.Form):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         username = kwargs.pop("username", None)
 
         super(PasswordRestoreForm, self).__init__(*args, **kwargs)
@@ -433,7 +436,7 @@ class PasswordRestoreForm(forms.Form):
 
 
 class PreferencesForm(forms.Form):
-    def clean(self):
+    def clean(self) -> None:
         cleaned_data = super(PreferencesForm, self).clean()
         new_password = cleaned_data.get("new_password")
         new_password2 = cleaned_data.get("new_password2")
@@ -465,7 +468,7 @@ class PreferencesForm(forms.Form):
 
 
 class SetupMachineForm(forms.Form):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         machine = kwargs.pop("machine", None)
         domain = machine.fqdn_domain
 
@@ -545,7 +548,7 @@ class SetupMachineForm(forms.Form):
 
 
 class VirtualMachineForm(forms.Form):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         virtualization_api = kwargs.pop("virtualization_api", None)
 
         super(VirtualMachineForm, self).__init__(*args, **kwargs)

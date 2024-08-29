@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from django.db import models
 
 
@@ -7,7 +9,7 @@ class SerialConsoleType(models.Model):
 
     class Type:
         @classmethod
-        def to_str(cls, index):
+        def to_str(cls, index: int) -> str:
             """Return type as string (serial console type name) by index."""
             for type_tuple in SerialConsoleType.objects.all().values_list("id", "name"):
                 if int(index) == type_tuple[0]:
@@ -17,7 +19,7 @@ class SerialConsoleType(models.Model):
             )
 
         @classmethod
-        def to_int(cls, name):
+        def to_int(cls, name: str) -> int:
             """Return type as integer if name matches."""
             for type_tuple in SerialConsoleType.objects.all().values_list("id", "name"):
                 if name.lower() == type_tuple[1].lower():
@@ -30,8 +32,8 @@ class SerialConsoleType(models.Model):
 
     comment = models.CharField(max_length=200, null=True, blank=True)
 
-    def natural_key(self):
+    def natural_key(self) -> Tuple[str]:
         return (self.name,)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name

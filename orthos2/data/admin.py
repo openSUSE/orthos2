@@ -1,11 +1,13 @@
-from typing import Optional
+from typing import Any, Dict, Optional, Union
 
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin.templatetags.admin_list import _boolean_icon
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import redirect
+from django.template.response import TemplateResponse
 from django.urls import re_path, reverse
 from django.utils.html import format_html
 
@@ -88,7 +90,7 @@ class SerialConsoleInline(admin.StackedInline):
 
 
 class RemotePowerInlineFormset(forms.models.BaseInlineFormSet):
-    def clean(self):
+    def clean(self) -> None:
         if not self.cleaned_data:
             return
         data = self.cleaned_data[0]
@@ -183,11 +185,11 @@ class NetworkInterfaceInline(admin.TabularInline):
         "driver_module",
     )
 
-    def has_add_permission(self, request, obj=None):
+    def has_add_permission(self, request, obj=None) -> bool:
         """Network interfaces get added by machine scan."""
         return False
 
-    def has_delete_permission(self, request, obj=None):
+    def has_delete_permission(self, request, obj=None) -> bool:
         """Network interfaces get deleted by machine scan."""
         return False
 
@@ -216,7 +218,7 @@ class MachineAdminForm(forms.ModelForm):
         model = Machine
         fields = "__all__"
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         """Set primary MAC address and virtualization API type in the form fields."""
         instance = kwargs.get("instance", None)
 
@@ -227,7 +229,7 @@ class MachineAdminForm(forms.ModelForm):
 
             self.machine = instance
 
-    def save(self, commit=True):
+    def save(self, commit: bool = True):
         machine = super(MachineAdminForm, self).save(commit=False)
         machine.mac_address = self.cleaned_data["mac_address"]
         if commit:
@@ -552,7 +554,13 @@ class MachineAdmin(admin.ModelAdmin):
             fieldsets = fieldsets_
         return fieldsets
 
-    def change_view(self, request, object_id, form_url="", extra_context=None):
+    def change_view(
+        self,
+        request: HttpRequest,
+        object_id: str,
+        form_url="",
+        extra_context: Optional[Dict[str, Any]] = None,
+    ) -> Union[HttpResponseRedirect, TemplateResponse]:
         """Return changes view with inlines for non-administrative systems."""
         machine = Machine.objects.get(pk=object_id)
         fence = None
@@ -589,7 +597,7 @@ class MachineAdmin(admin.ModelAdmin):
             request, object_id, form_url, extra_context
         )
 
-    def save_formset(self, request, form, formset, change):
+    def save_formset(self, request, form, formset, change) -> None:
         formset.save()
         machine = form.save(commit=False)
         if (
@@ -645,11 +653,11 @@ class EnclosureAdmin(admin.ModelAdmin):
     list_display = ("name", "machine_count", "platform_name")
     search_fields = ("name",)
 
-    def machine_count(self, obj):
+    def machine_count(self, obj: Enclosure) -> int:
         """Return machine counter of enclosure."""
         return obj.machine_set.count()
 
-    def platform_name(self, obj):
+    def platform_name(self, obj: Enclosure) -> Optional[str]:
         """Return name of enclosures platform."""
         platform = obj.platform
         if platform:
@@ -674,7 +682,7 @@ class ServerConfigAdmin(admin.ModelAdmin):
 
     # https://medium.com/@hakibenita/how-to-add-custom-action-buttons-to-django-admin-8d266f5b0d41
     def get_urls(self):
-        """Add customn URLs to server configuration admin view."""
+        """Add custom URLs to server configuration admin view."""
         urls = super(ServerConfigAdmin, self).get_urls()
         custom_urls = [
             re_path(
@@ -782,10 +790,10 @@ class MachinesInline(admin.TabularInline):
     fields = ("fqdn",)
     readonly_fields = ("fqdn",)
 
-    def has_add_permission(self, request, obj=None):
+    def has_add_permission(self, request, obj=None) -> bool:
         return False
 
-    def has_delete_permission(self, request, obj=None):
+    def has_delete_permission(self, request, obj=None) -> bool:
         return False
 
 
@@ -793,7 +801,7 @@ class MachineGroupAdmin(admin.ModelAdmin):
     list_display = ("name", "machines", "dhcp_filename")
     inlines = (MachinesInline, MachineGroupMembershipInline)
 
-    def machines(self, obj):
+    def machines(self, obj: MachineGroup) -> str:
         machines = Machine.objects.filter(group=obj)
         output = ", ".join([machine.fqdn for machine in machines])
         return output

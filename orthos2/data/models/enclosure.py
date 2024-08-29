@@ -2,12 +2,17 @@ import json
 import logging
 import ssl
 import urllib.request
+from typing import TYPE_CHECKING, Optional, Tuple
 
 from django.db import models
+from django.db.models import QuerySet
 from django.template import Context, Template
 
 from .platform import Platform
 from .serverconfig import ServerConfig
+
+if TYPE_CHECKING:
+    from orthos2.data.models.machine import Machine
 
 logger = logging.getLogger("models")
 
@@ -25,26 +30,28 @@ class Enclosure(models.Model):
 
     description = models.CharField(max_length=512, blank=True)
 
+    machine_set: models.Manager["Machine"]
+
     location_room = "unknown"
 
     location_rack = "unknown"
 
     location_rack_position = "unknown"
 
-    def natural_key(self):
+    def natural_key(self) -> Tuple[str]:
         return (self.name,)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def get_machines(self):
+    def get_machines(self) -> QuerySet["Machine"]:
         return self.machine_set.all()
 
-    def get_virtual_machines(self):
+    def get_virtual_machines(self) -> QuerySet["Machine"]:
         """Return all virtual machines (systems) of the enclosure."""
         return self.get_machines().filter(system__virtual=True)
 
-    def get_non_virtual_machines(self):
+    def get_non_virtual_machines(self) -> QuerySet["Machine"]:
         """
         Return all non virtual machines (systems) of the enclosure.
 
@@ -55,7 +62,7 @@ class Enclosure(models.Model):
         machines = self.get_machines().filter(system__virtual=False)
         return machines
 
-    def fetch_location(self, pk=None):
+    def fetch_location(self, pk: Optional[int] = None) -> None:
         """
         Fetch location from RackTables.
 

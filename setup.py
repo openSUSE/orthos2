@@ -14,7 +14,7 @@ datapath = os.environ.get("DATA_PATH", "/usr/share/orthos2")
 unitpath = os.environ.get("UNIT_PATH", "/usr/lib/systemd/system")
 
 
-def requires(filename="requirements.txt"):
+def requires(filename: str = "requirements.txt"):
     """Returns a list of all pip requirements
 
     :param filename: the Pip requirement file

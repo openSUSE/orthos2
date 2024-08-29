@@ -1,5 +1,7 @@
-from django.http import HttpResponseRedirect, JsonResponse
-from django.urls import re_path
+from typing import Any, List, Union
+
+from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
+from django.urls import URLPattern, re_path
 
 from orthos2.api.commands.base import BaseAPIView, get_machine, getException
 from orthos2.api.serializers.machine import MachineSerializer
@@ -27,18 +29,20 @@ Example:
     """
 
     @staticmethod
-    def get_urls():
+    def get_urls() -> List[URLPattern]:
         return [
             re_path(r"^machine$", InfoCommand.as_view(), name="machine"),
         ]
 
     @staticmethod
-    def get_tabcompletion():
+    def get_tabcompletion() -> List[str]:
         return list(Machine.api.all().values_list("fqdn", flat=True))
 
-    def get(self, request, *args, **kwargs):
+    def get(
+        self, request: HttpRequest, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
         """Return machine information."""
-        fqdn = request.GET.get("fqdn", None)
+        fqdn = request.GET.get("fqdn", "")
         response = {}
 
         try:
@@ -50,7 +54,7 @@ Example:
             machine = result
 
             machine.enclosure.fetch_location(machine.pk)
-            machine = MachineSerializer(machine)
+            serialzed_machine = MachineSerializer(machine)
 
             order = [
                 "fqdn",
@@ -133,7 +137,7 @@ Example:
             ]
 
             response["header"] = {"type": "INFO", "order": order}
-            response["data"] = machine.data_info
+            response["data"] = serialzed_machine.data_info
         except Exception:
             return ErrorMessage(getException()).as_json
 

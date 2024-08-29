@@ -18,7 +18,7 @@ class Installation(models.Model):
 
     partition = models.CharField(max_length=100, blank=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.active:
             return "{} ({})".format(self.distribution, "active")
         return self.distribution

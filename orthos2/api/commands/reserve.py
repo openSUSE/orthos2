@@ -1,9 +1,10 @@
 import datetime
 import json
+from typing import Any, List, Union
 
 from django.contrib.auth.models import AnonymousUser, User
-from django.http import HttpResponseRedirect
-from django.urls import re_path
+from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
+from django.urls import URLPattern, re_path
 
 from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.forms import ReserveMachineAPIForm
@@ -39,7 +40,7 @@ Example:
 """
 
     @staticmethod
-    def get_urls():
+    def get_urls() -> List[URLPattern]:
         return [
             re_path(r"^reserve$", ReserveCommand.as_view(), name="reserve"),
             re_path(
@@ -49,7 +50,9 @@ Example:
             ),
         ]
 
-    def get(self, request, *args, **kwargs):
+    def get(
+        self, request: HttpRequest, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
         """Return reservation form for valid machine."""
         fqdn = request.GET.get("fqdn", None)
 
@@ -75,7 +78,9 @@ Example:
         )
         return input.as_json
 
-    def post(self, request, id, *args, **kwargs):
+    def post(
+        self, request: HttpRequest, id: int, *args: Any, **kwargs: Any
+    ) -> JsonResponse:
         """Process reservation."""
         try:
             machine = Machine.objects.get(pk=id)

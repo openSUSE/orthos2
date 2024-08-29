@@ -1,6 +1,8 @@
 import logging
 import re
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
+from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
 from django.core.exceptions import FieldDoesNotExist, MultipleObjectsReturned
 from django.db.models import Field, Q
 from django.db.models.functions import Length
@@ -32,7 +34,7 @@ Field.register_lookup(NotEqual)
 
 class HelperFunctions:
     @staticmethod
-    def get_ipv4(machine_id):
+    def get_ipv4(machine_id: int) -> Optional[str]:
         """
         Return the IPv4 address of a machine.
 
@@ -43,7 +45,7 @@ class HelperFunctions:
         return value
 
     @staticmethod
-    def get_ipv6(machine_id):
+    def get_ipv6(machine_id: int) -> Optional[str]:
         """
         Return the IPv6 address of a machine.
 
@@ -54,7 +56,7 @@ class HelperFunctions:
         return value
 
     @staticmethod
-    def username_to_id(username):
+    def username_to_id(username: str) -> int:
         """Translate a string into a valid user ID if possible."""
         try:
             return User.objects.get(username__iexact=username).pk
@@ -62,7 +64,7 @@ class HelperFunctions:
             raise MultipleObjectsReturned("Found more than one user!")
 
     @staticmethod
-    def get_status_ping(machine_id):
+    def get_status_ping(machine_id: int) -> Optional[bool]:
         """Return the ping status of a machine."""
         machine = Machine.objects.get(pk=machine_id)
         value = getattr(machine, "status_ping", None)
@@ -83,7 +85,9 @@ class QueryField:
         },
     }
 
-    MAPPING = {
+    MAPPING: Dict[
+        str, Dict[str, Union[str, "Field[Any, Any]", Callable[[Any], Any]]]
+    ] = {
         # Aliases
         "architecture": {
             "field": Architecture._meta.get_field("name"),
@@ -408,7 +412,7 @@ class QueryField:
         },
     }
 
-    def __init__(self, token):
+    def __init__(self, token: str) -> None:
         """
         Constructor for `QueryField`.
 
@@ -479,7 +483,7 @@ class QueryField:
         if not self._field:
             raise ValueError("Unknown field '{}'!".format(token))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.db_field_name
 
     def __repr__(self):
@@ -488,7 +492,7 @@ class QueryField:
         return "<{}: {} (dynamic)>".format(self.__class__.__name__, self.db_field_name)
 
     @classmethod
-    def get_valid_field_names(cls):
+    def get_valid_field_names(cls) -> List[str]:
         """
         Return a list of valid field names.
 
@@ -501,7 +505,7 @@ class QueryField:
         return field_names
 
     @property
-    def db_field_name(self):
+    def db_field_name(self) -> str:
         """Return a valid field name for querying the DB."""
         if self._related_name:
             field_name = "{}__{}".format(self._related_name, self._field.name)
@@ -514,48 +518,48 @@ class QueryField:
         return field_name
 
     @property
-    def related_name(self):
+    def related_name(self) -> str:
         """Return the related name of a `QueryField` object."""
         return self._related_name
 
     @property
-    def verbose_name(self):
+    def verbose_name(self) -> str:
         """Return the verbose name of a `QueryField` object."""
         if self._verbose_name.islower():
             return self._verbose_name.capitalize()
         return self._verbose_name
 
     @property
-    def null(self):
+    def null(self) -> bool:
         """Return if a `QueryField` object can be `NULL` in the DB."""
         return self._field.null
 
     @property
-    def is_dynamic(self):
+    def is_dynamic(self) -> bool:
         """Return if a `QueryField` object is dynamic (non-database value) or not."""
         return self._dynamic
 
-    def is_BooleanField(self):
+    def is_BooleanField(self) -> bool:
         """Check if a `QueryField` object is a boolean field."""
         return "BooleanField" in self._field.get_internal_type()
 
-    def is_CharField(self):
+    def is_CharField(self) -> bool:
         """Check if a `QueryField` object is a character field."""
         return "CharField" in self._field.get_internal_type()
 
-    def is_TextField(self):
+    def is_TextField(self) -> bool:
         """Check if a `QueryField` object is a character field."""
         return "TextField" in self._field.get_internal_type()
 
-    def is_ForeignKey(self):
+    def is_ForeignKey(self) -> bool:
         """Check if a `QueryField` object is a foreign key."""
         return "ForeignKey" in self._field.get_internal_type()
 
-    def is_DateField(self):
+    def is_DateField(self) -> bool:
         """Check if a `QueryField` object is a date field."""
         return "DateField" in self._field.get_internal_type()
 
-    def is_DateTimeField(self):
+    def is_DateTimeField(self) -> bool:
         """Check if a `QueryField` object is a datetime field."""
         return "DateTimeField" in self._field.get_internal_type()
 
@@ -571,7 +575,7 @@ class QueryField:
         return (field, {field.db_field_name: Length(self.db_field_name)})
 
     @property
-    def type(self):
+    def type(self) -> str:
         """Return fields type as string."""
         return self._field.get_internal_type()
 
@@ -654,7 +658,7 @@ class APIQuery:
     OR = "or"
     WHERE = "where"
 
-    def __init__(self, query_str):
+    def __init__(self, query_str: str) -> None:
         self._query_str = query_str.strip()
         self._query = None
         self._data = None
@@ -663,7 +667,7 @@ class APIQuery:
         self._conjunctions = []
         self._annotations = []
 
-    def _prepare_query(self):
+    def _prepare_query(self) -> None:
         """
         Split raw query string into field and condition section (if available) and preprocesses the
         data.
@@ -690,7 +694,7 @@ class APIQuery:
         elif len(query) > 2:
             raise SyntaxError("Invalid syntax (multiple 'where' found)!")
 
-    def _prepare_fields(self, fields_str):
+    def _prepare_fields(self, fields_str: str) -> List[str]:
         """Strip query string in query fields."""
         fields = []
 
@@ -700,7 +704,13 @@ class APIQuery:
 
         return fields
 
-    def _prepare_conditions(self, conditions_str):
+    def _prepare_conditions(
+        self, conditions_str: str
+    ) -> Tuple[
+        List[Tuple[QueryField, str, Union[bool, int]]],
+        List[str],
+        List[Dict[str, Length]],
+    ]:
         """
         Assemble conditions.
 
@@ -720,13 +730,13 @@ class APIQuery:
             where foo =~ bar ...    -> [('foo', '__istartswith', 'bar'), ...]
             where comment ...       -> [('comment_length', '__gt', 0, ...]
         """
-        conditions = []
-        conjunctions = []
-        annotations = []
-        condition = ()
+        conditions: List[Tuple[QueryField, str, Union[bool, int]]] = []
+        conjunctions: List[str] = []
+        annotations: List[Dict[str, Length]] = []
+        condition: Tuple[QueryField, str, Union[bool, int]] = ()
         state = -1
 
-        tokens = []
+        tokens: List[str] = []
         for token in re.split(
             """ (?=(?:[^'"]|'[^']*'|"[^"]*")*$)""", conditions_str.strip()
         ):
@@ -834,9 +844,9 @@ class APIQuery:
             else:
                 raise Exception("Invalid condition!")
 
-        return (conditions, conjunctions, annotations)
+        return conditions, conjunctions, annotations
 
-    def _get_query(self):
+    def _get_query(self) -> Q:
         """Return valid django model queries which can be piped into `filter()` method."""
         if self.has_conditions:
             if not self._conditions:
@@ -875,7 +885,9 @@ class APIQuery:
         else:
             return Q()
 
-    def execute(self, user=None):
+    def execute(
+        self, user: Optional[Union[AbstractBaseUser, AnonymousUser]] = None
+    ) -> None:
         """
         Execute requested query and stores the result.
 
@@ -912,7 +924,7 @@ class APIQuery:
         self._data = self._add_dynamic_fields(self._data)
         self._data = self._apply_post_functions(self._data)
 
-    def _add_dynamic_fields(self, rows):
+    def _add_dynamic_fields(self, rows: List[Dict[str, Any]]):
         """
         Fields which are non-database fields needs to be queried and added separately using
         the primary key. If the primary key wasn't requested, remove it.
@@ -932,7 +944,7 @@ class APIQuery:
 
         return rows
 
-    def _apply_pre_functions(self):
+    def _apply_pre_functions(self) -> None:
         """
         Apply pre-functions.
 
@@ -953,7 +965,7 @@ class APIQuery:
                 field.pre_function(value),
             )
 
-    def _apply_post_functions(self, rows):
+    def _apply_post_functions(self, rows: List[Dict[str, Any]]):
         """Apply post-functions on each result row."""
         for row in rows:
             for field, value in row.items():
@@ -972,12 +984,12 @@ class APIQuery:
     def data(self):
         return self._data
 
-    def get_theader(self):
+    def get_theader(self) -> List[Dict[str, str]]:
         """
         Return fields for table header with verbose name specified in the model or manually in
         class `QueryField`.
         """
-        result = []
+        result: List[Dict[str, str]] = []
 
         for token in self._fields:
             field = QueryField(token)
@@ -986,7 +998,7 @@ class APIQuery:
         return result
 
     @staticmethod
-    def get_tab_completion_options():
+    def get_tab_completion_options() -> List[str]:
         """Return fields, operators, etc. for tab completion as list."""
         options = QueryField.get_valid_field_names()
         options += list(APIQuery.OPERATORS.keys())

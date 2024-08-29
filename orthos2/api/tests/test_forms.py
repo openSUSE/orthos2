@@ -2,11 +2,24 @@
 
 from django.test import TestCase, override_settings
 
-from orthos2.api.forms import *
+from orthos2.api.forms import (
+    AnnotationAPIForm,
+    BMCAPIForm,
+    DeleteMachineAPIForm,
+    DeleteRemotePowerAPIForm,
+    DeleteRemotePowerDeviceAPIForm,
+    MachineAPIForm,
+    RemotePowerAPIForm,
+    RemotePowerDeviceAPIForm,
+    ReserveMachineAPIForm,
+    SerialConsoleAPIForm,
+    VirtualMachineAPIForm,
+)
+from orthos2.data.models.machine import Machine
 
 
 class ReserveMachineAPIFormTests(TestCase):
-    def test_form(self):
+    def test_form(self) -> None:
         """Test the machine reservation API form"""
         # Arrange & Act
         form = ReserveMachineAPIForm(
@@ -24,7 +37,7 @@ class VirtualMachineAPIFormTests(TestCase):
         "orthos2/data/fixtures/systems.json",
     ]
 
-    def test_form(self):
+    def test_form(self) -> None:
         """Test the virtual machine creation API form"""
         # Arrange & Act
         host = Machine.objects.get_by_natural_key("test.testing.suse.de")
@@ -50,7 +63,7 @@ class MachineAPIFormTests(TestCase):
         "orthos2/data/fixtures/systems.json",
     ]
 
-    def test_form(self):
+    def test_form(self) -> None:
         """Test the machine creation API form"""
         # Arrange & Act
         form = MachineAPIForm(
@@ -79,7 +92,7 @@ class DeleteMachineAPIFormTests(TestCase):
         "orthos2/data/fixtures/tests/test_machines.json",
     ]
 
-    def test_form(self):
+    def test_form(self) -> None:
         """test the machine deletion API form"""
         # Arrange & Act
         form = DeleteMachineAPIForm({"fqdn": "test.testing.suse.de"})
@@ -91,7 +104,7 @@ class DeleteMachineAPIFormTests(TestCase):
 class SerialConsoleAPIFormTests(TestCase):
     fixtures = ["orthos2/data/fixtures/serialconsoletypes.json"]
 
-    def test_form(self):
+    def test_form(self) -> None:
         """Test the serial console creation API form"""
         # Arrange & Act
         form = SerialConsoleAPIForm(
@@ -108,7 +121,7 @@ class SerialConsoleAPIFormTests(TestCase):
 
 
 class AnnotationAPIFormTests(TestCase):
-    def test_form(self):
+    def test_form(self) -> None:
         """Test the annotation creation API form"""
         # Arrange & Act
         form = AnnotationAPIForm({"text": "example text with lorem ipsum"})
@@ -130,7 +143,7 @@ class BMCAPIFormTests(TestCase):
     ]
 
     @override_settings(REMOTEPOWER_TYPES=remote_power_types)
-    def test_form(self):
+    def test_form(self) -> None:
         """Test the BMC creation API form"""
         # Arrange & Act
         form = BMCAPIForm(
@@ -146,7 +159,7 @@ class BMCAPIFormTests(TestCase):
 
 
 class RemotePowerAPIFormTests(TestCase):
-    def test_form(self):
+    def test_form(self) -> None:
         """Test the remote power creation API form"""
         # Arrange & Act
         form = RemotePowerAPIForm(
@@ -170,7 +183,7 @@ class RemotePowerDeviceAPIFormTests(TestCase):
     ]
 
     @override_settings(REMOTEPOWER_TYPES=remote_power_types)
-    def test_form(self):
+    def test_form(self) -> None:
         """Test the remote power device creation API form"""
         # Arrange & Act
         form = RemotePowerDeviceAPIForm(
@@ -195,7 +208,7 @@ class DeleteRemotePowerAPIFormTests(TestCase):
         "orthos2/data/fixtures/tests/test_machines.json",
     ]
 
-    def test_form(self):
+    def test_form(self) -> None:
         """Test the remote power deletion API form"""
         # Arrange & Act
         form = DeleteRemotePowerAPIForm({"fqdn": "test.testing.suse.de"})
@@ -208,7 +221,7 @@ class DeleteRemotePowerDeviceAPIFormTests(TestCase):
 
     fixtures = ["orthos2/api/fixtures/forms/delete_remote_power_device_api_form.json"]
 
-    def test_form(self):
+    def test_form(self) -> None:
         """Test the remote power device deletion API form"""
         # Arrange & Act
         form = DeleteRemotePowerDeviceAPIForm({"fqdn": "rpower.foo.de"})

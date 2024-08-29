@@ -3,7 +3,7 @@
 import os
 
 from django.apps import apps
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 
 from orthos2.data.models.domain import Domain, DomainAdmin
 from orthos2.data.models.machine import Enclosure, Machine, NetworkInterface
@@ -65,7 +65,7 @@ domains = [
 ]
 
 
-def show_help():
+def show_help() -> None:
     print("Use --script-args to specify what you want to dump:")
     print("")
     print("\tgeneral \t-- Dump general DB data [ %s ] " % ", ".join(Modules["general"]))
@@ -88,7 +88,7 @@ class Command(BaseCommand):
     config = apps.get_app_config("data")
     queries = []
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super(Command, self).__init__(*args, **kwargs)
         self.machinesonly = False
 
@@ -137,7 +137,7 @@ class Command(BaseCommand):
         for machine in machines:
             self.add_machine(machine)
 
-    def add_arch_relations(self):
+    def add_arch_relations(self) -> None:
         """
         We always need arch.suse.de domain and markeb.arch.suse.de
         We delete unneeded machine references
@@ -157,7 +157,7 @@ class Command(BaseCommand):
             network.delete()
         exit(1)
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "domain", nargs="*", default=domains, help="Dump domain tables"
         )
@@ -214,7 +214,7 @@ class Command(BaseCommand):
 
         self.save()
 
-    def save(self):
+    def save(self) -> None:
         # print(queries)
         with open(self.file, "w") as out:
             from django.core import serializers

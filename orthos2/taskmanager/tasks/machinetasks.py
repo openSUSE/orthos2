@@ -41,7 +41,7 @@ class MachineCheck(Task):
         as_list = [STATUS, NETWORKINTERFACES, INSTALLATIONS, ALL]
 
         @classmethod
-        def to_str(cls, index):
+        def to_str(cls, index: int) -> str:
             """
             Returns scan option as string by index.
             """
@@ -51,7 +51,7 @@ class MachineCheck(Task):
             raise Exception("Scan option '{}' doesn't exist!".format(index))
 
         @classmethod
-        def to_int(cls, name):
+        def to_int(cls, name: str) -> int:
             """
             Returns scan option as integer if name matches.
             """
@@ -67,7 +67,7 @@ class MachineCheck(Task):
         (Scan.ALL, Scan.Action.ALL),
     )
 
-    def __init__(self, fqdn, scan):
+    def __init__(self, fqdn: str, scan: int) -> None:
         self.fqdn = fqdn
         self.scan = scan
         self.machine = None
@@ -94,13 +94,13 @@ class MachineCheck(Task):
 
         return methods[self.scan]
 
-    def set_scan(self, scan):
+    def set_scan(self, scan: int) -> None:
         """
         Set the scan scope.
         """
         self.scan = scan
 
-    def status(self):
+    def status(self) -> None:
         """
         Checks ping, SSH and login status.
         """
@@ -129,7 +129,7 @@ class MachineCheck(Task):
         self.online = bool(self.machine.status_login)
         self.machine.save()
 
-    def network(self):
+    def network(self) -> None:
         """
         Collect information about network interfaces.
         """
@@ -165,7 +165,7 @@ class MachineCheck(Task):
                 if not networkinterface.primary:
                     networkinterface.delete()
 
-    def status_ip(self):
+    def status_ip(self) -> None:
         """
         Collect IPv4/IPv6 status.
         """
@@ -181,7 +181,7 @@ class MachineCheck(Task):
         if machine_:
             sync(self.machine, machine_)
 
-    def installations(self):
+    def installations(self) -> None:
         """
         Collect all installations/distributions.
         """
@@ -205,7 +205,7 @@ class MachineCheck(Task):
         for installation in installations_:
             installation.save()
 
-    def execute(self):
+    def execute(self) -> None:
         """
         Executes the task.
         """
@@ -227,7 +227,7 @@ class RegenerateMOTD(Task):
     Regenerates the MOTD of a machine.
     """
 
-    def __init__(self, fqdn):
+    def __init__(self, fqdn: str) -> None:
         self.fqdn = fqdn
 
     def execute(self):

@@ -1,10 +1,16 @@
+from typing import TYPE_CHECKING
+
 from django.db.models import Lookup
+
+if TYPE_CHECKING:
+    from django.db.backends.base.base import BaseDatabaseWrapper
+    from django.db.models.sql.compiler import SQLCompiler
 
 
 class NotEqual(Lookup):
     lookup_name = "ne"
 
-    def as_sql(self, compiler, connection):
+    def as_sql(self, compiler: "SQLCompiler", connection: "BaseDatabaseWrapper"):
         lhs, lhs_params = self.process_lhs(compiler, connection)
         rhs, rhs_params = self.process_rhs(compiler, connection)
         params = lhs_params + rhs_params
