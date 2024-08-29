@@ -1,5 +1,8 @@
+from typing import Any, List, Union
+
 from django.http import HttpResponseRedirect, JsonResponse
-from django.urls import re_path
+from django.urls import URLPattern, re_path
+from rest_framework.request import Request
 
 from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.serializers.misc import ErrorMessage, InfoMessage, Serializer
@@ -26,7 +29,7 @@ Example:
 """
 
     @staticmethod
-    def get_urls():
+    def get_urls() -> List[URLPattern]:
         return [
             re_path(
                 r"^reservationhistory$",
@@ -35,9 +38,11 @@ Example:
             ),
         ]
 
-    def get(self, request, *args, **kwargs):
+    def get(
+        self, request: Request, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
         """Return reservation history of machine."""
-        fqdn = request.GET.get("fqdn", None)
+        fqdn = request.GET.get("fqdn", "")
 
         try:
             result = get_machine(fqdn, redirect_to="api:history", data=request.GET)
@@ -49,7 +54,7 @@ Example:
         except Exception as e:
             return ErrorMessage(str(e)).as_json
 
-        history = ReservationHistory.objects.filter(machine__fqdn=machine.fqdn)
+        history = ReservationHistory.objects.filter(machine__fqdn=machine.fqdn)  # type: ignore
 
         if history.count() == 0:
             return InfoMessage("No history available yet.").as_json
@@ -63,7 +68,7 @@ Example:
         response = {"header": {"type": "TABLE", "theader": theader}, "data": []}
 
         for item in history:
-            response["data"].append(
+            response["data"].append(  # type: ignore
                 {
                     "user": item.reserved_by,
                     "at": item.reserved_at,

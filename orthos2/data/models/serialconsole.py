@@ -1,12 +1,17 @@
 import logging
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator
 from django.db import models
 from django.template import Context, Template
+from django.utils.safestring import SafeString
 
 from .serialconsoletype import SerialConsoleType
 from .serverconfig import ServerConfig
+
+if TYPE_CHECKING:
+    from orthos2.data.models.machine import Machine
 
 logger = logging.getLogger("models")
 
@@ -35,7 +40,7 @@ class SerialConsole(models.Model):
     class Meta:
         verbose_name = "Serial Console"
 
-    machine = models.OneToOneField(
+    machine = models.OneToOneField["Machine"](  # type: ignore
         "data.Machine", on_delete=models.CASCADE, primary_key=True
     )
 
@@ -102,10 +107,10 @@ A value of 1 might end up in console=ttyS1 kernel command line paramter.""",
 
     objects = models.Manager()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.stype.name
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         self.clean()
         self.rendered_command = self.get_command_record()
         if self.stype:
@@ -113,8 +118,8 @@ A value of 1 might end up in console=ttyS1 kernel command line paramter.""",
         else:
             raise ValidationError("No serial console type set!")
 
-    def clean(self):
-        errors = []
+    def clean(self) -> None:
+        errors: List[Union[ValidationError, str]] = []
 
         if not hasattr(self, "stype"):
             return
@@ -192,7 +197,7 @@ A value of 1 might end up in console=ttyS1 kernel command line paramter.""",
         if errors:
             raise ValidationError(errors)
 
-    def get_command_record(self):
+    def get_command_record(self) -> Optional[SafeString]:
         """Return cscreen record for serial console."""
         prefix = 'screen -t {{ machine.hostname|ljust:"20" }} -L '
         template = self.stype.command
@@ -201,9 +206,9 @@ A value of 1 might end up in console=ttyS1 kernel command line paramter.""",
         password = ServerConfig.objects.by_key("serialconsole.ipmi.password")
 
         if username is None or password is None:
-            return
+            return None
 
-        ipmi = {"user": username, "password": password}
+        ipmi: Dict[str, str] = {"user": username, "password": password}
 
         bmc = None
         if hasattr(self.machine, "bmc"):
@@ -226,9 +231,9 @@ A value of 1 might end up in console=ttyS1 kernel command line paramter.""",
         )
         # Render the template twice, to support templates in the command string, which
         # is a template argument itself
-        return Template(Template(prefix + template).render(context)).render(context)
+        return Template(Template(prefix + template).render(context)).render(context)  # type: ignore
 
-    def get_comment_record(self):
+    def get_comment_record(self) -> SafeString:
         """Return cscreen comment for serial console."""
         comment = 'defhstatus "{{ comment }}"'
         context = Context(

@@ -38,7 +38,7 @@ class AddBMCTest(APITestCase):
         )
         self.client.force_authenticate(user=self.user)
 
-    def test_add_bmc_get(self):
+    def test_add_bmc_get(self) -> None:
         # Arrange
         url = reverse("api:bmc_add")
         url += "/test"
@@ -60,7 +60,7 @@ class AddBMCTest(APITestCase):
         self.assertEqual(json_response.get("header").get("type"), "INPUT")
 
     @override_settings(REMOTEPOWER_TYPES=remote_power_types)
-    def test_add_bmc_post(self):
+    def test_add_bmc_post(self) -> None:
         """Test the route /bmc/add/{fqdn}"""
         # Arrange
         url = reverse("api:bmc_add")
@@ -80,4 +80,4 @@ class AddBMCTest(APITestCase):
 
         # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(BMC.objects.count(), 1)
+        self.assertEqual(BMC.objects.count(), 1)  # type: ignore

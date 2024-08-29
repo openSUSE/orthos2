@@ -12,7 +12,7 @@ logging.disable(logging.CRITICAL)
 class CobblerMethodTests(TestCase):
     fixtures = ["orthos2/utils/tests/fixtures/machines.json"]
 
-    def test_get_default_profile(self):
+    def test_get_default_profile(self) -> None:
         """
         get_default_profile should return a default profile attached to an architecture, or raise
         value error if there is none.
@@ -25,7 +25,7 @@ class CobblerMethodTests(TestCase):
         architecture.default_profile = None
         self.assertRaises(ValueError, cobbler.get_default_profile, machine)
 
-    def test_get_filename(self):
+    def test_get_filename(self) -> None:
         """
         get_filename should return the right filename attribute.
 
@@ -47,7 +47,7 @@ class CobblerMethodTests(TestCase):
         architecture.dhcp_filename = None
         self.assertIsNone(cobbler.get_filename(machine))
 
-    def test_get_tftp_server(self):
+    def test_get_tftp_server(self) -> None:
         # Arrange
         test_machine = Machine.objects.get(pk=1)
 
@@ -58,7 +58,7 @@ class CobblerMethodTests(TestCase):
         self.longMessage = True
         self.assertEqual(result, test_machine.fqdn)
 
-    def test_cobbler_is_running(self):
+    def test_cobbler_is_running(self) -> None:
         # Arrange
         domain = Domain.objects.get(name="orthos2.test")
         domain.cobbler_server = Machine.objects.get(fqdn="cobbler.orthos2.test")
@@ -70,7 +70,7 @@ class CobblerMethodTests(TestCase):
         # Assert
         self.assertTrue(running)
 
-    def test_cobbler_get_profiles(self):
+    def test_cobbler_get_profiles(self) -> None:
         # Arrange
         domain = Domain.objects.get(name="orthos2.test")
         domain.cobbler_server = Machine.objects.get(fqdn="cobbler.orthos2.test")
@@ -83,7 +83,7 @@ class CobblerMethodTests(TestCase):
         self.assertTrue(isinstance(profiles, list))
         self.assertEqual(len(profiles), 0)
 
-    def test_cobbler_get_machines(self):
+    def test_cobbler_get_machines(self) -> None:
         # Arrange
         domain = Domain.objects.get(name="orthos2.test")
         domain.cobbler_server = Machine.objects.get(fqdn="cobbler.orthos2.test")
@@ -95,7 +95,7 @@ class CobblerMethodTests(TestCase):
         # Assert
         self.assertEqual(machines, [])
 
-    def test_cobbler_deploy(self):
+    def test_cobbler_deploy(self) -> None:
         # Arrange
         domain = Domain.objects.get(name="orthos2.test")
         domain.cobbler_server = Machine.objects.get(fqdn="cobbler.orthos2.test")
@@ -109,6 +109,6 @@ class CobblerMethodTests(TestCase):
             server.deploy(machines)
 
             # Assert
-            expected = []
+            expected = []  # type: ignore
             for exp in expected:
                 self.assertIn(exp, mocked_update_or_add.mock_calls)

@@ -7,7 +7,17 @@ import enum
 import logging
 import time
 import xmlrpc.client  # nosec: B411
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    ParamSpec,
+    TypeVar,
+)
 
 from django.template import Context, Template
 
@@ -39,7 +49,7 @@ class CobblerException(Exception):
     pass
 
 
-def get_default_profile(machine):
+def get_default_profile(machine: "Machine") -> str:
     default = machine.architecture.default_profile
     if default:
         return default
@@ -86,7 +96,11 @@ def get_filename(machine: "Machine") -> Optional[str]:
     return filename
 
 
-def login_required(func):
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+def login_required(func: Callable[P, R]) -> Callable[P, R]:
     """
     Decorator to ensure that the user is logged in. This only works for "CobblerServer".
     """
@@ -114,18 +128,19 @@ class CobblerServer:
         :param domain: Domain object for the Cobbler server that should be talked to.
         """
         self._domain = domain
-        self._cobbler_server = self._domain.cobbler_server
-        if not self._cobbler_server:
+        cobbler_server = self._domain.cobbler_server
+        if not cobbler_server:
             raise ValueError(
                 f'Cobbler Server not configured for domain "{self._domain.name}"!'
             )
+        self._cobbler_server = cobbler_server
         self._xmlrpc_server = xmlrpc.client.Server(
             f"http://{self._cobbler_server.fqdn}/cobbler_api"
         )
         # We ignore this line because this is just the initial value so the variable is not None.
         self._token = ""  # nosec B105
 
-    def deploy(self, machines: Iterable["Machine"]):
+    def deploy(self, machines: Iterable["Machine"]) -> None:
         """
         Deploy or update all machines of a single Cobbler server.
         """
@@ -146,19 +161,23 @@ class CobblerServer:
                     exc_info=fault,
                 )
 
-    def _login(self):
+    def _login(self) -> None:
         try:
-            self._token = self._xmlrpc_server.login(
+            token = self._xmlrpc_server.login(
                 self._domain.cobbler_server_username,
                 self._domain.cobbler_server_password,
             )
+            if isinstance(token, str):
+                self._token = token
+                return
+            raise TypeError("Cobbler server returned incorrect data for token!")
         except xmlrpc.client.Fault as xmlrpc_fault:
             logger.error("Error logging in!", exc_info=xmlrpc_fault)
 
     @login_required
     def add_machine(
         self, machine: "Machine", save: CobblerSaveModes = CobblerSaveModes.SKIP
-    ):
+    ) -> None:
         """
         Add or update a machine. If the machine has a BMC, Remote Power or Serial Console add that as well.
 
@@ -208,7 +227,7 @@ class CobblerServer:
     @login_required
     def add_primary_network_interface(
         self, machine: "Machine", save: CobblerSaveModes = CobblerSaveModes.SKIP
-    ):
+    ) -> None:
         """
         Add the primary network interface of the machine to Cobbler.
 
@@ -234,7 +253,7 @@ class CobblerServer:
     @login_required
     def add_bmc(
         self, machine: "Machine", save: CobblerSaveModes = CobblerSaveModes.SKIP
-    ):
+    ) -> None:
         """
         Add the BMC of the machine to Cobbler.
 
@@ -259,7 +278,7 @@ class CobblerServer:
     @login_required
     def add_serial_console(
         self, machine: "Machine", save: CobblerSaveModes = CobblerSaveModes.SKIP
-    ):
+    ) -> None:
         """
         Add the Serial Console of the machine to Cobbler.
 
@@ -277,9 +296,24 @@ class CobblerServer:
         )
         if console.kernel_device != "None":
             system_dict = self._xmlrpc_server.get_system(machine.fqdn)
+            if not isinstance(system_dict, dict):
+                raise TypeError(
+                    'System details for system "%s" must be a dict.' % machine.fqdn
+                )
             current_kernel_options = system_dict.get("kernel_options", {})
-            if current_kernel_options == "<<inherit>>":
-                new_kernel_options = {}
+            if not isinstance(current_kernel_options, (dict, str)):
+                raise TypeError(
+                    'Kernel options for system "%s" must be a dict or str.'
+                    % machine.fqdn
+                )
+            if isinstance(current_kernel_options, str):
+                if current_kernel_options == "<<inherit>>":
+                    new_kernel_options: Dict[str, str] = {}
+                else:
+                    raise TypeError(
+                        'Kernel options for system "%s" were neither inherit nor a dictionary.'
+                        % machine.fqdn
+                    )
             else:
                 new_kernel_options = current_kernel_options.copy()
             new_kernel_options[
@@ -294,7 +328,7 @@ class CobblerServer:
     @login_required
     def add_power_options(
         self, machine: "Machine", save: CobblerSaveModes = CobblerSaveModes.SKIP
-    ):
+    ) -> None:
         """
         Add the out-of-band power management of the machine to Cobbler.
 
@@ -303,6 +337,11 @@ class CobblerServer:
         """
         remotepower = machine.remotepower
         fence = RemotePowerType.from_fence(remotepower.fence_name)
+        if fence is None:
+            raise ValueError(
+                "Fence for machine %s couldn't be retrieved via RemotePowerType!"
+                % machine.fqdn
+            )
         system_handle = self._xmlrpc_server.get_system_handle(machine.fqdn)
 
         self._xmlrpc_server.modify_system(
@@ -326,8 +365,9 @@ class CobblerServer:
             )
 
         if fence.use_hostname_as_port:
+            # The following is ignored since at runtime we will always have a hostname dynamically added.
             self._xmlrpc_server.modify_system(
-                system_handle, "power_id", get_hostname(machine.hostname), self._token
+                system_handle, "power_id", get_hostname(machine.hostname), self._token  # type: ignore
             )
         elif fence.use_port:
             # Temporary workaround until fence raritan accepts port as --plug param
@@ -361,7 +401,14 @@ class CobblerServer:
 
         :param machine: Machine that should be retrieved.
         """
-        return self._xmlrpc_server.get_system(machine.fqdn, False, False, self._token)
+        system_dict = self._xmlrpc_server.get_system(
+            machine.fqdn, False, False, self._token
+        )
+        if not isinstance(system_dict, dict):
+            raise ValueError(
+                "Cobbler Server didn't return a dictionary for system %s" % machine.fqdn
+            )
+        return system_dict
 
     @login_required
     def set_netboot_state(
@@ -369,7 +416,7 @@ class CobblerServer:
         machine: "Machine",
         netboot_state: bool,
         save: CobblerSaveModes = CobblerSaveModes.SKIP,
-    ):
+    ) -> None:
         """
         Enable or disable the netboot state.
 
@@ -391,9 +438,15 @@ class CobblerServer:
 
         :returns: True in case the machine is present by its FQDN in Cobbler, otherwise False.
         """
-        return self._xmlrpc_server.has_item("system", machine.fqdn, self._token)
+        has_item = self._xmlrpc_server.has_item("system", machine.fqdn, self._token)
+        if not isinstance(has_item, bool):
+            raise TypeError(
+                'Return value if machine "%s" is deployed must be of type bool!'
+                % machine.fqdn
+            )
+        return has_item
 
-    def update_or_add(self, machine: "Machine"):
+    def update_or_add(self, machine: "Machine") -> None:
         """
         Add or update a given machine to a Cobbler server.
 
@@ -405,7 +458,7 @@ class CobblerServer:
             self.add_machine(machine, save=CobblerSaveModes.NEW)
 
     @login_required
-    def remove(self, machine: "Machine"):
+    def remove(self, machine: "Machine") -> None:
         """
         Remove a given machine from a Cobbler server.
 
@@ -425,7 +478,7 @@ class CobblerServer:
             )
 
     @login_required
-    def sync_dhcp(self):
+    def sync_dhcp(self) -> None:
         """
         Synchronize the DHCP server configuration on the Cobbler server.
         """
@@ -462,9 +515,15 @@ class CobblerServer:
 
         :param architecture: Architecture name.
         """
-        return self._xmlrpc_server.find_profile(
+        found_profiles = self._xmlrpc_server.find_profile(
             {"name": architecture + "*"}, False, self._token
         )
+        if not isinstance(found_profiles, list):
+            raise TypeError(
+                'Cobbler server returned incorrect data type for searching of profiles of architecture "%s"'
+                % architecture
+            )
+        return found_profiles
 
     def get_machines(self) -> List[str]:
         """
@@ -474,10 +533,15 @@ class CobblerServer:
             raise CobblerException(
                 "Cobbler server is not running: {}".format(self._cobbler_server.fqdn)
             )
-        return self._xmlrpc_server.get_item_names("system")
+        item_names = self._xmlrpc_server.get_item_names("system")
+        if not isinstance(item_names, list):
+            raise TypeError(
+                "Cobbler server returned incorrect data type for searching of items of type system"
+            )
+        return item_names
 
     @login_required
-    def setup(self, machine: "Machine", choice: str):
+    def setup(self, machine: "Machine", choice: str) -> None:
         """
         Setup a machine with a given Cobbler profile.
 
@@ -513,14 +577,21 @@ class CobblerServer:
         try:
             max_tries = 30
             tries = 0
+            # Below code cannot be type checked since we don't want to save the data to a
+            # variable and the XML-RPC API doesn't know what type the other end will return.
             while (
-                self._xmlrpc_server.get_task_status(task_id)[2] == "running"
+                self._xmlrpc_server.get_task_status(task_id)[2] == "running"  # type: ignore
                 and tries < max_tries
             ):
                 tries += 1
                 logger.debug("Waiting for power task to finish (%s)", tries)
                 time.sleep(2)
-            return self._xmlrpc_server.get_event_log(task_id)
+            event_log = self._xmlrpc_server.get_event_log(task_id)
+            if not isinstance(event_log, str):
+                raise TypeError(
+                    "Cobbler Server returned incorrect data type for event log"
+                )
+            return event_log
         except xmlrpc.client.Fault as xmlrpc_fault:
             logger.warning(
                 "Powerswitching of %s with %s failed on %s",

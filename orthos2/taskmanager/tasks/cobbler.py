@@ -2,6 +2,7 @@ import logging
 from typing import Optional
 
 from django.conf import settings
+from django.db.models import QuerySet
 
 from orthos2.data.models import Domain, Machine, ServerConfig
 from orthos2.taskmanager.models import Task
@@ -19,7 +20,7 @@ class RegenerateCobbler(Task):
     def __init__(self, domain_id: Optional[int] = None):
         self._domain_id = domain_id
 
-    def _get_domains(self):
+    def _get_domains(self) -> QuerySet["Domain"]:
         """
         Returns network domain(s) for which Cobbler entries should be regenerated. Return all if no
         domain ID is given.
@@ -29,7 +30,7 @@ class RegenerateCobbler(Task):
         else:
             return Domain.objects.all()
 
-    def execute(self):
+    def execute(self) -> None:
         """
         Executes the task.
         """
@@ -80,11 +81,11 @@ class RegenerateCobbler(Task):
 
 
 class UpdateCobblerMachine(Task):
-    def __init__(self, domain_id: int, machine_id: int):
+    def __init__(self, domain_id: int, machine_id: int) -> None:
         self._domain_id = domain_id
         self._machine_id = machine_id
 
-    def execute(self):
+    def execute(self) -> None:
         try:
             domain = Domain.objects.get(pk=self._domain_id)
             machine = Machine.objects.get(pk=self._machine_id)
@@ -127,10 +128,10 @@ class UpdateCobblerMachine(Task):
 
 
 class SyncCobblerDHCP(Task):
-    def __init__(self, domain_id: int):
+    def __init__(self, domain_id: int) -> None:
         self._domain_id = domain_id
 
-    def execute(self):
+    def execute(self) -> None:
         try:
             domain = Domain.objects.get(pk=self._domain_id)
             if not domain.cobbler_server:
@@ -138,9 +139,8 @@ class SyncCobblerDHCP(Task):
                     "Domain '%s' has no Cobbler server... aborting", domain.name
                 )
                 return
-            cobbler_server = domain.cobbler_server
             # Fake machine since "sync_dhcp" works without touching it
-            cobbler_server_obj = CobblerServer(cobbler_server, domain)
+            cobbler_server_obj = CobblerServer(domain)
             cobbler_server_obj.sync_dhcp()
         except Domain.DoesNotExist:
             logger.error("No Domain with id %s, aborting", self._domain_id)

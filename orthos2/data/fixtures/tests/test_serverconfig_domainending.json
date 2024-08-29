@@ -1,0 +1,10 @@
+[
+  {
+    "model": "data.serverconfig",
+    "pk": null,
+    "fields": {
+      "key": "domain.validendings",
+      "value": "example.de, example.com, foo.de"
+    }
+  }
+]

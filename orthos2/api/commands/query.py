@@ -1,7 +1,9 @@
 import json
+from typing import Any, List
 
 from django.http import JsonResponse
-from django.urls import re_path
+from django.urls import URLPattern, re_path
+from rest_framework.request import Request
 
 from orthos2.api.commands.base import BaseAPIView
 from orthos2.api.models import APIQuery
@@ -39,16 +41,16 @@ OR                  logical disjunction
 """
 
     @staticmethod
-    def get_urls():
+    def get_urls() -> List[URLPattern]:
         return [
             re_path(r"^query$", QueryCommand.as_view(), name="query"),
         ]
 
     @staticmethod
-    def get_tabcompletion():
+    def get_tabcompletion() -> List[str]:
         return APIQuery.get_tab_completion_options()
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
         """Return query result."""
         response = {}
 

@@ -1,5 +1,5 @@
 from django.urls import reverse
-from django_webtest import WebTest
+from django_webtest import WebTest  # type: ignore
 
 
 class CreateAccount(WebTest):
@@ -11,7 +11,7 @@ class CreateAccount(WebTest):
         "orthos2/frontend/tests/user/fixtures/users.json",
     ]
 
-    def test_successful_user_creation(self):
+    def test_successful_user_creation(self) -> None:
         """Test if a new user can create an account."""
         with self.settings(AUTH_ALLOW_USER_CREATION=True):
             form = self.app.get(reverse("frontend:create_user")).form
@@ -25,7 +25,7 @@ class CreateAccount(WebTest):
             self.assertIn(reverse("frontend:machines"), page.request.url)
             self.assertContains(page, "My Machine")
 
-    def test_password_too_short(self):
+    def test_password_too_short(self) -> None:
         """Check if password is too short (at least 8 characters)."""
         form = self.app.get(reverse("frontend:create_user")).form
         form["login"] = "new-user"
@@ -38,7 +38,7 @@ class CreateAccount(WebTest):
         self.assertIn(reverse("frontend:create_user"), page.request.url)
         self.assertContains(page, "Password is too short")
 
-    def test_password_confirmation_not_match(self):
+    def test_password_confirmation_not_match(self) -> None:
         """Check if passwords do match."""
         form = self.app.get(reverse("frontend:create_user")).form
         form["login"] = "new-user"
@@ -51,7 +51,7 @@ class CreateAccount(WebTest):
         self.assertIn(reverse("frontend:create_user"), page.request.url)
         self.assertContains(page, "Password and confirmation password do not match")
 
-    def test_user_already_exists(self):
+    def test_user_already_exists(self) -> None:
         """Check if user does already exists."""
         form = self.app.get(reverse("frontend:create_user")).form
         form["login"] = "user"
@@ -64,7 +64,7 @@ class CreateAccount(WebTest):
         self.assertIn(reverse("frontend:create_user"), page.request.url)
         self.assertContains(page, "does already exist")
 
-    def test_email_does_already_exists(self):
+    def test_email_does_already_exists(self) -> None:
         """Check if email does already exists."""
         form = self.app.get(reverse("frontend:create_user")).form
         form["login"] = "new-user"
@@ -77,7 +77,7 @@ class CreateAccount(WebTest):
         self.assertIn(reverse("frontend:create_user"), page.request.url)
         self.assertContains(page, "is already in use")
 
-    def test_invalid_email(self):
+    def test_invalid_email(self) -> None:
         """Check for valid email address."""
         form = self.app.get(reverse("frontend:create_user")).form
         form["login"] = "new-user"

@@ -1,7 +1,7 @@
 import logging
 
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import HttpRequest, JsonResponse
 from django.template.defaultfilters import urlize
 
 from orthos2.data.models import Annotation, Machine, RemotePower
@@ -12,24 +12,26 @@ logger = logging.getLogger("views")
 
 
 @login_required
-def annotation(request, machine_id):
+def annotation(request: HttpRequest, machine_id: int) -> JsonResponse:
     text = request.GET.get("text", None)
 
-    annotation = Annotation.objects.create(
+    target_annotation = Annotation.objects.create(  # type: ignore
         machine_id=machine_id, reporter=request.user, text=text
     )
 
     data = {
-        "text": urlize(annotation.text),
-        "reporter": annotation.reporter.username,
-        "date": "{:%Y-%m-%d}".format(annotation.created),
+        "text": urlize(target_annotation.text),
+        "reporter": target_annotation.reporter.username
+        if target_annotation.reporter
+        else "",
+        "date": "{:%Y-%m-%d}".format(target_annotation.created),
     }
     return JsonResponse(data)
 
 
 @login_required
 @check_permissions(key="machine_id")
-def powercycle(request, machine_id):
+def powercycle(request: HttpRequest, machine_id: int) -> JsonResponse:
     """Power cycle machine and return result as JSON."""
     action = request.GET.get("action", None)
 
@@ -38,11 +40,12 @@ def powercycle(request, machine_id):
         result = machine.powercycle(action, user=request.user)
 
         if action == RemotePower.Action.STATUS:
+            # This returns a str as a result. The type annotation is incorrect.
             return JsonResponse(
                 {
                     "type": "status",
                     "cls": "info",
-                    "message": "Status: {}".format(result.capitalize()),
+                    "message": "Status: {}".format(result.capitalize()),  # type: ignore
                 }
             )
 
@@ -69,11 +72,11 @@ def powercycle(request, machine_id):
 
 
 @login_required
-def virtualization_list(request, host_id):
+def virtualization_list(request: HttpRequest, host_id: int) -> JsonResponse:
     """Return VM list (libvirt)."""
     try:
         host = Machine.objects.get(pk=host_id)
-        output = host.virtualization_api.get_list()
+        output = host.virtualization_api.get_list()  # type: ignore
 
         return JsonResponse({"type": "output", "output": output})
     except Exception as e:
@@ -83,7 +86,7 @@ def virtualization_list(request, host_id):
 
 @login_required
 @check_permissions(key="host_id")
-def virtualization_delete(request, host_id):
+def virtualization_delete(request: HttpRequest, host_id: int) -> JsonResponse:
     """Delete a VM."""
     vm_id = request.GET.get("vm", None)
 
@@ -102,7 +105,7 @@ def virtualization_delete(request, host_id):
 
         vm_list = []
 
-        for vm in host.get_virtual_machines():
+        for vm in host.get_virtual_machines():  # type: ignore
             vm_list.append(vm_record(request, vm))
 
         return JsonResponse(

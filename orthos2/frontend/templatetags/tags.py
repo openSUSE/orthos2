@@ -1,6 +1,9 @@
+from typing import Any, Optional
+
 from django import template
+from django.http import HttpRequest
 from django.urls import resolve, reverse
-from django.utils.safestring import mark_safe
+from django.utils.safestring import SafeString, mark_safe
 
 from orthos2.data.models import Machine, ServerConfig
 
@@ -9,7 +12,9 @@ register = template.Library()
 
 # from: http://stackoverflow.com/questions/2047622/how-to-paginate-django-with-other-get-variables
 @register.simple_tag
-def url_replace(request, field, value, remove=False):
+def url_replace(
+    request: HttpRequest, field: str, value: Any, remove: bool = False
+) -> str:
     """
     Replace ``field`` by value in GET parameters.
 
@@ -20,7 +25,7 @@ def url_replace(request, field, value, remove=False):
     params = request.GET.copy()
     if field != "page":
         if "page" in params:
-            params["page"] = 1
+            params["page"] = "1"
 
     if remove and (field in params):
         del params[field]
@@ -31,25 +36,25 @@ def url_replace(request, field, value, remove=False):
 
 
 @register.simple_tag
-def active(request, name):
+def active(request: HttpRequest, name: str) -> Optional[str]:
     """Return 'active' if ``name`` is in GET parameters."""
     return "active" if name in list(request.GET.values()) else None
 
 
 @register.simple_tag
-def active_view(request, view):
+def active_view(request: HttpRequest, view: str) -> Optional[str]:
     """Return 'active' if ``view`` gets requested."""
     return "active" if view == resolve(request.path_info).url_name else None
 
 
 @register.simple_tag
-def disabled(request, name):
+def disabled(request: HttpRequest, name: str) -> Optional[str]:
     """Return 'disabled' if ``name`` is in GET parameters."""
     return "disabled" if name in list(request.GET.values()) else None
 
 
 @register.simple_tag
-def get_bugreport_url():
+def get_bugreport_url() -> str:
     """Return bugreport URL for templates."""
     url = ServerConfig.objects.by_key("orthos.bugreport.url")
     if not url:
@@ -58,7 +63,7 @@ def get_bugreport_url():
 
 
 @register.simple_tag
-def get_documentation_url():
+def get_documentation_url() -> str:
     """Return documentation URL for templates."""
     url = ServerConfig.objects.by_key("orthos.documentation.url")
     if not url:
@@ -67,7 +72,7 @@ def get_documentation_url():
 
 
 @register.simple_tag
-def get_enhancement_url():
+def get_enhancement_url() -> str:
     """Return enhancement URL for emplates."""
     url = ServerConfig.objects.by_key("orthos.enhancement.url")
     if not url:
@@ -76,7 +81,7 @@ def get_enhancement_url():
 
 
 @register.simple_tag
-def get_current_domain_filter(request):
+def get_current_domain_filter(request: HttpRequest) -> str:
     """Return the current domain from GET (if available)."""
     domain = request.GET.get("domain", None)
     if (not domain) or (domain == ""):
@@ -85,7 +90,7 @@ def get_current_domain_filter(request):
 
 
 @register.simple_tag
-def get_current_machinegroup_filter(request):
+def get_current_machinegroup_filter(request: HttpRequest) -> str:
     """Return the current machine group from GET (if available)."""
     group = request.GET.get("machinegroup", None)
     if (not group) or (group == ""):
@@ -94,7 +99,7 @@ def get_current_machinegroup_filter(request):
 
 
 @register.simple_tag
-def get_cli_url():
+def get_cli_url() -> str:
     """Return the URL to the Orthos command line client (CLI)."""
     url = ServerConfig.objects.by_key("orthos.cli.url")
     if not url:
@@ -103,7 +108,7 @@ def get_cli_url():
 
 
 @register.simple_tag
-def status_ipv4(machine):
+def status_ipv4(machine: Machine) -> SafeString:
     if machine.check_connectivity < Machine.Connectivity.PING:
         return mark_safe(
             '<td class="blue"><span class="text-small">Disabled</span></td>'
@@ -126,7 +131,7 @@ def status_ipv4(machine):
 
 
 @register.simple_tag
-def status_ipv6(machine):
+def status_ipv6(machine: Machine) -> SafeString:
     if machine.check_connectivity < Machine.Connectivity.PING:
         return mark_safe(
             '<td class="blue"><span class="text-small">Disabled</span></td>'
@@ -149,7 +154,7 @@ def status_ipv6(machine):
 
 
 @register.simple_tag
-def status_ssh(machine):
+def status_ssh(machine: Machine) -> SafeString:
     if machine.check_connectivity < Machine.Connectivity.SSH:
         return mark_safe(
             '<td class="blue"><span class="text-small">Disabled</span></td>'
@@ -168,7 +173,7 @@ def status_ssh(machine):
 
 
 @register.simple_tag
-def status_login(machine):
+def status_login(machine: Machine) -> SafeString:
     if machine.check_connectivity < Machine.Connectivity.ALL:
         return mark_safe(
             '<td class="blue"><span class="text-small">Disabled</span></td>'
@@ -183,7 +188,7 @@ def status_login(machine):
 
 
 @register.simple_tag
-def order_list(request, field):
+def order_list(request: HttpRequest, field: str) -> SafeString:
     """Return ordering arrows."""
     up = '<i class="fa fa-caret-down"></i>'
     down = '<i class="fa fa-caret-up"></i>'
@@ -201,10 +206,12 @@ def order_list(request, field):
 
 
 @register.simple_tag
-def vm_record(request, vm):
+def vm_record(request: HttpRequest, vm: Machine) -> SafeString:
     """Return HTML table row for a single virtual machine."""
     if request.user.is_superuser or (
-        request.user == vm.reserved_by and vm.hypervisor.vm_auto_delete
+        request.user == vm.reserved_by
+        and vm.hypervisor
+        and vm.hypervisor.vm_auto_delete
     ):
         button = '<a class="btn btn-sm btn-danger" href="javascript:void(0);"'
         button += ' onClick="delete_vm({})">'.format(vm.pk)

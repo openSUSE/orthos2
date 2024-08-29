@@ -19,7 +19,7 @@ logging.disable(logging.CRITICAL)
 
 
 class MiscMethodTests(TestCase):
-    def test_get_domain(self):
+    def test_get_domain(self) -> None:
         """get_domain() should return the domain for a given FQDN."""
         fqdn = "foo.bar"
         assert get_domain(fqdn) == "bar"
@@ -30,7 +30,7 @@ class MiscMethodTests(TestCase):
         fqdn = "foo.bar.foobar.suse.de"
         assert get_domain(fqdn) == "bar.foobar.suse.de"
 
-    def test_get_hostname(self):
+    def test_get_hostname(self) -> None:
         """get_hostname() should return the hostname for a given FQDN."""
         fqdn = "foo.bar"
         assert get_hostname(fqdn) == "foo"
@@ -42,7 +42,7 @@ class MiscMethodTests(TestCase):
         assert get_hostname(fqdn) == "foo"
 
     @mock.patch("orthos2.utils.misc.socket.gethostbyname")
-    def test_is_dns_resolvable(self, mocked_gethostbyname):
+    def test_is_dns_resolvable(self, mocked_gethostbyname) -> None:
         """is_dns_resolvable() should return True if a FQDN is resolvable, False otherwise."""
         import socket
 
@@ -53,7 +53,7 @@ class MiscMethodTests(TestCase):
         mocked_gethostbyname.side_effect = socket.gaierror()
         assert is_dns_resolvable(fqdn) is False
 
-    def test_has_valid_domain_ending(self):
+    def test_has_valid_domain_ending(self) -> None:
         """
         has_valid_domain_ending() should return True if given FQDN has a valid domain ending,
         False otherwise.
@@ -66,7 +66,7 @@ class MiscMethodTests(TestCase):
         assert has_valid_domain_ending("test.foo", []) is False
         assert has_valid_domain_ending("test.foo", ["bar"]) is False
 
-    def test_is_valid_mac_address(self):
+    def test_is_valid_mac_address(self) -> None:
         """
         is_valid_mac_address() should return True if given MAC address is valid, False otherwise.
         """
@@ -76,7 +76,7 @@ class MiscMethodTests(TestCase):
         assert is_valid_mac_address("12:34:56:78:9A:BC") is True
         assert is_valid_mac_address("12:34:56:78:9A:BC:D") is False
 
-    def test_str_time_to_datetime(self):
+    def test_str_time_to_datetime(self) -> None:
         """
         str_time_to_datetime() should return a valid datetime.datetime object, None otherwise.
         """
@@ -118,7 +118,7 @@ class ChecksMethodTests(TestCase):
 
     #         assert nmap_check(fqdn) == True
 
-    def test_execute(self):
+    def test_execute(self) -> None:
         """execute() should return a tuple with the output and the exit status code."""
         result = execute("foobar -baz")
         assert result[0] == ""
@@ -128,7 +128,7 @@ class ChecksMethodTests(TestCase):
         assert result[0] == "foo\n"
         assert result[2] == 0
 
-    def test_normalize_ascii(self):
+    def test_normalize_ascii(self) -> None:
         """
         normalize_ascii() should only return a string containing ascii characters with decimal
         codes between 1 and 127. All other codes are translated to space.

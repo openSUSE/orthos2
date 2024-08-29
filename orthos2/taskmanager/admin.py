@@ -1,8 +1,10 @@
 import datetime
+from typing import Any, List
 
 from django.contrib import admin, messages
+from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import redirect
-from django.urls import re_path, reverse
+from django.urls import URLPattern, re_path, reverse
 from django.utils.html import format_html
 
 from .models import DailyTask, SingleTask
@@ -23,14 +25,14 @@ admin.site.register(SingleTask, BaseTaskAdmin)
 
 class DailyTaskAdmin(BaseTaskAdmin):
     readonly_fields = BaseTaskAdmin.readonly_fields
-    list_display = BaseTaskAdmin.list_display + (
+    list_display = BaseTaskAdmin.list_display + (  # type: ignore
         "enabled",
         "task_actions",
     )
 
     # https://medium.com/@hakibenita/how-to-add-custom-action-buttons-to-django-admin-8d266f5b0d41
-    def get_urls(self):
-        """Add customn URLs to daily task admin view."""
+    def get_urls(self) -> List[URLPattern]:
+        """Add custom URLs to daily task admin view."""
         urls = super(DailyTaskAdmin, self).get_urls()
         custom_urls = [
             re_path(
@@ -46,7 +48,9 @@ class DailyTaskAdmin(BaseTaskAdmin):
         ]
         return custom_urls + urls
 
-    def process_execute(self, request, dailytask_id, *args, **kwargs):
+    def process_execute(
+        self, request: HttpRequest, dailytask_id: int, *args: Any, **kwargs: Any
+    ) -> HttpResponseRedirect:
         """Execute specific daily task."""
         try:
             task = DailyTask.objects.get(pk=dailytask_id)
@@ -70,7 +74,9 @@ class DailyTaskAdmin(BaseTaskAdmin):
 
         return redirect("admin:taskmanager_dailytask_changelist")
 
-    def process_task_switch(self, request, dailytask_id, *args, **kwargs):
+    def process_task_switch(
+        self, request: HttpRequest, dailytask_id: int, *args: Any, **kwargs: Any
+    ) -> HttpResponseRedirect:
         """Enable/disable task."""
         action = request.GET.get("action", None)
 

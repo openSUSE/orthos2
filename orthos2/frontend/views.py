@@ -4,6 +4,8 @@ import logging
 import secrets
 import string
 import warnings
+from datetime import timezone as tz
+from typing import Any, Callable, Dict, List, Union
 
 from django.conf import settings
 from django.contrib import messages
@@ -12,13 +14,21 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.db.models import Q
-from django.http import Http404, HttpResponse, HttpResponseRedirect
-from django.shortcuts import redirect, render, resolve_url, reverse
+from django.db.models import Q, QuerySet
+from django.http import (
+    Http404,
+    HttpRequest,
+    HttpResponse,
+    HttpResponseBase,
+    HttpResponsePermanentRedirect,
+    HttpResponseRedirect,
+)
+from django.shortcuts import redirect, render, resolve_url
 from django.template.response import TemplateResponse
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -61,16 +71,18 @@ class MachineListView(ListView):
 
     # login is required for all machine lists
     @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(
+        self, request: HttpRequest, *args: Any, **kwargs: Any
+    ) -> HttpResponseBase:
         return super(MachineListView, self).dispatch(request, *args, **kwargs)
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Machine]:
         """
         Return pre-filtered query set for every machine list.
 
         Adminsitrative machines and administrative systems are excluded.
         """
-        filters = []
+        filters: List[Q] = []
 
         if self.request.GET.get("query"):
             filters.append(Q(fqdn__contains=self.request.GET.get("query")))
@@ -95,18 +107,18 @@ class MachineListView(ListView):
         elif status:
             filters.append(Q(**{"status_{}".format(status): True}))
 
-        machines = Machine.view.get_queryset(user=self.request.user).filter(*filters)
+        machines = Machine.view.get_queryset(user=self.request.user).filter(*filters)  # type: ignore
 
         return machines
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super(MachineListView, self).get_context_data(**kwargs)
         context["machine_list"] = self.object_list
 
         order_by = self.request.GET.get("order_by", None)
         order_direction = self.request.GET.get("order_direction", None)
         if order_by and order_direction in {"asc", "desc"}:
-            context["machine_list"] = self.object_list.order_by(
+            context["machine_list"] = self.object_list.order_by(  # type: ignore
                 "{}".format(order_by)
                 if order_direction == "asc"
                 else "-{}".format(order_by)
@@ -119,7 +131,7 @@ class MachineListView(ListView):
 
         paginator = Paginator(context["machine_list"], self.paginate_by)
 
-        page = self.request.GET.get("page")
+        page = self.request.GET.get("page", 1)
 
         try:
             machines = paginator.page(page)
@@ -139,10 +151,10 @@ class MachineListView(ListView):
 class AllMachineListView(MachineListView):
     """`All Machines` list view."""
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         return super(AllMachineListView, self).get(request, *args, **kwargs)
 
-    def render_to_response(self, context, **response_kwargs):
+    def render_to_response(self, context, **response_kwargs) -> HttpResponse:
         context["title"] = "All Machines"
         return super(AllMachineListView, self).render_to_response(
             context, **response_kwargs
@@ -152,12 +164,12 @@ class AllMachineListView(MachineListView):
 class MyMachineListView(MachineListView):
     """`My Machines` list view."""
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet["Machine"]:
         """Filter machines which are reserved by requesting user."""
         machines = super(MyMachineListView, self).get_queryset()
-        return machines.filter(reserved_by=self.request.user)
+        return machines.filter(reserved_by=self.request.user)  # type: ignore
 
-    def render_to_response(self, context, **response_kwargs):
+    def render_to_response(self, context, **response_kwargs) -> HttpResponse:
         context["title"] = "My Machines"
         context["view"] = "my"
         return super(MyMachineListView, self).render_to_response(
@@ -168,14 +180,14 @@ class MyMachineListView(MachineListView):
 class FreeMachineListView(MachineListView):
     """`Free Machines` list view."""
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet["Machine"]:
         """Filter machines which are NOT reserved and NO dedicated VM hosts."""
         machines = super(FreeMachineListView, self).get_queryset()
         return machines.filter(
             reserved_by=None, vm_dedicated_host=False, administrative=False
         )
 
-    def render_to_response(self, context, **response_kwargs):
+    def render_to_response(self, context, **response_kwargs) -> HttpResponse:
         context["title"] = "Free Machines"
         context["view"] = "free"
         return super(FreeMachineListView, self).render_to_response(
@@ -186,12 +198,12 @@ class FreeMachineListView(MachineListView):
 class VirtualMachineListView(MachineListView):
     """`Virtual Machines` list view."""
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet["Machine"]:
         """Filter machines which are capable to run VMs and which are dedicated VM hosts."""
         machines = super(VirtualMachineListView, self).get_queryset()
         return machines.filter(vm_dedicated_host=True)
 
-    def render_to_response(self, context, **response_kwargs):
+    def render_to_response(self, context, **response_kwargs) -> HttpResponse:
         """Add VMs running already."""
         context["title"] = "Virtual Machines"
         context["view"] = "virtual"
@@ -215,7 +227,7 @@ class VirtualMachineListView(MachineListView):
 
 @login_required
 @check_permissions()
-def machine(request, id):
+def machine(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         machine.enclosure.fetch_location(machine.pk)
@@ -232,7 +244,7 @@ def machine(request, id):
 
 @login_required
 @check_permissions("fqdn")
-def machine_fqdn(request, fqdn):
+def machine_fqdn(request: HttpRequest, fqdn: str) -> HttpResponse:
     try:
         machine = Machine.objects.get(fqdn=fqdn)
         machine.enclosure.fetch_location(machine.pk)
@@ -248,7 +260,7 @@ def machine_fqdn(request, fqdn):
 
 
 @login_required
-def pci(request, id):
+def pci(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         machine.enclosure.fetch_location(machine.pk)
@@ -262,7 +274,7 @@ def pci(request, id):
 
 
 @login_required
-def cpu(request, id):
+def cpu(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         return render(
@@ -275,7 +287,7 @@ def cpu(request, id):
 
 
 @login_required
-def networkinterfaces(request, id):
+def networkinterfaces(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         return render(
@@ -288,7 +300,7 @@ def networkinterfaces(request, id):
 
 
 @login_required
-def installations(request, id):
+def installations(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         return render(
@@ -301,7 +313,7 @@ def installations(request, id):
 
 
 @login_required
-def usb(request, id):
+def usb(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         return render(
@@ -314,7 +326,7 @@ def usb(request, id):
 
 
 @login_required
-def scsi(request, id):
+def scsi(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         return render(
@@ -327,7 +339,7 @@ def scsi(request, id):
 
 
 @login_required
-def virtualization(request, id):
+def virtualization(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
     except Machine.DoesNotExist:
@@ -344,7 +356,9 @@ def virtualization(request, id):
 
 
 @login_required
-def virtualization_add(request, id):
+def virtualization_add(
+    request: HttpRequest, id: int
+) -> Union[HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse]:
     try:
         machine = Machine.objects.get(pk=id)
     except Machine.DoesNotExist:
@@ -367,8 +381,8 @@ def virtualization_add(request, id):
 
                 vm.reserve(
                     reason="VM of {}".format(request.user),
-                    until=add_offset_to_date(30),
-                    user=request.user,
+                    until=add_offset_to_date(30),  # type: ignore
+                    user=request.user,  # type: ignore
                 )
                 messages.success(
                     request, "Virtual machine '{}' created.".format(vm.fqdn)
@@ -378,7 +392,7 @@ def virtualization_add(request, id):
 
             except Exception as exception:
                 logger.exception(exception)
-                messages.error(request, exception)
+                messages.error(request, exception)  # type: ignore
                 if vm:
                     vm.delete()
                 return redirect("frontend:machines")
@@ -391,7 +405,7 @@ def virtualization_add(request, id):
 
 
 @login_required
-def misc(request, id):
+def misc(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         return render(
@@ -405,7 +419,9 @@ def misc(request, id):
 
 @login_required
 @check_permissions()
-def machine_reserve(request, id):
+def machine_reserve(
+    request: HttpRequest, id: int
+) -> Union[HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse]:
     try:
         machine = Machine.objects.get(pk=id)
     except Machine.DoesNotExist:
@@ -425,10 +441,10 @@ def machine_reserve(request, id):
             until = form.cleaned_data["until"]
 
             try:
-                machine.reserve(reason, until, user=request.user)
+                machine.reserve(reason, until, user=request.user)  # type: ignore
                 messages.success(request, "Machine successfully reserved.")
             except Exception as exception:
-                messages.error(request, exception)
+                messages.error(request, exception)  # type: ignore
 
             return redirect("frontend:detail", id=id)
 
@@ -441,7 +457,7 @@ def machine_reserve(request, id):
 
 @login_required
 @check_permissions()
-def machine_release(request, id):
+def machine_release(request: HttpRequest, id: int) -> HttpResponseRedirect:
     try:
         machine = Machine.objects.get(pk=id)
 
@@ -457,7 +473,7 @@ def machine_release(request, id):
 
         except Exception as exception:
             logger.exception(exception)
-            messages.error(request, exception)
+            messages.error(request, exception)  # type: ignore
 
         return redirect("frontend:detail", id=id)
 
@@ -467,7 +483,9 @@ def machine_release(request, id):
 
 
 @login_required
-def history(request, id):
+def history(
+    request: HttpRequest, id: int
+) -> Union[HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse]:
     try:
         machine = Machine.objects.get(pk=id)
         return render(
@@ -482,7 +500,7 @@ def history(request, id):
 
 @login_required
 @check_permissions()
-def rescan(request, id):
+def rescan(request: HttpRequest, id: int) -> HttpResponseRedirect:
     try:
         machine = Machine.objects.get(pk=id)
     except Machine.DoesNotExist:
@@ -491,17 +509,19 @@ def rescan(request, id):
 
     if request.GET.get("action"):
         try:
-            machine.scan(request.GET.get("action"))
+            machine.scan(request.GET.get("action"))  # type: ignore
             messages.info(request, "Rescanning machine - this can take some seconds...")
         except Exception as exception:
-            messages.error(request, exception)
+            messages.error(request, exception)  # type: ignore
 
     return redirect("frontend:detail", id=id)
 
 
 @login_required
 @check_permissions()
-def setup(request, id):
+def setup(
+    request: HttpRequest, id: int
+) -> Union[HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse]:
     try:
         machine = Machine.objects.get(pk=id)
     except Machine.DoesNotExist:
@@ -544,7 +564,7 @@ def setup(request, id):
                     )
 
             except Exception as exception:
-                messages.error(request, exception)
+                messages.error(request, exception)  # type: ignore
 
         return redirect("frontend:detail", id=id)
 
@@ -556,7 +576,7 @@ def setup(request, id):
 
 
 @login_required
-def console(request, id):
+def console(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         return render(
@@ -572,7 +592,9 @@ def console(request, id):
         raise Http404("Machine does not exist")
 
 
-def users_create(request):
+def users_create(
+    request: HttpRequest,
+) -> Union[HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse]:
     if request.method == "GET":
         form = NewUserForm()
     else:
@@ -588,7 +610,7 @@ def users_create(request):
                 )
                 new_user.save()
 
-                new_user = authenticate(username=username, password=password)
+                new_user = authenticate(username=username, password=password)  # type: ignore
                 auth_login(request, new_user)
 
                 return redirect("frontend:machines")
@@ -606,7 +628,9 @@ def users_create(request):
     )
 
 
-def users_password_restore(request):
+def users_password_restore(
+    request: HttpRequest,
+) -> Union[HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse]:
     if request.method == "GET":
         user_id = request.GET.get("user_id", None)
         username = None
@@ -642,7 +666,7 @@ def users_password_restore(request):
             TaskManager.add(task)
 
             # check for multiple accounts from deprecated Orthos
-            task = tasks.CheckMultipleAccounts(user.id)
+            task = tasks.CheckMultipleAccounts(user.id)  # type: ignore
             TaskManager.add(task)
 
             messages.success(request, "Password restored - check your mails.")
@@ -656,24 +680,26 @@ def users_password_restore(request):
 
 
 @login_required
-def users_preferences(request):
+def users_preferences(
+    request: HttpRequest,
+) -> Union[HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse]:
     if request.method == "GET":
         if request.GET.get("action") == "generate_token":
-            user = User.objects.get(pk=request.user.id)
+            user_obj = User.objects.get(pk=request.user.id)  # type: ignore
             try:
-                token = Token.objects.get(user=user)
+                token = Token.objects.get(user=user_obj)  # type: ignore
                 if token:
                     token.delete()
             except Token.DoesNotExist:
                 pass
-            token = Token.objects.create(user=user)
+            token = Token.objects.create(user=user_obj)  # type: ignore
         form = PreferencesForm()
     else:
         form = PreferencesForm(request.POST)
 
         if form.is_valid():
             try:
-                user = User.objects.get(pk=request.user.id)
+                user_obj = User.objects.get(pk=request.user.id)  # type: ignore
             except User.DoesNotExist:
                 messages.error(request, "User does not exist.")
                 return redirect("frontend:password_restore")
@@ -681,17 +707,19 @@ def users_preferences(request):
             new_password = form.cleaned_data["new_password"]
             old_password = form.cleaned_data["old_password"]
 
-            if not user.check_password(old_password):
+            if not user_obj.check_password(old_password):
                 messages.error(request, "Current password is wrong.")
                 return redirect("frontend:preferences_user")
 
-            user.set_password(new_password)
-            user.save()
+            user_obj.set_password(new_password)
+            user_obj.save()
 
-            user = authenticate(username=request.user.username, password=new_password)
+            authenticated_user = authenticate(
+                username=request.user.username, password=new_password
+            )
 
-            if user is not None:
-                update_session_auth_hash(request, user)
+            if authenticated_user is not None:
+                update_session_auth_hash(request, authenticated_user)
                 messages.success(request, "Password successfully changed.")
                 return redirect("frontend:preferences_user")
             else:
@@ -710,7 +738,7 @@ def users_preferences(request):
 
 
 @login_required
-def machine_search(request):
+def machine_search(request: HttpRequest) -> HttpResponse:
     if request.method == "GET":
         form = SearchForm()
 
@@ -718,6 +746,9 @@ def machine_search(request):
         form = SearchForm(request.POST)
 
         if form.is_valid():
+            if isinstance(request.user, AnonymousUser):
+                messages.error(request, "You are not allowed to perform this action.")
+                return redirect("frontend:login")
             machines = Machine.search.form(form.cleaned_data, request.user)
             return render(
                 request,
@@ -733,7 +764,7 @@ def machine_search(request):
 
 
 @login_required
-def statistics(request):
+def statistics(request: HttpRequest) -> HttpResponse:
     total = Machine.objects.all().count()
 
     status_ping = Machine.objects.filter(
@@ -757,7 +788,7 @@ def statistics(request):
         check_connectivity__gte=Machine.Connectivity.ALL
     ).count()
 
-    released_reservations = ReservationHistory.objects.filter(
+    released_reservations = ReservationHistory.objects.filter(  # type: ignore
         reserved_until__gt=timezone.make_aware(
             datetime.datetime.today() - datetime.timedelta(days=2),
             timezone.get_default_timezone(),
@@ -777,16 +808,16 @@ def statistics(request):
         ),
     )
 
-    matrix = [[], [], [], []]
+    matrix: List[List[int]] = [[], [], [], []]
 
     for architecture in Architecture.objects.all():
         matrix[0].append(architecture.machine_set.count())
         matrix[1].append(architecture.machine_set.filter(reserved_by=None).count())
         matrix[2].append(architecture.machine_set.filter(status_login=True).count())
-        infinite = timezone.datetime.combine(
-            datetime.date.max, timezone.datetime.min.time()
+        infinite = timezone.datetime.combine(  # type: ignore
+            datetime.date.max, timezone.datetime.min.time()  # type: ignore
         )
-        infinite = timezone.make_aware(infinite, timezone.utc)
+        infinite = timezone.make_aware(infinite, tz.utc)
         matrix[3].append(
             architecture.machine_set.filter(reserved_until=infinite).count()
         )
@@ -824,11 +855,11 @@ def statistics(request):
     )
 
 
-def deprecate_current_app(func):
+def deprecate_current_app(func: Callable[[Any, Any], Any]) -> Callable[[Any, Any], Any]:
     """Handle deprecation of the current_app parameter of the views."""
 
     @functools.wraps(func)
-    def inner(*args, **kwargs):
+    def inner(*args: Any, **kwargs: Any) -> Any:
         if "current_app" in kwargs:
             warnings.warn(
                 "Passing `current_app` as a keyword argument is deprecated. "
@@ -844,9 +875,9 @@ def deprecate_current_app(func):
     return inner
 
 
-def _get_login_redirect_url(request, redirect_to):
+def _get_login_redirect_url(request: HttpRequest, redirect_to: str) -> str:
     # Ensure the user-originating redirection URL is safe.
-    if not url_has_allowed_host_and_scheme(url=redirect_to, host=request.get_host()):
+    if not url_has_allowed_host_and_scheme(url=redirect_to, host=request.get_host()):  # type: ignore
         return resolve_url(settings.LOGIN_REDIRECT_URL)
     return redirect_to
 
@@ -856,13 +887,13 @@ def _get_login_redirect_url(request, redirect_to):
 @csrf_protect
 @never_cache
 def login(
-    request,
-    template_name="frontend/registration/login.html",
-    redirect_field_name=REDIRECT_FIELD_NAME,
+    request: HttpRequest,
+    template_name: str = "frontend/registration/login.html",
+    redirect_field_name: str = REDIRECT_FIELD_NAME,
     authentication_form=AuthenticationForm,
     extra_context=None,
-    redirect_authenticated_user=False,
-):
+    redirect_authenticated_user: bool = False,
+) -> Union[HttpResponseRedirect, HttpResponsePermanentRedirect, TemplateResponse]:
     """Display the login form and handles the login action."""
     if extra_context is None:
         extra_context = {}

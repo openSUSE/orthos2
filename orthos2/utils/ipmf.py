@@ -24,6 +24,8 @@ This module implements a simple IP Match Filter.
 """
 
 
+from typing import List, Optional, Tuple, Union
+
 import netaddr.ip
 
 
@@ -36,27 +38,32 @@ class IPMatchFilter(object):
         [(subnet, [range, ...]), ...)
     """
 
-    def __init__(self, version=None):
+    def __init__(self, version: Optional[int] = None):
         super(IPMatchFilter, self).__init__()
 
         if version is not None and version != 4 and version != 6:
             raise ValueError("Invalid IP Protocol version {}".format(version))
         self._ver = version
-        self._ipf = []
+        self._ipf: List[
+            Tuple[
+                netaddr.ip.IPNetwork,
+                List[Union[netaddr.ip.IPRange, netaddr.ip.IPNetwork]],
+            ]
+        ] = []
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "{}('{}')".format(self.__class__.__name__, self._ipf)
 
     @property
-    def version(self):
+    def version(self) -> Optional[int]:
         """The IP Protocol version used by this instance."""
         return self._ver
 
-    def empty(self):
+    def empty(self) -> bool:
         """Return true when the filter is empty, otherwise false."""
         return not self._ipf
 
-    def add_subnet(self, subnet):
+    def add_subnet(self, subnet: str) -> bool:
         """Add an allowed subnet to the filter."""
         sn = netaddr.ip.IPNetwork(subnet)
         if self.version is not None and sn.version != self.version:
@@ -69,7 +76,7 @@ class IPMatchFilter(object):
         self._ipf.append((sn, []))
         return True
 
-    def add_range(self, beg, end=None):
+    def add_range(self, beg: str, end: Optional[str] = None) -> bool:
         """
         Add a range to matching subnet giving either its begin and end or also as network in
         begin.
@@ -93,7 +100,7 @@ class IPMatchFilter(object):
                     return True
         return False
 
-    def match(self, ip):
+    def match(self, ip: str) -> bool:
         """
         Test if the IP address matches an allowed subnet but none of the disallowed ranges in it.
         """

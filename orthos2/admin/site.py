@@ -1,4 +1,8 @@
+from typing import Any, Dict, Optional
+
 from django.contrib.admin import AdminSite
+from django.http import HttpRequest
+from django.template.response import TemplateResponse
 
 
 class MyAdminSite(AdminSite):
@@ -9,6 +13,8 @@ class MyAdminSite(AdminSite):
     site_header = "Orthos2 Administration"
 
     # C&P -> not sure this is needed
-    def index(self, request, extra_context=None):
+    def index(
+        self, request: HttpRequest, extra_context: Optional[Dict[str, Any]] = None
+    ) -> TemplateResponse:
         # Update extra_context with new variables
         return super().index(request, extra_context)

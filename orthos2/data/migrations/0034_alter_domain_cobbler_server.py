@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="domain",
             name="cobbler_server",
-            field=models.ManyToManyField(
+            field=models.ManyToManyField(  # type: ignore
                 blank=True,
                 limit_choices_to={"administrative": True},
                 null=True,

@@ -1,6 +1,7 @@
 import collections
 import datetime
 import logging
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from django import forms
 from django.conf import settings
@@ -36,8 +37,13 @@ class NewUserForm(forms.Form):
         max_length=64, widget=forms.TextInput(attrs={"class": "form-control"})
     )
 
-    def clean(self):
+    def clean(self) -> Optional[Dict[str, Any]]:
         cleaned_data = super(NewUserForm, self).clean()
+        if cleaned_data is None:
+            # It may be that a superclass didn't return cleaned data (as this is optional)
+            # https://docs.djangoproject.com/en/4.2/ref/forms/validation/#cleaning-and-validating-fields-that-depend-on-each-other
+            cleaned_data = self.cleaned_data
+
         login = cleaned_data.get("login")
         password = cleaned_data.get("password")
         password2 = cleaned_data.get("password2")
@@ -46,7 +52,7 @@ class NewUserForm(forms.Form):
         if User.objects.filter(username=login).count() > 0:
             self.add_error("login", "User '{}' does already exist.".format(login))
 
-        if len(password) < 8:
+        if len(password) < 8:  # type: ignore
             self.add_error(
                 "password",
                 "Password is too short. It must contain at least 8 characters.",
@@ -77,10 +83,11 @@ class NewUserForm(forms.Form):
                 self.add_error(
                     "email", "Email address '{}' is already in use.".format(email)
                 )
+        return None
 
 
 class ReserveMachineForm(forms.Form):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         reason = kwargs.pop("reason", None)
         until = kwargs.pop("until", None)
         username = kwargs.pop("username", None)
@@ -108,8 +115,12 @@ class ReserveMachineForm(forms.Form):
 
     username = forms.CharField(widget=forms.HiddenInput(), required=False)
 
-    def clean(self):
+    def clean(self) -> None:
         cleaned_data = super(ReserveMachineForm, self).clean()
+        if cleaned_data is None:
+            # It may be that a superclass didn't return cleaned data (as this is optional)
+            # https://docs.djangoproject.com/en/4.2/ref/forms/validation/#cleaning-and-validating-fields-that-depend-on-each-other
+            cleaned_data = self.cleaned_data
         reserved_until = cleaned_data.get("until")
 
         if not reserved_until:
@@ -131,8 +142,12 @@ class ReserveMachineForm(forms.Form):
 
 
 class SearchForm(forms.Form):
-    def clean(self):
+    def clean(self) -> None:
         cleaned_data = super(SearchForm, self).clean()
+        if cleaned_data is None:
+            # It may be that a superclass didn't return cleaned data (as this is optional)
+            # https://docs.djangoproject.com/en/4.2/ref/forms/validation/#cleaning-and-validating-fields-that-depend-on-each-other
+            cleaned_data = self.cleaned_data
 
         empty = True
         values = [
@@ -159,15 +174,19 @@ class SearchForm(forms.Form):
             except ValueError:
                 self.add_error("cpu_cores", "Value must be a number.")
 
-    def get_vendors():
-        vendors = [("", "--all--")]
+    @staticmethod
+    def get_vendors() -> List[Tuple[str, str]]:
+        vendors: List[Tuple[str, str]] = [("", "--all--")]
         for vendor in Vendor.objects.all().values("id", "name"):
-            vendors.append((vendor["id"], vendor["name"]))
+            vendors.append((vendor["id"], vendor["name"]))  # type: ignore
         return vendors
 
-    def get_platforms():
-        platforms = [("", "--all--")]
-        groups = {}
+    @staticmethod
+    def get_platforms() -> List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]]:
+        platforms: List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]] = [
+            ("", "--all--")
+        ]
+        groups: Dict[str, Tuple[Tuple[int, str], ...]] = {}
         for platform in Platform.objects.all():
             id = platform.id
             name = platform.name
@@ -181,10 +200,11 @@ class SearchForm(forms.Form):
             else:
                 groups[vendor.name] = ((id, name),)
 
-        for vendor, platforms_ in groups.items():
-            platforms.append((vendor, platforms_))
+        for vendor, platforms_ in groups.items():  # type: ignore
+            platforms.append((vendor, platforms_))  # type: ignore
         return platforms
 
+    @staticmethod
     def get_cartridge_platforms():
         platforms = [("", "--all--")]
         groups = {}
@@ -205,6 +225,7 @@ class SearchForm(forms.Form):
             platforms.append((vendor, platforms_))
         return platforms
 
+    @staticmethod
     def get_distributions():
         installations = [("", "--all--")]
         for installation in (
@@ -215,12 +236,14 @@ class SearchForm(forms.Form):
             )
         return installations
 
+    @staticmethod
     def get_systems():
         """Return system choices."""
         return Machine._meta.get_field("system").get_choices(
             blank_choice=[("", "--all--")]
         )
 
+    @staticmethod
     def get_architectures():
         """Return architecture choices."""
         return Machine._meta.get_field("architecture").get_choices(
@@ -411,7 +434,7 @@ class SearchForm(forms.Form):
 
 
 class PasswordRestoreForm(forms.Form):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         username = kwargs.pop("username", None)
 
         super(PasswordRestoreForm, self).__init__(*args, **kwargs)
@@ -433,12 +456,12 @@ class PasswordRestoreForm(forms.Form):
 
 
 class PreferencesForm(forms.Form):
-    def clean(self):
+    def clean(self) -> None:
         cleaned_data = super(PreferencesForm, self).clean()
-        new_password = cleaned_data.get("new_password")
-        new_password2 = cleaned_data.get("new_password2")
+        new_password = cleaned_data.get("new_password")  # type: ignore
+        new_password2 = cleaned_data.get("new_password2")  # type: ignore
 
-        if len(new_password) < 8:
+        if len(new_password) < 8:  # type: ignore
             self.add_error(
                 "new_password",
                 "Password is too short. It must contain at least 8 characters.",
@@ -465,7 +488,7 @@ class PreferencesForm(forms.Form):
 
 
 class SetupMachineForm(forms.Form):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         machine = kwargs.pop("machine", None)
         domain = machine.fqdn_domain
 
@@ -501,13 +524,13 @@ class SetupMachineForm(forms.Form):
 
         super(SetupMachineForm, self).__init__(*args, **kwargs)
 
-        self.fields["setup"].choices = self.get_setup_select_choices(records)
+        self.fields["setup"].choices = self.get_setup_select_choices(records)  # type: ignore
         logger.debug(
             "Setup choicen for %s.%s [%s]:\n%s\n",
             machine,
             domain,
             architecture,
-            self.fields["setup"].choices,
+            self.fields["setup"].choices,  # type: ignore
         )
 
     def get_setup_select_choices(self, records):
@@ -545,12 +568,12 @@ class SetupMachineForm(forms.Form):
 
 
 class VirtualMachineForm(forms.Form):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         virtualization_api = kwargs.pop("virtualization_api", None)
 
         super(VirtualMachineForm, self).__init__(*args, **kwargs)
 
-        self.fields["system"].choices = [
+        self.fields["system"].choices = [  # type: ignore
             (system.pk, system.name)
             for system in System.objects.filter(virtual=True, name__regex=r"\bKVM\b")
         ]
@@ -560,8 +583,8 @@ class VirtualMachineForm(forms.Form):
                 "as a kwarg."
             )
         architectures, image_list = virtualization_api.get_image_list()
-        self.fields["architecture"].choices = [(architectures[0], architectures[0])]
-        self.fields["image"].choices = [("none", "None")] + image_list
+        self.fields["architecture"].choices = [(architectures[0], architectures[0])]  # type: ignore
+        self.fields["image"].choices = [("none", "None")] + image_list  # type: ignore
 
     def clean(self):
         """Set `image` to None; cast `decimal.Decimal()` to `int`."""

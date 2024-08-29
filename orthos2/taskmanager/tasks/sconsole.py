@@ -10,10 +10,10 @@ logger = logging.getLogger("tasks")
 class RegenerateSerialConsole(Task):
     """Regenerate the cscreen configuration for a specific serial console server."""
 
-    def __init__(self, fqdn):
+    def __init__(self, fqdn: str) -> None:
         self.fqdn = fqdn
 
-    def execute(self):
+    def execute(self) -> None:
         """Execute the task."""
         from orthos2.data.models import Machine
 
@@ -34,7 +34,7 @@ class RegenerateSerialConsole(Task):
             new_content = ""
             # domains served by this cscreen server:
             domains = Domain.objects.filter(cscreen_server__fqdn=self.fqdn)
-            machines = []
+            machines = []  # type: ignore
             for domain in domains:
                 machines += domain.machine_set.all()
 
@@ -78,7 +78,7 @@ class RegenerateSerialConsole(Task):
                 if marker_found is False:
                     logging.info("CSCREEN: Orthos marker not found, adding...")
                     buffer += (
-                        orthos_inline_begin + "\n" + new_content + orthos_inline_end
+                        orthos_inline_begin + "\n" + new_content + orthos_inline_end  # type: ignore
                     )
 
                 cscreen.close()
@@ -97,12 +97,12 @@ class RegenerateSerialConsole(Task):
             # Create an empty file with just markers, this will get the .old file
             # to diff against for new entries via cscreen -u
             if not file_found:
-                buffer = orthos_inline_begin + "\n" + orthos_inline_end
+                buffer = orthos_inline_begin + "\n" + orthos_inline_end  # type: ignore
                 cscreen = conn.get_file(screenrc_file, "w")
                 buffer = buffer.strip("\n")
                 print(buffer, file=cscreen)
                 cscreen.close()
-                buffer = orthos_inline_begin + "\n" + new_content + orthos_inline_end
+                buffer = orthos_inline_begin + "\n" + new_content + orthos_inline_end  # type: ignore
 
             # Save backup file which is used later by an invoked script
             # to determine the changes and update the running screen

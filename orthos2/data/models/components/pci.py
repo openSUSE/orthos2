@@ -1,5 +1,6 @@
 import logging
 import re
+from typing import Any, Dict, List, Optional, Union
 
 from django.db import models
 
@@ -43,7 +44,7 @@ class PCIDevice(Component):
     drivermodule = models.TextField(null=True, default=None)
 
     @staticmethod
-    def from_lspci_mmnv(text):
+    def from_lspci_mmnv(text: Union[str, List[str]]) -> "PCIDevice":
         """Create a new `PCIDevice` object from the `lspci -mmnv` output."""
         if not isinstance(text, list):
             text = text.splitlines()
@@ -85,7 +86,7 @@ class PCIDevice(Component):
 
         return dev
 
-    def lookup_missing_names(self):
+    def lookup_missing_names(self) -> None:
         """Lookup of missing names in the PCI database of the system."""
         if not self.vendor and self.vendor_id:
             self.vendor = PCIDatabase().get_vendor_from_id(self.vendor_id)
@@ -106,7 +107,7 @@ class PCIDevice(Component):
                 self.vendor_id, self.device_id, self.subvendor_id, self.subdevice_id
             )
 
-    def output(self):
+    def output(self) -> str:
         """
         Convert the PCI device to a long string (more than one line).
 
@@ -114,27 +115,27 @@ class PCIDevice(Component):
         """
         output = ""
         output += "{:<10}: {}\n".format("Slot", self.slot)
-        output += "{:<10}: {} [{}]\n".format("Class", self.classname, self.classid)
-        output += "{:<10}: {} [{}]\n".format("Vendor", self.vendor, self.vendorid)
-        output += "{:<10}: {} [{}]\n".format("Device", self.device, self.deviceid)
+        output += "{:<10}: {} [{}]\n".format("Class", self.classname, self.class_id)
+        output += "{:<10}: {} [{}]\n".format("Vendor", self.vendor, self.vendor_id)
+        output += "{:<10}: {} [{}]\n".format("Device", self.device, self.device_id)
         output += "{:<10}: {} [{}]\n".format(
-            "SVendor", self.subvendor, self.subvendorid
+            "SVendor", self.subvendor, self.subvendor_id
         )
         output += "{:<10}: {} [{}]\n".format(
-            "SDevice", self.subdevice, self.subdeviceid
+            "SDevice", self.subdevice, self.subdevice_id
         )
         output += "{:<10}: {}\n".format("Rev", self.revision)
         output += "{:<10}: {}\n".format("Driver", self.drivermodule)
 
         return output
 
-    def __str__(self):
-        return self.machine.fqdn
+    def __str__(self) -> str:
+        return self.machine.fqdn  # type: ignore
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return super().__hash__()
 
-    def __eq__(self, obj):
+    def __eq__(self, obj: Any) -> bool:
         """
         Compare two PCI devices.
 
@@ -148,7 +149,7 @@ class PCIDevice(Component):
             and self.subdevice_id == obj.subdevice_id
         )
 
-    def __neq__(self, obj):
+    def __neq__(self, obj: Any) -> bool:
         """
         Compare two PCI devices.
 
@@ -170,15 +171,17 @@ class PCIDatabase(object):
     class PCIDatabaseImpl:
         """Singleton implementation that represents the PCI database."""
 
-        def __init__(self):
+        def __init__(self) -> None:
             """Initialise the PCIDatabase."""
-            self._vendors = {}  # key: vendorid
-            self._devices = {}  # key: vendorid:deviceid
-            self.sdevices = {}  # key: vendorid:deviceid:svendorid:sdeviceid
-            self.classes = {}  # key: class
+            self._vendors: Dict[str, str] = {}  # key: vendorid
+            self._devices: Dict[str, str] = {}  # key: vendorid:deviceid
+            self.sdevices: Dict[
+                str, str
+            ] = {}  # key: vendorid:deviceid:svendorid:sdeviceid
+            self.classes: Dict[str, str] = {}  # key: class
             self.parse_pci_ids(PCIDatabase.PCIIDS_FILE)
 
-        def get_vendor_from_id(self, vendorid):
+        def get_vendor_from_id(self, vendorid: str) -> Optional[str]:
             """Return the vendor for a given ID."""
             vendorid = vendorid.lower()
             if vendorid in self._vendors.keys():
@@ -186,7 +189,7 @@ class PCIDatabase(object):
             else:
                 return None
 
-        def get_device_from_id(self, vendorid, deviceid):
+        def get_device_from_id(self, vendorid: str, deviceid: str) -> Optional[str]:
             """Return the device for given IDs `vendorid` and `deviceid`."""
             vendordeviceid = (vendorid + ":" + deviceid).lower()
             if vendordeviceid in self._devices.keys():
@@ -194,7 +197,7 @@ class PCIDatabase(object):
             else:
                 return None
 
-        def get_class_from_id(self, classid):
+        def get_class_from_id(self, classid: str) -> Optional[str]:
             """Return the class for a given ID."""
             classid = classid.lower()
             if classid in self.classes.keys():
@@ -202,7 +205,9 @@ class PCIDatabase(object):
             else:
                 return None
 
-        def get_sdevice_from_id(self, vendorid, deviceid, svendorid, sdeviceid):
+        def get_sdevice_from_id(
+            self, vendorid: str, deviceid: str, svendorid: str, sdeviceid: str
+        ) -> Optional[str]:
             """Return the subdevice name for a given ID."""
             key = "{}:{}:{}:{}".format(
                 vendorid.lower(), deviceid.lower(), svendorid.lower(), sdeviceid.lower()
@@ -212,7 +217,7 @@ class PCIDatabase(object):
             else:
                 return None
 
-        def parse_pci_ids(self, filename):
+        def parse_pci_ids(self, filename: str) -> None:
             """
             Parse the `PCIIDS_FILE` file.
 
@@ -311,17 +316,17 @@ class PCIDatabase(object):
     # storage for the instance reference
     __instance = None
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Create singleton instance."""
         if PCIDatabase.__instance is None:
             PCIDatabase.__instance = PCIDatabase.PCIDatabaseImpl()
 
         self.__dict__["_Singleton__instance"] = PCIDatabase.__instance
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> Any:
         """Delegate access to implementation."""
         return getattr(self.__instance, attr)
 
-    def __setattr__(self, attr, value):
+    def __setattr__(self, attr: str, value: Any) -> None:
         """Delegate access to implementation."""
         return setattr(self.__instance, attr, value)

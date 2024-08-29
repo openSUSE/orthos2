@@ -1,4 +1,5 @@
 import logging
+from typing import Callable, Optional, Tuple
 
 from django.utils import timezone
 
@@ -41,7 +42,7 @@ class MachineCheck(Task):
         as_list = [STATUS, NETWORKINTERFACES, INSTALLATIONS, ALL]
 
         @classmethod
-        def to_str(cls, index):
+        def to_str(cls, index: int) -> str:
             """
             Returns scan option as string by index.
             """
@@ -51,7 +52,7 @@ class MachineCheck(Task):
             raise Exception("Scan option '{}' doesn't exist!".format(index))
 
         @classmethod
-        def to_int(cls, name):
+        def to_int(cls, name: str) -> int:
             """
             Returns scan option as integer if name matches.
             """
@@ -67,13 +68,13 @@ class MachineCheck(Task):
         (Scan.ALL, Scan.Action.ALL),
     )
 
-    def __init__(self, fqdn, scan):
+    def __init__(self, fqdn: str, scan: int) -> None:
         self.fqdn = fqdn
         self.scan = scan
         self.machine = None
         self.online = None
 
-    def _get_methods(self):
+    def _get_methods(self) -> Tuple[Callable[[], None], ...]:
         """
         Returns all check-methods for the respective scans.
         """
@@ -94,16 +95,19 @@ class MachineCheck(Task):
 
         return methods[self.scan]
 
-    def set_scan(self, scan):
+    def set_scan(self, scan: int) -> None:
         """
         Set the scan scope.
         """
         self.scan = scan
 
-    def status(self):
+    def status(self) -> None:
         """
         Checks ping, SSH and login status.
         """
+        if self.machine is None:
+            raise ValueError("Machine not set!")
+
         self.machine.status_ipv4 = Machine.StatusIP.UNREACHABLE
         self.machine.status_ipv6 = Machine.StatusIP.UNREACHABLE
         self.machine.status_ssh = False
@@ -129,10 +133,13 @@ class MachineCheck(Task):
         self.online = bool(self.machine.status_login)
         self.machine.save()
 
-    def network(self):
+    def network(self) -> None:
         """
         Collect information about network interfaces.
         """
+        if self.machine is None:
+            raise ValueError("Machine not set!")
+
         if not self.machine.collect_system_information:
             logger.debug(
                 "Network interfaces: collecting system information disabled... skip"
@@ -165,10 +172,13 @@ class MachineCheck(Task):
                 if not networkinterface.primary:
                     networkinterface.delete()
 
-    def status_ip(self):
+    def status_ip(self) -> None:
         """
         Collect IPv4/IPv6 status.
         """
+        if self.machine is None:
+            raise ValueError("Machine not set!")
+
         if not self.machine.collect_system_information:
             logger.debug("Status IP: collecting system information disabled... skip")
             return
@@ -181,11 +191,11 @@ class MachineCheck(Task):
         if machine_:
             sync(self.machine, machine_)
 
-    def installations(self):
+    def installations(self) -> None:
         """
         Collect all installations/distributions.
         """
-        if not self.machine.collect_system_information:
+        if not self.machine.collect_system_information:  # type: ignore
             logger.debug(
                 "Installations: collecting system information disabled... skip"
             )
@@ -200,17 +210,17 @@ class MachineCheck(Task):
             return
 
         logger.debug("Drop installations for '%s'...", self.fqdn)
-        self.machine.installations.all().delete()
+        self.machine.installations.all().delete()  # type: ignore
 
-        for installation in installations_:
+        for installation in installations_:  # type: ignore
             installation.save()
 
-    def execute(self):
+    def execute(self) -> None:
         """
         Executes the task.
         """
         try:
-            self.machine = Machine.objects.get(fqdn=self.fqdn)
+            self.machine = Machine.objects.get(fqdn=self.fqdn)  # type: ignore
         except Machine.DoesNotExist:
             logger.error("Machine does not exist: fqdn=%s", self.fqdn)
             return
@@ -218,8 +228,8 @@ class MachineCheck(Task):
         for func in self._get_methods():
             func()
 
-        self.machine.last_check = timezone.now()
-        self.machine.save()
+        self.machine.last_check = timezone.now()  # type: ignore
+        self.machine.save()  # type: ignore
 
 
 class RegenerateMOTD(Task):
@@ -227,16 +237,16 @@ class RegenerateMOTD(Task):
     Regenerates the MOTD of a machine.
     """
 
-    def __init__(self, fqdn):
+    def __init__(self, fqdn: str) -> None:
         self.fqdn = fqdn
 
-    def execute(self):
+    def execute(self) -> Optional[bool]:  # type: ignore
         """
         Executes the task.
         """
         if not ServerConfig.objects.bool_by_key("orthos.debug.motd.write"):
             logger.warning("Disabled: set 'orthos.debug.motd.write' to 'true'")
-            return
+            return  # type: ignore
 
         BEGIN = "-" * 69 + " Orthos{ --"
         LINE = "-" * 80
@@ -246,7 +256,7 @@ class RegenerateMOTD(Task):
             machine = Machine.objects.get(fqdn=self.fqdn)
         except Machine.DoesNotExist:
             logger.error("Machine does not exist: fqdn=%s", self.fqdn)
-            return
+            return  # type: ignore
 
         conn = None
         try:
@@ -283,10 +293,10 @@ class RegenerateMOTD(Task):
                         file=motd,
                     )
                 print("", file=motd)
-                print(wrap80(machine.reserved_reason), file=motd)
+                print(wrap80(machine.reserved_reason), file=motd)  # type: ignore
             print(END, file=motd)
             motd.close()
-            _stdout, stderr, exitstatus = conn.execute_script_remote(
+            _stdout, stderr, exitstatus = conn.execute_script_remote(  # type: ignore
                 "machine_sync_motd.sh"
             )
 

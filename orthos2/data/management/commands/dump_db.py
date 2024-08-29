@@ -1,9 +1,12 @@
 #!/usr/bin/python3
 
 import os
+from typing import Any, List
 
 from django.apps import apps
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
+from django.db import models
+from django.db.models import QuerySet
 
 from orthos2.data.models.domain import Domain, DomainAdmin
 from orthos2.data.models.machine import Enclosure, Machine, NetworkInterface
@@ -50,7 +53,7 @@ Modules["general"] = (
     "Serialconsoletype",
 )
 
-Modules["domain"] = ("Domain", "Domainadmin")
+Modules["domain"] = ("Domain", "Domainadmin")  # type: ignore
 
 # Modules['remote' ] = ( "Remotepower", "Bmc", "Remotepowerdevice", "Serialconsole", "Serialconsoletype" )
 
@@ -65,7 +68,7 @@ domains = [
 ]
 
 
-def show_help():
+def show_help() -> None:
     print("Use --script-args to specify what you want to dump:")
     print("")
     print("\tgeneral \t-- Dump general DB data [ %s ] " % ", ".join(Modules["general"]))
@@ -86,9 +89,9 @@ class Command(BaseCommand):
     help += USAGE
 
     config = apps.get_app_config("data")
-    queries = []
+    queries: List["models.Model"] = []
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super(Command, self).__init__(*args, **kwargs)
         self.machinesonly = False
 
@@ -99,10 +102,10 @@ class Command(BaseCommand):
             return
         try:
             machine = Machine.objects.get(fqdn=fqdn)
-            query = Enclosure.objects.filter(pk=machine.enclosure.pk)
-            self.queries.extend(query)
-            query = Machine.objects.filter(fqdn=fqdn)
-            self.queries.extend(query)
+            enclosure_query = Enclosure.objects.filter(pk=machine.enclosure.pk)
+            self.queries.extend(enclosure_query)
+            machine_query = Machine.objects.filter(fqdn=fqdn)
+            self.queries.extend(machine_query)
             if machine.hypervisor:
                 self.add_machine(machine.hypervisor.fqdn)
             added_machines.append(fqdn)
@@ -124,10 +127,10 @@ class Command(BaseCommand):
             if d_obj.cobbler_server:
                 self.add_machine(d_obj.cobbler_server.fqdn)
 
-            query = Domain.objects.filter(name=d_obj)
-            self.queries.extend(query)
-            query = DomainAdmin.objects.filter(domain=d_obj)
-            self.queries.extend(query)
+            domain_query = Domain.objects.filter(name=d_obj)
+            self.queries.extend(domain_query)
+            domain_admin_query = DomainAdmin.objects.filter(domain=d_obj)
+            self.queries.extend(domain_admin_query)
         except Domain.DoesNotExist:
             print("%s - Domain does not exist" % domain)
             show_help()
@@ -135,9 +138,9 @@ class Command(BaseCommand):
     def add_domain_machines(self, domain: str):
         machines = Machine.objects.filter(fqdn_domain__name=domain)
         for machine in machines:
-            self.add_machine(machine)
+            self.add_machine(machine.fqdn)
 
-    def add_arch_relations(self):
+    def add_arch_relations(self) -> None:
         """
         We always need arch.suse.de domain and markeb.arch.suse.de
         We delete unneeded machine references
@@ -150,14 +153,15 @@ class Command(BaseCommand):
         self.queries.extend(query)
         self.add_machine("markeb.arch.suse.de")
 
-    def delete_network(mac: str):
+    @staticmethod
+    def delete_network(mac: str) -> None:
         network = NetworkInterface.objects.get(mac_address=mac.upper())
         if network:
             print(network)
             network.delete()
         exit(1)
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "domain", nargs="*", default=domains, help="Dump domain tables"
         )
@@ -183,10 +187,10 @@ class Command(BaseCommand):
             default=False,
         )
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any):
 
         self.natural = False
-        # delete_network('00:01:73:02:37:74')
+        # self.delete_network('00:01:73:02:37:74')
         filename = "db_dump"
         # whitespace separated domains passed as one argument
         domains = options["domain"]
@@ -201,9 +205,9 @@ class Command(BaseCommand):
             query = DailyTask.objects.all()
             if query:
                 self.queries.extend(query)
-            for table in tables:
+            for table in tables:  # type: ignore
                 print(".. dump table %s" % table)
-                model = self.config.get_model(table).objects.all()
+                model = self.config.get_model(table).objects.all()  # type: ignore
                 self.queries.extend(model)
 
         for domain in domains:
@@ -214,7 +218,7 @@ class Command(BaseCommand):
 
         self.save()
 
-    def save(self):
+    def save(self) -> None:
         # print(queries)
         with open(self.file, "w") as out:
             from django.core import serializers

@@ -2,14 +2,26 @@ import datetime
 import logging
 import re
 from copy import deepcopy
-from typing import Optional
+from decimal import Decimal
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Concatenate,
+    Dict,
+    Optional,
+    ParamSpec,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.utils import timezone
 
 from orthos2.data.exceptions import ReleaseException, ReserveException
@@ -31,18 +43,28 @@ from orthos2.utils.misc import (
     is_dns_resolvable,
 )
 
+if TYPE_CHECKING:
+    from orthos2.data.models.bmc import BMC
+    from orthos2.data.models.installation import Installation
+    from orthos2.data.models.remotepower import RemotePower
+    from orthos2.data.models.serialconsole import SerialConsole
+
 logger = logging.getLogger("models")
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
-def validate_dns(value):
+def validate_dns(value: str) -> None:
     if not is_dns_resolvable(value):
         raise ValidationError("No DNS lookup result for '{}'".format(value))
 
 
-def check_permission(function):
+def check_permission(
+    function: Callable[Concatenate["Machine", P], R]
+) -> Callable[Concatenate["Machine", P], R]:
     """Return decorator for checking machine specific methods."""
 
-    def decorator(machine, *args, **kwargs):
+    def decorator(machine: "Machine", *args: P.args, **kwargs: P.kwargs) -> R:
         """
         Check permission:
 
@@ -61,13 +83,13 @@ def check_permission(function):
             # grant access if no user is given for e.g. a server call
             return function(machine, *args, **kwargs)
 
-        elif user.is_superuser:
+        elif user.is_superuser:  # type: ignore
             logger.debug(
                 "Allow %s of %s by %s (superuser)", function.__name__, machine, user
             )
             return function(machine, *args, **kwargs)
 
-        elif user in User.objects.filter(
+        elif user in User.objects.filter(  # type: ignore
             memberships__group__name=machine.group, memberships__is_privileged=True
         ):
             logger.debug(
@@ -114,8 +136,8 @@ def check_permission(function):
     return decorator
 
 
-class RootManager(models.Manager):
-    def get_queryset(self):
+class RootManager(models.Manager["Machine"]):
+    def get_queryset(self) -> QuerySet["Machine"]:
         """Exclude all inactive machines."""
         queryset = super(RootManager, self).get_queryset()
 
@@ -123,7 +145,7 @@ class RootManager(models.Manager):
 
 
 class ViewManager(RootManager):
-    def get_queryset(self, user=None):
+    def get_queryset(self, user: Optional[User] = None) -> QuerySet["Machine"]:
         """Exclude administrative machines/systems from all view requested by non-superusers."""
         queryset = super(ViewManager, self).get_queryset()
 
@@ -135,7 +157,9 @@ class ViewManager(RootManager):
 
 
 class SearchManager(ViewManager):
-    def form(self, parameters, user=None):
+    def form(
+        self, parameters: Dict[str, Any], user: Optional["User"] = None
+    ) -> QuerySet["Machine"]:
         """Filter machine queryset by advanced search parameters."""
         parameters = {key: value for key, value in parameters.items() if value}
 
@@ -165,8 +189,8 @@ class SearchManager(ViewManager):
 
 
 class Machine(models.Model):
-    class Manager(models.Manager):
-        def get_by_natural_key(self, fqdn):
+    class Manager(models.Manager["Machine"]):
+        def get_by_natural_key(self, fqdn: str) -> "Machine":
             return self.get(fqdn=fqdn)
 
     class Meta:
@@ -271,7 +295,7 @@ class Machine(models.Model):
     )
 
     cpu_speed = models.DecimalField(
-        "CPU speed (MHz)", default=0, max_digits=10, decimal_places=2
+        "CPU speed (MHz)", default=Decimal(0), max_digits=10, decimal_places=2
     )
 
     cpu_id = models.CharField(
@@ -481,13 +505,13 @@ class Machine(models.Model):
         on_delete=models.SET_NULL,
         help_text="The physical host this virtual machine is running on",
     )
-    hostname = None
+    hostname: Optional[str] = None
 
-    __ipv4 = None
+    __ipv4: Optional[str] = None
 
-    __ipv6 = None
+    __ipv6: Optional[str] = None
 
-    mac_address = None
+    mac_address: Optional[str] = None
 
     # Runtime object created on virt_api_int in init()
     virtualization_api = None
@@ -519,12 +543,32 @@ class Machine(models.Model):
     )
 
     last_check = models.DateTimeField(
-        "Checked at", editable=False, default="2016-01-01T10:00:00+00:00"
+        "Checked at",
+        editable=False,
+        default=datetime.datetime(
+            year=2016,
+            month=1,
+            day=1,
+            hour=10,
+            minute=0,
+            second=00,
+            tzinfo=datetime.timezone.utc,
+        ),
     )
 
     updated = models.DateTimeField("Updated at", auto_now=True)
 
     created = models.DateTimeField("Created at", auto_now_add=True)
+
+    networkinterfaces: "NetworkInterface"
+    domain_set: "Domain"
+    cobbler_server_for: "Domain"
+    tftp_server_for_domain: "Domain"
+    hypervising: "Machine"
+    remotepower: "RemotePower"
+    bmc: "BMC"
+    installations: "Installation"
+    serialconsole: "SerialConsole"
 
     objects = Manager()
     api = RootManager()
@@ -532,10 +576,10 @@ class Machine(models.Model):
     search = SearchManager()
     view = ViewManager()
 
-    def natural_key(self):
+    def natural_key(self) -> Tuple[str]:
         return (self.fqdn,)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Deep copy object for comparison in `save()`."""
         super(Machine, self).__init__(*args, **kwargs)
 
@@ -545,18 +589,18 @@ class Machine(models.Model):
             self._original = None
 
         if self.virt_api_int is not None:
-            self.virtualization_api = VirtualizationAPI(self.virt_api_int, self)
+            self.virtualization_api = VirtualizationAPI(self.virt_api_int, self)  # type: ignore
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.fqdn
 
-    def bmc_allowed(self):
+    def bmc_allowed(self) -> bool:
         return self.system.allowBMC
 
-    def has_bmc(self):
+    def has_bmc(self) -> bool:
         return hasattr(self, "bmc")
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """
         Save machine object.
 
@@ -754,25 +798,25 @@ class Machine(models.Model):
             from orthos2.data.signals import signal_serialconsole_regenerate
 
             if hasattr(self.fqdn_domain, "cscreen_server"):
-                cscreen_server_fqdn = self.fqdn_domain.cscreen_server.fqdn
+                cscreen_server_fqdn = self.fqdn_domain.cscreen_server.fqdn  # type: ignore
                 signal_serialconsole_regenerate.send(
                     sender=self.__class__, cscreen_server_fqdn=cscreen_server_fqdn
                 )
 
     @property
-    def ipv4(self):
+    def ipv4(self) -> Optional[str]:
         if self.__ipv4 is None:
             self.__ipv4 = get_ipv4(self.fqdn)
         return self.__ipv4
 
     @property
-    def ipv6(self):
+    def ipv6(self) -> Optional[str]:
         if self.__ipv6 is None:
             self.__ipv6 = get_ipv6(self.fqdn)
         return self.__ipv6
 
     @property
-    def status_ping(self):
+    def status_ping(self) -> bool:
         return self.status_ipv4 in {
             Machine.StatusIP.REACHABLE,
             Machine.StatusIP.CONFIRMED,
@@ -781,24 +825,24 @@ class Machine(models.Model):
             Machine.StatusIP.CONFIRMED,
         }
 
-    def is_reserved(self):
+    def is_reserved(self) -> bool:
         if self.reserved_by:
             return True
         return False
 
-    is_reserved.boolean = True
+    is_reserved.boolean = True  # type: ignore
 
-    def is_administrative(self):
+    def is_administrative(self) -> bool:
         return self.administrative
 
-    is_administrative.boolean = True
+    is_administrative.boolean = True  # type: ignore
 
-    def is_cobbler_server(self):
-        return self.cobbler_server_for.exists()
+    def is_cobbler_server(self) -> bool:
+        return self.cobbler_server_for.exists()  # type: ignore
 
-    is_cobbler_server.boolean = True
+    is_cobbler_server.boolean = True  # type: ignore
 
-    def is_virtual_machine(self):
+    def is_virtual_machine(self) -> bool:
         """
         Is this a virtualized system?
 
@@ -806,32 +850,35 @@ class Machine(models.Model):
         """
         return self.system.virtual
 
-    def is_vm_managed(self):
+    def is_vm_managed(self) -> bool:
         """
         Is this a virtual machine and has a hypervisor and virt API assigned
         through which it is managed?
 
         :return: `True` if machine has a hypervisor and a virtualization API assgined.
         """
-        return self.hypervisor and self.hypervisor.virtualization_api
+        return (
+            self.hypervisor is not None
+            and self.hypervisor.virtualization_api is not None
+        )
 
-    def get_cobbler_domains(self):
+    def get_cobbler_domains(self) -> Optional[QuerySet["Domain"]]:
         if not self.is_cobbler_server():
             return None
-        return self.domain_set.all()
+        return self.domain_set.all()  # type: ignore
 
-    def get_active_distribution(self):
-        return self.installations.get(active=True)
+    def get_active_distribution(self) -> Optional["Installation"]:
+        return self.installations.get(active=True)  # type: ignore
 
-    def delete_secondary_interfaces(self):
+    def delete_secondary_interfaces(self) -> None:
         primary = self.get_primary_networkinterface()
-        for network in self.networkinterfaces.all():
+        for network in self.networkinterfaces.all():  # type: ignore
             if network != primary:
                 network.delete()
 
     def get_primary_networkinterface(self) -> Optional[NetworkInterface]:
         try:
-            interface = self.networkinterfaces.get(primary=True)
+            interface = self.networkinterfaces.get(primary=True)  # type: ignore
         except NetworkInterface.DoesNotExist:
             logger.debug(
                 "In 'get_primary_networkinterface': Machine %s has no networkinterfce",
@@ -840,12 +887,12 @@ class Machine(models.Model):
             return None
         return interface
 
-    def get_virtual_machines(self):
+    def get_virtual_machines(self) -> Optional[QuerySet["Machine"]]:
         if not self.is_virtual_machine():
-            return self.hypervising.all()
+            return self.hypervising.all()  # type: ignore
         return None
 
-    def get_kernel_options(self):
+    def get_kernel_options(self) -> Dict[str, Optional[str]]:
         """Return kernel options as dict."""
         kernel_options = {}
 
@@ -858,7 +905,7 @@ class Machine(models.Model):
 
         return kernel_options
 
-    def get_kernel_options_append(self):
+    def get_kernel_options_append(self) -> Dict[str, Optional[str]]:
         """Return kernel options append as dict."""
         kernel_options = {}
 
@@ -871,26 +918,26 @@ class Machine(models.Model):
 
         return kernel_options
 
-    def get_s390_hostname(self, use_uppercase=False):
+    def get_s390_hostname(self, use_uppercase: bool = False) -> Optional[str]:
         if self.system.name == "zVM":
-            return get_s390_hostname(self.hostname, use_uppercase=use_uppercase)
+            return get_s390_hostname(self.hostname, use_uppercase=use_uppercase)  # type: ignore
         return None
 
-    def has_remotepower(self):
+    def has_remotepower(self) -> bool:
         """Check for available remote power."""
         return hasattr(self, "remotepower")
 
-    def has_serialconsole(self):
+    def has_serialconsole(self) -> bool:
         """Check for available serial console."""
         return hasattr(self, "serialconsole")
 
-    def is_reserved_infinite(self):
+    def is_reserved_infinite(self) -> bool:
         """Return true if machine is reserved infinite `datetime.date(9999, 12, 31)`."""
-        if self.reserved_by and self.reserved_until.date() == datetime.date.max:
+        if self.reserved_by and self.reserved_until.date() == datetime.date.max:  # type: ignore
             return True
         return False
 
-    def has_setup_capability(self):
+    def has_setup_capability(self) -> bool:
         """
         Return true if a machines network domain supports the setup capability for the respective
         machine group (if the machine belongs to one) or architecture.
@@ -898,7 +945,13 @@ class Machine(models.Model):
         return self.architecture in self.fqdn_domain.supported_architectures.all()
 
     @check_permission
-    def reserve(self, reason, until, user=None, reserve_for_user=None):
+    def reserve(
+        self,
+        reason: str,
+        until: datetime.date,
+        user: Optional["User"] = None,
+        reserve_for_user: Optional["User"] = None,
+    ) -> None:
         """Reserve machine."""
         from .reservationhistory import ReservationHistory
 
@@ -913,12 +966,12 @@ class Machine(models.Model):
         if not reason:
             raise ReserveException("Please provide a reservation reason.")
 
-        if until == datetime.date.max and not user.is_superuser:
+        if until == datetime.date.max and not user.is_superuser:  # type: ignore
             raise ReserveException("Infinite reservation is not allowed.")
 
         # add to history if a superuser takes over the reservation
         if self.reserved_by and (self.reserved_by not in {user, reserve_for_user}):
-            reservationhistory = ReservationHistory(
+            reservationhistory = ReservationHistory(  # type: ignore
                 machine=self,
                 reserved_by=self.reserved_by,
                 reserved_at=self.reserved_at,
@@ -949,12 +1002,12 @@ class Machine(models.Model):
         # new `datetime.datetime` object time zone aware using the default time zone (see
         # `TIME_ZONE` in the django settings).
         if until == datetime.date.max:
-            until = timezone.datetime.combine(
-                datetime.date.max, timezone.datetime.min.time()
+            until = timezone.datetime.combine(  # type: ignore
+                datetime.date.max, timezone.datetime.min.time()  # type: ignore
             )
-            until = timezone.make_aware(until, timezone.utc)
+            until = timezone.make_aware(until, timezone.utc)  # type: ignore
         else:
-            until = timezone.datetime.combine(until, timezone.datetime.max.time())
+            until = timezone.datetime.combine(until, timezone.datetime.max.time())  # type: ignore
             until = timezone.make_aware(until, timezone.get_default_timezone())
 
         self.reserved_until = until
@@ -963,11 +1016,11 @@ class Machine(models.Model):
         self.update_motd()
 
         if not extension:
-            task = tasks.SendReservationInformation(reserve_for_user.id, self.fqdn)
+            task = tasks.SendReservationInformation(reserve_for_user.id, self.fqdn)  # type: ignore
             TaskManager.add(task)
 
     @check_permission
-    def release(self, user=None):
+    def release(self, user: Any = None) -> None:
         """Release machine."""
         from .reservationhistory import ReservationHistory
 
@@ -980,12 +1033,12 @@ class Machine(models.Model):
             )
 
         logger.debug("Release VM %s", self.fqdn)
-        if self.is_vm_managed() and self.hypervisor.vm_auto_delete:
+        if self.is_vm_managed() and self.hypervisor.vm_auto_delete:  # type: ignore
             logger.debug("Delete VM %s", self.fqdn)
             self.delete()
             return
 
-        reservationhistory = ReservationHistory(
+        reservationhistory = ReservationHistory(  # type: ignore
             machine=self,
             reserved_by=self.reserved_by,
             reserved_at=self.reserved_at,
@@ -1007,7 +1060,7 @@ class Machine(models.Model):
             self.update_motd()
 
     @check_permission
-    def powercycle(self, action, user=None):
+    def powercycle(self, action: Optional[str], user: Any = None) -> bool:
         """Act as proxy for all power cycle actions."""
         from .remotepower import RemotePower
 
@@ -1020,7 +1073,7 @@ class Machine(models.Model):
             raise Exception("No remotepower available!")
 
         if action == RemotePower.Action.STATUS:
-            return self.get_power_status()
+            return self.get_power_status()  # type: ignore
 
         elif action == RemotePower.Action.ON:
             return self.power_on()
@@ -1047,7 +1100,7 @@ class Machine(models.Model):
         return False
 
     @check_permission
-    def ssh_shutdown(self, user=None, reboot=False):
+    def ssh_shutdown(self, user: Any = None, reboot: bool = False) -> bool:
         """Power off/reboot the machine using SSH."""
         from orthos2.utils.ssh import SSH
 
@@ -1068,7 +1121,7 @@ class Machine(models.Model):
         return True
 
     @check_permission
-    def setup(self, setup_label=None, user=None):
+    def setup(self, setup_label: Optional[str] = None, user: Any = None) -> bool:
         """Setup machine (re-install distribution)."""
         from orthos2.taskmanager import tasks
         from orthos2.taskmanager.models import TaskManager
@@ -1081,13 +1134,13 @@ class Machine(models.Model):
         return False
 
     @check_permission
-    def power_on(self, user=None):
+    def power_on(self, user: Any = None) -> bool:
         """Power on the machine."""
         self.remotepower.power_on()
         return True
 
     @check_permission
-    def power_off(self, user=None):
+    def power_off(self, user: Any = None) -> bool:
         """
         Power off the machine.
 
@@ -1103,25 +1156,23 @@ class Machine(models.Model):
         except SSH.Exception:
             pass
 
-        if result is True:
-            return True
-        else:
-            if self.has_remotepower():
-                return self.power_off_remotepower(user=user)
+        if not result and self.has_remotepower():
+            return self.power_off_remotepower(user=user)
+        return True
 
     @check_permission
-    def power_off_ssh(self, user=None):
+    def power_off_ssh(self, user: Any = None) -> bool:
         """Power off the machine using SSH. Wrapper for `ssh_shutdown()`."""
         return self.ssh_shutdown()
 
     @check_permission
-    def power_off_remotepower(self, user=None):
+    def power_off_remotepower(self, user: Any = None) -> bool:
         """Power off the machine via remote power."""
         self.remotepower.power_off()
         return True
 
     @check_permission
-    def reboot(self, user=None):
+    def reboot(self, user: Any = None) -> bool:
         """
         Power off the machine.
 
@@ -1137,25 +1188,23 @@ class Machine(models.Model):
         except SSH.Exception:
             pass
 
-        if result is True:
-            return True
-        else:
-            if self.has_remotepower():
-                return self.reboot_remotepower(user=user)
+        if not result and self.has_remotepower():
+            return self.reboot_remotepower(user=user)
+        return True
 
     @check_permission
-    def reboot_ssh(self, user=None):
+    def reboot_ssh(self, user: Any = None) -> bool:
         """Reboot the machine using SSH. Wrapper for `ssh_shutdown(reboot=True)`."""
         return self.ssh_shutdown(reboot=True)
 
     @check_permission
-    def reboot_remotepower(self, user=None):
+    def reboot_remotepower(self, user: Any = None) -> bool:
         """Reboot the machine via remote power."""
         if self.has_remotepower():
             self.remotepower.reboot()
         return True
 
-    def get_power_status(self, to_str=True):
+    def get_power_status(self, to_str: bool = True) -> Union[str, int]:
         """Return the current power status."""
         from .remotepower import RemotePower
 
@@ -1167,7 +1216,7 @@ class Machine(models.Model):
             return RemotePower.Status.to_str(status)
         return status
 
-    def scan(self, action="all", user=None):
+    def scan(self, action: str = "all", user: Any = None) -> None:
         """Start scanning/checking the machine by creating a task."""
         from orthos2.taskmanager import tasks
         from orthos2.taskmanager.models import TaskManager
@@ -1181,29 +1230,29 @@ class Machine(models.Model):
 
         # ToDo: Better wait until individual machine scans finished
         if action == "all":
-            task = Ansible([self.fqdn])
+            task = Ansible([self.fqdn])  # type: ignore
             TaskManager.add(task)
 
     @check_permission
-    def update_motd(self, user=None):
+    def update_motd(self, user: Any = None) -> None:
         """Call respective signal."""
         from orthos2.data.signals import signal_motd_regenerate
 
         signal_motd_regenerate.send(sender=self.__class__, fqdn=self.fqdn)
 
     @check_permission
-    def regenerate_serialconsole_record(self, user=None):
+    def regenerate_serialconsole_record(self, user: Any = None) -> None:
         """Call respective signal."""
         from orthos2.data.signals import signal_serialconsole_regenerate
 
         if self.has_serialconsole():
             signal_serialconsole_regenerate.send(
                 sender=self.__class__,
-                cscreen_server_fqdn=self.fqdn_domain.cscreen_server.fqdn,
+                cscreen_server_fqdn=self.fqdn_domain.cscreen_server.fqdn,  # type: ignore
             )
 
     @check_permission
-    def regenerate_dhcp_record(self, user=None):
+    def regenerate_dhcp_record(self, user: Any = None) -> None:
         """Call respective signal."""
         from orthos2.data.signals import signal_cobbler_regenerate
 
@@ -1211,7 +1260,7 @@ class Machine(models.Model):
             sender=self.__class__, domain_id=self.fqdn_domain.pk
         )
 
-    def get_support_contact(self):
+    def get_support_contact(self) -> str:
         """
         Return email address for responsible support contact (default: SUPPORT_CONTACT).
 
@@ -1231,7 +1280,7 @@ class Machine(models.Model):
 
         return settings.SUPPORT_CONTACT
 
-    def serialize(self, output_format):
+    def serialize(self, output_format: str) -> Tuple[str, str]:
         """
         Serialize machine with its relations.
 
@@ -1245,7 +1294,7 @@ class Machine(models.Model):
 
         querysets = [
             [self],
-            self.networkinterfaces.all(),
+            self.networkinterfaces.all(),  # type: ignore
             [self.remotepower] if self.has_remotepower() else None,
             [self.serialconsole] if self.has_serialconsole() else None,
             self.annotations.all(),

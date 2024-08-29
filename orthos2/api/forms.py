@@ -1,4 +1,5 @@
 import logging
+from typing import Any, Dict, List, Optional, Tuple
 
 from django import forms
 from django.db import models
@@ -38,7 +39,7 @@ logger = logging.getLogger("api")
 
 class BaseAPIForm:
     def form_field_to_dict(
-        self, form_field, name, prompt=None, initial=None, required=None
+        self, form_field, name: str, prompt=None, initial=None, required=None
     ):
         """
         Generate and returns a corresponding dictionary for django form fields.
@@ -90,9 +91,9 @@ class BaseAPIForm:
                 if isinstance(choice[0], ModelChoiceIteratorValue):
                     field["items"].append(
                         {
-                            slugify(choice[0].value): {
+                            slugify(choice[0].value): {  # type: ignore
                                 "label": choice[1],
-                                "value": choice[0].value,
+                                "value": choice[0].value,  # type: ignore
                             }
                         }
                     )
@@ -103,18 +104,18 @@ class BaseAPIForm:
 
         return field
 
-    def as_dict(self):
+    def as_dict(self) -> Dict[str, Any]:
         """Generate and return form as dictionary."""
         result = {}
 
-        for name, field in self.fields.items():
+        for name, field in self.fields.items():  # type: ignore
             result[name] = self.form_field_to_dict(field, name)
 
         return result
 
 
 class ReserveMachineAPIForm(ReserveMachineForm, BaseAPIForm):
-    def as_dict(self):
+    def as_dict(self) -> Dict[str, Any]:
         """Generate and return form as dictionary."""
         result = {}
 
@@ -132,13 +133,13 @@ class ReserveMachineAPIForm(ReserveMachineForm, BaseAPIForm):
         }
         return result
 
-    def get_order(self):
+    def get_order(self) -> List[str]:
         """Return input order."""
         return ["username", "reason", "until"]
 
 
 class VirtualMachineAPIForm(VirtualMachineForm, BaseAPIForm):
-    def as_dict(self, host):
+    def as_dict(self, host: Optional[Machine]) -> Dict[str, Any]:  # type: ignore
         """Generate and return form as dictionary."""
         result = {}
 
@@ -148,13 +149,13 @@ class VirtualMachineAPIForm(VirtualMachineForm, BaseAPIForm):
         result["host"] = {
             "type": "STRING",
             "prompt": "Host FQDN",
-            "initial": host.fqdn,
+            "initial": host.fqdn,  # type: ignore
             "required": True,
         }
 
         return result
 
-    def get_order(self):
+    def get_order(self) -> List[str]:
         """Return input order."""
         return [
             "host",
@@ -170,9 +171,9 @@ class VirtualMachineAPIForm(VirtualMachineForm, BaseAPIForm):
         ]
 
 
-def get_architectures():
+def get_architectures() -> List[Tuple[int, str]]:
     """Return architectures choice tuple."""
-    architectures = []
+    architectures: List[Tuple[int, str]] = []
     for architecture in (
         Architecture.objects.all().values("id", "name").order_by("name")
     ):
@@ -180,31 +181,31 @@ def get_architectures():
     return architectures
 
 
-def get_systems():
+def get_systems() -> List[Tuple[int, str]]:
     """Return systems choice tuple."""
-    systems = []
+    systems: List[Tuple[int, str]] = []
     for system in System.objects.all().values("id", "name").order_by("name"):
         systems.append((system["id"], system["name"]))
     return systems
 
 
-def get_machinegroups():
+def get_machinegroups() -> List[Tuple[int, str]]:
     """Return machine group choice tuple."""
     groups = [("none", "None")]
     for group in MachineGroup.objects.all().values("id", "name").order_by("name"):
-        groups.append((group["id"], group["name"]))
-    return groups
+        groups.append((group["id"], group["name"]))  # type: ignore
+    return groups  # type: ignore
 
 
 class MachineAPIForm(forms.Form, BaseAPIForm):
-    def clean_fqdn(self):
+    def clean_fqdn(self) -> str:
         """Check whether `fqdn` already exists."""
         fqdn = self.cleaned_data["fqdn"]
         if Machine.objects.filter(fqdn__iexact=fqdn).count() != 0:
             self.add_error("fqdn", "FQDN is already in use!")
         return fqdn
 
-    def clean_mac_address(self):
+    def clean_mac_address(self) -> str:
         """Check whether `mac_address` already exists."""
         mac_address = self.cleaned_data["mac_address"]
         if not is_unique_mac_address(mac_address):
@@ -212,26 +213,26 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
                 "mac_address",
                 "MAC address '{}' is already used by '{}'!".format(
                     mac_address,
-                    NetworkInterface.objects.get(mac_address=mac_address).machine.fqdn,
+                    NetworkInterface.objects.get(mac_address=mac_address).machine.fqdn,  # type: ignore
                 ),
             )
         return mac_address
 
-    def clean_enclosure(self):
+    def clean_enclosure(self) -> str:
         """Set the proper `enclosure` value."""
         enclosure = self.cleaned_data["enclosure"]
         if not enclosure:
             enclosure = None
         return enclosure
 
-    def clean_group_id(self):
+    def clean_group_id(self) -> str:
         """Set `group_id` to None if 'None' is selected."""
         group_id = self.cleaned_data["group_id"]
         if group_id == "none":
             group_id = None
         return group_id
 
-    def clean(self):
+    def clean(self) -> Dict[str, Any]:
         """
         Get or create the enclosure.
 
@@ -239,18 +240,18 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         """
         cleaned_data = super(MachineAPIForm, self).clean()
 
-        enclosure = cleaned_data["enclosure"]
+        enclosure = cleaned_data["enclosure"]  # type: ignore
         if enclosure:
             try:
                 enclosure, _created = Enclosure.objects.get_or_create(name=enclosure)
             except Exception as e:
                 logger.exception(e)
                 self.add_error("enclosure", "Something went wrong!")
-        cleaned_data["enclosure"] = enclosure
+        cleaned_data["enclosure"] = enclosure  # type: ignore
 
         # If no connectivity check is given, assume none should be checked
-        check_connectivity = int(cleaned_data.get("check_connectivity", 0))
-        collect_system_information = cleaned_data["collect_system_information"]
+        check_connectivity = int(cleaned_data.get("check_connectivity", 0))  # type: ignore
+        collect_system_information = cleaned_data["collect_system_information"]  # type: ignore
 
         if (
             collect_system_information
@@ -260,7 +261,7 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
                 "collect_system_information", "Needs full connectivity check!"
             )
 
-        return cleaned_data
+        return cleaned_data  # type: ignore
 
     fqdn = forms.CharField(
         label="FQDN",
@@ -326,7 +327,7 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         required=False,
     )
 
-    def get_order(self):
+    def get_order(self) -> List[str]:
         """Return input order."""
         return [
             "fqdn",
@@ -345,7 +346,7 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
 
 
 class DeleteMachineAPIForm(forms.Form, BaseAPIForm):
-    def clean_fqdn(self):
+    def clean_fqdn(self) -> str:
         """Check whether `fqdn` already exists."""
         fqdn = self.cleaned_data["fqdn"]
         if Machine.objects.filter(fqdn__iexact=fqdn).count() == 0:
@@ -357,7 +358,7 @@ class DeleteMachineAPIForm(forms.Form, BaseAPIForm):
         max_length=200,
     )
 
-    def get_order(self):
+    def get_order(self) -> List[str]:
         """Return input order."""
         return [
             "fqdn",
@@ -366,16 +367,16 @@ class DeleteMachineAPIForm(forms.Form, BaseAPIForm):
 
 class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
     @staticmethod
-    def get_serial_type_choices():
+    def get_serial_type_choices() -> List[Tuple[int, str]]:
         """Return serial console type  choice tuple."""
-        serial_types = []
+        serial_types: List[Tuple[int, str]] = []
         for serial_type in (
             SerialConsoleType.objects.all().values("id", "name").order_by("name")
         ):
             serial_types.append((serial_type["id"], serial_type["name"]))
         return serial_types
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         machine = kwargs.pop("machine", None)
         self.machine = machine
 
@@ -392,35 +393,35 @@ class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
             "comment",
         )
 
-        SerialConsoleFormSet = inlineformset_factory(
+        SerialConsoleFormSet = inlineformset_factory(  # type: ignore
             Machine, SerialConsole, fields=self._query_fields, fk_name="machine"
         )
         formset = SerialConsoleFormSet(instance=machine)
 
         self.fields = formset.form().fields
-        self.fields["stype"].empty_label = None
-        self.fields["stype"].choices = self.get_serial_type_choices
+        self.fields["stype"].empty_label = None  # type: ignore
+        self.fields["stype"].choices = self.get_serial_type_choices  # type: ignore
         self.fields["baud_rate"].initial = 5
         self.fields["kernel_device"].initial = 0
-        self.fields["kernel_device_num"].min_value = 0
-        self.fields["kernel_device_num"].max_value = 1024
-        self.fields["console_server"].empty_label = "None"
+        self.fields["kernel_device_num"].min_value = 0  # type: ignore
+        self.fields["kernel_device_num"].max_value = 1024  # type: ignore
+        self.fields["console_server"].empty_label = "None"  # type: ignore
 
-    def clean(self):
+    def clean(self) -> Dict[str, Any]:
         """Add the machine to cleaned data for further processing."""
         cleaned_data = super(SerialConsoleAPIForm, self).clean()
-        cleaned_data["machine"] = self.machine
-        serialconsole = SerialConsole(**cleaned_data)
+        cleaned_data["machine"] = self.machine  # type: ignore
+        serialconsole = SerialConsole(**cleaned_data)  # type: ignore
         serialconsole.clean()
-        return cleaned_data
+        return cleaned_data  # type: ignore
 
-    def get_order(self):
+    def get_order(self) -> Tuple[str, str, str, str, str, str, str, str]:
         """Return input order."""
         return self._query_fields
 
 
 class DeleteSerialConsoleAPIForm(forms.Form, BaseAPIForm):
-    def clean_fqdn(self):
+    def clean_fqdn(self) -> str:
         """Check whether `fqdn` already exists."""
         fqdn = self.cleaned_data["fqdn"]
         if Machine.objects.filter(fqdn__iexact=fqdn).count() == 0:
@@ -432,7 +433,7 @@ class DeleteSerialConsoleAPIForm(forms.Form, BaseAPIForm):
         max_length=200,
     )
 
-    def get_order(self):
+    def get_order(self) -> List[str]:
         """Return input order."""
         return [
             "fqdn",
@@ -440,7 +441,7 @@ class DeleteSerialConsoleAPIForm(forms.Form, BaseAPIForm):
 
 
 class AnnotationAPIForm(forms.Form, BaseAPIForm):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         machine = kwargs.pop("machine", None)
         self.machine = machine
 
@@ -451,7 +452,7 @@ class AnnotationAPIForm(forms.Form, BaseAPIForm):
         max_length=1024,
     )
 
-    def get_order(self):
+    def get_order(self) -> List[str]:
         """Return input order."""
         return [
             "text",
@@ -459,7 +460,7 @@ class AnnotationAPIForm(forms.Form, BaseAPIForm):
 
 
 class BMCAPIForm(forms.Form, BaseAPIForm):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         machine = kwargs.pop("machine", None)
         self.machine = machine
 
@@ -496,13 +497,13 @@ class BMCAPIForm(forms.Form, BaseAPIForm):
         label="Fence Agent",
     )
 
-    def get_order(self):
+    def get_order(self) -> Tuple[str, str, str, str, str]:
         """Return input order."""
         return self._query_fields
 
 
 class RemotePowerAPIForm(forms.Form, BaseAPIForm):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         machine = kwargs.pop("machine", None)
         self.machine = machine
 
@@ -515,24 +516,26 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
             "comment",
         )
 
-        RemotePowerFormSet = inlineformset_factory(
+        RemotePowerFormSet = inlineformset_factory(  # type: ignore
             Machine, RemotePower, fields=self._query_fields, fk_name="machine"
         )
         formset = RemotePowerFormSet(instance=machine)
 
         self.fields = formset.form().fields
-        self.fields["remote_power_device"].empty_label = "None"
+        self.fields["remote_power_device"].empty_label = "None"  # type: ignore
         self.fields["fence_name"].required = False
 
-    def clean(self):
+    def clean(self) -> Optional[Dict[str, Any]]:
         """Add the machine to cleaned data for further processing."""
         cleaned_data = super(RemotePowerAPIForm, self).clean()
+        if cleaned_data is None:
+            return None
         cleaned_data["machine"] = self.machine
         remotepower = RemotePower(**cleaned_data)
         remotepower.clean()
         return cleaned_data
 
-    def get_order(self):
+    def get_order(self) -> Tuple[str, str, str, str]:
         """Return input order."""
         return self._query_fields
 
@@ -544,7 +547,7 @@ class RemotePowerDeviceAPIForm(forms.ModelForm, BaseAPIForm):
 
     remotepower_type_choices = get_remote_power_type_choices("rpower_device")
 
-    fence_name = models.CharField(
+    fence_name = models.CharField(  # type: ignore
         choices=remotepower_type_choices,
         max_length=255,
         verbose_name="Fence Agent",
@@ -557,16 +560,16 @@ class RemotePowerDeviceAPIForm(forms.ModelForm, BaseAPIForm):
         widget=forms.PasswordInput(render_value=True),
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         remote_power_choices = get_remote_power_type_choices("rpower_device")
-        self.fields["fence_name"].choices = remote_power_choices
+        self.fields["fence_name"].choices = remote_power_choices  # type: ignore
         # Automatic Widget selection doesn't seem to work in this scenario sadly
         self.fields["fence_name"].widget = forms.Select(choices=remote_power_choices)
 
 
 class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):
-    def clean_fqdn(self):
+    def clean_fqdn(self) -> str:
         """Check whether `fqdn` already exists."""
         fqdn = self.cleaned_data["fqdn"]
         if Machine.objects.filter(fqdn__iexact=fqdn).count() == 0:
@@ -578,7 +581,7 @@ class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):
         max_length=200,
     )
 
-    def get_order(self):
+    def get_order(self) -> List[str]:
         """Return input order."""
         return [
             "fqdn",
@@ -586,10 +589,10 @@ class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):
 
 
 class DeleteRemotePowerDeviceAPIForm(forms.Form, BaseAPIForm):
-    def clean_fqdn(self):
+    def clean_fqdn(self) -> str:
         """Check whether `fqdn` already exists."""
         fqdn = self.cleaned_data["fqdn"]
-        if RemotePowerDevice.objects.filter(fqdn__iexact=fqdn).count() == 0:
+        if RemotePowerDevice.objects.filter(fqdn__iexact=fqdn).count() == 0:  # type: ignore
             self.add_error("fqdn", "No remotepowerdevice with this FQDN")
         return fqdn
 
@@ -598,7 +601,7 @@ class DeleteRemotePowerDeviceAPIForm(forms.Form, BaseAPIForm):
         max_length=255,
     )
 
-    def get_order(self):
+    def get_order(self) -> List[str]:
         """Return input order."""
         return [
             "fqdn",

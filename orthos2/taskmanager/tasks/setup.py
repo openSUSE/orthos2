@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from orthos2.data.models import Machine, ServerConfig
 from orthos2.taskmanager.models import Task
@@ -11,11 +12,11 @@ logger = logging.getLogger("tasks")
 class SetupMachine(Task):
     """Setup machine."""
 
-    def __init__(self, fqdn, choice=None):
+    def __init__(self, fqdn: str, choice: Optional[str] = None) -> None:
         self.fqdn = fqdn
         self.choice = choice
 
-    def execute(self):
+    def execute(self) -> None:
         """Execute the task."""
         if not ServerConfig.objects.bool_by_key("orthos.debug.setup.execute"):
             logger.warning("Disabled: set 'orthos.debug.setup.execute' to 'true'")
@@ -35,8 +36,8 @@ class SetupMachine(Task):
 
             try:
                 logger.debug("trying %s for setup", server.fqdn)
-                cobbler_server = CobblerServer(server.fqdn, domain)
-                cobbler_server.setup(machine, self.choice)
+                cobbler_server = CobblerServer(server.fqdn, domain)  # type: ignore
+                cobbler_server.setup(machine, self.choice)  # type: ignore
 
             except CobblerException as e:
                 logger.warning(

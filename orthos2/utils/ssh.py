@@ -1,7 +1,7 @@
 import logging
 import os
 import socket
-from typing import Iterable, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import paramiko
 from django.conf import settings
@@ -16,12 +16,12 @@ logger = logging.getLogger("utils")
 class SSH(object):
     """Wrapper around internal SSH objects."""
 
-    class Exception(Exception):
+    class Exception(Exception):  # type: ignore
         """Exception for SSH."""
 
         pass
 
-    def __init__(self, fqdn: str):
+    def __init__(self, fqdn: str) -> None:
         """
         Create a new SSH object.
 
@@ -37,9 +37,9 @@ class SSH(object):
         try:
             self._machine = Machine.objects.get(fqdn=fqdn)
         except Exception:
-            self._machine = None
+            self._machine = None  # type: ignore
 
-    def get_system_user_configuration(self):
+    def get_system_user_configuration(self) -> Optional[Dict[str, Any]]:
         """Return SSH configuration of system user as Paramiko dict for `connect()`."""
         ssh_configuration = paramiko.SSHConfig()
         user_configuration_file = "{}/.ssh/config".format(os.getenv("HOME"))
@@ -59,7 +59,7 @@ class SSH(object):
                 )
                 return None
 
-        configuration = {}
+        configuration: Dict[str, Any] = {}
         hostname = self._fqdn.split(".")[0]
 
         user_configuration = ssh_configuration.lookup(hostname)
@@ -73,19 +73,19 @@ class SSH(object):
 
         if "proxycommand" in user_configuration:
             configuration["sock"] = paramiko.ProxyCommand(
-                ssh_configuration["proxycommand"]
+                ssh_configuration["proxycommand"]  # type: ignore
             )
 
         return configuration
 
-    def close(self):
+    def close(self) -> None:
         """Close the SSH connection and all open SFTP connections."""
         if self._sftp:
             self._sftp.close()
         self._client.close()
         self._open = False
 
-    def connect(self, user: str = "root", timeout: Optional[int] = None):
+    def connect(self, user: str = "root", timeout: Optional[int] = None) -> None:
         """
         Connect to the specified server (in SSH.__init__()).
 
@@ -121,7 +121,7 @@ class SSH(object):
             else:
                 configuration["key_filename"] = ServerConfig.ssh.get_keys()
 
-            self._client.connect(**configuration)
+            self._client.connect(**configuration)  # type: ignore
             self._open = True
             return
         except socket.error as e:
@@ -170,7 +170,7 @@ class SSH(object):
         except Exception:
             raise SSH.Exception("Unknown SSH exception")
 
-    def read_file(self, filename: str):
+    def read_file(self, filename: str) -> List[str]:
         """Read the given file contents."""
         if not self._sftp:
             self._sftp = self._client.open_sftp()
@@ -179,7 +179,7 @@ class SSH(object):
         f.close()
         return retval
 
-    def get_file(self, filename: str, mode: str):
+    def get_file(self, filename: str, mode: str) -> paramiko.SFTPFile:
         """Return a file-like object for filename with mode `mode`."""
         if not self._sftp:
             self._sftp = self._client.open_sftp()
@@ -197,35 +197,35 @@ class SSH(object):
         retval = ("", "", 1)
 
         remotescript_directory = ServerConfig.ssh.get_remote_scripts_directory()
-        remotescript = os.path.join(remotescript_directory, script)
+        remotescript = os.path.join(remotescript_directory, script)  # type: ignore
         localscript = os.path.join(
-            ServerConfig.ssh.get_local_scripts_directory(), script
+            ServerConfig.ssh.get_local_scripts_directory(), script  # type: ignore
         )
 
         if not self._sftp:
             self._sftp = self._client.open_sftp()
 
         try:
-            self._sftp.stat(remotescript_directory)
+            self._sftp.stat(remotescript_directory)  # type: ignore
         except IOError:
             try:
-                self._sftp.mkdir(remotescript_directory)
+                self._sftp.mkdir(remotescript_directory)  # type: ignore
             except IOError:
                 return None
 
         self._sftp.put(localscript, remotescript)
         self._sftp.chmod(remotescript, 755)
         try:
-            retval = self.execute("{} {}".format(remotescript, arguments))
+            retval = self.execute("{} {}".format(remotescript, arguments))  # type: ignore
         except SSH.Exception as e:
             logger.warning(
                 "Error while executing command %s on %s: %s", script, self._fqdn, str(e)
             )
 
         try:
-            for f in self._sftp.listdir(remotescript_directory):
-                self._sftp.remove(os.path.join(remotescript_directory, f))
-            self._sftp.rmdir(remotescript_directory)
+            for f in self._sftp.listdir(remotescript_directory):  # type: ignore
+                self._sftp.remove(os.path.join(remotescript_directory, f))  # type: ignore
+            self._sftp.rmdir(remotescript_directory)  # type: ignore
         except paramiko.SSHException as e:
             logger.exception(e)
             logger.warning(
@@ -244,7 +244,7 @@ class SSH(object):
 
         return retval
 
-    def copy_file(self, localfile, remotefile, parents: bool = False):
+    def copy_file(self, localfile: str, remotefile: str, parents: bool = False) -> None:
         """
         Copy a local file to the remote side.
 
@@ -271,7 +271,7 @@ class SSH(object):
 
         self._sftp.put(localfile, remotefile)
 
-    def remove_file(self, remotefile: str):
+    def remove_file(self, remotefile: str) -> None:
         """Delete a file on the remote side."""
         if not self._sftp:
             self._sftp = self._client.open_sftp()

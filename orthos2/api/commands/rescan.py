@@ -1,5 +1,8 @@
-from django.http import HttpResponseRedirect
-from django.urls import re_path
+from typing import Any, List, Union
+
+from django.http import HttpResponseRedirect, JsonResponse
+from django.urls import URLPattern, re_path
+from rest_framework.request import Request
 
 from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.serializers.misc import ErrorMessage, InfoMessage, Message, Serializer
@@ -39,18 +42,20 @@ Example:
 """
 
     @staticmethod
-    def get_urls():
+    def get_urls() -> List[URLPattern]:
         return [
             re_path(r"^rescan$", RescanCommand.as_view(), name="rescan"),
         ]
 
     @staticmethod
-    def get_tabcompletion():
+    def get_tabcompletion() -> List[str]:
         return MachineCheck.Scan.Action.as_list
 
-    def get(self, request, *args, **kwargs):
+    def get(
+        self, request: Request, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
         """Return reservation history of machine."""
-        fqdn = request.GET.get("fqdn", None)
+        fqdn = request.GET.get("fqdn", "")
         option = request.GET.get("option", "all")
 
         try:
