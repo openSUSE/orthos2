@@ -1,4 +1,5 @@
 from copy import deepcopy
+from typing import Any, Optional, Tuple
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -35,10 +36,10 @@ class MachineGroup(models.Model):
         "Use machines architecture for setup", default=False
     )
 
-    def natural_key(self):
+    def natural_key(self) -> Tuple[str]:
         return (self.name,)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Deep copy object for comparison in `save()`."""
         super(MachineGroup, self).__init__(*args, **kwargs)
 
@@ -47,10 +48,10 @@ class MachineGroup(models.Model):
         else:
             self._original = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """Save machine group object."""
         super(MachineGroup, self).save(*args, **kwargs)
 
@@ -63,7 +64,7 @@ class MachineGroup(models.Model):
 
                 signal_dhcp_regenerate.send(sender=self.__class__, domain_id=None)
 
-    def clean(self):
+    def clean(self) -> None:
         """
         Camel case machine group name.
 
@@ -77,7 +78,7 @@ class MachineGroup(models.Model):
         else:
             self.name = self.name.replace(" ", "")
 
-    def get_support_contact(self):
+    def get_support_contact(self) -> Optional[str]:
         """Return email address for responsible support contact."""
         if self.contact_email:
             return self.contact_email
@@ -92,5 +93,5 @@ class MachineGroupMembership(models.Model):
 
     is_privileged = models.BooleanField(default=False, null=False)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "{} | {}".format(self.user, self.group)

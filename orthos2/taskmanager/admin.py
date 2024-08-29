@@ -1,8 +1,9 @@
 import datetime
+from typing import List
 
 from django.contrib import admin, messages
 from django.shortcuts import redirect
-from django.urls import re_path, reverse
+from django.urls import URLPattern, re_path, reverse
 from django.utils.html import format_html
 
 from .models import DailyTask, SingleTask
@@ -29,8 +30,8 @@ class DailyTaskAdmin(BaseTaskAdmin):
     )
 
     # https://medium.com/@hakibenita/how-to-add-custom-action-buttons-to-django-admin-8d266f5b0d41
-    def get_urls(self):
-        """Add customn URLs to daily task admin view."""
+    def get_urls(self) -> List[URLPattern]:
+        """Add custom URLs to daily task admin view."""
         urls = super(DailyTaskAdmin, self).get_urls()
         custom_urls = [
             re_path(

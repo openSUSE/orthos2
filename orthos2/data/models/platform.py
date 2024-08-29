@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from django.db import models
 
 from .vendor import Vendor
@@ -17,20 +19,20 @@ class Platform(models.Model):
 
     description = models.CharField(max_length=512, blank=True)
 
-    def natural_key(self):
+    def natural_key(self) -> Tuple[str]:
         return (self.name,)
 
     natural_key.dependencies = ["data.vendor"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def get_vendor(self):
+    def get_vendor(self) -> str:
         return self.vendor.name
 
     get_vendor.short_description = "Vendor"
 
-    def get_enclosure_count(self):
+    def get_enclosure_count(self) -> int:
         return self.enclosure_set.count()
 
     get_enclosure_count.short_description = "Enclosures"

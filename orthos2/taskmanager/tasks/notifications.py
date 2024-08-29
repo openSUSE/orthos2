@@ -14,11 +14,11 @@ logger = logging.getLogger("tasks")
 class SendRestoredPassword(Task):
     """Generate the email with the restored password for a user and sends it."""
 
-    def __init__(self, user_id, new_password):
+    def __init__(self, user_id: int, new_password: str) -> None:
         self.user_id = user_id
         self.new_password = new_password
 
-    def execute(self):
+    def execute(self) -> None:
         """Execute the task."""
         try:
             user = User.objects.get(pk=self.user_id)
@@ -48,11 +48,11 @@ Orthos""".format(
 class SendReservationInformation(Task):
     """Generate reservation information email for user and sends it."""
 
-    def __init__(self, user_id, fqdn):
+    def __init__(self, user_id: int, fqdn: str) -> None:
         self.user_id = user_id
         self.fqdn = fqdn
 
-    def execute(self):
+    def execute(self) -> None:
         """Execute the task."""
         try:
             user = User.objects.get(pk=self.user_id)
@@ -125,10 +125,10 @@ class CheckReservationExpiration(Task):
     date was yesterday, then we delete the reservation (release).
     """
 
-    def __init__(self, fqdn):
+    def __init__(self, fqdn: str) -> None:
         self.fqdn = fqdn
 
-    def execute(self):
+    def execute(self) -> None:
         """Execute the task."""
         today = timezone.localdate()
 
@@ -207,10 +207,10 @@ class CheckMultipleAccounts(Task):
         orthos@bar.baz
     """
 
-    def __init__(self, user_id):
+    def __init__(self, user_id: int) -> None:
         self.user_id = user_id
 
-    def execute(self):
+    def execute(self) -> None:
         """Execute the task."""
         try:
             user = User.objects.get(pk=self.user_id)
@@ -264,10 +264,10 @@ class CheckForPrimaryNetwork(Task):
     If not a mail is sent to the administrator
     """
 
-    def __init__(self, fqdn):
+    def __init__(self, fqdn: str) -> None:
         self.fqdn = fqdn
 
-    def send_warning_mail(self, machine: Machine):
+    def send_warning_mail(self, machine: Machine) -> None:
         domain: Domain = Domain.objects.get(name=get_domain(self.fqdn))
         subject = "{fqdn} has no primary MAC".format(fqdn=self.fqdn)
         domain_admin: DomainAdmin = DomainAdmin.objects.get(
@@ -288,7 +288,7 @@ Orthos
         )
         send_email(admin_mail, subject, message)
 
-    def execute(self):
+    def execute(self) -> None:
         try:
             machine = Machine.objects.get(fqdn=self.fqdn)
             if not machine.get_primary_networkinterface():

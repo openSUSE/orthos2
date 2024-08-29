@@ -1,8 +1,9 @@
 import logging
+from typing import TYPE_CHECKING, Any, List, Union
 
 from django.contrib.auth.models import AnonymousUser
-from django.http import HttpResponseRedirect, JsonResponse
-from django.urls import re_path
+from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
+from django.urls import URLPattern, re_path
 
 from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.serializers.misc import (
@@ -12,6 +13,9 @@ from orthos2.api.serializers.misc import (
     Message,
     Serializer,
 )
+
+if TYPE_CHECKING:
+    from orthos2.data.models.machine import Machine
 
 logger = logging.getLogger("api")
 
@@ -39,16 +43,16 @@ Example:
 """
 
     @staticmethod
-    def get_urls():
+    def get_urls() -> List[URLPattern]:
         return [
             re_path(r"^setup$", SetupCommand.as_view(), name="setup"),
         ]
 
     @staticmethod
-    def get_tabcompletion():
+    def get_tabcompletion() -> List[str]:
         return ["list"]
 
-    def _list(self, request, machine):
+    def _list(self, request: HttpRequest, machine: "Machine") -> JsonResponse:
         """Return list of available distributions for `machine`."""
         if not machine.has_setup_capability():
             return InfoMessage("Machine has no setup capability.").as_json
@@ -76,7 +80,9 @@ Example:
 
         return JsonResponse(response)
 
-    def _setup(self, request, machine, distribution):
+    def _setup(
+        self, request: HttpRequest, machine: "Machine", distribution: str
+    ) -> JsonResponse:
         """Trigger machine setup for `machine` with `distribution`."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
@@ -112,7 +118,9 @@ Example:
         except Exception as e:
             return ErrorMessage(str(e)).as_json
 
-    def get(self, request, *args, **kwargs):
+    def get(
+        self, request: HttpRequest, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
         """Perform machine setup."""
         fqdn = request.GET.get("fqdn", None)
         option_or_choice = request.GET.get("option_or_choice", None)

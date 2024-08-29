@@ -1,12 +1,15 @@
 import logging
 import os
 from datetime import date
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Tuple, Union
+
+from paramiko.channel import ChannelFile, ChannelStderrFile
 
 from orthos2.utils.misc import get_random_mac_address
 
 if TYPE_CHECKING:
-    from orthos2.data.models import Machine
+    from orthos2.data.models import Machine, NetworkInterface
+    from orthos2.utils.ssh import SSH
 
 logger = logging.getLogger("models")
 
@@ -16,7 +19,7 @@ class VirtualizationAPI:
         LIBVIRT = 0
 
         @classmethod
-        def to_str(cls, index):
+        def to_str(cls, index: int) -> str:
             """Return type as string (Virtualization API type name) by index."""
             for type_tuple in VirtualizationAPI.TYPE_CHOICES:
                 if int(index) == type_tuple[0]:
@@ -26,7 +29,7 @@ class VirtualizationAPI:
             )
 
         @classmethod
-        def to_int(cls, name):
+        def to_int(cls, name: str) -> int:
             """Return type as integer if name matches."""
             for type_tuple in VirtualizationAPI.TYPE_CHOICES:
                 if name.lower() == type_tuple[1].lower():
@@ -35,7 +38,7 @@ class VirtualizationAPI:
 
     TYPE_CHOICES = ((Type.LIBVIRT, "libvirt"),)
 
-    def __init__(self, type, host: "Machine", *args, **kwargs):
+    def __init__(self, type: int, host: "Machine", *args: Any, **kwargs: Any) -> None:
         """
         Cast plain `VirtualizationAPI` object to respective subclass.
 
@@ -66,24 +69,24 @@ class VirtualizationAPI:
 
         self.__init__(*args, **kwargs)
 
-    def _set_virtualization_api(self, type):
+    def _set_virtualization_api(self, type: int) -> None:
         """Set virtualization API type."""
         self.__class__ = self._virtualizationapis[type]["class"]
 
-    def __setattr__(self, attr, value):
+    def __setattr__(self, attr: str, value: Any) -> None:
         """If `type` attribute changes, set respective subclass."""
         # check for `None` explicitly because type 0 results in false
         if attr == "type" and value is not None:
             self._set_virtualization_api(value)
         super(VirtualizationAPI, self).__setattr__(attr, value)
 
-    def get_type(self):
+    def get_type(self) -> int:
         return self.type
 
-    def get_image_list(self):
+    def get_image_list(self) -> Tuple[List[str], List[Tuple[str, str]]]:
         raise NotImplementedError
 
-    def create(self, *args, **kwargs):
+    def create(self, *args: Any, **kwargs: Any) -> "Machine":
         """
         Create a virtual machine.
 
@@ -135,16 +138,16 @@ class VirtualizationAPI:
 
         return vm
 
-    def remove(self, *args, **kwargs):
+    def remove(self, *args: Any, **kwargs: Any) -> bool:
         return self._remove(*args, **kwargs)
 
-    def get_list(self):
+    def get_list(self) -> str:
         raise NotImplementedError
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.Type.to_str(self.type)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<VirtualizationAPI: {} ({})>".format(self, self.host.fqdn)
 
 
@@ -158,10 +161,10 @@ class Libvirt(VirtualizationAPI):
         "/usr/bin/qemu-img convert -O qcow2 -o preallocation=metadata {0}.tmp {0}"
     )
 
-    def __init__(self):
-        self.conn = None
+    def __init__(self) -> None:
+        self.conn: Optional["SSH"] = None
 
-    def get_image_list(self):
+    def get_image_list(self) -> Tuple[List[str], List[Tuple[str, str]]]:
         """
         Return the available architectures and the full image list (over all available
         architectures).
@@ -203,12 +206,12 @@ class Libvirt(VirtualizationAPI):
         except FileNotFoundError as e:
             logger.exception(e)
 
-        return (architectures, image_list)
+        return architectures, image_list
 
-    def connect(function):
+    def connect(function) -> Callable[["Libvirt", Any, Any], Any]:
         """Create SSH connection if needed."""
 
-        def decorator(self, *args, **kwargs):
+        def decorator(self: "Libvirt", *args: Any, **kwargs: Any) -> Any:
             from orthos2.utils.ssh import SSH
 
             if not self.conn:
@@ -219,17 +222,19 @@ class Libvirt(VirtualizationAPI):
         return decorator
 
     @connect
-    def _execute(self, command):
+    def _execute(
+        self, command: str
+    ) -> Tuple[Union[Iterable, ChannelFile], Union[Iterable, ChannelStderrFile], int]:
         return self.conn.execute(command)
 
-    def check_connection(self):
+    def check_connection(self) -> bool:
         """Check libvirt connection (running libvirt)."""
         _stdout, _stderr, exitstatus = self._execute("{} version".format(self.VIRSH))
         if exitstatus == 0:
             return True
         return False
 
-    def get_list(self, parameters="--all"):
+    def get_list(self, parameters: str = "--all") -> str:
         """Return `virsh list` output."""
         stdout, stderr, exitstatus = self._execute(
             "{} list {}".format(self.VIRSH, parameters)
@@ -237,12 +242,9 @@ class Libvirt(VirtualizationAPI):
 
         if exitstatus == 0:
             return "".join(stdout)
-        else:
-            raise Exception("".join(stderr))
+        raise Exception("".join(stderr))
 
-        return False
-
-    def check_network_bridge(self, bridge="br0"):
+    def check_network_bridge(self, bridge: str = "br0") -> bool:
         """
         Execute `create_bridge.sh` script remotely and try to set up bridge if it doesn't exist.
 
@@ -264,7 +266,7 @@ class Libvirt(VirtualizationAPI):
 
         raise False
 
-    def generate_hostname(self):
+    def generate_hostname(self) -> Optional[str]:
         """
         Generate domain name (hostname).
 
@@ -291,7 +293,9 @@ class Libvirt(VirtualizationAPI):
 
         return hostname
 
-    def generate_networkinterfaces(self, amount=1, bridge="br0", model="virtio"):
+    def generate_networkinterfaces(
+        self, amount: int = 1, bridge: str = "br0", model: str = "virtio"
+    ) -> List["NetworkInterface"]:
         """Generate networkinterfaces."""
         from orthos2.data.models import NetworkInterface
 
@@ -309,7 +313,7 @@ class Libvirt(VirtualizationAPI):
 
         return networkinterfaces
 
-    def copy_image(self, image, disk_image):
+    def copy_image(self, image: str, disk_image: str) -> bool:
         """Copy and allocate disk image."""
         _stdout, _stderr, exitstatus = self.conn.execute(
             "cp {} {}.tmp".format(image, disk_image)
@@ -334,7 +338,7 @@ class Libvirt(VirtualizationAPI):
 
         return True
 
-    def delete_disk_image(self, disk_image):
+    def delete_disk_image(self, disk_image: str) -> bool:
         """Delete the old disk image."""
         _stdout, _stderr, exitstatus = self.conn.execute("rm -rf {}".format(disk_image))
 
@@ -343,7 +347,7 @@ class Libvirt(VirtualizationAPI):
 
         return True
 
-    def calculate_vcpu(self):
+    def calculate_vcpu(self) -> int:
         """Return virtual CPU amount."""
         vcpu = 1
 
@@ -355,7 +359,7 @@ class Libvirt(VirtualizationAPI):
 
         return vcpu
 
-    def check_memory(self, memory_amount):
+    def check_memory(self, memory_amount: int) -> bool:
         """
         Check if memory amount for VM is available on host.
 
@@ -376,7 +380,9 @@ class Libvirt(VirtualizationAPI):
 
         return True
 
-    def execute_virt_install(self, *args, dry_run=True, **kwargs):
+    def execute_virt_install(
+        self, *args: Any, dry_run: bool = True, **kwargs: Any
+    ) -> bool:
         """Run `virt-install` command."""
         command = "/usr/bin/virt-install "
         command += "--name {hostname} "
@@ -417,7 +423,7 @@ class Libvirt(VirtualizationAPI):
 
         return True
 
-    def _create(self, vm, *args, **kwargs):
+    def _create(self, vm: "Machine", *args: Any, **kwargs: Any) -> bool:
         """
         Wrapper function for creating a VM.
 
@@ -551,7 +557,7 @@ class Libvirt(VirtualizationAPI):
 
         return True
 
-    def _remove(self, vm) -> bool:
+    def _remove(self, vm: "Machine") -> bool:
         """Wrapper function for removing a VM (destroy domain > undefine domain).
 
         :return: Bool whether the VM could successfully be removed via virsh from Hypervisor
@@ -571,7 +577,7 @@ class Libvirt(VirtualizationAPI):
             return False
         return True
 
-    def destroy(self, vm):
+    def destroy(self, vm: "Machine") -> bool:
         """Destroy VM on host system. Ignore `domain is not running` error and proceed."""
         _stdout, stderr, exitstatus = self._execute(
             "{} destroy {}".format(self.VIRSH, vm.hostname)
@@ -584,7 +590,7 @@ class Libvirt(VirtualizationAPI):
 
         return True
 
-    def undefine(self, vm):
+    def undefine(self, vm: "Machine") -> bool:
         """Undefine VM on host system."""
         _stdout, stderr, exitstatus = self._execute(
             "{} undefine {}".format(self.VIRSH, vm.hostname)

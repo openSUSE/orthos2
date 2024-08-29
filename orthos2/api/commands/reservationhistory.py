@@ -1,5 +1,7 @@
-from django.http import HttpResponseRedirect, JsonResponse
-from django.urls import re_path
+from typing import Any, List, Union
+
+from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
+from django.urls import URLPattern, re_path
 
 from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.serializers.misc import ErrorMessage, InfoMessage, Serializer
@@ -26,7 +28,7 @@ Example:
 """
 
     @staticmethod
-    def get_urls():
+    def get_urls() -> List[URLPattern]:
         return [
             re_path(
                 r"^reservationhistory$",
@@ -35,9 +37,11 @@ Example:
             ),
         ]
 
-    def get(self, request, *args, **kwargs):
+    def get(
+        self, request: HttpRequest, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
         """Return reservation history of machine."""
-        fqdn = request.GET.get("fqdn", None)
+        fqdn = request.GET.get("fqdn", "")
 
         try:
             result = get_machine(fqdn, redirect_to="api:history", data=request.GET)

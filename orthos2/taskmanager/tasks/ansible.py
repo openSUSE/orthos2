@@ -1,8 +1,7 @@
 """
-This code came from utils/machinechecks get_hardware_information()
-which invoked self made shell scripts.
-This function/module will replace get_hardware_information by
-passing ansible collected data instead of self called functions
+This code came from utils/machinechecks "get_hardware_information()" which invoked self made shell scripts.
+This function/module will replace "get_hardware_information()" by passing ansible collected data instead of self
+called functions.
 """
 
 import glob
@@ -12,6 +11,7 @@ import os
 import shutil
 import threading
 from datetime import datetime
+from typing import Any, Dict, Optional
 
 from django.template.loader import render_to_string
 
@@ -29,7 +29,7 @@ class Ansible(Task):
     data_dir_archive = "/run/orthos2/ansible_archive"
     facts_dir = "/usr/lib/orthos2/ansible"
 
-    def __init__(self, machines: dict):
+    def __init__(self, machines: dict) -> None:
         """
         param machines: List of machines (strings) to scan via ansible
         """
@@ -39,7 +39,7 @@ class Ansible(Task):
         self.inventory_yml = os.path.join(Ansible.facts_dir, "inventory.yml")
         self.inventory_template = os.path.join(Ansible.facts_dir, "inventory.template")
 
-    def render_inventory(self):
+    def render_inventory(self) -> None:
         """
         Creates an ansible inventory file from the template Ansible.inventory_yml
         and fills it with machines to scan
@@ -50,7 +50,7 @@ class Ansible(Task):
         with open(self.inventory_yml, "w") as i_file:
             i_file.write(rendered)
 
-    def execute(self):
+    def execute(self) -> None:
         self.render_inventory()
         command = (
             "/usr/bin/ansible-playbook -i {dir}/inventory.yml {dir}/site.yml".format(
@@ -101,7 +101,9 @@ class Ansible(Task):
         return res_files
 
     @staticmethod
-    def get_ansible_data(machine_fqdn: str, try_lastruns=False):
+    def get_ansible_data(
+        machine_fqdn: str, try_lastruns: bool = False
+    ) -> Optional[Dict[str, Any]]:
 
         ans_file = os.path.join(Ansible.data_dir, machine_fqdn + ".json")
         if not os.path.isfile(ans_file):

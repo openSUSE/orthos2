@@ -8,7 +8,7 @@ class Statistics(WebTest):
 
     fixtures = []
 
-    def test_statistics_view(self):
+    def test_statistics_view(self) -> None:
         """Test if statistics view comes up."""
         page = self.app.get(reverse("frontend:free_machines"), user="user")
 
