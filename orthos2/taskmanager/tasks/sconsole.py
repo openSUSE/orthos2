@@ -31,14 +31,6 @@ class RegenerateSerialConsole(Task):
             conn = SSH(self.fqdn)
             conn.connect(user="_cscreen")
 
-            _stdout, stderr, exitstatus = conn.execute(
-                "touch /dev/shm/.cscreenrc_allow_update"
-            )
-            if exitstatus != 0:
-                raise Exception(
-                    "Couldn't lock cscreen ('touch /dev/shm/.cscreenrc_allow_update')"
-                )
-
             new_content = ""
             # domains served by this cscreen server:
             domains = Domain.objects.filter(cscreen_server__fqdn=self.fqdn)
@@ -127,15 +119,6 @@ class RegenerateSerialConsole(Task):
             _stdout, stderr, exitstatus = conn.execute("/usr/bin/cscreen -u")
             if exitstatus != 0:
                 logger.warning(stderr)
-
-            _stdout, stderr, exitstatus = conn.execute(
-                "rm -f /dev/shm/.cscreenrc_allow_update"
-            )
-
-            if exitstatus != 0:
-                raise Exception(
-                    "Couldn't unlock CScreen ('rm /dev/shm/.cscreenrc_allow_update)"
-                )
 
             # Restart cscreend server
             _stdout, stderr, exitstatus = conn.execute(
