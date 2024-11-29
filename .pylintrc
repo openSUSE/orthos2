@@ -61,7 +61,6 @@ confidence=
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
 disable=all,
-        no-absolute-import,
         maybe-no-member,
         missing-function-docstring,
         missing-class-docstring,
@@ -75,67 +74,6 @@ enable=c-extension-no-member,
       unused-import,
       unused-variable,
       undefined-variable,
-      comprehension-escape,
-      exception-escape,
-      deprecated-sys-function,
-      xreadlines-attribute,
-      deprecated-urllib-function,
-      deprecated-operator-function,
-      dict-values-not-iterating,
-      dict-keys-not-iterating,
-      dict-items-not-iterating,
-      next-method-defined,
-      deprecated-types-field,
-      deprecated-itertools-function,
-      deprecated-str-translate-call,
-      deprecated-string-function,
-      bad-python3-import,
-      sys-max-int,
-      eq-without-hash,
-      div-method,
-      idiv-method,
-      rdiv-method,
-      exception-message-attribute,
-      invalid-str-codec,
-      cmp-method,
-      input-builtin,
-      round-builtin,
-      intern-builtin,
-      unichr-builtin,
-      map-builtin-not-iterating,
-      zip-builtin-not-iterating,
-      range-builtin-not-iterating,
-      filter-builtin-not-iterating,
-      using-cmp-argument,
-      raw_input-builtin,
-      reduce-builtin,
-      standarderror-builtin,
-      unicode-builtin,
-      xrange-builtin,
-      coerce-method,
-      delslice-method,
-      getslice-method,
-      setslice-method,
-      dict-iter-method,
-      dict-view-method,
-      next-method-called,
-      metaclass-assignment,
-      indexing-exception,
-      raising-string,
-      reload-builtin,
-      oct-method,
-      hex-method,
-      nonzero-method,
-      print-statement,
-      parameter-unpacking,
-      unpacking-in-except,
-      old-raise-syntax,
-      backtick,
-      long-suffix,
-      old-ne-operator,
-      old-octal-literal,
-      import-star-module-level,
-      non-ascii-bytes-literal,
       raw-checker-failed,
       bad-inline-option,
       locally-disabled,
@@ -144,14 +82,6 @@ enable=c-extension-no-member,
       useless-suppression,
       deprecated-pragma,
       use-symbolic-message-instead,
-      apply-builtin,
-      basestring-builtin,
-      buffer-builtin,
-      cmp-builtin,
-      coerce-builtin,
-      execfile-builtin,
-      file-builtin,
-      long-builtin,
       logging-format-interpolation,
       wrong-import-order,
       line-too-long,
@@ -344,13 +274,6 @@ max-line-length=120
 
 # Maximum number of lines in a module.
 max-module-lines=1000
-
-# List of optional constructs for which whitespace checking is disabled. `dict-
-# separator` is used to allow tabulation in dicts, etc.: {1  : 1,\n222: 2}.
-# `trailing-comma` allows a space between comma and closing bracket: (a, ).
-# `empty-line` allows space-only lines.
-no-space-check=trailing-comma,
-               dict-separator
 
 # Allow the body of a class to be on the same line as the declaration if body
 # contains single statement.
@@ -604,5 +527,5 @@ min-public-methods=2
 
 # Exceptions that will emit a warning when being caught. Defaults to
 # "BaseException, Exception".
-overgeneral-exceptions=BaseException,
-                       Exception
+overgeneral-exceptions=builtins.BaseException,
+                       builtins.Exception
