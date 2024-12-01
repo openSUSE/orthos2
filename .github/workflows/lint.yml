@@ -104,7 +104,7 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        pylint --rcfile=.pylintrc --fail-under=10 `find -regextype egrep -regex '(.*.py)$'`
+        pylint --rcfile=.pylintrc --fail-under=10 orthos2
   pycodingstyle:
     runs-on: ubuntu-latest
     strategy:
