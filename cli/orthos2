@@ -98,7 +98,7 @@ def format_value(value):
         bool        | False        | 'x'        | 'no'       | 'false'
         (NoneType)  | None         | '-'        | '-'        | 'none'
     """
-    if (value is None):
+    if value is None:
         if PLAIN_OUTPUT:
             return 'none'
         return '-'
@@ -133,7 +133,7 @@ def format_value(value):
                 except OverflowError:
                     pass
 
-        if (not value):
+        if not value:
             return '-'
 
     if isinstance(value, bool):
@@ -938,7 +938,7 @@ class Config:
         if timezone in pytz.all_timezones:
             self.__timezone = timezone
         else:
-            logging.warning("Unknown timezone: {}".format(timezone))
+            logging.warning("Unknown timezone: %s", timezone)
 
     def get_timezone(self):
         if self.__timezone:
@@ -949,7 +949,7 @@ class Config:
                 if timezone in pytz.all_timezones:
                     return timezone
                 else:
-                    logging.warning("Unknown timezone: {}".format(timezone))
+                    logging.warning("Unknown timezone: %s", timezone)
                     return TIME_ZONE
             else:
                 return TIME_ZONE
@@ -986,7 +986,7 @@ class Orthos:
                 'password': password
             }
 
-            header, data = self.request('POST', url, data, login=True)
+            _, data = self.request('POST', url, data, login=True)
             orthos.config.set_token(data.get('token', None))
 
         def get(self, url):
@@ -1041,7 +1041,7 @@ class Orthos:
         def request(self, method, url, data=None, login=False):
             logging.debug(url)
 
-            if (not orthos.config.is_quiet()):
+            if not orthos.config.is_quiet():
                 print(PROMPT_LOADING, end='\r')
 
             if method == 'GET':
@@ -1061,7 +1061,7 @@ class Orthos:
                 header = result.get('header', None)
                 data = result.get('data', [])
 
-            if (not orthos.config.is_quiet()):
+            if not orthos.config.is_quiet():
                 print(' ' * len(PROMPT_LOADING), end='\r')
 
             return (header, data)
@@ -1087,7 +1087,7 @@ class Orthos:
             orthos.config.get_port()
         )
 
-        header, data = self.API.request('GET', API_URL)
+        _, data = self.API.request('GET', API_URL)
         orthos.config.set_auth_user(data.get('user'))
 
         self._commands = [
