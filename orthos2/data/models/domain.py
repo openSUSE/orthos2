@@ -1,6 +1,6 @@
 import collections
 import logging
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -13,7 +13,7 @@ from orthos2.utils.misc import has_valid_domain_ending
 logger = logging.getLogger("models")
 
 
-def validate_domain_ending(value):
+def validate_domain_ending(value: str) -> None:
     valid_domain_endings = ServerConfig.objects.get_valid_domain_endings()
 
     if not has_valid_domain_ending(value, valid_domain_endings):
@@ -25,8 +25,8 @@ def validate_domain_ending(value):
 
 
 class Domain(models.Model):
-    class Manager(models.Manager):
-        def get_by_natural_key(self, name):
+    class Manager(models.Manager["Domain"]):
+        def get_by_natural_key(self, name: str) -> Optional["Domain"]:
             return self.get(name=name)
 
     name = models.CharField(
@@ -87,24 +87,24 @@ class Domain(models.Model):
 
     objects = Manager()
 
-    def natural_key(self):
+    def natural_key(self) -> Tuple[str]:
         return (self.name,)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         validate_domain_ending(self.name)
 
         super(Domain, self).save(*args, **kwargs)
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args: Any, **kwargs: Any) -> None:
         if self.machine_set.count() > 0:
             raise ValidationError("Domain contains machines.")
         else:
             super(Domain, self).delete(*args, **kwargs)
 
-    def get_machine_count(self):
+    def get_machine_count(self) -> int:
         return self.machine_set.count()
 
     get_machine_count.short_description = "Machines"
@@ -174,7 +174,7 @@ class Domain(models.Model):
 
         return records
 
-    def is_valid_setup_choice(self, choice: str, architecture: str):
+    def is_valid_setup_choice(self, choice: str, architecture: str) -> bool:
         """Check if `choice` is a valid setup record."""
         choices = self.get_setup_records(architecture)
         result = choice in choices
@@ -189,5 +189,5 @@ class DomainAdmin(models.Model):
 
     contact_email = models.EmailField(blank=False)
 
-    def natural_key(self):
+    def natural_key(self) -> Tuple[str, str]:
         return self.domain.name, self.arch.name

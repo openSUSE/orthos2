@@ -1,4 +1,5 @@
 from copy import deepcopy
+from typing import Any, Optional, Tuple
 
 from django.db import models
 
@@ -6,13 +7,13 @@ from orthos2.utils.misc import safe_get_or_default
 
 
 class Architecture(models.Model):
-    class Manager(models.Manager):
-        def get_by_natural_key(self, name):
+    class Manager(models.Manager["Architecture"]):
+        def get_by_natural_key(self, name: str) -> Optional["Architecture"]:
             return self.get(name=name)
 
     class Type:
         @classmethod
-        def prep(cls):
+        def prep(cls) -> None:
             """Prepare const variables for fast and developer-friendly handling."""
             cls.X86_64 = safe_get_or_default(Architecture, "name", "x86_64", "pk", -1)
             cls.PPC64LE = safe_get_or_default(Architecture, "name", "ppc64le", "pk", -1)
@@ -34,10 +35,10 @@ class Architecture(models.Model):
 
     objects = Manager()
 
-    def natural_key(self):
+    def natural_key(self) -> Tuple[str]:
         return (self.name,)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Deep copy object for comparison in `save()`."""
         super(Architecture, self).__init__(*args, **kwargs)
 
@@ -46,10 +47,10 @@ class Architecture(models.Model):
         else:
             self._original = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """Save architecture object."""
         super(Architecture, self).save(*args, **kwargs)
 
@@ -62,12 +63,12 @@ class Architecture(models.Model):
 
                 signal_dhcp_regenerate.send(sender=self.__class__, domain_id=None)
 
-    def get_machine_count(self):
+    def get_machine_count(self) -> int:
         return self.machine_set.count()
 
     get_machine_count.short_description = "Machines"
 
-    def get_support_contact(self):
+    def get_support_contact(self) -> Optional[str]:
         """Return email address for responsible support contact."""
         if self.contact_email:
             return self.contact_email

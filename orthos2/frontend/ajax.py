@@ -1,7 +1,7 @@
 import logging
 
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import HttpRequest, JsonResponse
 from django.template.defaultfilters import urlize
 
 from orthos2.data.models import Annotation, Machine, RemotePower
@@ -12,7 +12,7 @@ logger = logging.getLogger("views")
 
 
 @login_required
-def annotation(request, machine_id):
+def annotation(request: HttpRequest, machine_id: int) -> JsonResponse:
     text = request.GET.get("text", None)
 
     annotation = Annotation.objects.create(
@@ -29,7 +29,7 @@ def annotation(request, machine_id):
 
 @login_required
 @check_permissions(key="machine_id")
-def powercycle(request, machine_id):
+def powercycle(request: HttpRequest, machine_id: int) -> JsonResponse:
     """Power cycle machine and return result as JSON."""
     action = request.GET.get("action", None)
 
@@ -69,7 +69,7 @@ def powercycle(request, machine_id):
 
 
 @login_required
-def virtualization_list(request, host_id):
+def virtualization_list(request: HttpRequest, host_id) -> JsonResponse:
     """Return VM list (libvirt)."""
     try:
         host = Machine.objects.get(pk=host_id)
@@ -83,7 +83,7 @@ def virtualization_list(request, host_id):
 
 @login_required
 @check_permissions(key="host_id")
-def virtualization_delete(request, host_id):
+def virtualization_delete(request: HttpRequest, host_id: int) -> JsonResponse:
     """Delete a VM."""
     vm_id = request.GET.get("vm", None)
 

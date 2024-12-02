@@ -15,7 +15,7 @@ class Login(WebTest):
         "orthos2/frontend/tests/user/fixtures/users.json",
     ]
 
-    def test_successful_user_login(self):
+    def test_successful_user_login(self) -> None:
         """Test if a user can log in successfully."""
         form = self.app.get(reverse("frontend:login")).form
         form["username"] = "user"
@@ -26,7 +26,7 @@ class Login(WebTest):
         self.assertContains(page, "My Machine")
         self.assertContains(page, "Logout")
 
-    def test_unsuccessful_user_login(self):
+    def test_unsuccessful_user_login(self) -> None:
         """Test an unsuccessful user login."""
         form = self.app.get(reverse("frontend:login")).form
         form["username"] = "user"
@@ -37,7 +37,7 @@ class Login(WebTest):
         self.assertNotContains(page, "My Machine")
         self.assertContains(page, "Unknown login/password!")
 
-    def test_successful_superuser_login(self):
+    def test_successful_superuser_login(self) -> None:
         """Test if a superuser can log in successfully."""
         form = self.app.get(reverse("frontend:login")).form
         form["username"] = "superuser"
@@ -48,7 +48,7 @@ class Login(WebTest):
         self.assertContains(page, "My Machine")
         self.assertContains(page, "All Machines")
 
-    def test_welcome_message(self):
+    def test_welcome_message(self) -> None:
         """Test if a welcome message shows up on the login page (if given)."""
         page = self.app.get(reverse("frontend:login"))
 
@@ -63,7 +63,7 @@ class Login(WebTest):
 
         self.assertNotContains(page, welcome_message)
 
-    def test_login_links(self):
+    def test_login_links(self) -> None:
         """Test all available links showing up on the login page."""
         with self.settings(AUTH_ALLOW_USER_CREATION=True):
             page = self.app.get(reverse("frontend:login"))
@@ -83,7 +83,7 @@ class Login(WebTest):
             self.assertNotContains(page, "Preferences")
             self.assertNotContains(page, "Logout")
 
-    def test_login_with_password_free_user(self):
+    def test_login_with_password_free_user(self) -> None:
         """
         Migrated users have no password set. At the first login, users have to recover their
         password.

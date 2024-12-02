@@ -1,3 +1,5 @@
+from typing import Any, Optional, Tuple
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
@@ -23,7 +25,7 @@ class RemotePowerDevice(models.Model):
         choices=remotepower_type_choices, max_length=255, verbose_name="Fence Agent"
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         power_doc = (
             ServerConfig.objects.by_key("orthos.documentation.url", "http://localhost")
             + "/"
@@ -35,17 +37,17 @@ class RemotePowerDevice(models.Model):
         super().__init__(*args, **kwargs)
 
     @staticmethod
-    def get_by_str(fqdn_dev):
+    def get_by_str(fqdn_dev: str) -> Optional["RemotePowerDevice"]:
         if not fqdn_dev:
-            return
+            return None
         fqdn = fqdn_dev.split("[")[0]
         try:
             return RemotePowerDevice.objects.get(fqdn=fqdn)
         except ObjectDoesNotExist:
             return None
 
-    def natural_key(self):
+    def natural_key(self) -> Tuple[str]:
         return (self.fqdn,)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.fqdn + "[" + self.fence_name + "]"

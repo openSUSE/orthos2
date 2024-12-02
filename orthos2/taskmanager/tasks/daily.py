@@ -13,13 +13,13 @@ class DailyMachineChecks(Task):
 
     is_running = False
 
-    def __init__(self):
+    def __init__(self) -> None:
         if DailyMachineChecks.is_running:
             raise Exception("Scan via already running")
         DailyMachineChecks.is_running = True
 
     @staticmethod
-    def do_scan_all():
+    def do_scan_all() -> None:
         ansible_scan = []
         for machine in Machine.objects.all():
             # only status check for administrative machines
@@ -42,7 +42,7 @@ class DailyMachineChecks(Task):
         TaskManager.add(task)
         DailyMachineChecks.is_running = False
 
-    def execute(self):
+    def execute(self) -> None:
         """Execute the task."""
         DailyMachineChecks.do_scan_all()
 
@@ -50,10 +50,10 @@ class DailyMachineChecks(Task):
 class DailyCheckReservationExpirations(Task):
     """Check for expiring reservations for reserved machines."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def execute(self):
+    def execute(self) -> None:
         """Execute the task."""
         from orthos2.taskmanager import tasks
 
@@ -69,10 +69,10 @@ class DailyCheckReservationExpirations(Task):
 class DailyCheckForPrimaryNetwork(Task):
     """Check for machines without primary network interfaces and complain via email."""
 
-    def __init_(self):
+    def __init_(self) -> None:
         pass
 
-    def execute(self):
+    def execute(self) -> None:
         """Execute the task."""
         from orthos2.taskmanager import tasks
 

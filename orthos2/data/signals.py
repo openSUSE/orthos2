@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+from typing import Any, Optional
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models.signals import (
@@ -35,7 +36,7 @@ signal_motd_regenerate = Signal()
 
 
 @receiver(pre_save, sender=Machine)
-def machine_pre_save(sender, instance: Machine, *args, **kwargs):
+def machine_pre_save(sender: Any, instance: Machine, *args: Any, **kwargs: Any) -> None:
     """Prevent saving machine object if MAC address is already in use (exclude own interfaces)."""
 
     exclude = []
@@ -54,7 +55,9 @@ def machine_pre_save(sender, instance: Machine, *args, **kwargs):
 
 
 @receiver(post_save, sender=Machine)
-def machine_post_save(sender, instance: Machine, *args, **kwargs):
+def machine_post_save(
+    sender: Any, instance: Machine, *args: Any, **kwargs: Any
+) -> None:
     """
     Post action after machine is saved.
 
@@ -95,7 +98,9 @@ def machine_post_save(sender, instance: Machine, *args, **kwargs):
 
 
 @receiver(post_init, sender=Machine)
-def machine_post_init(sender, instance: Machine, *args, **kwargs):
+def machine_post_init(
+    sender: Any, instance: Machine, *args: Any, **kwargs: Any
+) -> None:
     """Post init action for machine. Set non-database saved values here."""
     if instance.pk:
         try:
@@ -108,7 +113,9 @@ def machine_post_init(sender, instance: Machine, *args, **kwargs):
 
 
 @receiver(pre_delete, sender=Machine)
-def machine_pre_delete(sender, instance: Machine, *args, **kwargs):
+def machine_pre_delete(
+    sender: Any, instance: Machine, *args: Any, **kwargs: Any
+) -> None:
     """Pre delete action for machine. Save deleted machine object as file for archiving.
     Also remove the machine from the cobbler Server.
     """
@@ -157,7 +164,9 @@ def machine_pre_delete(sender, instance: Machine, *args, **kwargs):
 
 
 @receiver(post_save, sender=SerialConsole)
-def serialconsole_post_save(sender, instance: SerialConsole, *args, **kwargs):
+def serialconsole_post_save(
+    sender: Any, instance: SerialConsole, *args: Any, **kwargs: Any
+) -> None:
     """Regenerate cscreen server configs if a serial console info got changed"""
     if not instance.machine.fqdn_domain.cscreen_server:
         return
@@ -168,7 +177,9 @@ def serialconsole_post_save(sender, instance: SerialConsole, *args, **kwargs):
 
 
 @receiver(post_delete, sender=SerialConsole)
-def serialconsole_post_delete(sender, instance: SerialConsole, *args, **kwargs):
+def serialconsole_post_delete(
+    sender: Any, instance: SerialConsole, *args: Any, **kwargs: Any
+) -> None:
     """Regenerate cscreen server configs if a serial console got deleted"""
     if not instance.machine.fqdn_domain.cscreen_server:
         return
@@ -179,7 +190,9 @@ def serialconsole_post_delete(sender, instance: SerialConsole, *args, **kwargs):
 
 
 @receiver(signal_serialconsole_regenerate)
-def regenerate_serialconsole(sender, cscreen_server_fqdn, *args, **kwargs):
+def regenerate_serialconsole(
+    sender: Any, cscreen_server_fqdn: str, *args: Any, **kwargs: Any
+) -> None:
     """
     Create `RegenerateSerialConsole()` task here.
 
@@ -191,7 +204,9 @@ def regenerate_serialconsole(sender, cscreen_server_fqdn, *args, **kwargs):
 
 
 @receiver(signal_cobbler_regenerate)
-def regenerate_cobbler(sender, domain_id, *args, **kwargs):
+def regenerate_cobbler(
+    sender: Any, domain_id: Optional[int], *args: Any, **kwargs: Any
+) -> None:
     """
     Create `RegenerateCobbler()` task here.
 
@@ -206,7 +221,7 @@ def regenerate_cobbler(sender, domain_id, *args, **kwargs):
 
 
 @receiver(signal_cobbler_sync_dhcp)
-def cobbler_sync_dhcp(sender, domain_id, *args, **kwargs):
+def cobbler_sync_dhcp(sender: Any, domain_id: int, *args: Any, **kwargs: Any) -> None:
     """
     Create `RegenerateCobbler()` task here.
 
@@ -217,7 +232,9 @@ def cobbler_sync_dhcp(sender, domain_id, *args, **kwargs):
 
 
 @receiver(signal_cobbler_machine_update)
-def update_cobbler_machine(sender, domain_id, machine_id, *args, **kwargs):
+def update_cobbler_machine(
+    sender: Any, domain_id: int, machine_id: int, *args: Any, **kwargs: Any
+) -> None:
     """
     Create `RegenerateCobbler()` task here.
 
@@ -228,7 +245,7 @@ def update_cobbler_machine(sender, domain_id, machine_id, *args, **kwargs):
 
 
 @receiver(signal_motd_regenerate)
-def regenerate_motd(sender, fqdn, *args, **kwargs):
+def regenerate_motd(sender: Any, fqdn: str, *args: Any, **kwargs: Any) -> None:
     """
     Create `RegenerateMOTD()` task here.
 

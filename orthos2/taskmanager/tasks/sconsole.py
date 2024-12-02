@@ -10,10 +10,10 @@ logger = logging.getLogger("tasks")
 class RegenerateSerialConsole(Task):
     """Regenerate the cscreen configuration for a specific serial console server."""
 
-    def __init__(self, fqdn):
+    def __init__(self, fqdn: str) -> None:
         self.fqdn = fqdn
 
-    def execute(self):
+    def execute(self) -> None:
         """Execute the task."""
         from orthos2.data.models import Machine
 

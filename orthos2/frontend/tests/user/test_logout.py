@@ -11,7 +11,7 @@ class Logout(WebTest):
         "orthos2/frontend/tests/user/fixtures/users.json",
     ]
 
-    def test_successful_logout(self):
+    def test_successful_logout(self) -> None:
         """Test if a user can log out successfully."""
         # Arrange
         page = self.app.get(reverse("frontend:free_machines"), user="user")

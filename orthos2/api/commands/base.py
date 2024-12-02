@@ -1,14 +1,16 @@
 import linecache
 import sys
+from typing import Any, Dict, List, Optional, Union
 
 from django.shortcuts import redirect
+from django.urls import URLPattern
 from rest_framework.views import APIView
 
 from orthos2.api.serializers.misc import SelectSerializer
 from orthos2.data.models import Machine
 
 
-def getException():
+def getException() -> str:
     """
     Use this function to create error messages when an Exception happens during
     processing of client commands.
@@ -30,7 +32,12 @@ def getException():
     )
 
 
-def get_machine(fqdn, redirect_to, data=None, redirect_key_replace="fqdn"):
+def get_machine(
+    fqdn: str,
+    redirect_to: str,
+    data: Optional[Any] = None,
+    redirect_key_replace: str = "fqdn",
+) -> Machine:
     """
     Look up FQDN in the database and return one machine object if found or raise corresponding
     exception if something went wrong.
@@ -47,13 +54,12 @@ def get_machine(fqdn, redirect_to, data=None, redirect_key_replace="fqdn"):
 
     if len(machines) == 1:
         machine = machines[0]
-
     elif machines:
         selection = SelectSerializer(machines, "Please specify:")
         return selection
-
     else:
         raise Exception("Machine '{}' does not exist!".format(fqdn))
+
     if fqdn != machine.fqdn:
         response = redirect(redirect_to)
 
@@ -70,15 +76,15 @@ def get_machine(fqdn, redirect_to, data=None, redirect_key_replace="fqdn"):
 
 class BaseAPIView(APIView):
     @staticmethod
-    def get_urls():
+    def get_urls() -> List[URLPattern]:
         raise NotImplementedError
 
     @staticmethod
-    def get_tabcompletion():
+    def get_tabcompletion() -> List[str]:
         return []
 
     @classmethod
-    def description(cls):
+    def description(cls) -> Dict[str, Union[str, List[str]]]:
         return {
             "help": cls.HELP_SHORT,
             "docstring": cls.HELP,

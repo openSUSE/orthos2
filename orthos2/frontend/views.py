@@ -4,6 +4,7 @@ import logging
 import secrets
 import string
 import warnings
+from typing import Any, Callable, Dict, List, Union
 
 from django.conf import settings
 from django.contrib import messages
@@ -15,10 +16,17 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.db.models import Q
-from django.http import Http404, HttpResponse, HttpResponseRedirect
-from django.shortcuts import redirect, render, resolve_url, reverse
+from django.db.models import Q, QuerySet
+from django.http import (
+    Http404,
+    HttpRequest,
+    HttpResponse,
+    HttpResponsePermanentRedirect,
+    HttpResponseRedirect,
+)
+from django.shortcuts import redirect, render, resolve_url
 from django.template.response import TemplateResponse
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -61,16 +69,16 @@ class MachineListView(ListView):
 
     # login is required for all machine lists
     @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any):
         return super(MachineListView, self).dispatch(request, *args, **kwargs)
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Machine]:
         """
         Return pre-filtered query set for every machine list.
 
         Adminsitrative machines and administrative systems are excluded.
         """
-        filters = []
+        filters: List[Q] = []
 
         if self.request.GET.get("query"):
             filters.append(Q(fqdn__contains=self.request.GET.get("query")))
@@ -99,7 +107,7 @@ class MachineListView(ListView):
 
         return machines
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super(MachineListView, self).get_context_data(**kwargs)
         context["machine_list"] = self.object_list
 
@@ -139,7 +147,7 @@ class MachineListView(ListView):
 class AllMachineListView(MachineListView):
     """`All Machines` list view."""
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         return super(AllMachineListView, self).get(request, *args, **kwargs)
 
     def render_to_response(self, context, **response_kwargs):
@@ -191,7 +199,7 @@ class VirtualMachineListView(MachineListView):
         machines = super(VirtualMachineListView, self).get_queryset()
         return machines.filter(vm_dedicated_host=True)
 
-    def render_to_response(self, context, **response_kwargs):
+    def render_to_response(self, context, **response_kwargs) -> TemplateResponse:
         """Add VMs running already."""
         context["title"] = "Virtual Machines"
         context["view"] = "virtual"
@@ -215,7 +223,7 @@ class VirtualMachineListView(MachineListView):
 
 @login_required
 @check_permissions()
-def machine(request, id):
+def machine(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         machine.enclosure.fetch_location(machine.pk)
@@ -232,7 +240,7 @@ def machine(request, id):
 
 @login_required
 @check_permissions("fqdn")
-def machine_fqdn(request, fqdn):
+def machine_fqdn(request: HttpRequest, fqdn: str) -> HttpResponse:
     try:
         machine = Machine.objects.get(fqdn=fqdn)
         machine.enclosure.fetch_location(machine.pk)
@@ -248,7 +256,7 @@ def machine_fqdn(request, fqdn):
 
 
 @login_required
-def pci(request, id):
+def pci(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         machine.enclosure.fetch_location(machine.pk)
@@ -262,7 +270,7 @@ def pci(request, id):
 
 
 @login_required
-def cpu(request, id):
+def cpu(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         return render(
@@ -275,7 +283,7 @@ def cpu(request, id):
 
 
 @login_required
-def networkinterfaces(request, id):
+def networkinterfaces(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         return render(
@@ -288,7 +296,7 @@ def networkinterfaces(request, id):
 
 
 @login_required
-def installations(request, id):
+def installations(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         return render(
@@ -301,7 +309,7 @@ def installations(request, id):
 
 
 @login_required
-def usb(request, id):
+def usb(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         return render(
@@ -314,7 +322,7 @@ def usb(request, id):
 
 
 @login_required
-def scsi(request, id):
+def scsi(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         return render(
@@ -327,7 +335,7 @@ def scsi(request, id):
 
 
 @login_required
-def virtualization(request, id):
+def virtualization(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
     except Machine.DoesNotExist:
@@ -344,7 +352,9 @@ def virtualization(request, id):
 
 
 @login_required
-def virtualization_add(request, id):
+def virtualization_add(
+    request: HttpRequest, id: int
+) -> Union[HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse]:
     try:
         machine = Machine.objects.get(pk=id)
     except Machine.DoesNotExist:
@@ -391,7 +401,7 @@ def virtualization_add(request, id):
 
 
 @login_required
-def misc(request, id):
+def misc(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         return render(
@@ -405,7 +415,9 @@ def misc(request, id):
 
 @login_required
 @check_permissions()
-def machine_reserve(request, id):
+def machine_reserve(
+    request: HttpRequest, id: int
+) -> Union[HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse]:
     try:
         machine = Machine.objects.get(pk=id)
     except Machine.DoesNotExist:
@@ -441,7 +453,7 @@ def machine_reserve(request, id):
 
 @login_required
 @check_permissions()
-def machine_release(request, id):
+def machine_release(request: HttpRequest, id: int):
     try:
         machine = Machine.objects.get(pk=id)
 
@@ -467,7 +479,9 @@ def machine_release(request, id):
 
 
 @login_required
-def history(request, id):
+def history(
+    request: HttpRequest, id: int
+) -> Union[HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse]:
     try:
         machine = Machine.objects.get(pk=id)
         return render(
@@ -482,7 +496,7 @@ def history(request, id):
 
 @login_required
 @check_permissions()
-def rescan(request, id):
+def rescan(request: HttpRequest, id: int):
     try:
         machine = Machine.objects.get(pk=id)
     except Machine.DoesNotExist:
@@ -501,7 +515,9 @@ def rescan(request, id):
 
 @login_required
 @check_permissions()
-def setup(request, id):
+def setup(
+    request: HttpRequest, id: int
+) -> Union[HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse]:
     try:
         machine = Machine.objects.get(pk=id)
     except Machine.DoesNotExist:
@@ -556,7 +572,7 @@ def setup(request, id):
 
 
 @login_required
-def console(request, id):
+def console(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
         return render(
@@ -572,7 +588,9 @@ def console(request, id):
         raise Http404("Machine does not exist")
 
 
-def users_create(request):
+def users_create(
+    request: HttpRequest,
+) -> Union[HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse]:
     if request.method == "GET":
         form = NewUserForm()
     else:
@@ -606,7 +624,9 @@ def users_create(request):
     )
 
 
-def users_password_restore(request):
+def users_password_restore(
+    request: HttpRequest,
+) -> Union[HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse]:
     if request.method == "GET":
         user_id = request.GET.get("user_id", None)
         username = None
@@ -656,7 +676,9 @@ def users_password_restore(request):
 
 
 @login_required
-def users_preferences(request):
+def users_preferences(
+    request: HttpRequest,
+) -> Union[HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse]:
     if request.method == "GET":
         if request.GET.get("action") == "generate_token":
             user = User.objects.get(pk=request.user.id)
@@ -710,7 +732,7 @@ def users_preferences(request):
 
 
 @login_required
-def machine_search(request):
+def machine_search(request: HttpRequest) -> HttpResponse:
     if request.method == "GET":
         form = SearchForm()
 
@@ -733,7 +755,7 @@ def machine_search(request):
 
 
 @login_required
-def statistics(request):
+def statistics(request: HttpRequest) -> HttpResponse:
     total = Machine.objects.all().count()
 
     status_ping = Machine.objects.filter(
@@ -824,11 +846,11 @@ def statistics(request):
     )
 
 
-def deprecate_current_app(func):
+def deprecate_current_app(func: Callable[[Any, Any], Any]) -> Callable[[Any, Any], Any]:
     """Handle deprecation of the current_app parameter of the views."""
 
     @functools.wraps(func)
-    def inner(*args, **kwargs):
+    def inner(*args: Any, **kwargs: Any) -> Any:
         if "current_app" in kwargs:
             warnings.warn(
                 "Passing `current_app` as a keyword argument is deprecated. "
@@ -844,7 +866,7 @@ def deprecate_current_app(func):
     return inner
 
 
-def _get_login_redirect_url(request, redirect_to):
+def _get_login_redirect_url(request: HttpRequest, redirect_to: str) -> str:
     # Ensure the user-originating redirection URL is safe.
     if not url_has_allowed_host_and_scheme(url=redirect_to, host=request.get_host()):
         return resolve_url(settings.LOGIN_REDIRECT_URL)
@@ -856,13 +878,13 @@ def _get_login_redirect_url(request, redirect_to):
 @csrf_protect
 @never_cache
 def login(
-    request,
-    template_name="frontend/registration/login.html",
-    redirect_field_name=REDIRECT_FIELD_NAME,
+    request: HttpRequest,
+    template_name: str = "frontend/registration/login.html",
+    redirect_field_name: str = REDIRECT_FIELD_NAME,
     authentication_form=AuthenticationForm,
     extra_context=None,
-    redirect_authenticated_user=False,
-):
+    redirect_authenticated_user: bool = False,
+) -> Union[HttpResponseRedirect, HttpResponsePermanentRedirect, TemplateResponse]:
     """Display the login form and handles the login action."""
     if extra_context is None:
         extra_context = {}

@@ -2,19 +2,22 @@ import logging
 import re
 import socket
 import threading
-from decimal import Decimal
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
-from orthos2.data.models import Architecture, Installation, Machine, NetworkInterface
-from orthos2.utils.misc import execute, normalize_ascii
+from orthos2.data.models import Installation, Machine, NetworkInterface
+from orthos2.utils.misc import execute
 from orthos2.utils.remote import ssh_execute
 from orthos2.utils.ssh import SSH
+
+if TYPE_CHECKING:
+    from orthos2.data.models.components.pci import PCIDevice
 
 ARPHRD_IEEE80211 = 801
 
 logger = logging.getLogger("utils")
 
 
-def ping_check(fqdn, timeout=None, ip_version=4):
+def ping_check(fqdn: str, timeout: Optional[int] = None, ip_version: int = 4) -> bool:
     """Check if the server pings."""
     command = "/usr/bin/ping -4"
     if ip_version == 6:
@@ -30,15 +33,15 @@ def ping_check(fqdn, timeout=None, ip_version=4):
     return returncode == 0
 
 
-def ping_check_ipv4(fqdn, timeout):
+def ping_check_ipv4(fqdn: str, timeout: int) -> bool:
     return ping_check(fqdn, timeout, ip_version=4)
 
 
-def ping_check_ipv6(fqdn, timeout):
+def ping_check_ipv6(fqdn: str, timeout: int) -> bool:
     return ping_check(fqdn, timeout, ip_version=6)
 
 
-def nmap_check(fqdn):
+def nmap_check(fqdn: str) -> bool:
     """Check if the SSH port is reachable without connectiong."""
     SSH_PORT = 22
     if not ping_check(fqdn):
@@ -56,7 +59,7 @@ def nmap_check(fqdn):
     return True
 
 
-def login_test(fqdn):
+def login_test(fqdn: str) -> bool:
     """Check if it's possible to login via SSH."""
     _stdout, _stderr, err = ssh_execute("exit", fqdn, log_error=False)
     if err:
@@ -65,198 +68,7 @@ def login_test(fqdn):
     return True
 
 
-def get_hardware_information(fqdn):
-    """Retrieve information of the system."""
-    try:
-        machine = Machine.objects.get(fqdn=fqdn)
-    except Machine.DoesNotExist:
-        logger.warning("Machine '%s' does not exist", fqdn)
-        return
-
-    # set needed values for several checks from original machine
-    machine_ = Machine(architecture=machine.architecture)
-
-    conn = None
-    timer = None
-    try:
-        conn = SSH(fqdn)
-        conn.connect()
-        timer = threading.Timer(5 * 60, conn.close)
-        timer.start()
-
-        # CPUs
-        logger.debug("Get CPU number...")
-        output, _stderr, _exitstatus = conn.execute_script_remote(
-            "machine_get_cpu_number.sh"
-        )
-        if output:
-            for line in output:
-                if line.startswith("SOCKETS"):
-                    machine_.cpu_physical = int(line.split("=")[1])
-                elif line.startswith("CORES"):
-                    machine_.cpu_cores = int(line.split("=")[1])
-                elif line.startswith("THREADS"):
-                    machine_.cpu_threads = int(line.split("=")[1])
-
-        logger.debug("Get CPU type...")
-        output, _stderr, _exitstatus = conn.execute_script_remote(
-            "machine_get_cpu_type.sh"
-        )
-        if output and output[0]:
-            machine_.cpu_model = output[0].strip()
-
-        logger.debug("Get CPU flags...")
-        output, _stderr, _exitstatus = conn.execute_script_remote(
-            "machine_get_cpu_flags.sh"
-        )
-        if output and output[0]:
-            machine_.cpu_flags = output[0].strip()
-
-        logger.debug("Get CPU speed...")
-        output, _stderr, _exitstatus = conn.execute_script_remote(
-            "machine_get_cpu_speed.sh"
-        )
-        if output and output[0]:
-            machine_.cpu_speed = Decimal(int(output[0].strip()) / 1000000)
-
-        logger.debug("Get CPU ID...")
-        output, _stderr, _exitstatus = conn.execute_script_remote(
-            "machine_get_cpu_id.sh"
-        )
-        if output and output[0]:
-            machine_.cpu_id = output[0].strip()
-
-        # EFI
-        logger.debug("Check for EFI...")
-        try:
-            efi_file = conn.get_file("/sys/firmware/efi", "r")
-            efi_file.close()
-            machine_.efi = True
-        except IOError:
-            machine_.efi = False
-
-        # Memory
-        logger.debug("Get RAM amount...")
-        for line in conn.read_file("/proc/meminfo"):
-            if line.startswith("MemTotal"):
-                machine_.ram_amount = int(int(line.split()[1]) / 1024)
-
-        # Virtualization capability
-        VM_HOST_MIN_RAM_MB = 7000
-        machine_.vm_capable = False
-
-        # Virtualization: x86
-        logger.debug("Check for VM capability...")
-        if machine_.architecture_id == Architecture.Type.X86_64:
-            cpu_flags = machine_.cpu_flags
-            if cpu_flags:
-                cpu_flags = cpu_flags.upper()
-                if (cpu_flags.find("VMX") >= 0 or cpu_flags.find("SVM") >= 0) and int(
-                    machine_.ram_amount
-                ) > VM_HOST_MIN_RAM_MB:
-                    machine_.vm_capable = True
-
-        # Virtualization: ppc64le
-        if machine_.architecture_id == Architecture.Type.PPC64LE:
-            for line in conn.read_file("/proc/cpuinfo"):
-                if line.startswith("firmware") and "OPAL" in line:
-                    machine_.vm_capable = True
-
-        # Disk
-        logger.debug("Get disk information...")
-        stdout, _stderr, _exitstatus = conn.execute("hwinfo --disk")
-        for line in stdout:
-            line = line.strip()
-            if line.startswith("Size:"):
-                machine_.disk_primary_size = int(int(line.split()[1]) / 2 / 1024**2)
-            elif line.startswith("Attached to:"):
-                opening_bracket = line.find("(")
-                closing_bracket = line.find(")")
-                if opening_bracket > 0 and closing_bracket > 0:
-                    machine_.disk_type = line[opening_bracket + 1 : closing_bracket]
-                else:
-                    machine_.disk_type = "Unknown disk type"
-                break
-
-        # lsmod
-        logger.debug("Get 'lsmod'...")
-        stdout, _stderr, _exitstatus = conn.execute("lsmod")
-        machine_.lsmod = normalize_ascii("".join(stdout))
-
-        # lspci
-        logger.debug("Get 'lspci'...")
-        stdout, _stderr, _exitstatus = conn.execute("lspci -vvv -nn")
-        machine_.lspci = normalize_ascii("".join(stdout))
-
-        # last
-        logger.debug("Get 'last'...")
-        output, _stderr, _exitstatus = conn.execute("last | grep -v reboot | head -n 1")
-        string = "".join(output)
-        result = string[0:8] + string[38:49]
-        machine_.last = normalize_ascii("".join(result))
-
-        # hwinfo
-        logger.debug("Get 'hwinfo' (full)...")
-        stdout, _stderr, _exitstatus = conn.execute(
-            "hwinfo --bios "
-            + "--block --bridge --cdrom --cpu --disk --floppy --framebuffer "
-            + "--gfxcard --hub --ide --isapnp --isdn --keyboard --memory "
-            + "--monitor --mouse --netcard --network --partition --pci --pcmcia "
-            + "--scsi --smp --sound --sys --tape --tv --usb --usb-ctrl --wlan"
-        )
-        machine_.hwinfo = normalize_ascii("".join(stdout))
-
-        # dmidecode
-        logger.debug("Get 'dmidecode'...")
-        stdout, _stderr, _exitstatus = conn.execute("dmidecode")
-        machine_.dmidecode = normalize_ascii("".join(stdout))
-
-        # dmesg
-        logger.debug("Get 'dmesg'...")
-        stdout, _stderr, _exitstatus = conn.execute(
-            "if [ -e /var/log/boot.msg ]; then "
-            + "cat /var/log/boot.msg; else journalctl -xl | head -n200; "
-            + "fi"
-        )
-        machine_.dmesg = normalize_ascii("".join(stdout))
-
-        # lsscsi
-        logger.debug("Get 'lsscsi'...")
-        stdout, _stderr, _exitstatus = conn.execute("lsscsi -s")
-        machine_.lsscsi = normalize_ascii("".join(stdout))
-
-        # lsusb
-        logger.debug("Get 'lsusb'...")
-        stdout, _stderr, _exitstatus = conn.execute("lsusb")
-        machine_.lsusb = normalize_ascii("".join(stdout))
-
-        # IPMI
-        logger.debug("Check for IPMI...")
-        machine_.ipmi = machine_.dmidecode.find("IPMI") >= 0
-
-        # Firmware script
-        logger.debug("Get BIOS version...")
-        output, _stderr, _exitstatus = conn.execute_script_remote(
-            "machine_get_firmware.sh"
-        )
-        if output and output[0]:
-            machine_.bios_version = output[0].strip()
-
-        return machine_
-
-    except Exception as e:
-        logger.exception("%s (%s)", fqdn, e)
-        return False
-    finally:
-        if conn:
-            conn.close()
-        if timer:
-            timer.cancel()
-
-    return None
-
-
-def get_networkinterfaces(fqdn):
+def get_networkinterfaces(fqdn: str) -> Optional[Union[bool, List[NetworkInterface]]]:
     """Retrieve information of the systems network interfaces."""
     try:
         Machine.objects.get(fqdn=fqdn)
@@ -271,7 +83,7 @@ def get_networkinterfaces(fqdn):
         logger.warning("Machine '%s' could not read network interfaces", fqdn)
         return None
 
-    interfaces = []
+    interfaces: List[NetworkInterface] = []
     interface = None
 
     for line in stdout:
@@ -342,7 +154,7 @@ def get_networkinterfaces(fqdn):
     return interfaces
 
 
-def get_status_ip(fqdn):
+def get_status_ip(fqdn: str) -> Optional[Union[bool, Machine]]:
     """Retrieve information of the systems IPv4/IPv6 status."""
     try:
         machine = Machine.objects.get(fqdn=fqdn)
@@ -366,7 +178,7 @@ def get_status_ip(fqdn):
     _file = open("/tmp/orthos_t", "w")
     print(stdout, file=_file)
     _file.close()
-    devices = {}
+    devices: Dict[str, Optional[Union[List[str], str]]] = {}
     current_device = None
     addresses = {"inet": [], "inet6": []}
 
@@ -448,7 +260,7 @@ def get_status_ip(fqdn):
     return machine_
 
 
-def get_installations(fqdn):
+def get_installations(fqdn: str) -> Union[bool, List[Installation]]:
     """Retrieve information of the installations."""
     try:
         machine = Machine.objects.get(fqdn=fqdn)
@@ -468,7 +280,7 @@ def get_installations(fqdn):
         # Installations
         logger.debug("Collect installations...")
 
-        installations = []
+        installations: List[Installation] = []
         output, _stderr, _exitstatus = conn.execute_script_remote(
             "machine_get_installations.sh"
         )
@@ -499,13 +311,11 @@ def get_installations(fqdn):
         if timer:
             timer.cancel()
 
-    return None
 
-
-def get_pci_devices(fqdn):
+def get_pci_devices(fqdn: str) -> List["PCIDevice"]:
     """Retrieve all PCI devices."""
 
-    def get_pci_device_by_slot(pci_devices, slot):
+    def get_pci_device_by_slot(pci_devices, slot: str):
         """Return the PCI device by slot."""
         for dev in pci_devices:
             pci_slot = dev.slot
@@ -530,7 +340,7 @@ def get_pci_devices(fqdn):
         return False
 
     logger.debug("Collect PCI devices for '%s'...", fqdn)
-    pci_devices = []
+    pci_devices: List[PCIDevice] = []
     chunk = ""
     stdout, _stderr, err = ssh_execute("lspci -mmvn")
     if err:

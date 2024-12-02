@@ -1,4 +1,7 @@
+from typing import Any, Dict, Optional
+
 from django.contrib.admin import AdminSite
+from django.core.handlers.wsgi import WSGIRequest
 
 
 class MyAdminSite(AdminSite):
@@ -9,6 +12,8 @@ class MyAdminSite(AdminSite):
     site_header = "Orthos2 Administration"
 
     # C&P -> not sure this is needed
-    def index(self, request, extra_context=None):
+    def index(
+        self, request: WSGIRequest, extra_context: Optional[Dict[str, Any]] = None
+    ):
         # Update extra_context with new variables
         return super().index(request, extra_context)

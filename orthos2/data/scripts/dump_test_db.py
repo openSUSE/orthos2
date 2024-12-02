@@ -61,7 +61,7 @@ added_machines = []
 config = apps.get_app_config("data")
 
 
-def show_help():
+def show_help() -> None:
     print("Use --script-args to specify what you want to dump:")
     print("")
     print("\tgeneral \t-- Dump general DB data [ %s ] " % ", ".join(Modules["general"]))

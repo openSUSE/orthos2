@@ -9,7 +9,7 @@ import pexpect
 
 
 class OrthosCliTestCase(unittest.TestCase):
-    def __init__(self, methodName="runTest"):
+    def __init__(self, methodName: str = "runTest") -> None:
         super().__init__(methodName=methodName)
         self.process = None
 
@@ -25,7 +25,7 @@ class OrthosCliTestCase(unittest.TestCase):
         if config_folder.exists():
             config_folder.rmdir()
 
-    def start_cli(self, username=""):
+    def start_cli(self, username: str = ""):
         """
         Starts the CLI and tests if the startup of it has occurred orderly.
         """
@@ -39,7 +39,7 @@ class OrthosCliTestCase(unittest.TestCase):
         # Warning for http - WARNING:root:No secure ssl connection ...
         self.process.expect(r"WARNING:root:No secure ssl connection.*\r\n")
         # Shell prefix
-        self.process.expect(r"\(orthos 2.0.0:Anonymous\) ")
+        self.process.expect(r"\(orthos 2.3.0:Anonymous\) ")
 
     def login_cli(self):
         """
@@ -49,7 +49,7 @@ class OrthosCliTestCase(unittest.TestCase):
         self.process.expect("Orthos password for admin:")
         self.process.sendline("admin")
         # Check login was successful
-        self.process.expect("(orthos 2.0.0:admin)")
+        self.process.expect("(orthos 2.3.0:admin)")
 
     def stop_cli(self) -> bool:
         """

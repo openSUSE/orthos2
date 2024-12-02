@@ -1,4 +1,5 @@
 import sys
+from typing import Any, Optional
 
 try:
     from ptyprocess import PtyProcessUnicode
@@ -17,18 +18,20 @@ except ImportError:
     print("'tornado' module needed! Run 'pip install tornado'...")
     sys.exit(1)
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 
 from orthos2.data.models import ServerConfig
 
 
 class TermSocketHandler(TermSocket):
-    def open(self, url_component=None, hostname=None):
+    def open(self, *args: str, **kwargs: str) -> None:
         """Websocket connection opened.
 
         Call our terminal manager to get a terminal, and connect to it as a
         client.
         """
+        url_component = kwargs.get("url_component", "")
+        hostname = kwargs.get("hostname", "")
         self._logger.info("TermSocket.open: %s", url_component)
 
         url_component = _cast_unicode(url_component)
@@ -42,13 +45,13 @@ class TermSocketHandler(TermSocket):
         self.send_json_message(["setup", {}])
         self._logger.info("TermSocket.open: Opened %s", self.term_name)
 
-    def check_origin(self, origin):
+    def check_origin(self, origin: str) -> bool:
         """Disable origin check due to different websocket server."""
         return True
 
 
 class SerialConsoleTermManager(UniqueTermManager):
-    def new_terminal(self, **kwargs):
+    def new_terminal(self, **kwargs: Any) -> PtyWithClients:
         """
         Make a new terminal, return a :class: `PtyWithClients` instance.
 
@@ -64,7 +67,9 @@ class SerialConsoleTermManager(UniqueTermManager):
         pty = PtyProcessUnicode.spawn(argv, env=env, cwd=options.get("cwd", None))
         return PtyWithClients(pty)
 
-    def get_terminal(self, url_component=None, hostname=None):
+    def get_terminal(
+        self, url_component: Optional[str] = None, hostname: Optional[str] = None
+    ) -> PtyWithClients:
         """Call `new_terminal()` with `hostname` argument."""
         if self.max_terminals and len(self.ptys_by_fd) >= self.max_terminals:
             raise MaxTerminalsReached(self.max_terminals)
@@ -96,11 +101,11 @@ class Command(BaseCommand):
         ),
     )
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: CommandParser) -> None:
         for (args, kwargs) in self.OPTIONS:
             parser.add_argument(*args, **kwargs)
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
         ssl_ctx = None
 
         if options["start"]:
@@ -121,7 +126,9 @@ class Command(BaseCommand):
                 ssl_ctx.load_cert_chain(crt, key)
 
             port = int(ServerConfig.objects.by_key("websocket.cscreen.port"))
-            shell_command = ServerConfig.objects.by_key("websocket.cscreen.command")
+            shell_command: str = ServerConfig.objects.by_key(
+                "websocket.cscreen.command"
+            )
 
             self.stdout.write("Start websocket daemon on port {}...".format(port))
 
