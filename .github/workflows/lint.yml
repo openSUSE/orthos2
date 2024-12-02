@@ -78,7 +78,8 @@ jobs:
       - uses: psf/black@stable
         # Version see in .pre-commit-config.yaml
         with:
-          options: "--check --diff --safe --verbose"
+          options: |
+            --include '(\.pyi?|\.ipynb|cli/orthos2)$' --check --diff --safe --verbose
           version: "22.3.0"
   pylint:
     runs-on: ubuntu-latest
@@ -102,9 +103,13 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pylint
-    - name: Analysing the code with pylint
+    - name: Analysing the code with pylint (server)
       run: |
         pylint --rcfile=.pylintrc --fail-under=10 orthos2
+    - name: Analysing the code with pylint (CLI)
+      run: |
+        pylint --rcfile=.pylintrc --fail-under=10 cli/orthos2
+        pylint --rcfile=.pylintrc --fail-under=10 cli/tests
   pycodingstyle:
     runs-on: ubuntu-latest
     strategy:
