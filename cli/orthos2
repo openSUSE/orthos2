@@ -26,58 +26,56 @@ if sys.version_info.major == 3:
     import urllib.request as urllib_request
     from configparser import RawConfigParser
     from urllib.parse import urlencode
+
     PYTHON_VERSION = 3
 else:
     print("Python version not supported!")
     sys.exit(1)
 
-VERSION = '2.0.0'
-DEFAULT_PROTOCOL = 'https'
-DEFAULT_SERVERNAME = 'localhost'
-DEFAULT_PORT = '443'
-API_URL_FORMAT = '{0}://{1}:{2}/api'
+VERSION = "2.0.0"
+DEFAULT_PROTOCOL = "https"
+DEFAULT_SERVERNAME = "localhost"
+DEFAULT_PORT = "443"
+API_URL_FORMAT = "{0}://{1}:{2}/api"
 
-USER_CONFIGFILE = '~/.config/orthosrc'
-SYSTEM_CONFIGFILE = '/etc/orthosrc'
-USER_HISTORYFILE = '~/.orthos_history'
-PROMPT = '(orthos {0}:{1})'
-PROMPT_LOADING = 'Please wait...'
+USER_CONFIGFILE = "~/.config/orthosrc"
+SYSTEM_CONFIGFILE = "/etc/orthosrc"
+USER_HISTORYFILE = "~/.orthos_history"
+PROMPT = "(orthos {0}:{1})"
+PROMPT_LOADING = "Please wait..."
 
 LEFT_MARGIN = 30
 COLUMN_PADDING = 2
 DEBUG = False
 UTF8 = True
-TIME_ZONE = 'Europe/Berlin'
+TIME_ZONE = "Europe/Berlin"
 
 PLAIN_OUTPUT = False
-IFS = os.environ.get('OIFS', '')
+IFS = os.environ.get("OIFS", "")
 
 ALIASES = {}
 
-DATETIME_FORMAT = '%Y-%m-%d %H:%M'
-DATETIME_INPUT_FORMATS = [
-    '%Y-%m-%dT%H:%M:%S.%fZ',
-    '%Y-%m-%dT%H:%M:%SZ'
-]
+DATETIME_FORMAT = "%Y-%m-%d %H:%M"
+DATETIME_INPUT_FORMATS = ["%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ"]
 
 orthos = None
 
 
 class Type:
-    INFO = 'INFO'
-    TABLE = 'TABLE'
-    SELECT = 'SELECT'
-    MESSAGE = 'MESSAGE'
-    AUTHREQUIRED = 'AUTHREQUIRED'
-    INPUT = 'INPUT'
+    INFO = "INFO"
+    TABLE = "TABLE"
+    SELECT = "SELECT"
+    MESSAGE = "MESSAGE"
+    AUTHREQUIRED = "AUTHREQUIRED"
+    INPUT = "INPUT"
 
 
 class InputType:
-    INTEGER = 'INTEGER'
-    STRING = 'STRING'
-    BOOLEAN = 'BOOLEAN'
-    DATE = 'DATE'
-    SELECTION = 'SELECTION'
+    INTEGER = "INTEGER"
+    STRING = "STRING"
+    BOOLEAN = "BOOLEAN"
+    DATE = "DATE"
+    SELECTION = "SELECTION"
 
 
 class HTTPStatus:
@@ -100,11 +98,11 @@ def format_value(value):
     """
     if value is None:
         if PLAIN_OUTPUT:
-            return 'none'
-        return '-'
+            return "none"
+        return "-"
 
     # Python2: check for 'unicode' here
-    if isinstance(value, str) or type(value).__name__ == 'unicode':
+    if isinstance(value, str) or type(value).__name__ == "unicode":
         if PLAIN_OUTPUT:
             return value
 
@@ -123,50 +121,53 @@ def format_value(value):
         finally:
             if datetime_value:
                 if datetime_value.date() == date.max:
-                    return 'infinite'
+                    return "infinite"
 
                 try:
                     # make tz aware (UTC), return as local time
                     datetime_value = datetime_value.replace(tzinfo=pytz.UTC)
                     target_timezone = pytz.timezone(orthos.config.get_timezone())
-                    return datetime_value.astimezone(target_timezone).strftime(DATETIME_FORMAT)
+                    return datetime_value.astimezone(target_timezone).strftime(
+                        DATETIME_FORMAT
+                    )
                 except OverflowError:
                     pass
 
         if not value:
-            return '-'
+            return "-"
 
     if isinstance(value, bool):
         if PLAIN_OUTPUT:
             return str(value).lower()
         elif value and UTF8:
-            return '✓'
+            return "✓"
         elif value and (not UTF8):
-            return 'yes'
+            return "yes"
         elif (not value) and UTF8:
-            return 'x'
+            return "x"
         else:
-            return 'no'
+            return "no"
 
     return value
+
 
 def get_prompt(user):
     return PROMPT.format(VERSION, user)
 
-class Command:
 
+class Command:
     def __init__(self, *args):
         self._command = args[0]
-        self._help = args[1].get('help', None)
-        self._docstring = args[1].get('docstring', None)
-        self._tabcompletion = args[1].get('tabcompletion', None)
-        self._url = args[1].get('url', None)
-        self._method = args[1].get('method', 'GET')
-        self._recent_arguments = ''
-        self._argument_lists = args[1].get('arguments', None)
+        self._help = args[1].get("help", None)
+        self._docstring = args[1].get("docstring", None)
+        self._tabcompletion = args[1].get("tabcompletion", None)
+        self._url = args[1].get("url", None)
+        self._method = args[1].get("method", "GET")
+        self._recent_arguments = ""
+        self._argument_lists = args[1].get("arguments", None)
 
     def __repr__(self):
-        return '<Command: {0}>'.format(str(self._command))
+        return "<Command: {0}>".format(str(self._command))
 
     def __str__(self):
         return self._command.lower()
@@ -181,10 +182,10 @@ class Command:
         return self._tabcompletion
 
     def get_help(self):
-        return self._help if self._help else '-'
+        return self._help if self._help else "-"
 
     def get_docstring(self):
-        return self._docstring if self._docstring else 'No help available!'
+        return self._docstring if self._docstring else "No help available!"
 
     def get_url(self):
         return self._url
@@ -200,7 +201,7 @@ class Command:
         """
         if self._argument_lists is not None:
             for argument_list in self._argument_lists:
-                if len(argument_list) == 1 and argument_list[0][-1:] == '*':
+                if len(argument_list) == 1 and argument_list[0][-1:] == "*":
                     return argument_list
                 elif len(argument_list) == length:
                     return argument_list
@@ -212,7 +213,7 @@ class Command:
     def get_name(self):
         return self._command
 
-    def send(self, orthos, raw_arguments=''):
+    def send(self, orthos, raw_arguments=""):
         """Send a requst according to the command's HTTP method (set by the server).
 
         For re-executing a command with its arguments (e.g. after authorization was requested), all
@@ -229,26 +230,30 @@ class Command:
         """
         url = API_URL + self._url
         self._recent_arguments = raw_arguments.strip().split()
-        matching_argument_list = self.get_matching_argument_list(len(self._recent_arguments))
+        matching_argument_list = self.get_matching_argument_list(
+            len(self._recent_arguments)
+        )
 
-        if self._method == 'POST':
-            if matching_argument_list and matching_argument_list[0][-1:] == '*':
+        if self._method == "POST":
+            if matching_argument_list and matching_argument_list[0][-1:] == "*":
                 arguments = {matching_argument_list[0][:-1]: raw_arguments}
             else:
                 arguments = dict(zip(matching_argument_list, self._recent_arguments))
 
-            return orthos.API.request('POST', url, data=arguments)
+            return orthos.API.request("POST", url, data=arguments)
 
-        elif self._method == 'GET':
-            if matching_argument_list and matching_argument_list[0][-1:] == '*':
+        elif self._method == "GET":
+            if matching_argument_list and matching_argument_list[0][-1:] == "*":
                 arguments = urlencode({matching_argument_list[0][:-1]: raw_arguments})
             else:
-                arguments = urlencode(dict(zip(matching_argument_list, self._recent_arguments)))
+                arguments = urlencode(
+                    dict(zip(matching_argument_list, self._recent_arguments))
+                )
 
             if arguments:
-                url += '?{}'.format(arguments)
+                url += "?{}".format(arguments)
 
-            return orthos.API.request('GET', url)
+            return orthos.API.request("GET", url)
 
     def as_input(self):
         """Return the command with its arguments as a list."""
@@ -256,12 +261,11 @@ class Command:
 
 
 class APIResponse:
-
     def __init__(self, header, data):
         self._header = header
         self._data = data
 
-        self._type = self._header['type']
+        self._type = self._header["type"]
 
         logging.debug(self._header)
         logging.debug(self._data)
@@ -288,10 +292,9 @@ class APIResponse:
 
 
 class Input(APIResponse):
-
     def __init__(self):
-        self._order = self._header['order']
-        self._target_url = self._header['target']
+        self._order = self._header["order"]
+        self._target_url = self._header["target"]
 
     def _clean_value(self, field, input_value, required, items=None):
         """Validate and cast input values.
@@ -300,7 +303,7 @@ class Input(APIResponse):
 
         Raises ValueError if value is corrupted.
         """
-        input_type = field['type'].upper()
+        input_type = field["type"].upper()
         value = None
 
         if required and not input_value:
@@ -308,23 +311,29 @@ class Input(APIResponse):
 
         if input_type == InputType.INTEGER:
 
-            if input_value.strip() == '':
+            if input_value.strip() == "":
                 value = None
 
             else:
                 try:
                     value = int(input_value)
                 except ValueError:
-                    raise ValueError("'{0}' is not an integer!".format(str(input_value)))
+                    raise ValueError(
+                        "'{0}' is not an integer!".format(str(input_value))
+                    )
 
-                max_value = field.get('max', None)
-                min_value = field.get('min', None)
+                max_value = field.get("max", None)
+                min_value = field.get("min", None)
 
                 if (max_value is not None) and (value > max_value):
-                    raise ValueError("Value must be equal less than {0}.".format(max_value))
+                    raise ValueError(
+                        "Value must be equal less than {0}.".format(max_value)
+                    )
 
                 if (min_value is not None) and (value < min_value):
-                    raise ValueError("Value must be equal greater than {0}.".format(min_value))
+                    raise ValueError(
+                        "Value must be equal greater than {0}.".format(min_value)
+                    )
 
         elif input_type == InputType.SELECTION:
             try:
@@ -338,7 +347,7 @@ class Input(APIResponse):
             item_values = []
             for item in items:
                 item_name = list(item.keys())[0]
-                item_value = item[item_name].get('value', None)
+                item_value = item[item_name].get("value", None)
                 item_values.append(item_value)
 
             value = item_values[value]
@@ -350,12 +359,16 @@ class Input(APIResponse):
             value = input_value
 
         elif input_type == InputType.BOOLEAN:
-            if input_value.lower() in {'1', 'y', 'yes', 'true'}:
+            if input_value.lower() in {"1", "y", "yes", "true"}:
                 value = True
-            elif input_value.lower() in {'0', 'n', 'no', 'false'}:
+            elif input_value.lower() in {"0", "n", "no", "false"}:
                 value = False
             else:
-                raise ValueError("Value {0} is not a boolean; use 'y' or 'n'!".format(str(input_value)))
+                raise ValueError(
+                    "Value {0} is not a boolean; use 'y' or 'n'!".format(
+                        str(input_value)
+                    )
+                )
 
         return value
 
@@ -367,45 +380,40 @@ class Input(APIResponse):
         while i < len(self._order):
             field_name = self._order[i]
             field = self._data[field_name]
-            field_type = field['type']
+            field_type = field["type"]
 
             item_values = {}
 
             # print selection
             if field_type == InputType.SELECTION:
                 j = 0
-                for item in field['items']:
+                for item in field["items"]:
                     item_name = list(item.keys())[0]
                     item_attributes = item[item_name]
 
-                    item_value = item_attributes.get('value', None)
+                    item_value = item_attributes.get("value", None)
                     if item_value:
                         item_values[item_name] = item_value
 
-                    print('{0:>3}) {1:<30}'.format(j, item_attributes['label']))
+                    print("{0:>3}) {1:<30}".format(j, item_attributes["label"]))
                     j += 1
 
-            prompt = '{0}>'.format(field['prompt'])
-            required = field['required']
-            hidden = field.get('hidden', None)
+            prompt = "{0}>".format(field["prompt"])
+            required = field["required"]
+            hidden = field.get("hidden", None)
 
             logging.debug(field)
 
             if hidden:
-                input_ = field.get('initial', None)
+                input_ = field.get("initial", None)
             else:
                 try:
                     input_ = orthos.LineReader.readline(
-                        prompt=prompt,
-                        default=field.get('initial', None),
-                        history=False
+                        prompt=prompt, default=field.get("initial", None), history=False
                     )
 
                     input_ = self._clean_value(
-                        field,
-                        input_,
-                        required,
-                        items=field.get('items', None)
+                        field, input_, required, items=field.get("items", None)
                     )
 
                 except (KeyboardInterrupt, EOFError):
@@ -419,7 +427,9 @@ class Input(APIResponse):
             data[field_name] = input_
             i = i + 1
 
-        response = orthos.API.request('POST', API_URL + self._target_url, {'form': data})
+        response = orthos.API.request(
+            "POST", API_URL + self._target_url, {"form": data}
+        )
 
         if response[0]:
             apiresponse = APIResponse(*response)
@@ -427,7 +437,6 @@ class Input(APIResponse):
 
 
 class AuthRequired(APIResponse):
-
     def process(self):
         """Execute API result."""
         if not orthos.is_authenticated():
@@ -437,14 +446,13 @@ class AuthRequired(APIResponse):
 
 
 class Select(APIResponse):
-
     def output(self):
         """Generate output."""
-        result = '{0}\n\n'.format(self._header['title'])
+        result = "{0}\n\n".format(self._header["title"])
         i = 0
 
         for entry in self._data:
-            result += '{0:>3}) {1:<30}\n'.format(i, entry['value'])
+            result += "{0:>3}) {1:<30}\n".format(i, entry["value"])
             i += 1
 
         return result
@@ -455,26 +463,24 @@ class Select(APIResponse):
 
 
 class Message(APIResponse):
-
     def output(self):
         """Generate output."""
-        if not self._data.get('type', None) or not self._data['type']:
-            result = '{0}'.format(self._data['message'])
+        if not self._data.get("type", None) or not self._data["type"]:
+            result = "{0}".format(self._data["message"])
         else:
-            result = '{0}: {1}'.format(self._data['type'], self._data['message'])
+            result = "{0}: {1}".format(self._data["type"], self._data["message"])
         return result
 
     def process(self):
         """Execute API result."""
-        if (orthos.config.is_quiet() and self._data['type'] == 'INFO'):
+        if orthos.config.is_quiet() and self._data["type"] == "INFO":
             return
         orthos.Terminal.show(self.output())
 
 
 class Table(APIResponse):
-
     def __init__(self):
-        self._theader = self._header['theader']
+        self._theader = self._header["theader"]
 
         self._captions = [list(item.values())[0] for item in self._theader]
         self._fields = [list(item.keys())[0] for item in self._theader]
@@ -491,21 +497,23 @@ class Table(APIResponse):
     def _get_line(self):
         """Draw a horizontal line with a correlating width."""
         if not PLAIN_OUTPUT:
-            return '-' * (sum(self._widths) + len(self._widths) * COLUMN_PADDING) + '\n'
+            return "-" * (sum(self._widths) + len(self._widths) * COLUMN_PADDING) + "\n"
 
-        return ''
+        return ""
 
     def _get_theader(self):
         """Draw the table header."""
         if not PLAIN_OUTPUT:
-            theader = ''
+            theader = ""
 
             for i, caption in enumerate(self._captions):
-                theader += ' {0:<{1}}'.format(caption, self._widths[i] + COLUMN_PADDING - 1)
+                theader += " {0:<{1}}".format(
+                    caption, self._widths[i] + COLUMN_PADDING - 1
+                )
 
-            return theader + '\n'
+            return theader + "\n"
 
-        return ''
+        return ""
 
     def output(self):
         """Generate output."""
@@ -514,20 +522,22 @@ class Table(APIResponse):
         result += self._get_line()
 
         for item in self._data:
-            row = ''
+            row = ""
 
             for i, field in enumerate(self._fields):
                 value = format_value(item[field])
 
                 if PLAIN_OUTPUT:
-                    row += '{0}{1}'.format(value, IFS)
+                    row += "{0}{1}".format(value, IFS)
                 else:
-                    row += ' {0:<{1}}'.format(value, self._widths[i] + COLUMN_PADDING - 1)
+                    row += " {0:<{1}}".format(
+                        value, self._widths[i] + COLUMN_PADDING - 1
+                    )
 
-            result += row + '\n'
+            result += row + "\n"
 
         result += self._get_line()
-        result = result.rstrip('\n')
+        result = result.rstrip("\n")
 
         return result
 
@@ -537,42 +547,37 @@ class Table(APIResponse):
 
 
 class Info(APIResponse):
-
     def __init__(self):
-        self._order = self._header['order']
+        self._order = self._header["order"]
 
     def format_line(self, item, data=None):
-        result = ''
+        result = ""
 
         if isinstance(data, dict):
-            value = format_value(data[item]['value'])
+            value = format_value(data[item]["value"])
 
             if isinstance(value, str):
-                value = value.replace('\n', ' ')
+                value = value.replace("\n", " ")
 
-            result = "{0:<{1}}: {2}\n".format(data[item]['label'], LEFT_MARGIN, value)
+            result = "{0:<{1}}: {2}\n".format(data[item]["label"], LEFT_MARGIN, value)
 
         elif isinstance(data, list):
             i = 0
             for element in data:
                 j = 0
                 for subitem in item:
-                    value = format_value(element[subitem]['value'])
+                    value = format_value(element[subitem]["value"])
                     if j > 0:
                         result += " " * 3 + "{0:<{1}}: {2}\n".format(
-                            element[subitem]['label'],
-                            LEFT_MARGIN - 3,
-                            value
+                            element[subitem]["label"], LEFT_MARGIN - 3, value
                         )
                     else:
                         result += "{0:<3}{1:<{2}}: {3}\n".format(
-                            i, element[subitem]['label'],
-                            LEFT_MARGIN - 3,
-                            value
+                            i, element[subitem]["label"], LEFT_MARGIN - 3, value
                         )
                     j += 1
                 i += 1
-                result += '\n'
+                result += "\n"
 
         return result
 
@@ -583,19 +588,18 @@ class Info(APIResponse):
         if data is None:
             data = self._data
 
-        result = '-' * Terminal().width + '\n'
+        result = "-" * Terminal().width + "\n"
 
         for item in order:
 
             if item is None:
-                result += '-' * Terminal().width + '\n'
+                result += "-" * Terminal().width + "\n"
             else:
                 if isinstance(item, list):
-                    result += '{0:-^{1}}\n'.format(
-                        ' ' + data[item[0]]['label'] + ' ',
-                        Terminal().width
+                    result += "{0:-^{1}}\n".format(
+                        " " + data[item[0]]["label"] + " ", Terminal().width
                     )
-                    result += self.format_line(item[1], data[item[0]]['value'])
+                    result += self.format_line(item[1], data[item[0]]["value"])
                 else:
                     if item not in data.keys():
                         continue
@@ -613,42 +617,38 @@ class Terminal:
 
     @property
     def width(self):
-        s = struct.pack('HHHH', 0, 0, 0, 0)
+        s = struct.pack("HHHH", 0, 0, 0, 0)
         try:
             x = fcntl.ioctl(1, termios.TIOCGWINSZ, s)
         except IOError:
             return 80
-        return struct.unpack('HHHH', x)[1]
+        return struct.unpack("HHHH", x)[1]
 
     @property
     def height(self):
-        s = struct.pack('HHHH', 0, 0, 0, 0)
+        s = struct.pack("HHHH", 0, 0, 0, 0)
         try:
             x = fcntl.ioctl(1, termios.TIOCGWINSZ, s)
         except IOError:
             return 25
-        return struct.unpack('HHHH', x)[0]
+        return struct.unpack("HHHH", x)[0]
 
     def pager(self, text):
-        pager = subprocess.Popen(
-            'less -S',
-            shell=True,
-            stdin=subprocess.PIPE
-        )
-        pager.stdin.write(bytes(text, 'utf-8'))
+        pager = subprocess.Popen("less -S", shell=True, stdin=subprocess.PIPE)
+        pager.stdin.write(bytes(text, "utf-8"))
         pager.stdin.close()
         pager.wait()
 
     def need_pager(self, lines, columns):
         pager_policy = orthos.config.get_use_pager()
 
-        if pager_policy == 'always':
+        if pager_policy == "always":
             return True
-        elif pager_policy == 'never':
+        elif pager_policy == "never":
             return False
-        elif pager_policy == 'vertical':
+        elif pager_policy == "vertical":
             return self.height < lines
-        elif pager_policy == 'horizontal':
+        elif pager_policy == "horizontal":
             return self.width < columns
         else:
             return self.height < lines or self.width < columns
@@ -670,7 +670,6 @@ class Terminal:
 
 # from https://pymotw.com/2/readline/
 class TabCompleter:
-
     def __init__(self, options):
         self._current_options = []
         self._options = options
@@ -715,10 +714,9 @@ class TabCompleter:
 
 
 class OrthosLineReader:
-
     def __init__(self, orthos, history=None):
         self.orthos = orthos
-        self.prompt = ''
+        self.prompt = ""
         self.completion = True
 
         try:
@@ -730,9 +728,9 @@ class OrthosLineReader:
         if history:
             atexit.register(readline.write_history_file, history)
 
-        readline.set_completer_delims(' ')
+        readline.set_completer_delims(" ")
         readline.set_completer(orthos.Tabcompleter.complete)
-        readline.parse_and_bind('tab: complete')
+        readline.parse_and_bind("tab: complete")
 
     def disable_completion(self):
         self.completion = False
@@ -752,24 +750,26 @@ class OrthosLineReader:
         if not complete:
             self.disable_completion()
 
-        prompt_suffix = ''
+        prompt_suffix = ""
         if default:
             try:
                 readline.set_pre_input_hook(self.hook)
             except AttributeError:
-                prompt_suffix = ' [' + str(default) + ']'
+                prompt_suffix = " [" + str(default) + "]"
             self.default = default
         if not prompt:
             prompt = self.prompt
         prompt += prompt_suffix
         if prompt:
-            prompt += ' '
+            prompt += " "
 
         try:
             result = input(prompt)
             if not history and result:
                 if sys.stdin.isatty():
-                    readline.remove_history_item(readline.get_current_history_length() - 1)
+                    readline.remove_history_item(
+                        readline.get_current_history_length() - 1
+                    )
 
         finally:
             if default:
@@ -784,7 +784,6 @@ class OrthosLineReader:
 
 
 class Config:
-
     def __init__(self):
         self.__cp = RawConfigParser()
         self.__cp.read(SYSTEM_CONFIGFILE)
@@ -804,9 +803,9 @@ class Config:
 
         for alias in ALIASES:
             self.__aliases[alias] = ALIASES[alias]
-        if self.__cp.has_section('alias'):
-            for key in self.__cp.options('alias'):
-                self.__aliases[key] = self.__cp.get('alias', key)
+        if self.__cp.has_section("alias"):
+            for key in self.__cp.options("alias"):
+                self.__aliases[key] = self.__cp.get("alias", key)
 
     def set_quiet(self, quiet):
         self.__quiet = quiet
@@ -820,8 +819,8 @@ class Config:
     def get_password(self):
         if self.__password is not None:
             return self.__password
-        if self.__cp.has_option('global', 'password'):
-            return self.__cp.get('global', 'password')
+        if self.__cp.has_option("global", "password"):
+            return self.__cp.get("global", "password")
         return None
 
     def set_server(self, server):
@@ -831,8 +830,8 @@ class Config:
         if self.__server:
             return self.__server
         else:
-            if self.__cp.has_option('global', 'server'):
-                return self.__cp.get('global', 'server')
+            if self.__cp.has_option("global", "server"):
+                return self.__cp.get("global", "server")
             else:
                 return DEFAULT_SERVERNAME
 
@@ -843,8 +842,8 @@ class Config:
         if self.__port:
             return self.__port
         else:
-            if self.__cp.has_option('global', 'port'):
-                return self.__cp.getint('global', 'port')
+            if self.__cp.has_option("global", "port"):
+                return self.__cp.getint("global", "port")
             else:
                 return DEFAULT_PORT
 
@@ -855,14 +854,14 @@ class Config:
         if self.__protocol:
             return self.__protocol
         else:
-            if self.__cp.has_option('global', 'protocol'):
-                return self.__cp.get('global', 'protocol')
+            if self.__cp.has_option("global", "protocol"):
+                return self.__cp.get("global", "protocol")
             else:
                 return DEFAULT_PROTOCOL
 
     def get_history(self):
-        if self.__cp.has_option('global', 'history'):
-            hist = self.__cp.get('global', 'history')
+        if self.__cp.has_option("global", "history"):
+            hist = self.__cp.get("global", "history")
         else:
             hist = USER_HISTORYFILE
         return os.path.expanduser(hist)
@@ -873,8 +872,8 @@ class Config:
     def get_user(self):
         if self.__user is not None:
             return self.__user
-        if self.__cp.has_option('global', 'username'):
-            return self.__cp.get('global', 'username')
+        if self.__cp.has_option("global", "username"):
+            return self.__cp.get("global", "username")
         else:
             return pwd.getpwuid(os.getuid())[0]
 
@@ -887,52 +886,46 @@ class Config:
         return self.__auth_user
 
     def set_use_pager(self, use_pager):
-        values = [
-            'always',
-            'never',
-            'horizontal',
-            'vertical',
-            'both'
-        ]
+        values = ["always", "never", "horizontal", "vertical", "both"]
 
         if use_pager not in values:
-            raise ValueError("use_pager must be in {0}".format(', '.join(values)))
+            raise ValueError("use_pager must be in {0}".format(", ".join(values)))
         self.__use_pager = use_pager
 
     def get_use_pager(self):
         if self.__use_pager is not None:
             return self.__use_pager
         if sys.stdin.isatty():
-            if self.__cp.has_option('global', 'use_pager'):
-                return self.__cp.get('global', 'use_pager')
+            if self.__cp.has_option("global", "use_pager"):
+                return self.__cp.get("global", "use_pager")
             else:
-                return 'both'
+                return "both"
         else:
-            return 'never'
+            return "never"
 
     def get_aliases(self):
         return self.__aliases
 
     def set_alias(self, name, *values):
-        value = ' '.join(values)
+        value = " ".join(values)
         self.__aliases[name] = value
-        if not self.__cp.has_section('alias'):
-            self.__cp.add_section('alias')
+        if not self.__cp.has_section("alias"):
+            self.__cp.add_section("alias")
         for alias in self.__aliases:
-            self.__cp.set('alias', alias, self.__aliases[alias])
+            self.__cp.set("alias", alias, self.__aliases[alias])
         self.write_config()
 
     def format_aliases(self, alias=None):
-        output = ''
+        output = ""
         if alias:
             if alias in self.get_aliases().keys():
-                output = '{} => {}'.format(alias, self.get_aliases()[alias])
+                output = "{} => {}".format(alias, self.get_aliases()[alias])
             else:
                 output = "ERROR: Unknown alias '{}'!".format(alias)
         else:
             for alias in self.get_aliases().keys():
-                output += '{} => {}\n'.format(alias, self.get_aliases()[alias])
-        return output.rstrip('\n')
+                output += "{} => {}\n".format(alias, self.get_aliases()[alias])
+        return output.rstrip("\n")
 
     def set_timezone(self, timezone):
         if timezone in pytz.all_timezones:
@@ -944,8 +937,8 @@ class Config:
         if self.__timezone:
             return self.__timezone
         else:
-            if self.__cp.has_option('global', 'timezone'):
-                timezone = self.__cp.get('global', 'timezone')
+            if self.__cp.has_option("global", "timezone"):
+                timezone = self.__cp.get("global", "timezone")
                 if timezone in pytz.all_timezones:
                     return timezone
                 else:
@@ -961,12 +954,12 @@ class Config:
         if self.__token:
             return self.__token
         else:
-            if self.__cp.has_option('global', 'token'):
-                return self.__cp.get('global', 'token')
+            if self.__cp.has_option("global", "token"):
+                return self.__cp.get("global", "token")
         return None
 
     def write_config(self):
-        with open(os.path.expanduser(USER_CONFIGFILE), 'w') as f:
+        with open(os.path.expanduser(USER_CONFIGFILE), "w") as f:
             self.__cp.write(f)
 
     def read_config(self, f: str):
@@ -974,20 +967,15 @@ class Config:
 
 
 class Orthos:
-
     class API:
-
         def request_token(self, username, password):
             """Request token from API for user authentication."""
-            url = API_URL + '/login'
+            url = API_URL + "/login"
 
-            data = {
-                'username': username,
-                'password': password
-            }
+            data = {"username": username, "password": password}
 
-            _, data = self.request('POST', url, data, login=True)
-            orthos.config.set_token(data.get('token', None))
+            _, data = self.request("POST", url, data, login=True)
+            orthos.config.set_token(data.get("token", None))
 
         def get(self, url):
             """Send GET request to given URL."""
@@ -995,7 +983,7 @@ class Orthos:
 
             headers = {}
             if self.get_token():
-                headers['Authorization'] = 'Token ' + self.get_token()
+                headers["Authorization"] = "Token " + self.get_token()
 
             try:
                 request = urllib_request.Request(url, headers=headers)
@@ -1018,21 +1006,21 @@ class Orthos:
 
             logging.debug(json_data)
 
-            headers = {'Content-Type': 'application/json'}
+            headers = {"Content-Type": "application/json"}
             if self.get_token():
-                headers['Authorization'] = 'Token ' + self.get_token()
+                headers["Authorization"] = "Token " + self.get_token()
 
             try:
                 request = urllib_request.Request(
-                    url,
-                    str(json_data).encode('utf-8'),
-                    headers=headers
+                    url, str(json_data).encode("utf-8"), headers=headers
                 )
 
                 response = urllib_request.urlopen(request)
             except Exception as e:
                 logging.debug(e)
-                print("\nERROR: Internal server Error, please double check submitted data and report:")
+                print(
+                    "\nERROR: Internal server Error, please double check submitted data and report:"
+                )
                 print("Bad Data:\n{0}\nURL:{1}\n".format(json_data, API_URL))
                 sys.exit(1)
 
@@ -1042,15 +1030,15 @@ class Orthos:
             logging.debug(url)
 
             if not orthos.config.is_quiet():
-                print(PROMPT_LOADING, end='\r')
+                print(PROMPT_LOADING, end="\r")
 
-            if method == 'GET':
+            if method == "GET":
                 response = self.get(url)
             else:
                 response = self.post(url, data, login)
 
             if response:
-                result = json.loads(response.read().decode('utf-8'))
+                result = json.loads(response.read().decode("utf-8"))
             else:
                 return (None, {})
 
@@ -1058,11 +1046,11 @@ class Orthos:
                 header = None
                 data = result
             else:
-                header = result.get('header', None)
-                data = result.get('data', [])
+                header = result.get("header", None)
+                data = result.get("data", [])
 
             if not orthos.config.is_quiet():
-                print(' ' * len(PROMPT_LOADING), end='\r')
+                print(" " * len(PROMPT_LOADING), end="\r")
 
             return (header, data)
 
@@ -1084,18 +1072,18 @@ class Orthos:
         API_URL = API_URL_FORMAT.format(
             orthos.config.get_protocol(),
             orthos.config.get_server(),
-            orthos.config.get_port()
+            orthos.config.get_port(),
         )
 
-        _, data = self.API.request('GET', API_URL)
-        orthos.config.set_auth_user(data.get('user'))
+        _, data = self.API.request("GET", API_URL)
+        orthos.config.set_auth_user(data.get("user"))
 
         self._commands = [
-            Command(command, values) for command, values in data['commands'].items()
+            Command(command, values) for command, values in data["commands"].items()
         ]
         self._add_client_command(
-            'alias',
-            help='Define own aliases.',
+            "alias",
+            help="Define own aliases.",
             docstring="""Define or display aliases. The command can be called without any
 arguments, then it displays all available aliases. If it's called
 with one argument, then it displays the definition of a specific
@@ -1117,28 +1105,20 @@ Example:
     ALIAS allmachines
 
     @allmachines
-"""
+""",
         )
+        self._add_client_command("auth", help="Request authorisation manually.")
+        self._add_client_command("exit", help="Exit program.")
+        self._add_client_command("config", help="Show connection/shell configurations.")
         self._add_client_command(
-            'auth',
-            help='Request authorisation manually.'
-        )
-        self._add_client_command(
-            'exit',
-            help='Exit program.'
-        )
-        self._add_client_command(
-            'config',
-            help='Show connection/shell configurations.'
-        )
-        self._add_client_command(
-            'help',
-            [str(command) for command in self._commands],
-            help='Provides help.'
+            "help", [str(command) for command in self._commands], help="Provides help."
         )
         self.username = self.config.get_user()
         if not self.username:
-            print("Empty username - Use -u/--user or check %s or %s" % (USER_CONFIGFILE, SYSTEM_CONFIGFILE))
+            print(
+                "Empty username - Use -u/--user or check %s or %s"
+                % (USER_CONFIGFILE, SYSTEM_CONFIGFILE)
+            )
             exit(1)
         self.recent_command = None
 
@@ -1146,28 +1126,28 @@ Example:
         for command in self._commands:
             commands[str(command)] = command.get_tabcompletion()
         for alias in orthos.config.get_aliases():
-            commands['@' + alias] = []
+            commands["@" + alias] = []
         self.Tabcompleter = TabCompleter(commands)
 
-        message = data.get('message', None)
+        message = data.get("message", None)
 
         if message and not orthos.config.is_quiet():
             self.Terminal.show(message)
 
     def _add_client_command(self, command, tabcompletion=[], help=None, docstring=None):
         """Add client command for tab completion."""
-        attributes = {'tabcompletion': tabcompletion}
+        attributes = {"tabcompletion": tabcompletion}
 
         if help:
-            attributes['help'] = help
+            attributes["help"] = help
         if docstring:
-            attributes['docstring'] = docstring
+            attributes["docstring"] = docstring
 
         self._commands.append(Command(command, attributes))
 
     def get_next_user_command(self, prompt=None):
         try:
-            input = ''
+            input = ""
             while not input:
                 input = self.LineReader.readline(prompt=prompt)
         except KeyboardInterrupt:
@@ -1175,34 +1155,36 @@ Example:
         except EOFError:
             if not orthos.config.is_quiet():
                 print()
-            return ['QUIT']
+            return ["QUIT"]
 
         result = []
-        for token in re.split(''' (?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', input):
-            result.append(token.replace(' ', '%20'))
+        for token in re.split(""" (?=(?:[^'"]|'[^']*'|"[^"]*")*$)""", input):
+            result.append(token.replace(" ", "%20"))
 
         # handle command line redirection
-        if '|' in result:
-            idx = result.index('|')
-            self.Terminal.set_output_filter(result[idx + 1:])
+        if "|" in result:
+            idx = result.index("|")
+            self.Terminal.set_output_filter(result[idx + 1 :])
             result = result[0:idx]
-        elif '|>' in result:
-            idx = result.index('|>')
+        elif "|>" in result:
+            idx = result.index("|>")
             self.Terminal.set_output_file(result[idx + 1], False)
             result = result[0:idx]
-        elif '|>>' in result:
-            idx = result.index('|>>')
+        elif "|>>" in result:
+            idx = result.index("|>>")
             self.Terminal.set_output_file(result[idx + 1], True)
             result = result[0:idx]
 
-        result = list(filter(lambda x: x != '', result))
+        result = list(filter(lambda x: x != "", result))
         return result
 
     def get_password(self):
         """Prompt for password and return it."""
         password = None
         try:
-            password = getpass.getpass("Orthos password for {0}: ".format(self.username))
+            password = getpass.getpass(
+                "Orthos password for {0}: ".format(self.username)
+            )
         except (KeyboardInterrupt, EOFError):
             pass
 
@@ -1276,10 +1258,7 @@ Example:
         print("")
 
     def run(self):
-        self.LineReader = OrthosLineReader(
-            self,
-            history=self.config.get_history()
-        )
+        self.LineReader = OrthosLineReader(self, history=self.config.get_history())
 
         if sys.stdin.isatty():
             self.LineReader.set_prompt(get_prompt(self.config.get_auth_user()))
@@ -1296,33 +1275,36 @@ Example:
                 else:
                     input_ = self.get_next_user_command()
 
-                if '$USERNAME' in input_:
+                if "$USERNAME" in input_:
                     input_ = list(
-                        map(lambda x: x.replace('$USERNAME', self.config.get_user()), input_)
+                        map(
+                            lambda x: x.replace("$USERNAME", self.config.get_user()),
+                            input_,
+                        )
                     )
 
-                raw_command = input_[0].lstrip('@')
+                raw_command = input_[0].lstrip("@")
                 command = raw_command.upper()
                 arguments = input_[1:]
-                raw_arguments = ' '.join(input_[1:])
+                raw_arguments = " ".join(input_[1:])
                 arguments_length = len(input_[1:])
 
-                if command == 'AUTH':
+                if command == "AUTH":
                     self.authenticate()
                     continue
 
-                elif command == 'HELP':
+                elif command == "HELP":
                     self.print_help(raw_arguments)
                     continue
 
-                elif command in {'QUIT', 'EXIT'}:
+                elif command in {"QUIT", "EXIT"}:
                     return
 
-                elif command in {'CONFIG'}:
+                elif command in {"CONFIG"}:
                     self.print_config()
                     continue
 
-                elif command == 'ALIAS':
+                elif command == "ALIAS":
                     if arguments_length == 0:
                         self.Terminal.show(orthos.config.format_aliases())
                     elif arguments_length == 1:
@@ -1351,19 +1333,23 @@ Example:
                     continue
 
                 elif raw_command in orthos.config.get_aliases():
-                    self.recent_command = orthos.config.get_aliases()[raw_command].split(' ')
+                    self.recent_command = orthos.config.get_aliases()[
+                        raw_command
+                    ].split(" ")
                     self.recent_command += arguments
                     continue
 
-                elif command == '':
+                elif command == "":
                     print()
 
                 else:
                     print("Invalid command.")
 
             except AttributeError as e:
-                print("ERROR: Invalid number of arguments. "
-                      "Type 'help {}' for more information.".format(e))
+                print(
+                    "ERROR: Invalid number of arguments. "
+                    "Type 'help {}' for more information.".format(e)
+                )
             except KeyboardInterrupt:
                 pass
 
@@ -1376,125 +1362,122 @@ def main():
 
     orthos = Orthos()
 
-    parser = argparse.ArgumentParser(description='Orthos command line interface.')
+    parser = argparse.ArgumentParser(description="Orthos command line interface.")
 
     parser.add_argument(
-        '-H',
-        '--host',
-        dest='servername',
-        metavar='HOST',
-        help='use the hostname specified on the command line instead of the one in the config file'
+        "-H",
+        "--host",
+        dest="servername",
+        metavar="HOST",
+        help="use the hostname specified on the command line instead of the one in the config file",
     )
 
     parser.add_argument(
-        '-c',
-        '--config',
-        dest='config_file',
-        help='Additionally read this file as config file after reading %s and %s' % (SYSTEM_CONFIGFILE, USER_CONFIGFILE)
+        "-c",
+        "--config",
+        dest="config_file",
+        help="Additionally read this file as config file after reading %s and %s"
+        % (SYSTEM_CONFIGFILE, USER_CONFIGFILE),
     )
 
     parser.add_argument(
-        '-P',
-        '--port',
-        dest='port',
-        metavar='PORT',
-        help='use the port specified on the command line instead of the one in the config file'
+        "-P",
+        "--port",
+        dest="port",
+        metavar="PORT",
+        help="use the port specified on the command line instead of the one in the config file",
     )
 
     parser.add_argument(
-        '-U',
-        '--user',
-        dest='user',
-        metavar='USER',
-        help='use the username specified'
+        "-U", "--user", dest="user", metavar="USER", help="use the username specified"
     )
 
     parser.add_argument(
-        '--password',
-        dest='password',
-        metavar='PASSWORD',
-        help='use this password for automatic authentication (e.g. for scripting)'
+        "--password",
+        dest="password",
+        metavar="PASSWORD",
+        help="use this password for automatic authentication (e.g. for scripting)",
     )
 
     parser.add_argument(
-        '--token',
-        dest='token',
-        metavar='TOKEN',
-        help='use this token for automatic authentication (e.g. for scripting); '
-             '-U/--password options will be ignored'
+        "--token",
+        dest="token",
+        metavar="TOKEN",
+        help="use this token for automatic authentication (e.g. for scripting); "
+        "-U/--password options will be ignored",
     )
 
     parser.add_argument(
-        '-D',
-        '--debug',
-        dest='debug',
-        action='store_const',
+        "-D",
+        "--debug",
+        dest="debug",
+        action="store_const",
         const=True,
         default=DEBUG,
-        help='write debugging output'
+        help="write debugging output",
     )
 
     parser.add_argument(
-        '-L',
-        '--logfile',
-        dest='logfile',
+        "-L",
+        "--logfile",
+        dest="logfile",
         default=False,
-        metavar='FILE',
-        help='use that together with -D to log the debug output in a file rather than the console'
+        metavar="FILE",
+        help="use that together with -D to log the debug output in a file rather than the console",
     )
 
     parser.add_argument(
-        '--no-pager',
-        dest='no_pager',
+        "--no-pager",
+        dest="no_pager",
         const=True,
         default=False,
-        action='store_const',
-        help='do not use pager when showing results'
+        action="store_const",
+        help="do not use pager when showing results",
     )
 
     parser.add_argument(
-        '-p',
-        '--plain-output',
-        dest='plain_output',
+        "-p",
+        "--plain-output",
+        dest="plain_output",
         const=True,
         default=PLAIN_OUTPUT,
-        action='store_const',
-        help='print plain output (e.g. for scripting)'
+        action="store_const",
+        help="print plain output (e.g. for scripting)",
     )
 
     parser.add_argument(
-        '-F',
-        '--ifs',
-        dest='ifs',
+        "-F",
+        "--ifs",
+        dest="ifs",
         default=IFS,
-        metavar='IFS',
-        help='set internal field separator (only useful in combination with -p; default is $OIFS)'
+        metavar="IFS",
+        help="set internal field separator (only useful in combination with -p; default is $OIFS)",
     )
 
     parser.add_argument(
-        '-q',
-        '--quiet',
-        dest='quiet',
+        "-q",
+        "--quiet",
+        dest="quiet",
         const=True,
-        action='store_const',
-        help='makes command line client quiet'
+        action="store_const",
+        help="makes command line client quiet",
     )
 
     parser.add_argument(
-        '-v',
-        '--version',
-        dest='version',
-        action='store_const',
+        "-v",
+        "--version",
+        dest="version",
+        action="store_const",
         const=True,
         default=False,
-        help='print version output'
+        help="print version output",
     )
 
     parser.add_argument(
-        '--timezone',
-        dest='timezone',
-        metavar='TZ',
-        help='set the local time zone (default is "Europe/Berlin")'
+        "--timezone",
+        dest="timezone",
+        metavar="TZ",
+        help='set the local time zone (default is "Europe/Berlin")',
     )
 
     options = parser.parse_args()
@@ -1507,25 +1490,24 @@ def main():
             logging.basicConfig(
                 filename=options.logfile,
                 level=logging.DEBUG,
-                format='%(asctime)s %(levelname)s %(message)s'
+                format="%(asctime)s %(levelname)s %(message)s",
             )
         else:
             logging.basicConfig(
-                level=logging.DEBUG,
-                format='%(asctime)s %(levelname)s %(message)s'
+                level=logging.DEBUG, format="%(asctime)s %(levelname)s %(message)s"
             )
-        logging.info('Debugging enabled')
+        logging.info("Debugging enabled")
 
     if options.servername:
-        servername = options.servername.split('://')
+        servername = options.servername.split("://")
 
         if len(servername) == 2:
             orthos.config.set_protocol(servername[0].lower())
             orthos.config.set_server(servername[1].lower())
 
-            if servername[0].lower() == 'https':
+            if servername[0].lower() == "https":
                 orthos.config.set_port(443)
-            elif servername[0].lower() == 'http':
+            elif servername[0].lower() == "http":
                 orthos.config.set_port(80)
 
         elif len(servername) == 1:
@@ -1549,7 +1531,7 @@ def main():
         orthos.config.set_token(options.token)
 
     if options.no_pager:
-        orthos.config.set_use_pager('never')
+        orthos.config.set_use_pager("never")
 
     if options.plain_output:
         PLAIN_OUTPUT = True
@@ -1580,5 +1562,5 @@ def main():
             print("Good bye, have a lot of fun...")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
