@@ -4,6 +4,7 @@ is no logic client side for specific endpoints.
 """
 import pathlib
 import unittest
+from typing import Optional
 
 import pexpect
 
@@ -11,7 +12,7 @@ import pexpect
 class OrthosCliTestCase(unittest.TestCase):
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__(methodName=methodName)
-        self.process = None
+        self.process: Optional[pexpect.spawn[str]] = None
 
     @classmethod
     def setUpClass(cls):
@@ -45,6 +46,8 @@ class OrthosCliTestCase(unittest.TestCase):
         """
         Assumes a started CLI and logs in the "admin"/"admin" user.
         """
+        if self.process is None:
+            raise RuntimeError("CLI process not sucessfully spawned!")
         self.process.sendline("auth")
         self.process.expect("Orthos password for admin:")
         self.process.sendline("admin")
@@ -55,6 +58,8 @@ class OrthosCliTestCase(unittest.TestCase):
         """
         Stops the CLI and returns if the program exited correctly.
         """
+        if self.process is None:
+            raise RuntimeError("CLI process not sucessfully spawned!")
         # Exit application
         self.process.sendline("quit")
         # Exit message
@@ -62,4 +67,5 @@ class OrthosCliTestCase(unittest.TestCase):
         # Wait until the process has exited
         self.process.wait()
         # Exit code 0
-        return self.process.exitstatus == 0
+        # https://github.com/python/typeshed/issues/13200
+        return self.process.exitstatus == 0  # type: ignore
