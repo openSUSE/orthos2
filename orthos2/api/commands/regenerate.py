@@ -1,6 +1,8 @@
+from typing import Any, List, Union
+
 from django.contrib.auth.models import AnonymousUser
-from django.http import HttpResponseRedirect
-from django.urls import re_path
+from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
+from django.urls import URLPattern, re_path
 
 from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.serializers.misc import (
@@ -74,16 +76,18 @@ Example:
 """
 
     @staticmethod
-    def get_urls():
+    def get_urls() -> List[URLPattern]:
         return [
             re_path(r"^regenerate$", RegenerateCommand.as_view(), name="regenerate"),
         ]
 
-    @classmethod
-    def get_tabcompletion(cls):
-        return cls.SERVICES
+    @staticmethod
+    def get_tabcompletion() -> List[str]:
+        return RegenerateCommand.SERVICES
 
-    def get(self, request, *args, **kwargs):
+    def get(
+        self, request: HttpRequest, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
         """Trigger regeneration of machine-related/service files."""
         service = request.GET.get("service", None)
         fqdn = request.GET.get("fqdn", None)

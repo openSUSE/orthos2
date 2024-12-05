@@ -19,7 +19,7 @@ class LDAP(WebTest):
         "orthos2/frontend/tests/user/fixtures/users.json",
     ]
 
-    def test_enabled_user_creation(self):
+    def test_enabled_user_creation(self) -> None:
         """
         Tests if user creation is enabled.
         """
@@ -28,7 +28,7 @@ class LDAP(WebTest):
             self.assertContains(page, "Create Account")
             self.assertContains(page, "Restore Password")
 
-    def test_disabled_user_creation(self):
+    def test_disabled_user_creation(self) -> None:
         """
         Tests if user creation is disabled.
         """

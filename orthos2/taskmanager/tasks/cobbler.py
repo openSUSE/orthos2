@@ -29,7 +29,7 @@ class RegenerateCobbler(Task):
         else:
             return Domain.objects.all()
 
-    def execute(self):
+    def execute(self) -> None:
         """
         Executes the task.
         """
@@ -80,11 +80,11 @@ class RegenerateCobbler(Task):
 
 
 class UpdateCobblerMachine(Task):
-    def __init__(self, domain_id: int, machine_id: int):
+    def __init__(self, domain_id: int, machine_id: int) -> None:
         self._domain_id = domain_id
         self._machine_id = machine_id
 
-    def execute(self):
+    def execute(self) -> None:
         try:
             domain = Domain.objects.get(pk=self._domain_id)
             machine = Machine.objects.get(pk=self._machine_id)
@@ -127,10 +127,10 @@ class UpdateCobblerMachine(Task):
 
 
 class SyncCobblerDHCP(Task):
-    def __init__(self, domain_id: int):
+    def __init__(self, domain_id: int) -> None:
         self._domain_id = domain_id
 
-    def execute(self):
+    def execute(self) -> None:
         try:
             domain = Domain.objects.get(pk=self._domain_id)
             if not domain.cobbler_server:
@@ -138,9 +138,8 @@ class SyncCobblerDHCP(Task):
                     "Domain '%s' has no Cobbler server... aborting", domain.name
                 )
                 return
-            cobbler_server = domain.cobbler_server
             # Fake machine since "sync_dhcp" works without touching it
-            cobbler_server_obj = CobblerServer(cobbler_server, domain)
+            cobbler_server_obj = CobblerServer(domain)
             cobbler_server_obj.sync_dhcp()
         except Domain.DoesNotExist:
             logger.error("No Domain with id %s, aborting", self._domain_id)

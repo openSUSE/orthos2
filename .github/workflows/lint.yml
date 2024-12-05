@@ -54,10 +54,9 @@ jobs:
           ORTHOS_USER: runner
         run: mypy orthos2
       - name: Run mypy for CLI
-        continue-on-error: true
         env:
           ORTHOS_USER: runner
-        run: mypy cli
+        run: mypy --strict cli
   isort:
     name: isort
     runs-on: ubuntu-20.04

@@ -14,7 +14,7 @@ class CreateAccount(WebTest):
         "orthos2/frontend/tests/user/fixtures/users.json",
     ]
 
-    def test_successful_restore_password(self):
+    def test_successful_restore_password(self) -> None:
         """Test restore password functionality."""
         form = self.app.get(reverse("frontend:password_restore")).form
         form["login"] = "user"
@@ -38,7 +38,7 @@ class CreateAccount(WebTest):
         self.assertEqual(task_check_multiple_accounts.name, "CheckMultipleAccounts")
         self.assertIn(str(user.pk), task_check_multiple_accounts.arguments)
 
-    def test_unknown_login(self):
+    def test_unknown_login(self) -> None:
         """Check if login exists."""
         form = self.app.get(reverse("frontend:password_restore")).form
         form["login"] = "unknown"
@@ -49,7 +49,7 @@ class CreateAccount(WebTest):
         self.assertIn(reverse("frontend:password_restore"), page.request.url)
         self.assertContains(page, "E-Mail/login does not exist")
 
-    def test_unknown_email(self):
+    def test_unknown_email(self) -> None:
         """Check if email address exists."""
         form = self.app.get(reverse("frontend:password_restore")).form
         form["login"] = "user"
@@ -60,7 +60,7 @@ class CreateAccount(WebTest):
         self.assertIn(reverse("frontend:password_restore"), page.request.url)
         self.assertContains(page, "E-Mail/login does not exist")
 
-    def test_invalid_email(self):
+    def test_invalid_email(self) -> None:
         """Check for valid email address."""
         form = self.app.get(reverse("frontend:password_restore")).form
         form["login"] = "user"

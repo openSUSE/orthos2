@@ -39,7 +39,7 @@ class CobblerException(Exception):
     pass
 
 
-def get_default_profile(machine):
+def get_default_profile(machine: "Machine") -> str:
     default = machine.architecture.default_profile
     if default:
         return default
@@ -393,7 +393,7 @@ class CobblerServer:
         """
         return self._xmlrpc_server.has_item("system", machine.fqdn, self._token)
 
-    def update_or_add(self, machine: "Machine"):
+    def update_or_add(self, machine: "Machine") -> None:
         """
         Add or update a given machine to a Cobbler server.
 
@@ -405,7 +405,7 @@ class CobblerServer:
             self.add_machine(machine, save=CobblerSaveModes.NEW)
 
     @login_required
-    def remove(self, machine: "Machine"):
+    def remove(self, machine: "Machine") -> None:
         """
         Remove a given machine from a Cobbler server.
 
@@ -425,7 +425,7 @@ class CobblerServer:
             )
 
     @login_required
-    def sync_dhcp(self):
+    def sync_dhcp(self) -> None:
         """
         Synchronize the DHCP server configuration on the Cobbler server.
         """
@@ -477,7 +477,7 @@ class CobblerServer:
         return self._xmlrpc_server.get_item_names("system")
 
     @login_required
-    def setup(self, machine: "Machine", choice: str):
+    def setup(self, machine: "Machine", choice: str) -> None:
         """
         Setup a machine with a given Cobbler profile.
 

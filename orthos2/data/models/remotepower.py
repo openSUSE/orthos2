@@ -1,10 +1,14 @@
 import logging
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple
 
 from django.core.exceptions import ValidationError
 from django.db import models
 
 from orthos2.data.models.serverconfig import ServerConfig
 from orthos2.utils.remotepowertype import RemotePowerType, get_remote_power_type_choices
+
+if TYPE_CHECKING:
+    from orthos2.data.models.machine import Machine
 
 
 class RemotePower(models.Model):
@@ -38,7 +42,7 @@ class RemotePower(models.Model):
         PAUSED = 5
 
         @classmethod
-        def to_str(cls, index):
+        def to_str(cls, index: int) -> str:
             return {
                 cls.UNKNOWN: "unknown",
                 cls.ON: "on",
@@ -54,7 +58,7 @@ class RemotePower(models.Model):
         choices=remotepower_type_choices, max_length=255, verbose_name="Fence Agent"
     )
 
-    machine = models.OneToOneField(
+    machine = models.OneToOneField["Machine"](
         "data.Machine", on_delete=models.CASCADE, primary_key=True
     )
 
@@ -78,10 +82,10 @@ class RemotePower(models.Model):
         E. g. "managed=<management LPAR> for lpar""",
     )
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """Check values before saving the remote power object. Do only save if type is set."""
 
-        errors = []
+        errors: List[ValidationError] = []
         self.fence_name = self._get_remotepower_fence_name()
         logging.debug("getting fence object for %s", self.fence_name)
         fence = RemotePowerType.from_fence(self.fence_name)
@@ -130,7 +134,7 @@ class RemotePower(models.Model):
         else:
             raise ValidationError("No remote power type set!")
 
-    def _get_remotepower_fence_name(self):
+    def _get_remotepower_fence_name(self) -> str:
         if self.fence_name:
             return self.fence_name
         if self.remote_power_device:
@@ -139,25 +143,25 @@ class RemotePower(models.Model):
             return self.machine.bmc.fence_name
 
     @property
-    def name(self):
+    def name(self) -> Optional[str]:
         if self.fence_name is None:
             return None
         logging.debug("getting fence object for %s", self.fence_name)
         return str(RemotePowerType.from_fence(self.fence_name).device)
 
-    def power_on(self):
+    def power_on(self) -> None:
         """Power on the machine."""
         self._perform("on")
 
-    def power_off(self):
+    def power_off(self) -> None:
         """Power off the machine."""
         self._perform("off")
 
-    def reboot(self):
+    def reboot(self) -> None:
         """Reboot the machine."""
         self._perform("reboot")
 
-    def get_status(self):
+    def get_status(self) -> int:
         """Return the current power status."""
         status = self.Status.UNKNOWN
         result = self._perform("status")
@@ -188,7 +192,7 @@ class RemotePower(models.Model):
             result = server.powerswitch(self.machine, action)
         return result
 
-    def get_credentials(self):
+    def get_credentials(self) -> Tuple[str, str]:
         """
         Return username and password for a login on the switching device
         Use Values from the approrpriate device object, If they don't exist
@@ -219,7 +223,7 @@ class RemotePower(models.Model):
 
         return username, password
 
-    def get_power_address(self):
+    def get_power_address(self) -> Optional[str]:
         logging.debug(
             "getting fence object for %s in get_power_adress", self.fence_name
         )
@@ -230,8 +234,9 @@ class RemotePower(models.Model):
             return self.remote_power_device.fqdn
         if fence.device == "hypervisor":
             return self.machine.hypervisor.fqdn
+        return None
 
-    def __str__(self):
+    def __str__(self) -> str:
         logging.debug("getting fence object for %s in __str___", self.fence_name)
         fence = RemotePowerType.from_fence(self.fence_name)
         return fence.fence + "@" + fence.device

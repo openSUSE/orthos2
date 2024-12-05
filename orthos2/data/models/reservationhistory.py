@@ -27,5 +27,5 @@ class ReservationHistory(models.Model):
 
     created = models.DateTimeField("Created at", auto_now_add=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "{} ({})".format(self.reserved_by, self.machine.fqdn)

@@ -5,13 +5,14 @@
 # python3 /usr/lib/python3.*/site-packages/orthos2/utils/remote.py ls gatria-1.arch.suse.de
 
 import logging
+from typing import List, Tuple
 
 from orthos2.utils.misc import execute
 
 logger = logging.getLogger("utils")
 
 
-def single_quote(buf):
+def single_quote(buf: str) -> str:
     """
     Put the whole string into single quotes and escape
     single quotes via '\'' to properly pass shell commands via ssh
@@ -25,7 +26,9 @@ def single_quote(buf):
     return buf
 
 
-def ssh_execute(cmd, host, user="root", log_error=True):
+def ssh_execute(
+    cmd: str, host: str, user: str = "root", log_error: bool = True
+) -> Tuple[List[str], List[str], int]:
     """
     Get the output of a command remotly via SSH.
 
@@ -63,16 +66,13 @@ def ssh_execute(cmd, host, user="root", log_error=True):
     return (stdout, stderr, err)
 
 
-def scp_execute(source, target, user="root"):
+def scp_execute(source: str, target: str, user: str = "root") -> int:
     """
     Copy a file via SSH without host key checking.
 
-    @type  source:  string
-    @param source:  The full path and filename of the source.
-    @type  target:  string
-    @param target:  The full path and filename of the target.
-    @rtype:         int
-    @return:        0 if everything went well.
+    :param source:  The full path and filename of the source.
+    :param target:  The full path and filename of the target.
+    :return:        0 if everything went well.
     """
     command = (
         "scp -o UserKnownHostsFile=/dev/null "
@@ -81,25 +81,3 @@ def scp_execute(source, target, user="root"):
         "{} {}@{}".format(source, user, target)
     )
     return execute(command)
-
-
-# Test ssh code above by passing:
-# cmd:  arg[0]
-# host: arg[1]
-if __name__ == "__main__":
-    import sys
-
-    if len(sys.argv) == 3:
-        args = sys.argv[1:]
-        cmd = args[0]
-        host = args[1]
-
-    stdout, stderr, err = ssh_execute(cmd, host)
-    # stdout, stderr, err = ssh_execute('/sbin/ip a', "gatria-1.arch.suse.de")
-    # stdout, stderr, err = scp_execute(cmd, host)
-    if err:
-        print("ERROR")
-        print(stderr)
-    else:
-        print("SUCCESS")
-        print(stdout)

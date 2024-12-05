@@ -8,7 +8,7 @@ from . import OrthosCliTestCase
 
 
 class ExitTests(OrthosCliTestCase):
-    def test_exit(self):
+    def test_exit(self) -> None:
         """
         Test to verify that the CLI can be exited.
         """
@@ -16,6 +16,8 @@ class ExitTests(OrthosCliTestCase):
         self.start_cli()
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("quit")
 
         # Assert

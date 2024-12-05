@@ -1,7 +1,7 @@
 import logging
 import os
 import socket
-from typing import Iterable, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import paramiko
 from django.conf import settings
@@ -21,7 +21,7 @@ class SSH(object):
 
         pass
 
-    def __init__(self, fqdn: str):
+    def __init__(self, fqdn: str) -> None:
         """
         Create a new SSH object.
 
@@ -39,7 +39,7 @@ class SSH(object):
         except Exception:
             self._machine = None
 
-    def get_system_user_configuration(self):
+    def get_system_user_configuration(self) -> Optional[Dict[str, Any]]:
         """Return SSH configuration of system user as Paramiko dict for `connect()`."""
         ssh_configuration = paramiko.SSHConfig()
         user_configuration_file = "{}/.ssh/config".format(os.getenv("HOME"))
@@ -59,7 +59,7 @@ class SSH(object):
                 )
                 return None
 
-        configuration = {}
+        configuration: Dict[str, Any] = {}
         hostname = self._fqdn.split(".")[0]
 
         user_configuration = ssh_configuration.lookup(hostname)
@@ -78,14 +78,14 @@ class SSH(object):
 
         return configuration
 
-    def close(self):
+    def close(self) -> None:
         """Close the SSH connection and all open SFTP connections."""
         if self._sftp:
             self._sftp.close()
         self._client.close()
         self._open = False
 
-    def connect(self, user: str = "root", timeout: Optional[int] = None):
+    def connect(self, user: str = "root", timeout: Optional[int] = None) -> None:
         """
         Connect to the specified server (in SSH.__init__()).
 
@@ -170,7 +170,7 @@ class SSH(object):
         except Exception:
             raise SSH.Exception("Unknown SSH exception")
 
-    def read_file(self, filename: str):
+    def read_file(self, filename: str) -> List[str]:
         """Read the given file contents."""
         if not self._sftp:
             self._sftp = self._client.open_sftp()
@@ -244,7 +244,7 @@ class SSH(object):
 
         return retval
 
-    def copy_file(self, localfile, remotefile, parents: bool = False):
+    def copy_file(self, localfile: str, remotefile: str, parents: bool = False) -> None:
         """
         Copy a local file to the remote side.
 
@@ -271,7 +271,7 @@ class SSH(object):
 
         self._sftp.put(localfile, remotefile)
 
-    def remove_file(self, remotefile: str):
+    def remove_file(self, remotefile: str) -> None:
         """Delete a file on the remote side."""
         if not self._sftp:
             self._sftp = self._client.open_sftp()

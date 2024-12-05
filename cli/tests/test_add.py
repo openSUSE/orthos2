@@ -8,7 +8,7 @@ from . import OrthosCliTestCase
 
 
 class AddTests(OrthosCliTestCase):
-    def test_add_bmc_negative(self):
+    def test_add_bmc_negative(self) -> None:
         """
         Test to verify that adding a BMC via CLI is working. Assumes "admin"/"admin" is present.
         """
@@ -20,8 +20,10 @@ class AddTests(OrthosCliTestCase):
         # self.process.logfile = sys.stdout.buffer
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("add bmc <fqdn>")
-        self.process.expect("(orthos 2.0.0:admin)")
+        self.process.expect("(orthos 2.3.0:admin)")
         output = self.process.before.decode().split("\n")[1:]
 
         # Assert
@@ -33,7 +35,7 @@ class AddTests(OrthosCliTestCase):
         self.assertEqual(messages[2], expected)
 
     @unittest.skip("Too much setup at the moment")
-    def test_add_bmc_positive(self):
+    def test_add_bmc_positive(self) -> None:
         """
         Test to verify that adding a BMC via CLI is working with valid inputs. Assumes "admin"/"admin" is present.
         """
@@ -48,8 +50,10 @@ class AddTests(OrthosCliTestCase):
         # TODO: Add machine (fqdn, arch, system)
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("add bmc <fqdn>")
-        self.process.expect("(orthos 2.0.0:admin)")
+        self.process.expect("(orthos 2.3.0:admin)")
         output = self.process.before.decode().split("\n")[1:]
 
         # Assert

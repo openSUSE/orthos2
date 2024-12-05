@@ -8,10 +8,14 @@ from datetime import date, datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
-from typing import List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union
 
 import validators
+from django import forms
 from django.conf import settings
+
+if TYPE_CHECKING:
+    from django.db import models
 
 logger = logging.getLogger("utils")
 
@@ -22,7 +26,7 @@ class Serializer:
         YAML = "yaml"
 
         @classmethod
-        def is_valid(cls, output_format):
+        def is_valid(cls, output_format: str) -> bool:
             """Check if `output_format` is valid."""
             return output_format.lower() in {cls.JSON, cls.YAML}
 
@@ -37,7 +41,9 @@ def get_hostname(fqdn: str) -> str:
     return fqdn.split(".")[0]
 
 
-def get_ip(fqdn: str, ip_version=4) -> Optional[Union[Tuple[str, str], str]]:
+def get_ip(
+    fqdn: str, ip_version: int = 4
+) -> Optional[Union[Tuple[List[str], List[str]], List[str]]]:
     """
     Return all IP addresses for FQDN.
 
@@ -48,8 +54,8 @@ def get_ip(fqdn: str, ip_version=4) -> Optional[Union[Tuple[str, str], str]]:
         6  - ['0:0:0:0:0:ffff:c0a8:1', ...]
         10 - (['192.168.0.1', ...], [0:0:0:0:0:ffff:c0a8:1, ...])
     """
-    ipv4 = []
-    ipv6 = []
+    ipv4: List[str] = []
+    ipv6: List[str] = []
 
     try:
         result = socket.getaddrinfo(fqdn, None, 0, socket.SOCK_STREAM, socket.SOL_TCP)
@@ -79,23 +85,23 @@ def get_ip(fqdn: str, ip_version=4) -> Optional[Union[Tuple[str, str], str]]:
         raise ValueError("Unknown IP version '{}'!".format(ip_version))
 
 
-def get_ipv4(fqdn: str):
+def get_ipv4(fqdn: str) -> Optional[str]:
     """Return (first) IPv4 address for FQDN."""
     ipv4 = get_ip(fqdn, ip_version=4)
     if ipv4:
-        return ipv4[0]
+        return ipv4[0]  # type: ignore[reportReturnType]
     return None
 
 
-def get_ipv6(fqdn: str):
+def get_ipv6(fqdn: str) -> Optional[str]:
     """Return (first) IPv6 address for FQDN."""
     ipv6 = get_ip(fqdn, ip_version=6)
     if ipv6:
-        return ipv6[0]
+        return ipv6[0]  # type: ignore[reportReturnType]
     return None
 
 
-def is_dns_resolvable(fqdn: str):
+def is_dns_resolvable(fqdn: str) -> bool:
     """Check if FQDN can be resolved by DNS server."""
     if not fqdn:
         return False
@@ -107,7 +113,9 @@ def is_dns_resolvable(fqdn: str):
         return False
 
 
-def has_valid_domain_ending(fqdn: str, valid_endings: Union[str, List[str]]):
+def has_valid_domain_ending(
+    fqdn: str, valid_endings: Optional[Union[str, List[str]]]
+) -> bool:
     """
     Check if FQDN has valid domain ending. This check can be bypassed if no
     valid domain endings are given.
@@ -128,12 +136,12 @@ def has_valid_domain_ending(fqdn: str, valid_endings: Union[str, List[str]]):
     return False
 
 
-def wrap80(text):
+def wrap80(text: str) -> str:
     """Wrap the text at the given column."""
     return "\n".join(textwrap.wrap(text, width=80))
 
 
-def is_valid_mac_address(mac_address):
+def is_valid_mac_address(mac_address: str) -> bool:
     """
     Check if MAC address is valid.
 
@@ -146,7 +154,7 @@ def is_valid_mac_address(mac_address):
     return False
 
 
-def str_time_to_datetime(time):
+def str_time_to_datetime(time: str) -> Optional[datetime]:
     """
     Convert string time (24-hour) to datetime object.
 
@@ -160,7 +168,9 @@ def str_time_to_datetime(time):
     return None
 
 
-def send_email(to_addr, subject, message, from_addr=None):
+def send_email(
+    to_addr: str, subject: str, message: str, from_addr: Optional[str] = None
+) -> None:
     """Send an email."""
     from orthos2.data.models import ServerConfig
 
@@ -190,7 +200,7 @@ def send_email(to_addr, subject, message, from_addr=None):
         logger.exception("Something went wrong while sending E-Mail!")
 
 
-def execute(command):
+def execute(command: str) -> Tuple[str, str, int]:
     """
     Execute a (local) command and returns stdout, stderr and exit status.
 
@@ -215,14 +225,14 @@ def execute(command):
     return result
 
 
-def get_s390_hostname(hostname, use_uppercase=True):
+def get_s390_hostname(hostname: str, use_uppercase: bool = True) -> Optional[str]:
     """Return the 'linux...' name of the s390 machine."""
     if use_uppercase:
         linux = "LINUX"
     else:
         linux = "linux"
 
-    if not isinstance(hostname, str) or len(hostname) < 10:
+    if not isinstance(hostname, str) or len(hostname) < 10:  # type: ignore[reportUnsecessaryIsInstance]
         logger.error("Invalid s390 name: %s", hostname)
         return None
     else:
@@ -231,12 +241,12 @@ def get_s390_hostname(hostname, use_uppercase=True):
     return linux + name
 
 
-def sync(original, temp):
+def sync(original: "models.Model", temp: "models.Model") -> None:
     """Synchronize attributes between two model objects."""
     if type(original) is not type(temp):
         return
 
-    differences = []
+    differences: List[str] = []
 
     for key in temp.__dict__.keys():
         if (
@@ -255,7 +265,9 @@ def sync(original, temp):
     original.save()
 
 
-def add_offset_to_date(offset, begin=date.today(), as_string=False):
+def add_offset_to_date(
+    offset: float, begin: date = date.today(), as_string: bool = False
+) -> Union[date, str]:
     """
     Add the day offset to begin date (default: today).
 
@@ -295,8 +307,8 @@ def get_random_mac_address() -> str:
         random.randint(0x00, 0xFF),
         random.randint(0x00, 0xFF),
     ]
-    mac = ":".join(map(lambda x: "{:02x}".format(x), mac))
-    return mac.upper()
+    mac_address = ":".join(map(lambda x: "{:02x}".format(x), mac))
+    return mac_address.upper()
 
 
 def normalize_ascii(string: str) -> str:
@@ -311,7 +323,7 @@ def normalize_ascii(string: str) -> str:
     return result
 
 
-def format_cli_form_errors(form):
+def format_cli_form_errors(form: forms.Form) -> str:
     """Format form errors for CLI."""
     output = ""
     for field_name, errors in form.errors.items():
@@ -327,7 +339,13 @@ def format_cli_form_errors(form):
     return output.rstrip("\n")
 
 
-def safe_get_or_default(model, key, value, field, default=None):
+def safe_get_or_default(
+    model: "models.base.ModelBase",
+    key: str,
+    value: str,
+    field: str,
+    default: Any = None,
+) -> Any:
     """
     Allow access to a `field` of a specified `model`.
 

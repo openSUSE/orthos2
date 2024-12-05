@@ -9,7 +9,7 @@ from . import OrthosCliTestCase
 
 
 class HelpTests(OrthosCliTestCase):
-    def test_no_topic(self):
+    def test_no_topic(self) -> None:
         """
         Test to verify that all help topics are listed on the CLI.
         """
@@ -17,8 +17,10 @@ class HelpTests(OrthosCliTestCase):
         self.start_cli()
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("HELP")
-        self.process.expect(r"\(orthos 2.0.0:Anonymous\) ")
+        self.process.expect(r"\(orthos 2.3.0:Anonymous\) ")
         output = self.process.before.decode().split("\n")[1:]
 
         # Assert
@@ -33,7 +35,7 @@ class HelpTests(OrthosCliTestCase):
         self.assertEqual(len(output), 21)
 
     @unittest.skip("Too much setup at the moment")
-    def test_topic_info(self):
+    def test_topic_info(self) -> None:
         # Single line of text
         # empty line
         # Usage
@@ -45,7 +47,7 @@ class HelpTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_topic_query(self):
+    def test_topic_query(self) -> None:
         # Two lines of text
         # Empty line
         # Example
@@ -57,7 +59,7 @@ class HelpTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_topic_reserve(self):
+    def test_topic_reserve(self) -> None:
         # Single line of text
         # empty line
         # Usage
@@ -69,7 +71,7 @@ class HelpTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_topic_release(self):
+    def test_topic_release(self) -> None:
         # Single line of text
         # empty line
         # Usage
@@ -81,7 +83,7 @@ class HelpTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_topic_reservationhistory(self):
+    def test_topic_reservationhistory(self) -> None:
         # Single line of text
         # empty line
         # Usage
@@ -93,7 +95,7 @@ class HelpTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_topic_rescan(self):
+    def test_topic_rescan(self) -> None:
         # three lines of text
         # empty line
         # Usage
@@ -105,7 +107,7 @@ class HelpTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_topic_regenerate(self):
+    def test_topic_regenerate(self) -> None:
         # Two lines of text
         # empty line
         # Usage
@@ -117,7 +119,7 @@ class HelpTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_topic_serverconfig(self):
+    def test_topic_serverconfig(self) -> None:
         # Single line of text
         # empty line
         # Usage
@@ -129,7 +131,7 @@ class HelpTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_topic_setup(self):
+    def test_topic_setup(self) -> None:
         # Single line of text
         # empty line
         # Usage
@@ -141,7 +143,7 @@ class HelpTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_topic_power(self):
+    def test_topic_power(self) -> None:
         # Single line of text
         # empty line
         # Usage
@@ -153,7 +155,7 @@ class HelpTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_topic_add(self):
+    def test_topic_add(self) -> None:
         # Single line of text
         # empty line
         # Usage
@@ -165,7 +167,7 @@ class HelpTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_topic_delete(self):
+    def test_topic_delete(self) -> None:
         # Single line of text
         # empty line
         # Usage
@@ -177,7 +179,7 @@ class HelpTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_topic_alias(self):
+    def test_topic_alias(self) -> None:
         # Five lines of text
         # Empty line
         # One line of text
@@ -192,48 +194,56 @@ class HelpTests(OrthosCliTestCase):
         # Empty Line
         self.assertTrue(False)
 
-    def test_topic_auth(self):
+    def test_topic_auth(self) -> None:
         # Arrange
         expected_output = "No help available!"
         self.start_cli()
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("HELP auth")
 
         # Assert
         self.process.expect(expected_output)
         self.stop_cli()
 
-    def test_topic_exit(self):
+    def test_topic_exit(self) -> None:
         # Arrange
         expected_output = "No help available!"
         self.start_cli()
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("HELP exit")
 
         # Assert
         self.process.expect(expected_output)
         self.stop_cli()
 
-    def test_topic_config(self):
+    def test_topic_config(self) -> None:
         # Arrange
         expected_output = "No help available!"
         self.start_cli()
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("HELP config")
 
         # Assert
         self.process.expect(expected_output)
         self.stop_cli()
 
-    def test_topic_help(self):
+    def test_topic_help(self) -> None:
         # Arrange
         expected_output = "No help available!"
         self.start_cli()
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("HELP help")
 
         # Assert

@@ -1,8 +1,9 @@
 import logging
+from typing import Any, Dict
 
 
 class RemotePowerType:
-    def __init__(self, options: dict):
+    def __init__(self, options: Dict[str, Any]) -> None:
         self.fence = options.get("fence")
         logging.debug("Initialiced RemotePowerType for %s", self.fence)
         self.device = options.get("device")

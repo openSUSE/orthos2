@@ -39,7 +39,7 @@ class HostnameFinder(object):
             return None
         return HostnameFinder(config)
 
-    def __init__(self, config: Dict[str, str]):
+    def __init__(self, config: Dict[str, str]) -> None:
         """
         Creates a new object with the given domain model object.
         """

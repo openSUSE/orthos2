@@ -18,7 +18,9 @@ import struct
 import subprocess
 import sys
 import termios
+from abc import abstractmethod
 from datetime import date, datetime
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pytz
 
@@ -32,11 +34,12 @@ else:
     print("Python version not supported!")
     sys.exit(1)
 
-VERSION = "2.0.0"
+VERSION = "2.3.0"
 DEFAULT_PROTOCOL = "https"
 DEFAULT_SERVERNAME = "localhost"
-DEFAULT_PORT = "443"
+DEFAULT_PORT = 443
 API_URL_FORMAT = "{0}://{1}:{2}/api"
+API_URL = ""
 
 USER_CONFIGFILE = "~/.config/orthosrc"
 SYSTEM_CONFIGFILE = "/etc/orthosrc"
@@ -53,12 +56,12 @@ TIME_ZONE = "Europe/Berlin"
 PLAIN_OUTPUT = False
 IFS = os.environ.get("OIFS", "")
 
-ALIASES = {}
+ALIASES: Dict[str, str] = {}
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M"
 DATETIME_INPUT_FORMATS = ["%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ"]
 
-orthos = None
+orthos: Optional["Orthos"] = None
 
 
 class Type:
@@ -84,8 +87,8 @@ class HTTPStatus:
     NOTFOUND = 404
 
 
-def format_value(value):
-    """Format values human readable.
+def format_value(value: Optional[Union[str, bool]]) -> str:
+    """Format values human-readable.
 
     Examples:
 
@@ -101,8 +104,7 @@ def format_value(value):
             return "none"
         return "-"
 
-    # Python2: check for 'unicode' here
-    if isinstance(value, str) or type(value).__name__ == "unicode":
+    if isinstance(value, str):
         if PLAIN_OUTPUT:
             return value
 
@@ -151,49 +153,50 @@ def format_value(value):
     return value
 
 
-def get_prompt(user):
+def get_prompt(user: str) -> str:
     return PROMPT.format(VERSION, user)
 
 
 class Command:
-    def __init__(self, *args):
-        self._command = args[0]
-        self._help = args[1].get("help", None)
-        self._docstring = args[1].get("docstring", None)
-        self._tabcompletion = args[1].get("tabcompletion", None)
-        self._url = args[1].get("url", None)
-        self._method = args[1].get("method", "GET")
+    def __init__(self, *args: Any):
+        # Correct type annotation not possible with 3.6: https://rednafi.com/python/annotate_args_and_kwargs/
+        self._command: str = args[0]
+        self._help: Optional[str] = args[1].get("help", None)
+        self._docstring: Optional[str] = args[1].get("docstring", None)
+        self._tabcompletion: Optional[List[str]] = args[1].get("tabcompletion", None)
+        self._url: Optional[str] = args[1].get("url", None)
+        self._method: str = args[1].get("method", "GET")
         self._recent_arguments = ""
-        self._argument_lists = args[1].get("arguments", None)
+        self._argument_lists: Optional[List[str]] = args[1].get("arguments", None)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<Command: {0}>".format(str(self._command))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self._command.lower()
 
-    def __lt__(self, other):
+    def __lt__(self, other: Any):
         return sorted([str(self), str(other)])
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return str(self) == other.lower()
 
-    def get_tabcompletion(self):
+    def get_tabcompletion(self) -> Optional[List[str]]:
         return self._tabcompletion
 
-    def get_help(self):
+    def get_help(self) -> str:
         return self._help if self._help else "-"
 
-    def get_docstring(self):
+    def get_docstring(self) -> str:
         return self._docstring if self._docstring else "No help available!"
 
-    def get_url(self):
+    def get_url(self) -> Optional[str]:
         return self._url
 
-    def get_method(self):
+    def get_method(self) -> str:
         return self._method
 
-    def get_matching_argument_list(self, length):
+    def get_matching_argument_list(self, length: int) -> Optional[str]:
         """Return matching argument list.
 
         Return the respective argument list according to the number of given arguments, None
@@ -207,13 +210,15 @@ class Command:
                     return argument_list
         return None
 
-    def get_argument_lists(self):
+    def get_argument_lists(self) -> Optional[List[str]]:
         return self._argument_lists
 
-    def get_name(self):
+    def get_name(self) -> str:
         return self._command
 
-    def send(self, orthos, raw_arguments=""):
+    def send(
+        self, orthos: "Orthos", raw_arguments: str = ""
+    ) -> Tuple[Union[Any, None], Optional[Dict[str, str]]]:
         """Send a requst according to the command's HTTP method (set by the server).
 
         For re-executing a command with its arguments (e.g. after authorization was requested), all
@@ -240,7 +245,7 @@ class Command:
             else:
                 arguments = dict(zip(matching_argument_list, self._recent_arguments))
 
-            return orthos.API.request("POST", url, data=arguments)
+            return orthos.orthos_api.request("POST", url, data=arguments)
 
         elif self._method == "GET":
             if matching_argument_list and matching_argument_list[0][-1:] == "*":
@@ -253,15 +258,16 @@ class Command:
             if arguments:
                 url += "?{}".format(arguments)
 
-            return orthos.API.request("GET", url)
+            return orthos.orthos_api.request("GET", url)
+        raise ValueError("HTTP method must be POST or GET")
 
-    def as_input(self):
+    def as_input(self) -> List[str]:
         """Return the command with its arguments as a list."""
         return [str(self)] + self._recent_arguments
 
 
 class APIResponse:
-    def __init__(self, header, data):
+    def __init__(self, header: Dict[Any, Any], data: Dict[str, Any]):
         self._header = header
         self._data = data
 
@@ -270,40 +276,33 @@ class APIResponse:
         logging.debug(self._header)
         logging.debug(self._data)
 
-        if self._type == Type.SELECT:
-            self.__class__ = Select
-        elif self._type == Type.INFO:
-            self.__class__ = Info
-            self.__init__()
-        elif self._type == Type.TABLE:
-            self.__class__ = Table
-            self.__init__()
-        elif self._type == Type.MESSAGE:
-            self.__class__ = Message
-        elif self._type == Type.AUTHREQUIRED:
-            self.__class__ = AuthRequired
-        elif self._type == Type.INPUT:
-            self.__class__ = Input
-            self.__init__()
-
-    @property
-    def text(self):
-        return self.output()
+    @abstractmethod
+    def process(self) -> Optional[str]:
+        """
+        TODO
+        """
 
 
 class Input(APIResponse):
-    def __init__(self):
+    def __init__(self, header: Dict[Any, Any], data: Dict[str, Any]):
+        super().__init__(header, data)
         self._order = self._header["order"]
         self._target_url = self._header["target"]
 
-    def _clean_value(self, field, input_value, required, items=None):
+    def _clean_value(
+        self,
+        field: Dict[str, Any],
+        input_value: str,
+        required: bool,
+        items: Optional[List[Dict[str, Any]]] = None,
+    ) -> Optional[Union[int, str, bool]]:
         """Validate and cast input values.
         Value needs to be the required type and needs to be set
         if value is required at all. For selections, either the number or the given is returned.
 
         Raises ValueError if value is corrupted.
         """
-        input_type = field["type"].upper()
+        input_type: str = field["type"].upper()
         value = None
 
         if required and not input_value:
@@ -341,10 +340,13 @@ class Input(APIResponse):
             except ValueError:
                 raise ValueError("'{0}' is not a number!".format(str(input_value)))
 
-            if not (value >= 0 and value < len(items)):
+            if not items:
+                raise ValueError("items are required for selection!")
+
+            if not 0 <= value < len(items):
                 raise ValueError("Selection out of range!")
 
-            item_values = []
+            item_values: List[str] = []
             for item in items:
                 item_name = list(item.keys())[0]
                 item_value = item[item_name].get("value", None)
@@ -372,7 +374,7 @@ class Input(APIResponse):
 
         return value
 
-    def process(self):
+    def process(self) -> None:
         """Execute API result."""
         data = {}
         i = 0
@@ -418,7 +420,7 @@ class Input(APIResponse):
 
                 except (KeyboardInterrupt, EOFError):
                     print("\nAborted by user!")
-                    return None
+                    return
 
                 except ValueError as e:
                     print("ERROR: {0}".format(str(e)))
@@ -427,17 +429,17 @@ class Input(APIResponse):
             data[field_name] = input_
             i = i + 1
 
-        response = orthos.API.request(
+        response = orthos.orthos_api.request(
             "POST", API_URL + self._target_url, {"form": data}
         )
 
         if response[0]:
-            apiresponse = APIResponse(*response)
+            apiresponse = get_apiresponse(*response)
             apiresponse.process()
 
 
 class AuthRequired(APIResponse):
-    def process(self):
+    def process(self) -> Optional[List[str]]:
         """Execute API result."""
         if not orthos.is_authenticated():
             orthos.authenticate()
@@ -446,7 +448,7 @@ class AuthRequired(APIResponse):
 
 
 class Select(APIResponse):
-    def output(self):
+    def output(self) -> str:
         """Generate output."""
         result = "{0}\n\n".format(self._header["title"])
         i = 0
@@ -457,13 +459,13 @@ class Select(APIResponse):
 
         return result
 
-    def process(self):
+    def process(self) -> None:
         """Execute API result."""
         orthos.Terminal.show(self.output())
 
 
 class Message(APIResponse):
-    def output(self):
+    def output(self) -> str:
         """Generate output."""
         if not self._data.get("type", None) or not self._data["type"]:
             result = "{0}".format(self._data["message"])
@@ -471,7 +473,7 @@ class Message(APIResponse):
             result = "{0}: {1}".format(self._data["type"], self._data["message"])
         return result
 
-    def process(self):
+    def process(self) -> None:
         """Execute API result."""
         if orthos.config.is_quiet() and self._data["type"] == "INFO":
             return
@@ -479,7 +481,8 @@ class Message(APIResponse):
 
 
 class Table(APIResponse):
-    def __init__(self):
+    def __init__(self, header: Dict[Any, Any], data: Dict[str, Any]) -> None:
+        super().__init__(header, data)
         self._theader = self._header["theader"]
 
         self._captions = [list(item.values())[0] for item in self._theader]
@@ -494,14 +497,14 @@ class Table(APIResponse):
                 if len(str(row[field])) > self._widths[i]:
                     self._widths[i] = len(str(row[field]))
 
-    def _get_line(self):
+    def _get_line(self) -> str:
         """Draw a horizontal line with a correlating width."""
         if not PLAIN_OUTPUT:
             return "-" * (sum(self._widths) + len(self._widths) * COLUMN_PADDING) + "\n"
 
         return ""
 
-    def _get_theader(self):
+    def _get_theader(self) -> str:
         """Draw the table header."""
         if not PLAIN_OUTPUT:
             theader = ""
@@ -515,7 +518,7 @@ class Table(APIResponse):
 
         return ""
 
-    def output(self):
+    def output(self) -> str:
         """Generate output."""
         result = self._get_line()
         result += self._get_theader()
@@ -541,22 +544,27 @@ class Table(APIResponse):
 
         return result
 
-    def process(self):
+    def process(self) -> None:
         """Execute API result."""
         orthos.Terminal.show(self.output())
 
 
 class Info(APIResponse):
-    def __init__(self):
-        self._order = self._header["order"]
+    def __init__(self, header: Dict[Any, Any], data: Dict[str, Any]):
+        super().__init__(header, data)
+        self._order: List[str] = self._header["order"]
 
-    def format_line(self, item, data=None):
+    def format_line(
+        self,
+        item: str,
+        data: Optional[Union[List[Any], Dict[str, Dict[str, Any]]]] = None,
+    ) -> str:
         result = ""
 
         if isinstance(data, dict):
             value = format_value(data[item]["value"])
 
-            if isinstance(value, str):
+            if isinstance(value, str):  # pyright: ignore [reportUnnecessaryIsInstance]
                 value = value.replace("\n", " ")
 
             result = "{0:<{1}}: {2}\n".format(data[item]["label"], LEFT_MARGIN, value)
@@ -581,7 +589,9 @@ class Info(APIResponse):
 
         return result
 
-    def output(self, order=None, data=None):
+    def output(
+        self, order: Optional[List[str]] = None, data: Optional[Dict[str, Any]] = None
+    ) -> str:
         if order is None:
             order = self._order
 
@@ -607,16 +617,37 @@ class Info(APIResponse):
 
         return result
 
-    def process(self):
+    def process(self) -> None:
         """Execute API result."""
         orthos.Terminal.show(self.output())
+
+
+def get_apiresponse(
+    header: Dict[str, Any], data: Dict[str, Any]
+) -> Union[Select, Info, Table, Message, AuthRequired, Input]:
+    response_type = header["type"]
+    if response_type == Type.SELECT:
+        result = Select(header, data)
+    elif response_type == Type.INFO:
+        result = Info(header, data)
+    elif response_type == Type.TABLE:
+        result = Table(header, data)
+    elif response_type == Type.MESSAGE:
+        result = Message(header, data)
+    elif response_type == Type.AUTHREQUIRED:
+        result = AuthRequired(header, data)
+    elif response_type == Type.INPUT:
+        result = Input(header, data)
+    else:
+        raise ValueError("Received unknown response type!")
+    return result
 
 
 class Terminal:
     """Access properties of the terminal."""
 
     @property
-    def width(self):
+    def width(self) -> int:
         s = struct.pack("HHHH", 0, 0, 0, 0)
         try:
             x = fcntl.ioctl(1, termios.TIOCGWINSZ, s)
@@ -625,7 +656,7 @@ class Terminal:
         return struct.unpack("HHHH", x)[1]
 
     @property
-    def height(self):
+    def height(self) -> int:
         s = struct.pack("HHHH", 0, 0, 0, 0)
         try:
             x = fcntl.ioctl(1, termios.TIOCGWINSZ, s)
@@ -633,13 +664,13 @@ class Terminal:
             return 25
         return struct.unpack("HHHH", x)[0]
 
-    def pager(self, text):
+    def pager(self, text: str) -> None:
         pager = subprocess.Popen("less -S", shell=True, stdin=subprocess.PIPE)
         pager.stdin.write(bytes(text, "utf-8"))
         pager.stdin.close()
         pager.wait()
 
-    def need_pager(self, lines, columns):
+    def need_pager(self, lines: int, columns: int) -> bool:
         pager_policy = orthos.config.get_use_pager()
 
         if pager_policy == "always":
@@ -653,7 +684,9 @@ class Terminal:
         else:
             return self.height < lines or self.width < columns
 
-    def show(self, text, lines=None, columns=None):
+    def show(
+        self, text: str, lines: Optional[int] = None, columns: Optional[int] = None
+    ) -> None:
 
         if not lines or not columns:
             columns = 0
@@ -670,11 +703,11 @@ class Terminal:
 
 # from https://pymotw.com/2/readline/
 class TabCompleter:
-    def __init__(self, options):
+    def __init__(self, options: Dict[str, Optional[List[str]]]):
         self._current_options = []
         self._options = options
 
-    def complete(self, text, state):
+    def complete(self, text: Any, state: int) -> Optional[Any]:
         """Return the completion."""
         response = None
 
@@ -714,9 +747,9 @@ class TabCompleter:
 
 
 class OrthosLineReader:
-    def __init__(self, orthos, history=None):
+    def __init__(self, orthos: "Orthos", history: Optional[str] = None):
         self.orthos = orthos
-        self.prompt = ""
+        self.prompt: str = ""
         self.completion = True
 
         try:
@@ -729,23 +762,29 @@ class OrthosLineReader:
             atexit.register(readline.write_history_file, history)
 
         readline.set_completer_delims(" ")
-        readline.set_completer(orthos.Tabcompleter.complete)
+        readline.set_completer(self.orthos.Tabcompleter.complete)
         readline.parse_and_bind("tab: complete")
 
-    def disable_completion(self):
+    def disable_completion(self) -> None:
         self.completion = False
 
-    def enable_completion(self):
+    def enable_completion(self) -> None:
         self.completion = True
 
-    def hook(self):
+    def hook(self) -> None:
         readline.insert_text(self.default)
         readline.redisplay()
 
-    def set_prompt(self, prompt):
+    def set_prompt(self, prompt: str) -> None:
         self.prompt = prompt
 
-    def readline(self, prompt=None, default=None, history=True, complete=True):
+    def readline(
+        self,
+        prompt: Optional[str] = None,
+        default: Optional[str] = None,
+        history: bool = True,
+        complete: bool = True,
+    ) -> str:
         old_completion = self.completion
         if not complete:
             self.disable_completion()
@@ -763,6 +802,7 @@ class OrthosLineReader:
         if prompt:
             prompt += " "
 
+        result = ""
         try:
             result = input(prompt)
             if not history and result:
@@ -784,20 +824,20 @@ class OrthosLineReader:
 
 
 class Config:
-    def __init__(self):
+    def __init__(self) -> None:
         self.__cp = RawConfigParser()
         self.__cp.read(SYSTEM_CONFIGFILE)
         self.__cp.read(os.path.expanduser(USER_CONFIGFILE))
-        self.__aliases = {}
-        self.__protocol = None
-        self.__port = None
-        self.__server = None
-        self.__user = None
+        self.__aliases: Dict[str, str] = {}
+        self.__protocol: Optional[str] = None
+        self.__port: Optional[int] = None
+        self.__server: Optional[str] = None
+        self.__user: Optional[str] = None
         self.__auth_user = None
-        self.__password = None
-        self.__use_pager = None
-        self.__timezone = None
-        self.__token = None
+        self.__password: Optional[str] = None
+        self.__use_pager: Optional[str] = None
+        self.__timezone: Optional[str] = None
+        self.__token: Optional[str] = None
 
         self.__quiet = not sys.stdin.isatty()
 
@@ -807,26 +847,26 @@ class Config:
             for key in self.__cp.options("alias"):
                 self.__aliases[key] = self.__cp.get("alias", key)
 
-    def set_quiet(self, quiet):
+    def set_quiet(self, quiet: bool) -> None:
         self.__quiet = quiet
 
-    def is_quiet(self):
+    def is_quiet(self) -> bool:
         return self.__quiet
 
-    def set_password(self, password):
+    def set_password(self, password: str) -> None:
         self.__password = password
 
-    def get_password(self):
+    def get_password(self) -> Optional[str]:
         if self.__password is not None:
             return self.__password
         if self.__cp.has_option("global", "password"):
             return self.__cp.get("global", "password")
         return None
 
-    def set_server(self, server):
+    def set_server(self, server: str) -> None:
         self.__server = server
 
-    def get_server(self):
+    def get_server(self) -> str:
         if self.__server:
             return self.__server
         else:
@@ -835,10 +875,10 @@ class Config:
             else:
                 return DEFAULT_SERVERNAME
 
-    def set_port(self, port):
+    def set_port(self, port: int) -> None:
         self.__port = port
 
-    def get_port(self):
+    def get_port(self) -> int:
         if self.__port:
             return self.__port
         else:
@@ -847,10 +887,10 @@ class Config:
             else:
                 return DEFAULT_PORT
 
-    def set_protocol(self, protocol):
+    def set_protocol(self, protocol: str) -> None:
         self.__protocol = protocol
 
-    def get_protocol(self):
+    def get_protocol(self) -> str:
         if self.__protocol:
             return self.__protocol
         else:
@@ -859,17 +899,17 @@ class Config:
             else:
                 return DEFAULT_PROTOCOL
 
-    def get_history(self):
+    def get_history(self) -> str:
         if self.__cp.has_option("global", "history"):
             hist = self.__cp.get("global", "history")
         else:
             hist = USER_HISTORYFILE
         return os.path.expanduser(hist)
 
-    def set_user(self, user):
+    def set_user(self, user: str) -> None:
         self.__user = user
 
-    def get_user(self):
+    def get_user(self) -> str:
         if self.__user is not None:
             return self.__user
         if self.__cp.has_option("global", "username"):
@@ -877,22 +917,22 @@ class Config:
         else:
             return pwd.getpwuid(os.getuid())[0]
 
-    def set_auth_user(self, user):
+    def set_auth_user(self, user: str) -> None:
         self.__auth_user = user
 
-    def get_auth_user(self):
+    def get_auth_user(self) -> str:
         if not self.__auth_user:
             return "Anonymous"
         return self.__auth_user
 
-    def set_use_pager(self, use_pager):
+    def set_use_pager(self, use_pager: str) -> None:
         values = ["always", "never", "horizontal", "vertical", "both"]
 
         if use_pager not in values:
             raise ValueError("use_pager must be in {0}".format(", ".join(values)))
         self.__use_pager = use_pager
 
-    def get_use_pager(self):
+    def get_use_pager(self) -> str:
         if self.__use_pager is not None:
             return self.__use_pager
         if sys.stdin.isatty():
@@ -903,10 +943,10 @@ class Config:
         else:
             return "never"
 
-    def get_aliases(self):
+    def get_aliases(self) -> Dict[str, str]:
         return self.__aliases
 
-    def set_alias(self, name, *values):
+    def set_alias(self, name: str, *values: str) -> None:
         value = " ".join(values)
         self.__aliases[name] = value
         if not self.__cp.has_section("alias"):
@@ -915,7 +955,7 @@ class Config:
             self.__cp.set("alias", alias, self.__aliases[alias])
         self.write_config()
 
-    def format_aliases(self, alias=None):
+    def format_aliases(self, alias: Optional[str] = None) -> str:
         output = ""
         if alias:
             if alias in self.get_aliases().keys():
@@ -927,13 +967,13 @@ class Config:
                 output += "{} => {}\n".format(alias, self.get_aliases()[alias])
         return output.rstrip("\n")
 
-    def set_timezone(self, timezone):
+    def set_timezone(self, timezone: str) -> None:
         if timezone in pytz.all_timezones:
             self.__timezone = timezone
         else:
             logging.warning("Unknown timezone: %s", timezone)
 
-    def get_timezone(self):
+    def get_timezone(self) -> str:
         if self.__timezone:
             return self.__timezone
         else:
@@ -947,10 +987,10 @@ class Config:
             else:
                 return TIME_ZONE
 
-    def set_token(self, token):
+    def set_token(self, token: str) -> None:
         self.__token = token
 
-    def get_token(self):
+    def get_token(self) -> Optional[str]:
         if self.__token:
             return self.__token
         else:
@@ -958,17 +998,17 @@ class Config:
                 return self.__cp.get("global", "token")
         return None
 
-    def write_config(self):
+    def write_config(self) -> None:
         with open(os.path.expanduser(USER_CONFIGFILE), "w") as f:
             self.__cp.write(f)
 
-    def read_config(self, f: str):
+    def read_config(self, f: str) -> None:
         self.__cp.read(f)
 
 
 class Orthos:
     class API:
-        def request_token(self, username, password):
+        def request_token(self, username: str, password: str) -> None:
             """Request token from API for user authentication."""
             url = API_URL + "/login"
 
@@ -977,13 +1017,14 @@ class Orthos:
             _, data = self.request("POST", url, data, login=True)
             orthos.config.set_token(data.get("token", None))
 
-        def get(self, url):
+        def get(self, url: str):
             """Send GET request to given URL."""
             response = None
 
             headers = {}
-            if self.get_token():
-                headers["Authorization"] = "Token " + self.get_token()
+            token = self.get_token()
+            if token:
+                headers["Authorization"] = "Token " + token
 
             try:
                 request = urllib_request.Request(url, headers=headers)
@@ -995,7 +1036,9 @@ class Orthos:
 
             return response
 
-        def post(self, url, data=None, login=False):
+        def post(
+            self, url: str, data: Optional[Dict[str, Any]] = None, login: bool = False
+        ):
             """Send POST request to given URL."""
             response = None
 
@@ -1007,8 +1050,9 @@ class Orthos:
             logging.debug(json_data)
 
             headers = {"Content-Type": "application/json"}
-            if self.get_token():
-                headers["Authorization"] = "Token " + self.get_token()
+            token = self.get_token()
+            if token:
+                headers["Authorization"] = "Token " + token
 
             try:
                 request = urllib_request.Request(
@@ -1026,7 +1070,13 @@ class Orthos:
 
             return response
 
-        def request(self, method, url, data=None, login=False):
+        def request(
+            self,
+            method: str,
+            url: str,
+            data: Optional[Dict[str, Any]] = None,
+            login: bool = False,
+        ) -> Tuple[Optional[Any], Optional[Dict[Any, Any]]]:
             logging.debug(url)
 
             if not orthos.config.is_quiet():
@@ -1040,7 +1090,7 @@ class Orthos:
             if response:
                 result = json.loads(response.read().decode("utf-8"))
             else:
-                return (None, {})
+                return None, {}
 
             if login:
                 header = None
@@ -1052,31 +1102,35 @@ class Orthos:
             if not orthos.config.is_quiet():
                 print(" " * len(PROMPT_LOADING), end="\r")
 
-            return (header, data)
+            return header, data
 
-        def get_token(self):
+        def get_token(self) -> Optional[str]:
             return orthos.config.get_token()
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize orthos object."""
-        self.API = self.API()
+        self.orthos_api = self.API()
         self.config = Config()
         self.Terminal = Terminal()
+        self._commands: List[Command] = []
+        self.recent_command: Optional[List[str]] = None
+        self.username: str = ""
+        self.LineReader: Optional[OrthosLineReader] = None
 
-    def init(self):
+    def init(self) -> None:
         """Collect available commands from server and print welcome message."""
         global API_URL
 
-        if orthos.config.get_protocol() != "https":
+        if self.config.get_protocol() != "https":
             logging.warning("No secure ssl connection, try -H https://<host> or -P 443")
         API_URL = API_URL_FORMAT.format(
-            orthos.config.get_protocol(),
-            orthos.config.get_server(),
-            orthos.config.get_port(),
+            self.config.get_protocol(),
+            self.config.get_server(),
+            self.config.get_port(),
         )
 
-        _, data = self.API.request("GET", API_URL)
-        orthos.config.set_auth_user(data.get("user"))
+        _, data = self.orthos_api.request("GET", API_URL)
+        self.config.set_auth_user(data.get("user"))
 
         self._commands = [
             Command(command, values) for command, values in data["commands"].items()
@@ -1122,20 +1176,28 @@ Example:
             exit(1)
         self.recent_command = None
 
-        commands = {}
+        commands: Dict[str, Optional[List[str]]] = {}
         for command in self._commands:
             commands[str(command)] = command.get_tabcompletion()
-        for alias in orthos.config.get_aliases():
+        for alias in self.config.get_aliases():
             commands["@" + alias] = []
         self.Tabcompleter = TabCompleter(commands)
 
         message = data.get("message", None)
 
-        if message and not orthos.config.is_quiet():
+        if message and not self.config.is_quiet():
             self.Terminal.show(message)
 
-    def _add_client_command(self, command, tabcompletion=[], help=None, docstring=None):
+    def _add_client_command(
+        self,
+        command: str,
+        tabcompletion: Optional[List[Any]] = None,
+        help: Optional[str] = None,
+        docstring: Optional[str] = None,
+    ) -> None:
         """Add client command for tab completion."""
+        if tabcompletion is None:
+            tabcompletion = []
         attributes = {"tabcompletion": tabcompletion}
 
         if help:
@@ -1145,20 +1207,20 @@ Example:
 
         self._commands.append(Command(command, attributes))
 
-    def get_next_user_command(self, prompt=None):
+    def get_next_user_command(self, prompt: Optional[str] = None) -> List[str]:
+        user_input = ""
         try:
-            input = ""
-            while not input:
-                input = self.LineReader.readline(prompt=prompt)
+            while not user_input:
+                user_input = self.LineReader.readline(prompt=prompt)
         except KeyboardInterrupt:
             pass
         except EOFError:
-            if not orthos.config.is_quiet():
+            if not self.config.is_quiet():
                 print()
             return ["QUIT"]
 
-        result = []
-        for token in re.split(""" (?=(?:[^'"]|'[^']*'|"[^"]*")*$)""", input):
+        result: List[str] = []
+        for token in re.split(""" (?=(?:[^'"]|'[^']*'|"[^"]*")*$)""", user_input):
             result.append(token.replace(" ", "%20"))
 
         # handle command line redirection
@@ -1178,7 +1240,7 @@ Example:
         result = list(filter(lambda x: x != "", result))
         return result
 
-    def get_password(self):
+    def get_password(self) -> Optional[str]:
         """Prompt for password and return it."""
         password = None
         try:
@@ -1190,13 +1252,13 @@ Example:
 
         return password
 
-    def authenticate(self):
+    def authenticate(self) -> None:
         """Authenticate the user."""
-        password = orthos.config.get_password()
+        password = self.config.get_password()
 
         if password is not None:
-            self.API.request_token(self.username, password)
-            if not self.API.get_token():
+            self.orthos_api.request_token(self.username, password)
+            if not self.orthos_api.get_token():
                 print("ERROR: Authorization error!")
 
                 if self.recent_command:
@@ -1214,20 +1276,20 @@ Example:
 
                 return None
 
-            self.API.request_token(self.username, password)
+            self.orthos_api.request_token(self.username, password)
 
-            if not self.API.get_token():
+            if not self.orthos_api.get_token():
                 print("ERROR: Authorization error!")
                 return
 
         self.config.set_auth_user(self.username)
         self.LineReader.set_prompt(get_prompt(self.config.get_auth_user()))
 
-    def is_authenticated(self):
+    def is_authenticated(self) -> bool:
         """Check if the user is already authenticated (token set)."""
-        return True if self.API.get_token() else False
+        return True if self.orthos_api.get_token() else False
 
-    def print_help(self, arguments=None):
+    def print_help(self, arguments: Optional[str] = None) -> None:
         """Print help."""
         arguments = arguments.strip()
         if arguments:
@@ -1247,7 +1309,7 @@ Example:
 
             print()
 
-    def print_config(self):
+    def print_config(self) -> None:
 
         print("")
         print("User:\t\t%s" % self.config.get_auth_user())
@@ -1257,7 +1319,7 @@ Example:
         print("Timezone:\t%s" % self.config.get_timezone())
         print("")
 
-    def run(self):
+    def run(self) -> None:
         self.LineReader = OrthosLineReader(self, history=self.config.get_history())
 
         if sys.stdin.isatty():
@@ -1306,11 +1368,11 @@ Example:
 
                 elif command == "ALIAS":
                     if arguments_length == 0:
-                        self.Terminal.show(orthos.config.format_aliases())
+                        self.Terminal.show(self.config.format_aliases())
                     elif arguments_length == 1:
-                        self.Terminal.show(orthos.config.format_aliases(arguments[0]))
+                        self.Terminal.show(self.config.format_aliases(arguments[0]))
                     else:
-                        orthos.config.set_alias(arguments[0], *arguments[1:])
+                        self.config.set_alias(arguments[0], *arguments[1:])
                     continue
 
                 elif command in self._commands:
@@ -1322,7 +1384,7 @@ Example:
                     response = command.send(self, raw_arguments)
 
                     if response:
-                        apiresponse = APIResponse(*response)
+                        apiresponse = get_apiresponse(*response)
 
                         self.recent_command = command
                         result = apiresponse.process()
@@ -1332,10 +1394,10 @@ Example:
 
                     continue
 
-                elif raw_command in orthos.config.get_aliases():
-                    self.recent_command = orthos.config.get_aliases()[
-                        raw_command
-                    ].split(" ")
+                elif raw_command in self.config.get_aliases():
+                    self.recent_command = self.config.get_aliases()[raw_command].split(
+                        " "
+                    )
                     self.recent_command += arguments
                     continue
 
@@ -1354,7 +1416,7 @@ Example:
                 pass
 
 
-def main():
+def main() -> None:
     """Main function."""
     global orthos
     global PLAIN_OUTPUT
@@ -1534,10 +1596,10 @@ def main():
         orthos.config.set_use_pager("never")
 
     if options.plain_output:
-        PLAIN_OUTPUT = True
+        PLAIN_OUTPUT = True  # pyright: ignore [reportConstantRedefinition]
 
     if options.ifs:
-        IFS = options.ifs
+        IFS = options.ifs  # pyright: ignore [reportConstantRedefinition]
 
     if options.quiet:
         orthos.config.set_quiet(True)

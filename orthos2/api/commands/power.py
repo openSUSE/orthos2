@@ -1,6 +1,8 @@
+from typing import Any, List, Union
+
 from django.contrib.auth.models import AnonymousUser
-from django.http import HttpResponseRedirect
-from django.urls import re_path
+from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
+from django.urls import URLPattern, re_path
 
 from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.serializers.misc import (
@@ -42,19 +44,21 @@ Example:
 """
 
     @staticmethod
-    def get_urls():
+    def get_urls() -> List[URLPattern]:
         return [
             re_path(r"^powercycle$", PowerCommand.as_view(), name="powercycle"),
         ]
 
     @staticmethod
-    def get_tabcompletion():
+    def get_tabcompletion() -> List[str]:
         return RemotePower.Action.as_list
 
-    def get(self, request, *args, **kwargs):
+    def get(
+        self, request: HttpRequest, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
         """Perform machine power cycle."""
-        fqdn = request.GET.get("fqdn", None)
-        action = request.GET.get("action", None)
+        fqdn = request.GET.get("fqdn", "")
+        action = request.GET.get("action", "")
 
         if action.lower() not in RemotePower.Action.as_list:
             return ErrorMessage("Unknown action '{}'!".format(action)).as_json

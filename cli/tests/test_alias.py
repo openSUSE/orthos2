@@ -9,7 +9,7 @@ from . import OrthosCliTestCase
 
 
 class AliasTests(OrthosCliTestCase):
-    def test_add(self):
+    def test_add(self) -> None:
         """
         Test to verify that adding aliases via CLI is working.
         """
@@ -20,8 +20,10 @@ class AliasTests(OrthosCliTestCase):
         # self.process.logfile = sys.stdout.buffer
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("alias test query name")
-        self.process.expect("(orthos 2.0.0:Anonymous)")
+        self.process.expect("(orthos 2.3.0:Anonymous)")
 
         # Assert
         self.stop_cli()
