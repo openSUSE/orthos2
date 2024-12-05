@@ -9,7 +9,7 @@ from . import OrthosCliTestCase
 
 class ServerconfigTests(OrthosCliTestCase):
     @unittest.skip("Too much setup at the moment")
-    def test_serverconfig(self):
+    def test_serverconfig(self) -> None:
         # Arrange
         self.start_cli(username="admin")
         self.login_cli()
@@ -17,6 +17,8 @@ class ServerconfigTests(OrthosCliTestCase):
         # self.process.logfile = sys.stdout.buffer
 
         # Act
+        if self.process is None:
+            raise RuntimeError("CLI process not successfully spawned!")
         self.process.sendline("serverconfig")
         self.process.expect("")
 

@@ -15,18 +15,18 @@ class OrthosCliTestCase(unittest.TestCase):
         self.process: Optional[pexpect.spawn[str]] = None
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         pathlib.Path("~orthos/.config").expanduser().mkdir(exist_ok=True)
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDownClass(cls) -> None:
         config_folder = pathlib.Path("~orthos/.config").expanduser()
         config_file = config_folder / "orthosrc"
         config_file.unlink(missing_ok=True)
         if config_folder.exists():
             config_folder.rmdir()
 
-    def start_cli(self, username: str = ""):
+    def start_cli(self, username: str = "") -> None:
         """
         Starts the CLI and tests if the startup of it has occurred orderly.
         """
@@ -42,12 +42,12 @@ class OrthosCliTestCase(unittest.TestCase):
         # Shell prefix
         self.process.expect(r"\(orthos 2.3.0:Anonymous\) ")
 
-    def login_cli(self):
+    def login_cli(self) -> None:
         """
         Assumes a started CLI and logs in the "admin"/"admin" user.
         """
         if self.process is None:
-            raise RuntimeError("CLI process not sucessfully spawned!")
+            raise RuntimeError("CLI process not successfully spawned!")
         self.process.sendline("auth")
         self.process.expect("Orthos password for admin:")
         self.process.sendline("admin")
@@ -59,7 +59,7 @@ class OrthosCliTestCase(unittest.TestCase):
         Stops the CLI and returns if the program exited correctly.
         """
         if self.process is None:
-            raise RuntimeError("CLI process not sucessfully spawned!")
+            raise RuntimeError("CLI process not successfully spawned!")
         # Exit application
         self.process.sendline("quit")
         # Exit message

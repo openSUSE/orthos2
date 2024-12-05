@@ -9,5 +9,5 @@ from . import OrthosCliTestCase
 
 class DeleteTests(OrthosCliTestCase):
     @unittest.skip("Too much setup at the moment")
-    def test_delete(self):
+    def test_delete(self) -> None:
         self.assertTrue(False)
