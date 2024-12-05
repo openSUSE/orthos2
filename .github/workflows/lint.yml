@@ -54,7 +54,6 @@ jobs:
           ORTHOS_USER: runner
         run: mypy orthos2
       - name: Run mypy for CLI
-        continue-on-error: true
         env:
           ORTHOS_USER: runner
         run: mypy cli
