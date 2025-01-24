@@ -62,7 +62,7 @@ if __name__ == "__main__":
             ("%s/scripts" % execpath, glob("orthos2/scripts/*")),
             ("/usr/bin", glob("orthos2/bin/*")),
             # orthos2 data files in /usr/share/orthos2
-            ("/etc/orthos2", ["wsgi/orthos2.ini", "wsgi/settings"]),
+            ("/etc/orthos2", ["wsgi/settings"]),
             ("%s/fixtures/data" % datapath, glob("orthos2/data/fixtures/*.json")),
             (
                 "%s/fixtures/taskmanager" % datapath,
@@ -83,7 +83,6 @@ if __name__ == "__main__":
                 [
                     "service/orthos2.service",
                     "service/orthos2_taskmanager.service",
-                    "service/orthos2.socket",
                 ],
             ),
             # Empty directory creation
