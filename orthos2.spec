@@ -15,6 +15,9 @@
 
 %if 0%{?suse_version} > 1600
 %define pythons python3
+%define python3_pkgversion python3
+%else
+%define python3_pkgversion python311
 %endif
 
 Name:           orthos2
@@ -44,26 +47,23 @@ BuildRequires:  %{python_module typing_extensions if %python-base < 3.8}
 Requires(post): sudo
 BuildRequires:  python-rpm-macros
 
-Requires:  python3-Django >= 4.2
-Requires:  python3-django-extensions
-Requires:  python3-django-auth-ldap
-Requires:  python3-djangorestframework
-Requires:  python3-netaddr
-Requires:  python3-paramiko
-Requires:  python3-psycopg2
-Requires:  python3-ldap
-Requires:  python3-validators
-Requires:  python3-terminado
-Requires:  python3-tornado
+Requires:  %{python3_pkgversion}-Django >= 4.2
+Requires:  %{python3_pkgversion}-django-extensions
+Requires:  %{python3_pkgversion}-django-auth-ldap
+Requires:  %{python3_pkgversion}-djangorestframework
+Requires:  %{python3_pkgversion}-netaddr
+Requires:  %{python3_pkgversion}-paramiko
+Requires:  %{python3_pkgversion}-psycopg2
+Requires:  %{python3_pkgversion}-ldap
+Requires:  %{python3_pkgversion}-validators
+Requires:  %{python3_pkgversion}-gunicorn
+Requires:  %{python3_pkgversion}-terminado
+Requires:  %{python3_pkgversion}-tornado
 
 # Needed to install /etc/logrotate.d/orthos2
-Requires:  python3-Django >= 4.2
 Requires:  logrotate
 Requires:  nginx
 Requires:  ansible
-Requires:  uwsgi
-Requires:  uwsgi-python3
-Requires:  /sbin/service
 
 Provides: orthos2-%{version}-%{release}
 
@@ -125,29 +125,27 @@ getent group orthos >/dev/null || groupadd -r orthos
 getent passwd orthos >/dev/null || \
     useradd -r -g orthos -d /var/lib/orthos2 -s /bin/bash \
     -c "Useful comment about the purpose of this account" orthos
-%service_add_pre orthos2.service orthos2_taskmanager.service orthos2.socket
+%service_add_pre orthos2.service orthos2_taskmanager.service
 
 %post
 %tmpfiles_create %{_tmpfilesdir}/%{name}.conf
-%service_add_post orthos2.service orthos2_taskmanager.service orthos2.socket
+%service_add_post orthos2.service orthos2_taskmanager.service
 
 %preun
-%service_del_preun  orthos2.service orthos2_taskmanager.service orthos2.socket
+%service_del_preun  orthos2.service orthos2_taskmanager.service
 
 %postun
-%service_del_postun  orthos2.service orthos2_taskmanager.service orthos2.socket
+%service_del_postun  orthos2.service orthos2_taskmanager.service
 
 
 %files
 %{python_sitelib}/orthos2-*
 %{_unitdir}/orthos2_taskmanager.service
 %{_unitdir}/orthos2.service
-%{_unitdir}/orthos2.socket
 %{_tmpfilesdir}/orthos2.conf
 %dir %{python_sitelib}/orthos2/
 %{python_sitelib}/orthos2/*
 %dir %{_sysconfdir}/orthos2
-%config %{_sysconfdir}/orthos2/orthos2.ini
 %config %{_sysconfdir}/orthos2/settings
 %config %{_sysconfdir}/logrotate.d/orthos2
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
