@@ -15,7 +15,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [ '3.10' ]
+        python-version: [ '3.11' ]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -65,7 +65,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.6
+          python-version: 3.11
       - uses: isort/isort-action@master
         with:
           configuration: "--check-only --diff --profile black"
@@ -85,7 +85,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: ['3.10']
+        python-version: ['3.11']
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -114,7 +114,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: ['3.10']
+        python-version: ['3.11']
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -139,7 +139,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [ '3.10' ]
+        python-version: [ '3.11' ]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
