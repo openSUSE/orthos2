@@ -625,22 +625,20 @@ class Info(APIResponse):
 def get_apiresponse(
     header: Dict[str, Any], data: Dict[str, Any]
 ) -> Union[Select, Info, Table, Message, AuthRequired, Input]:
-    response_type = header["type"]
-    if response_type == Type.SELECT:
-        result = Select(header, data)
-    elif response_type == Type.INFO:
-        result = Info(header, data)
-    elif response_type == Type.TABLE:
-        result = Table(header, data)
-    elif response_type == Type.MESSAGE:
-        result = Message(header, data)
-    elif response_type == Type.AUTHREQUIRED:
-        result = AuthRequired(header, data)
-    elif response_type == Type.INPUT:
-        result = Input(header, data)
-    else:
-        raise ValueError("Received unknown response type!")
-    return result
+    response_class_map = {
+        Type.SELECT: Select,
+        Type.INFO: Info,
+        Type.TABLE: Table,
+        Type.MESSAGE: Message,
+        Type.AUTHREQUIRED: AuthRequired,
+        Type.INPUT: Input,
+    }
+
+    response_class = response_class_map.get(header["type"])
+    if response_class is None:
+        raise ValueError(f"Received unknown response type: {header['type']}")
+
+    return response_class(header, data)
 
 
 class Terminal:
