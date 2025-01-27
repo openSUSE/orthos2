@@ -9,11 +9,13 @@ from . import OrthosCliTestCase
 
 class SetupTests(OrthosCliTestCase):
     @unittest.skip("Too much setup at the moment")
-    def test_list(self):
+    def test_list(self) -> None:
         # Arrange
         self.start_cli()
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("setup <fqdn> list")
 
         # Cleanup
@@ -23,11 +25,13 @@ class SetupTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_specific(self):
+    def test_specific(self) -> None:
         # Arrange
         self.start_cli()
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("setup <fqdn> <distro>")
 
         # Cleanup

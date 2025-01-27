@@ -9,11 +9,13 @@ from . import OrthosCliTestCase
 
 class RescanTests(OrthosCliTestCase):
     @unittest.skip("Too much setup at the moment")
-    def test_rescan_status(self):
+    def test_rescan_status(self) -> None:
         # Arrange
         self.start_cli()
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("rescan <fqdn> status")
 
         # Cleanup
@@ -23,25 +25,31 @@ class RescanTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_rescan_all(self):
+    def test_rescan_all(self) -> None:
         # Arrange
         self.start_cli()
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("rescan <fqdn> all")
 
         # Cleanup
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.stop_cli()
 
         # Assert
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_rescan_misc(self):
+    def test_rescan_misc(self) -> None:
         # Arrange
         self.start_cli()
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("rescan <fqdn> misc")
 
         # Cleanup
@@ -51,11 +59,13 @@ class RescanTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_rescan_installations(self):
+    def test_rescan_installations(self) -> None:
         # Arrange
         self.start_cli()
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("rescan <fqdn> installations")
 
         # Cleanup
@@ -65,11 +75,13 @@ class RescanTests(OrthosCliTestCase):
         self.assertTrue(False)
 
     @unittest.skip("Too much setup at the moment")
-    def test_rescan_networkinterfaces(self):
+    def test_rescan_networkinterfaces(self) -> None:
         # Arrange
         self.start_cli()
 
         # Act
+        if self.process is None:
+            self.fail("CLI process not successfully spawned!")
         self.process.sendline("rescan <fqdn> networkinterfaces")
 
         # Cleanup

@@ -9,7 +9,7 @@ from . import OrthosCliTestCase
 
 class RegenerateTests(OrthosCliTestCase):
     @unittest.skip("Too much setup at the moment")
-    def test_regenerate(self):
+    def test_regenerate(self) -> None:
         self.assertTrue(False)
 
 
