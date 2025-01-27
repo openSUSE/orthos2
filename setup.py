@@ -83,7 +83,6 @@ if __name__ == "__main__":
                 [
                     "service/orthos2.service",
                     "service/orthos2_taskmanager.service",
-                    "service/orthos2_debug.service",
                     "service/orthos2.socket",
                 ],
             ),

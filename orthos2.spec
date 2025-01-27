@@ -123,24 +123,23 @@ getent group orthos >/dev/null || groupadd -r orthos
 getent passwd orthos >/dev/null || \
     useradd -r -g orthos -d /var/lib/orthos2 -s /bin/bash \
     -c "Useful comment about the purpose of this account" orthos
-%service_add_pre orthos2.service orthos2_taskmanager.service orthos2.socket orthos2_debug.service
+%service_add_pre orthos2.service orthos2_taskmanager.service orthos2.socket
 
 %post
 %tmpfiles_create %{_tmpfilesdir}/%{name}.conf
-%service_add_post orthos2.service orthos2_taskmanager.service orthos2.socket orthos2_debug.service
+%service_add_post orthos2.service orthos2_taskmanager.service orthos2.socket
 
 %preun
-%service_del_preun  orthos2.service orthos2_taskmanager.service orthos2.socket orthos2_debug.service
+%service_del_preun  orthos2.service orthos2_taskmanager.service orthos2.socket
 
 %postun
-%service_del_postun  orthos2.service orthos2_taskmanager.service orthos2.socket orthos2_debug.service
+%service_del_postun  orthos2.service orthos2_taskmanager.service orthos2.socket
 
 
 %files
 %{python_sitelib}/orthos2-*
 %{_unitdir}/orthos2_taskmanager.service
 %{_unitdir}/orthos2.service
-%{_unitdir}/orthos2_debug.service
 %{_unitdir}/orthos2.socket
 %{_tmpfilesdir}/orthos2.conf
 %dir %{python_sitelib}/orthos2/
