@@ -15,6 +15,7 @@ django-stubs[compatible-mypy]
 types-netaddr
 types-pytz
 types-pexpect
+types-paramiko
 pexpect
 black==22.3.0  # See .pre-commit-config.yaml
 
