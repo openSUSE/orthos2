@@ -61,6 +61,8 @@ Requires:  python3-paramiko
 Requires:  python3-psycopg2
 Requires:  python3-ldap
 Requires:  python3-validators
+Requires:  python3-terminado
+Requires:  python3-tornado
 %endif
 # Needed to install /etc/logrotate.d/orthos2
 Requires:  python3-Django >= 4.2

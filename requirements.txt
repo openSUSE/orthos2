@@ -9,3 +9,5 @@ djangorestframework
 validators
 netaddr
 django-auth-ldap
+terminado
+tornado
