@@ -49,7 +49,6 @@ jobs:
           sudo chown -R $CURRENT_USER:$CURRENT_GROUP /var/lib/orthos2
           sudo chown -R $CURRENT_USER:$CURRENT_GROUP /var/log/orthos2
       - name: Run mypy for server
-        continue-on-error: true
         env:
           ORTHOS_USER: runner
         run: mypy orthos2
