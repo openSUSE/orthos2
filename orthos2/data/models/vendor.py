@@ -1,9 +1,11 @@
+from typing import Optional, Tuple
+
 from django.db import models
 
 
 class Vendor(models.Model):
-    class Manager(models.Manager):
-        def get_by_natural_key(self, name):
+    class Manager(models.Manager["Vendor"]):
+        def get_by_natural_key(self, name: str) -> Optional["Vendor"]:
             return self.get(name=name)
 
     class Meta:
@@ -13,8 +15,8 @@ class Vendor(models.Model):
 
     objects = Manager()
 
-    def natural_key(self):
+    def natural_key(self) -> Tuple[str]:
         return (self.name,)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name

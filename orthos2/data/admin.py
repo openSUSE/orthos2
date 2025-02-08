@@ -1,12 +1,15 @@
-from typing import Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from django import forms
 from django.contrib import admin, messages
-from django.contrib.admin.templatetags.admin_list import _boolean_icon
+from django.contrib.admin import ModelAdmin
+from django.contrib.admin.templatetags.admin_list import _boolean_icon  # type: ignore
 from django.core.exceptions import ValidationError
-from django.db.models import Q
+from django.db.models import Q, QuerySet
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
-from django.urls import re_path, reverse
+from django.template.response import TemplateResponse
+from django.urls import URLPattern, re_path, reverse
 from django.utils.html import format_html
 
 from orthos2.api.forms import RemotePowerDeviceAPIForm
@@ -36,7 +39,7 @@ from orthos2.utils.remotepowertype import RemotePowerType
 
 
 class BMCInlineFormset(forms.models.BaseInlineFormSet):
-    def clean(self):
+    def clean(self) -> None:
         if self.is_valid() and self.cleaned_data:
             data = self.cleaned_data[0]
         else:
@@ -48,7 +51,6 @@ class BMCInlineFormset(forms.models.BaseInlineFormSet):
             raise forms.ValidationError("Username also needs a password")
         if password and not username:
             raise forms.ValidationError("Password also needs a username")
-        return self.cleaned_data
 
 
 class BMCInline(admin.StackedInline):
@@ -56,7 +58,9 @@ class BMCInline(admin.StackedInline):
     extra = 0
     formset = BMCInlineFormset
 
-    def get_formset(self, request, obj=None, **kwargs):
+    def get_formset(
+        self, request: HttpRequest, obj: Optional["Machine"] = None, **kwargs: Any
+    ):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
         return super(BMCInline, self).get_formset(request, obj, **kwargs)
@@ -81,14 +85,16 @@ class SerialConsoleInline(admin.StackedInline):
     )
     readonly_fields = ("rendered_command",)
 
-    def get_formset(self, request, obj=None, **kwargs):
+    def get_formset(
+        self, request: HttpRequest, obj: Optional["Machine"] = None, **kwargs: Any
+    ):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
         return super(SerialConsoleInline, self).get_formset(request, obj, **kwargs)
 
 
 class RemotePowerInlineFormset(forms.models.BaseInlineFormSet):
-    def clean(self):
+    def clean(self) -> None:
         if not self.cleaned_data:
             return
         data = self.cleaned_data[0]
@@ -111,6 +117,10 @@ class RemotePowerInlineFormset(forms.models.BaseInlineFormSet):
             except ValueError:
                 raise forms.ValidationError("{} - Port must be a number".format(port))
         elif fence.use_hostname_as_port:
+            if machine is None:
+                raise forms.ValidationError(
+                    "Machine is required for remote power device!"
+                )
             if not port:
                 port = machine.hostname
             elif port != machine.hostname:
@@ -135,7 +145,9 @@ class RemotePowerInlineRpower(admin.StackedInline):
     verbose_name_plural = "Remote Power via PowerSwitch Device"
     fields = ["port", "remote_power_device", "options"]
 
-    def get_formset(self, request, obj=None, **kwargs):
+    def get_formset(
+        self, request: HttpRequest, obj: Optional["Machine"] = None, **kwargs: Any
+    ):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
         return super(RemotePowerInlineRpower, self).get_formset(request, obj, **kwargs)
@@ -163,7 +175,7 @@ class RemotePowerInlineHypervisor(admin.StackedInline):
     verbose_name_plural = "Remote Power via Hypervisor"
     fields = ["fence_name", "options"]
 
-    def get_formset(self, request, obj=None, **kwargs):
+    def get_formset(self, request: HttpRequest, obj: Any = None, **kwargs: Any):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
         return super(RemotePowerInlineHypervisor, self).get_formset(
@@ -183,11 +195,11 @@ class NetworkInterfaceInline(admin.TabularInline):
         "driver_module",
     )
 
-    def has_add_permission(self, request, obj=None):
+    def has_add_permission(self, request, obj=None) -> bool:
         """Network interfaces get added by machine scan."""
         return False
 
-    def has_delete_permission(self, request, obj=None):
+    def has_delete_permission(self, request, obj=None) -> bool:
         """Network interfaces get deleted by machine scan."""
         return False
 
@@ -216,7 +228,7 @@ class MachineAdminForm(forms.ModelForm):
         model = Machine
         fields = "__all__"
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         """Set primary MAC address and virtualization API type in the form fields."""
         instance = kwargs.get("instance", None)
 
@@ -227,14 +239,14 @@ class MachineAdminForm(forms.ModelForm):
 
             self.machine = instance
 
-    def save(self, commit=True):
+    def save(self, commit: bool = True):
         machine = super(MachineAdminForm, self).save(commit=False)
         machine.mac_address = self.cleaned_data["mac_address"]
         if commit:
             machine.save()
         return machine
 
-    def clean_mac_address(self):
+    def clean_mac_address(self) -> str:
         """Check if another machine has already this MAC address."""
         mac_address = self.cleaned_data["mac_address"]
 
@@ -249,13 +261,13 @@ class MachineAdminForm(forms.ModelForm):
             raise ValidationError(
                 "MAC address '{}' is already used by '{}'!".format(
                     mac_address,
-                    NetworkInterface.objects.get(mac_address=mac_address).machine.fqdn,
+                    NetworkInterface.objects.get(mac_address=mac_address).machine.fqdn,  # type: ignore
                 )
             )
 
         return mac_address
 
-    def clean_fqdn(self):
+    def clean_fqdn(self) -> str:
         """Check if another machine has already this FQDN (except self)."""
         fqdn = self.cleaned_data["fqdn"]
 
@@ -269,7 +281,7 @@ class MachineAdminForm(forms.ModelForm):
                 raise ValidationError("FQDN is already in use!")
         return fqdn
 
-    def clean(self):
+    def clean(self) -> Optional[Dict[str, Any]]:
         """
         Only collect system information if connectivity is set to `Full`.
         """
@@ -335,7 +347,7 @@ class MachineArchitectureFilter(admin.SimpleListFilter):
 
     parameter_name = "arch"
 
-    def lookups(self, request, model_admin):
+    def lookups(self, request: HttpRequest, model_admin) -> List[Tuple[int, str]]:  # type: ignore
         architectures = Architecture.objects.all()
         result = []
 
@@ -344,9 +356,12 @@ class MachineArchitectureFilter(admin.SimpleListFilter):
 
         return result
 
-    def queryset(self, request, queryset):
+    def queryset(
+        self, request: HttpRequest, queryset: QuerySet["Machine"]
+    ) -> Optional[QuerySet["Machine"]]:
         if self.value():
-            return queryset.filter(architecture_id=self.value())
+            return queryset.filter(architecture_id=self.value())  # type: ignore
+        return None
 
 
 class MachineSystemFilter(admin.SimpleListFilter):
@@ -366,7 +381,9 @@ class MachineSystemFilter(admin.SimpleListFilter):
 
         return result
 
-    def queryset(self, request, queryset):
+    def queryset(
+        self, request: HttpRequest, queryset: QuerySet["Machine"]
+    ) -> Optional[QuerySet["Machine"]]:
         value = self.value()
         if value:
             if value == "administrative":
@@ -376,7 +393,8 @@ class MachineSystemFilter(admin.SimpleListFilter):
             elif value == "inactive":
                 return queryset.filter(Q(active=False))
             else:
-                return queryset.filter(system_id=self.value())
+                return queryset.filter(system_id=self.value())  # type: ignore
+        return None
 
 
 class MachineDomainFilter(admin.SimpleListFilter):
@@ -384,7 +402,7 @@ class MachineDomainFilter(admin.SimpleListFilter):
 
     parameter_name = "domain"
 
-    def lookups(self, request, model_admin):
+    def lookups(self, request: HttpRequest, model_admin) -> List[Tuple[int, str]]:  # type: ignore
         domains = Domain.objects.all()
         result = []
 
@@ -393,9 +411,13 @@ class MachineDomainFilter(admin.SimpleListFilter):
 
         return result
 
-    def queryset(self, request, queryset):
-        if self.value():
-            return queryset.filter(fqdn_domain_id=self.value())
+    def queryset(
+        self, request: HttpRequest, queryset: QuerySet["Machine"]
+    ) -> Optional[QuerySet["Machine"]]:
+        value = self.value()
+        if value and value.isdigit():
+            return queryset.filter(fqdn_domain_id=int(value))
+        return None
 
 
 class MachineGroupFilter(admin.SimpleListFilter):
@@ -403,7 +425,9 @@ class MachineGroupFilter(admin.SimpleListFilter):
 
     parameter_name = "machinegroup"
 
-    def lookups(self, request, model_admin):
+    def lookups(  # type: ignore
+        self, request: HttpRequest, model_admin: ModelAdmin
+    ) -> List[Tuple[int, str]]:
         machinegroups = MachineGroup.objects.all()
         result = []
 
@@ -412,9 +436,13 @@ class MachineGroupFilter(admin.SimpleListFilter):
 
         return result
 
-    def queryset(self, request, queryset):
-        if self.value():
-            return queryset.filter(group_id=self.value())
+    def queryset(
+        self, request: HttpRequest, queryset: QuerySet["Machine"]
+    ) -> Optional[QuerySet["Machine"]]:
+        value = self.value()
+        if value and value.isdigit():
+            return queryset.filter(group_id=int(value))
+        return None
 
 
 class MachineAdmin(admin.ModelAdmin):
@@ -536,7 +564,7 @@ class MachineAdmin(admin.ModelAdmin):
         self.inlines = ()
         return super(MachineAdmin, self).add_view(request, form_url, extra_context)
 
-    def get_fieldsets(self, request, obj: Optional[Machine] = None):
+    def get_fieldsets(self, request: HttpRequest, obj: Optional[Machine] = None):
         """Do not show 'VIRTUALIZATION' client/server forms if not appropriate"""
         fieldsets = super().get_fieldsets(request)
         if obj:
@@ -548,11 +576,17 @@ class MachineAdmin(admin.ModelAdmin):
                 if fieldset[0] == "VIRTUALIZATION CLIENT":
                     if not obj.system.virtual:
                         continue
-                fieldsets_ += (fieldset,)
+                fieldsets_ += (fieldset,)  # type: ignore
             fieldsets = fieldsets_
         return fieldsets
 
-    def change_view(self, request, object_id, form_url="", extra_context=None):
+    def change_view(
+        self,
+        request: HttpRequest,
+        object_id: str,
+        form_url="",
+        extra_context: Optional[Dict[str, Any]] = None,
+    ) -> Union[HttpResponseRedirect, TemplateResponse, HttpResponse]:
         """Return changes view with inlines for non-administrative systems."""
         machine = Machine.objects.get(pk=object_id)
         fence = None
@@ -589,7 +623,7 @@ class MachineAdmin(admin.ModelAdmin):
             request, object_id, form_url, extra_context
         )
 
-    def save_formset(self, request, form, formset, change):
+    def save_formset(self, request: HttpRequest, form, formset, change) -> None:
         formset.save()
         machine = form.save(commit=False)
         if (
@@ -616,28 +650,35 @@ class ArchsInline(admin.TabularInline):
     )
 
 
-class DomainAdmin(admin.ModelAdmin):
+class DomainAdminAdmin(admin.ModelAdmin):
     list_display = ("name", "cobbler_server_list", "tftp_server", "cscreen_server")
     inlines = (ArchsInline,)
 
-    def cobbler_server_list(self, obj):
+    def cobbler_server_list(self, obj: "Domain"):
         """Return DHCP server FQDN as string."""
         cobbler_server = obj.cobbler_server
         return cobbler_server.fqdn if cobbler_server else "-"
 
-    def delete_model(self, request, obj=None):
+    def delete_model(
+        self, request: HttpRequest, obj: Optional["Domain"] = None
+    ) -> None:
+        if obj is None:
+            messages.error(request, "You must specify a Domain to delete.")
+            return
         try:
             obj.delete()
         except ValidationError as e:
             messages.error(request, e.message)
 
-    def has_delete_permission(self, request, obj=None):
+    def has_delete_permission(
+        self, request: HttpRequest, obj: Optional["Domain"] = None
+    ) -> bool:
         if obj is not None and obj.machine_set.count() > 0:
             return False
-        return super(DomainAdmin, self).has_delete_permission(request, obj=obj)
+        return super().has_delete_permission(request, obj=obj)
 
 
-admin.site.register(Domain, DomainAdmin)
+admin.site.register(Domain, DomainAdminAdmin)
 
 
 class EnclosureAdmin(admin.ModelAdmin):
@@ -645,11 +686,11 @@ class EnclosureAdmin(admin.ModelAdmin):
     list_display = ("name", "machine_count", "platform_name")
     search_fields = ("name",)
 
-    def machine_count(self, obj):
+    def machine_count(self, obj: Enclosure) -> int:
         """Return machine counter of enclosure."""
         return obj.machine_set.count()
 
-    def platform_name(self, obj):
+    def platform_name(self, obj: Enclosure) -> Optional[str]:
         """Return name of enclosures platform."""
         platform = obj.platform
         if platform:
@@ -673,8 +714,8 @@ class ServerConfigAdmin(admin.ModelAdmin):
     search_fields = ("key", "value")
 
     # https://medium.com/@hakibenita/how-to-add-custom-action-buttons-to-django-admin-8d266f5b0d41
-    def get_urls(self):
-        """Add customn URLs to server configuration admin view."""
+    def get_urls(self) -> List[URLPattern]:
+        """Add custom URLs to server configuration admin view."""
         urls = super(ServerConfigAdmin, self).get_urls()
         custom_urls = [
             re_path(
@@ -685,7 +726,9 @@ class ServerConfigAdmin(admin.ModelAdmin):
         ]
         return custom_urls + urls
 
-    def process_boolean_switch(self, request, serverconfig_id, *args, **kwargs):
+    def process_boolean_switch(
+        self, request: HttpRequest, serverconfig_id: int, *args: Any, **kwargs: Any
+    ) -> HttpResponseRedirect:
         """Enable/disable value."""
         action = request.GET.get("action", None)
 
@@ -743,13 +786,18 @@ admin.site.register(Platform, PlatformAdmin)
 class ArchitectureAdmin(admin.ModelAdmin):
     list_display = ("name", "get_machine_count", "dhcp_filename")
 
-    def delete_model(self, request, obj=None):
+    def delete_model(
+        self, request: HttpRequest, obj: Optional["Architecture"] = None
+    ) -> None:
+        if obj is None:
+            messages.error(request, "You must specify an Architecture to delete.")
+            return
         try:
             obj.delete()
         except ValidationError as e:
             messages.error(request, e.message)
 
-    def has_delete_permission(self, request, obj=None):
+    def has_delete_permission(self, request: HttpRequest, obj: Any = None) -> bool:
         if obj is not None and obj.machine_set.count() > 0:
             return False
         return super(ArchitectureAdmin, self).has_delete_permission(request, obj=obj)
@@ -782,10 +830,10 @@ class MachinesInline(admin.TabularInline):
     fields = ("fqdn",)
     readonly_fields = ("fqdn",)
 
-    def has_add_permission(self, request, obj=None):
+    def has_add_permission(self, request: HttpRequest, obj: Any = None) -> bool:
         return False
 
-    def has_delete_permission(self, request, obj=None):
+    def has_delete_permission(self, request: HttpRequest, obj: Any = None) -> bool:
         return False
 
 
@@ -793,7 +841,7 @@ class MachineGroupAdmin(admin.ModelAdmin):
     list_display = ("name", "machines", "dhcp_filename")
     inlines = (MachinesInline, MachineGroupMembershipInline)
 
-    def machines(self, obj):
+    def machines(self, obj: MachineGroup) -> str:
         machines = Machine.objects.filter(group=obj)
         output = ", ".join([machine.fqdn for machine in machines])
         return output

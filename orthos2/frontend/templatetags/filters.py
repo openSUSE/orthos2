@@ -1,14 +1,16 @@
 import re
+from typing import Optional
 
 from django import template
 from django.templatetags.static import static
-from django.utils.html import escape, mark_safe
+from django.utils.html import escape
+from django.utils.safestring import SafeString, mark_safe
 
 register = template.Library()
 
 
 @register.filter
-def divide(value, arg):
+def divide(value: float, arg: int) -> Optional[str]:
     """Divide ``value`` and return float value rounded to one decimal place."""
     try:
         return format(float(value) / arg, ".1f")
@@ -17,7 +19,7 @@ def divide(value, arg):
 
 
 @register.filter
-def boolean_image(value, size=25):
+def boolean_image(value: bool, size: int = 25) -> str:
     """Return an HTML image tag with ``size`` (width in px) if ``value`` is true."""
     if value:
         return "&#9989;"
@@ -26,7 +28,7 @@ def boolean_image(value, size=25):
 
 
 @register.filter
-def vendor_image(cpu_model, size=25):
+def vendor_image(cpu_model: str, size: int = 25) -> SafeString:
     """Return an HTML image tag with ``size`` (width in px) and the repective vendor logo."""
     cpu_model = cpu_model.lower()
 
@@ -45,17 +47,16 @@ def vendor_image(cpu_model, size=25):
 
 
 @register.filter
-def pcihooks(lspci):
+def pcihooks(lspci: str) -> SafeString:
     """
     Escapes the lspci string and set HTML hooks for every PCI slot ID.
 
     Example:
         "00:00.0 ..." > "<a href="#00:00.0">00:00.0</a> ..."
     """
-    result = escape(lspci)
     result = re.sub(
         r"([a-fA-F0-9]+:[a-fA-F0-9]+.[a-fA-F0-9]+) (.*)",
         r'<a name="\1" class="monospace">\1</a> \2',
-        result,
+        str(escape(lspci)),
     )
     return mark_safe(result)

@@ -5,6 +5,7 @@ import time
 from queue import Empty as queueEmpty
 from queue import Queue
 from threading import Thread
+from typing import TYPE_CHECKING, Dict, Tuple
 
 from django import db
 from django.db.utils import InterfaceError
@@ -14,6 +15,9 @@ from orthos2.data.models import ServerConfig
 from orthos2.taskmanager import Priority
 from orthos2.taskmanager.models import BaseTask, DailyTask, SingleTask
 
+if TYPE_CHECKING:
+    from .models import Task
+
 logger = logging.getLogger("tasks")
 
 PRIORITIES = [Priority.HIGH, Priority.NORMAL]
@@ -22,15 +26,18 @@ PRIORITIES = [Priority.HIGH, Priority.NORMAL]
 class TaskExecuter(Thread):
     """TaskExecuter pulls tasks from the database and executes them asynchrously."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         Thread.__init__(self)
         self._stop_execution = False
         self.daily_check_run = timezone.localtime()
 
-        self.queue = {Priority.HIGH: Queue(), Priority.NORMAL: Queue()}
-        self.concurrency = int(ServerConfig.objects.by_key("tasks.concurrency.max"))
+        self.queue: Dict[int, Queue[BaseTask]] = {
+            Priority.HIGH: Queue(),
+            Priority.NORMAL: Queue(),
+        }
+        self.concurrency = int(ServerConfig.objects.by_key("tasks.concurrency.max"))  # type: ignore
 
-    def get_daily_tasks(self):
+    def get_daily_tasks(self) -> None:
         """Check for daily tasks and store them in the queue for processing."""
         now = timezone.localtime()
         today = timezone.localdate()
@@ -38,13 +45,13 @@ class TaskExecuter(Thread):
         dailytasks = DailyTask.objects.filter(enabled=True).order_by("priority")
         for dailytask in dailytasks:
             if timezone.localdate(dailytask.executed_at) < today:
-                if now.time() > ServerConfig.objects.get_daily_execution_time():
+                if now.time() > ServerConfig.objects.get_daily_execution_time():  # type: ignore
                     dailytask.executed_at = timezone.localtime()
                     dailytask.running = True
                     dailytask.save()
                     self.queue[dailytask.priority].put(dailytask)
 
-    def get_single_tasks(self):
+    def get_single_tasks(self) -> None:
         """Get all single tasks from database and store them in the queue for processing."""
         singletasks = SingleTask.objects.filter(running=False).order_by("priority")
         for singletask in singletasks:
@@ -52,7 +59,7 @@ class TaskExecuter(Thread):
             singletask.save()
             self.queue[singletask.priority].put(singletask)
 
-    def reset_daily_task(self, hash):
+    def reset_daily_task(self, hash: str) -> None:
         """Reset daily task and unset 'running' field."""
         try:
             dailytask = DailyTask.objects.get(hash=hash)
@@ -61,29 +68,29 @@ class TaskExecuter(Thread):
         except DailyTask.DoesNotExist:
             logger.exception("Daily task not found")
 
-    def remove_single_task(self, hash):
+    def remove_single_task(self, hash: str) -> None:
         """Remove task from database."""
         try:
             SingleTask.objects.get(hash=hash).delete()
         except SingleTask.DoesNotExist:
             logger.exception("Single task not found")
 
-    def _check_threads(self, running_threads):
+    def _check_threads(self, running_threads: Dict[str, Tuple[Thread, "Task"]]) -> None:
         for hash, values in list(running_threads.items()):
             thread = values[0]
             task = values[1]
             # check if thread has finished...
             if not thread.is_alive():
-                if task.basetask_type == BaseTask.Type.SINGLE:
+                if task.basetask_type == BaseTask.Type.SINGLE:  # type: ignore
                     self.remove_single_task(hash)
                 else:
                     self.reset_daily_task(hash)
                 del running_threads[hash]
                 logger.debug("Thread [%s] %s exited", hash[:8], task.__class__.__name__)
 
-    def run(self):
+    def run(self) -> None:
         """Main thread function."""
-        running_threads = {}
+        running_threads: Dict[str, Tuple[Thread, "Task"]] = {}
         while not self._stop_execution:
             queue = None
             if len(running_threads) >= self.concurrency:
@@ -131,7 +138,7 @@ class TaskExecuter(Thread):
                         task.basetask_type = BaseTask.Type.DAILY
 
                     # take parent execute function to catch and print exceptions in the log file
-                    thread = Thread(target=super(TaskClass, task).execute)
+                    thread = Thread(target=super(TaskClass, task).execute)  # type: ignore
                     thread.start()
 
                     running_threads[basetask.hash] = (thread, task)
@@ -152,5 +159,5 @@ class TaskExecuter(Thread):
                     queue.task_done()
                 self._check_threads(running_threads)
 
-    def finish(self):
+    def finish(self) -> None:
         self._stop_execution = True

@@ -1,12 +1,23 @@
-from django.core.exceptions import PermissionDenied
-from django.http import Http404
+from typing import Callable, Concatenate, ParamSpec, TypeVar
+
+from django.core.exceptions import BadRequest, PermissionDenied
+from django.http import Http404, HttpRequest
 
 from orthos2.data.models import Machine
 
+P = ParamSpec("P")
+R = TypeVar("R")
 
-def check_permissions(key="id"):
-    def decorator(function):
-        def wrapper(request, *args, **kwargs):
+
+def check_permissions(
+    key: str = "id",
+) -> Callable[
+    [Callable[Concatenate[HttpRequest, P], R]], Callable[Concatenate[HttpRequest, P], R]
+]:
+    def decorator(
+        function: Callable[Concatenate[HttpRequest, P], R]
+    ) -> Callable[Concatenate[HttpRequest, P], R]:
+        def wrapper(request: HttpRequest, *args: P.args, **kwargs: P.kwargs) -> R:
             """
             Check access permission for machine.
 
@@ -20,7 +31,13 @@ def check_permissions(key="id"):
                 if key == "fqdn":
                     machine = Machine.objects.get(fqdn=ident)
                 elif key in ("id", "machine_id"):
+                    if not isinstance(ident, (str, int)):
+                        raise PermissionDenied(
+                            'Bad type of key "%s" must be int or str.', key
+                        )
                     machine = Machine.objects.get(pk=ident)
+                else:
+                    raise BadRequest("Incorrect key given!")
             except Machine.DoesNotExist:
                 raise Http404("Machine does not exist!")
 

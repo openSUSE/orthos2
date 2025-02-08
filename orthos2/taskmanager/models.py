@@ -1,6 +1,7 @@
 import json
 import logging
 from hashlib import sha1
+from typing import Any
 
 from django.db import models
 from django.utils import timezone
@@ -16,6 +17,7 @@ class BaseTask(models.Model):
         DAILY = 1
 
     class Meta:
+        # pyright disable in inherited Tasks due to https://github.com/microsoft/pylance-release/issues/3814
         abstract = True
 
     name = models.CharField(max_length=200, blank=False)
@@ -36,7 +38,7 @@ class BaseTask(models.Model):
 
     created = models.DateTimeField("Created at", auto_now_add=True)
 
-    def generate_hash(self):
+    def generate_hash(self) -> str:
         """Generate hash from name, module and arguments."""
         hash = sha1(
             "{}{}{}".format(self.name, self.module, self.arguments).encode("utf-8")
@@ -44,12 +46,12 @@ class BaseTask(models.Model):
 
         return hash
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """Save task in database and sets hash before."""
         self.hash = self.generate_hash()
         super(BaseTask, self).save(*args, **kwargs)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
@@ -72,14 +74,14 @@ class SingleTask(BaseTask):
 
 
 class Task:
-    def __new__(cls, *args, **kwargs):
-        """Store arguments in attribtute for database store."""
+    def __new__(cls, *args: Any, **kwargs: Any) -> "Task":
+        """Store arguments in attribute for database store."""
         instance = super(Task, cls).__new__(cls)
-        instance.__arguments = (args, kwargs)
-        instance.basetask_type = None
+        instance.__arguments = (args, kwargs)  # type: ignore
+        instance.basetask_type = None  # type: ignore
         return instance
 
-    def execute(self):
+    def execute(self) -> None:
         """
         Execute the task.
 
@@ -94,17 +96,17 @@ class Task:
 
 class TaskManager:
     @staticmethod
-    def add(task):
+    def add(task: Task) -> None:
         """Add tasks to database for execution."""
         try:
-            arguments = json.dumps(task._Task__arguments)
+            arguments = json.dumps(task._Task__arguments)  # type: ignore
         except TypeError:
             logger.exception(
                 "%s: arguments are not JSON serializable", task.__class__.__name__
             )
             return
 
-        task, _created = SingleTask.objects.get_or_create(
+        SingleTask.objects.get_or_create(
             name=task.__class__.__name__,
             module=task.__class__.__module__,
             arguments=arguments,

@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING, Any, Dict
+
 from rest_framework import serializers
 
 from orthos2.api.serializers.annotation import AnnotationSerializer
@@ -6,35 +8,43 @@ from orthos2.api.serializers.installation import InstallationSerializer
 from orthos2.api.serializers.networkinterface import NetworkInterfaceSerializer
 from orthos2.data.models import Machine
 
+if TYPE_CHECKING:
+    from orthos2.data.models.annotation import Annotation
+    from orthos2.data.models.bmc import BMC
+    from orthos2.data.models.installation import Installation
+    from orthos2.data.models.networkinterface import NetworkInterface
+
 
 class NetworkInterfaceListingField(NetworkInterfaceSerializer):
-    def to_representation(self, networkinterface):
+    def to_representation(
+        self, instance: "NetworkInterface"
+    ) -> Dict[str, Dict[str, Any]]:
         result = {}
 
         for name, field in self.fields.items():
-            value = getattr(networkinterface, name)
+            value = getattr(instance, name)
             result[name] = {"label": field.label, "value": value}
 
         return result
 
 
 class InstallationListingField(InstallationSerializer):
-    def to_representation(self, installation):
+    def to_representation(self, instance: "Installation") -> Dict[str, Dict[str, Any]]:
         result = {}
 
         for name, field in self.fields.items():
-            value = getattr(installation, name)
+            value = getattr(instance, name)
             result[name] = {"label": field.label, "value": value}
 
         return result
 
 
 class AnnotationListingField(AnnotationSerializer):
-    def to_representation(self, annotation):
+    def to_representation(self, instance: "Annotation") -> Dict[str, Dict[str, Any]]:
         result = {}
 
         for name, field in self.fields.items():
-            value = getattr(annotation, str(name))
+            value = getattr(instance, str(name))
             if name == "reporter":
                 if value:
                     value = value.username
@@ -46,26 +56,26 @@ class AnnotationListingField(AnnotationSerializer):
 
 
 class BMCListingField(BMCSerializer):
-    def to_representation(self, bmc):
+    def to_representation(self, instance: "BMC") -> Dict[str, Dict[str, Any]]:
         result = {}
 
         for name, field in self.fields.items():
-            value = getattr(bmc, str(name))
+            value = getattr(instance, str(name))
             result[name] = {"label": field.label, "value": value}
         return result
 
 
-class MachineSerializer(serializers.ModelSerializer):
+class MachineSerializer(serializers.ModelSerializer[Machine]):
 
-    enclosure = serializers.StringRelatedField()
+    enclosure = serializers.StringRelatedField()  # type: ignore
 
-    system = serializers.StringRelatedField()
+    system = serializers.StringRelatedField()  # type: ignore
 
-    architecture = serializers.StringRelatedField()
+    architecture = serializers.StringRelatedField()  # type: ignore
 
     networkinterfaces = NetworkInterfaceListingField(many=True)
 
-    reserved_by = serializers.StringRelatedField()
+    reserved_by = serializers.StringRelatedField()  # type: ignore
 
     installations = InstallationListingField(many=True)
 
@@ -75,7 +85,7 @@ class MachineSerializer(serializers.ModelSerializer):
     status_ipv6 = serializers.SerializerMethodField()
     bmc = BMCListingField()
 
-    class Meta:
+    class Meta:  # type: ignore
         model = Machine
         fields = (
             "fqdn",
@@ -153,7 +163,7 @@ class MachineSerializer(serializers.ModelSerializer):
     bmc_username = serializers.CharField(source="bmc.username")
     bmc_password = serializers.SerializerMethodField()
 
-    def get_bmc_password(self, obj):
+    def get_bmc_password(self, obj: Any) -> str:
         if hasattr(self, "bmc") and self.bmc:
             if self.bmc_password:
                 return "***"
@@ -167,13 +177,13 @@ class MachineSerializer(serializers.ModelSerializer):
 
     group = serializers.CharField(source="group.name")
 
-    def __init__(self, machine, *args, **kwargs):
+    def __init__(self, machine: Machine, *args: Any, **kwargs: Any) -> None:
         super(MachineSerializer, self).__init__(machine, *args, **kwargs)
         if not hasattr(machine, "group") or not machine.group:
             self.fields.pop("group")
 
     @property
-    def data_info(self):
+    def data_info(self) -> Dict[str, Dict[str, str]]:
         result = {}
 
         # copy dictionary for further manipulation
@@ -207,9 +217,3 @@ class MachineSerializer(serializers.ModelSerializer):
             result[name] = {"label": field.label, "value": data[name]}
 
         return result
-
-    def get_status_ipv4(self, obj):
-        return obj.get_status_ipv4_display()
-
-    def get_status_ipv6(self, obj):
-        return obj.get_status_ipv6_display()

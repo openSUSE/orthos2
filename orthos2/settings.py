@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     "orthos2.taskmanager.apps.TaskManagerConfig",
     "orthos2.utils.apps.UtilsConfig",
     #  'django.contrib.admin',
-    "orthos2.admin.apps.AdminConfig",
+    "orthos2.admin.apps.OrthosAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",

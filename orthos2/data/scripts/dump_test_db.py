@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+from typing import Any
 
 from django.apps import apps
 
@@ -50,18 +51,18 @@ Modules["general"] = (
     "Serialconsoletype",
 )
 
-Modules["domain"] = ("Domain", "Domainadmin")
+Modules["domain"] = ("Domain", "Domainadmin")  # type: ignore
 
 # Modules['remote' ] = ("Remotepower", "Bmc", "Remotepowerdevice", "Serialconsole", "Serialconsoletype")
 
-queries = []
+queries = []  # type: ignore
 
 added_machines = []
 
 config = apps.get_app_config("data")
 
 
-def show_help():
+def show_help() -> None:
     print("Use --script-args to specify what you want to dump:")
     print("")
     print("\tgeneral \t-- Dump general DB data [ %s ] " % ", ".join(Modules["general"]))
@@ -87,7 +88,7 @@ def add_machine(fqdn: str, queries: list):
         machine = Machine.objects.get(fqdn=fqdn)
         query = Enclosure.objects.filter(pk=machine.enclosure.pk)
         queries.extend(query)
-        query = Machine.objects.filter(fqdn=fqdn)
+        query = Machine.objects.filter(fqdn=fqdn)  # type: ignore
         queries.extend(query)
         if machine.hypervisor:
             add_machine(machine.hypervisor.fqdn, queries)
@@ -115,7 +116,7 @@ def add_domain(domain: str, queries: list):
 
         query = Domain.objects.filter(name=d_obj)
         queries.extend(query)
-        query = DomainAdmin.objects.filter(domain=d_obj)
+        query = DomainAdmin.objects.filter(domain=d_obj)  # type: ignore
         queries.extend(query)
     except Domain.DoesNotExist:
         print("%s - Domain does not exist" % domain)
@@ -131,12 +132,12 @@ def add_arch_relations(queries: list):
     for item in query:
         item.tftp_server = None
         item.cscreen_server = None
-        item.cobbler_server.set([])
+        item.cobbler_server = None
     queries.extend(query)
     add_machine("markeb.arch.suse.de", queries)
 
 
-def delete_network(mac: str):
+def delete_network(mac: str) -> None:
     network = NetworkInterface.objects.get(mac_address=mac.upper())
     if network:
         print(network)
@@ -144,7 +145,7 @@ def delete_network(mac: str):
     exit(1)
 
 
-def run(*args):
+def run(*args: Any):
 
     natural = False
     # delete_network('00:01:73:02:37:74')
@@ -173,7 +174,7 @@ def run(*args):
             queries.extend(query)
         for table in tables:
             print(".. dump table %s" % table)
-            model = config.get_model(table).objects.all()
+            model = config.get_model(table).objects.all()  # type: ignore
             queries.extend(model)
 
     file = param + ".json"

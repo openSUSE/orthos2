@@ -1,21 +1,26 @@
 from copy import deepcopy
+from typing import TYPE_CHECKING, Any, Optional, Tuple
 
+from django.contrib import admin
 from django.db import models
 
 from orthos2.utils.misc import safe_get_or_default
 
+if TYPE_CHECKING:
+    from orthos2.data.models.machine import Machine
+
 
 class Architecture(models.Model):
-    class Manager(models.Manager):
-        def get_by_natural_key(self, name):
+    class Manager(models.Manager["Architecture"]):
+        def get_by_natural_key(self, name: str) -> Optional["Architecture"]:
             return self.get(name=name)
 
     class Type:
         @classmethod
-        def prep(cls):
+        def prep(cls) -> None:
             """Prepare const variables for fast and developer-friendly handling."""
-            cls.X86_64 = safe_get_or_default(Architecture, "name", "x86_64", "pk", -1)
-            cls.PPC64LE = safe_get_or_default(Architecture, "name", "ppc64le", "pk", -1)
+            cls.X86_64 = safe_get_or_default(Architecture, "name", "x86_64", "pk", -1)  # type: ignore
+            cls.PPC64LE = safe_get_or_default(Architecture, "name", "ppc64le", "pk", -1)  # type: ignore
 
     name = models.CharField(max_length=200, blank=False, unique=True)
 
@@ -32,12 +37,14 @@ class Architecture(models.Model):
         "Default profile", max_length=128, null=True, blank=True
     )
 
+    machine_set: models.Manager["Machine"]
+
     objects = Manager()
 
-    def natural_key(self):
+    def natural_key(self) -> Tuple[str]:
         return (self.name,)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Deep copy object for comparison in `save()`."""
         super(Architecture, self).__init__(*args, **kwargs)
 
@@ -46,28 +53,26 @@ class Architecture(models.Model):
         else:
             self._original = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """Save architecture object."""
         super(Architecture, self).save(*args, **kwargs)
 
         # check if DHCP needs to be regenerated
         if self._original is not None:
-            try:
-                assert self.dhcp_filename == self._original.dhcp_filename
-            except AssertionError:
-                from orthos2.data.signals import signal_dhcp_regenerate
+            if self.dhcp_filename != self._original.dhcp_filename:
+                from orthos2.data.signals import signal_cobbler_sync_dhcp
 
-                signal_dhcp_regenerate.send(sender=self.__class__, domain_id=None)
+                # FIXME: domain_id cannot be None
+                signal_cobbler_sync_dhcp.send(sender=self.__class__, domain_id=None)
 
-    def get_machine_count(self):
+    @admin.display(description="Machines")
+    def get_machine_count(self) -> int:
         return self.machine_set.count()
 
-    get_machine_count.short_description = "Machines"
-
-    def get_support_contact(self):
+    def get_support_contact(self) -> Optional[str]:
         """Return email address for responsible support contact."""
         if self.contact_email:
             return self.contact_email

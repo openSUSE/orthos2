@@ -1,8 +1,10 @@
 import logging
+from typing import TYPE_CHECKING, Any, List, Union
 
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponseRedirect, JsonResponse
-from django.urls import re_path
+from django.urls import URLPattern, re_path
+from rest_framework.request import Request
 
 from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.serializers.misc import (
@@ -12,6 +14,9 @@ from orthos2.api.serializers.misc import (
     Message,
     Serializer,
 )
+
+if TYPE_CHECKING:
+    from orthos2.data.models.machine import Machine
 
 logger = logging.getLogger("api")
 
@@ -39,16 +44,16 @@ Example:
 """
 
     @staticmethod
-    def get_urls():
+    def get_urls() -> List[URLPattern]:
         return [
             re_path(r"^setup$", SetupCommand.as_view(), name="setup"),
         ]
 
     @staticmethod
-    def get_tabcompletion():
+    def get_tabcompletion() -> List[str]:
         return ["list"]
 
-    def _list(self, request, machine):
+    def _list(self, request: Request, machine: "Machine") -> JsonResponse:
         """Return list of available distributions for `machine`."""
         if not machine.has_setup_capability():
             return InfoMessage("Machine has no setup capability.").as_json
@@ -63,12 +68,12 @@ Example:
         response = ""
 
         theader = [{"full": "Available Distributions"}]
-        response = {"header": {"type": "TABLE", "theader": theader}, "data": []}
+        response = {"header": {"type": "TABLE", "theader": theader}, "data": []}  # type: ignore
 
         for distribution, records in grouped_records.items():
             logger.info("Distros: %s - records: %s", distribution, records)
             for record in records:
-                response["data"].append(
+                response["data"].append(  # type: ignore
                     {
                         "full": distribution + ":" + record,
                     }
@@ -76,7 +81,9 @@ Example:
 
         return JsonResponse(response)
 
-    def _setup(self, request, machine, distribution):
+    def _setup(
+        self, request: Request, machine: "Machine", distribution: str
+    ) -> JsonResponse:
         """Trigger machine setup for `machine` with `distribution`."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
@@ -112,11 +119,16 @@ Example:
         except Exception as e:
             return ErrorMessage(str(e)).as_json
 
-    def get(self, request, *args, **kwargs):
+    def get(
+        self, request: Request, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
         """Perform machine setup."""
         fqdn = request.GET.get("fqdn", None)
         option_or_choice = request.GET.get("option_or_choice", None)
-        choice = None
+        if fqdn is None:
+            return ErrorMessage("FQDN of the machine is required.").as_json
+        if option_or_choice is None:
+            return ErrorMessage("Option or choice for the machine is required.").as_json
 
         try:
             result = get_machine(fqdn, redirect_to="api:setup", data=request.GET)
@@ -133,5 +145,3 @@ Example:
         else:
             choice = option_or_choice
             return self._setup(request, machine, choice)
-
-        return ErrorMessage("Something went wrong!").as_json

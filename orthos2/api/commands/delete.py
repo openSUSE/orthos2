@@ -1,10 +1,16 @@
 import json
 import logging
+from typing import Any, List, Union
 
 from django.contrib.auth.models import AnonymousUser
-from django.http import JsonResponse
-from django.shortcuts import redirect, reverse
-from django.urls import re_path
+from django.http import (
+    HttpResponsePermanentRedirect,
+    HttpResponseRedirect,
+    JsonResponse,
+)
+from django.shortcuts import redirect
+from django.urls import URLPattern, re_path, reverse
+from rest_framework.request import Request
 
 from orthos2.api.commands.base import BaseAPIView
 from orthos2.api.forms import (
@@ -60,21 +66,23 @@ Example:
 """
 
     @staticmethod
-    def get_urls():
+    def get_urls() -> List[URLPattern]:
         return [
             re_path(r"^delete$", DeleteCommand.as_view(), name="delete"),
         ]
 
     @staticmethod
-    def get_tabcompletion():
+    def get_tabcompletion() -> List[str]:
         return Delete.as_list
 
-    def get(self, request, *args, **kwargs):
+    def get(
+        self, request: Request, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponsePermanentRedirect, HttpResponseRedirect]:
         """Dispatcher for the 'delete' command."""
         arguments = request.GET.get("args", None)
 
         if arguments:
-            arguments = arguments.split()
+            arguments = arguments.split()  # type: ignore
             item = arguments[0].lower()
             sub_arguments = arguments[1:]
         else:
@@ -120,7 +128,7 @@ class DeleteMachineCommand(BaseAPIView):
     URL_POST = "/machine/delete"
 
     @staticmethod
-    def get_urls():
+    def get_urls() -> List[URLPattern]:
         return [
             re_path(
                 r"^machine/delete",
@@ -129,7 +137,7 @@ class DeleteMachineCommand(BaseAPIView):
             ),
         ]
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
         """Return form for deleting a machine."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
@@ -144,7 +152,7 @@ class DeleteMachineCommand(BaseAPIView):
         input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
         return input.as_json
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
         """Delete machine."""
         if not request.user.is_superuser:
             return ErrorMessage(
@@ -178,7 +186,7 @@ class DeleteMachineCommand(BaseAPIView):
                     "data": [],
                 }
                 for key, value in result[1].items():
-                    response["data"].append(
+                    response["data"].append(  # type: ignore
                         {"objects": key.replace("data.", ""), "count": value}
                     )
                 return JsonResponse(response)
@@ -195,7 +203,7 @@ class DeleteSerialConsoleCommand(BaseAPIView):
     URL_POST = "/serialconsole/delete"
 
     @staticmethod
-    def get_urls():
+    def get_urls() -> List[URLPattern]:
         return [
             re_path(
                 r"^serialconsole/delete",
@@ -204,7 +212,7 @@ class DeleteSerialConsoleCommand(BaseAPIView):
             ),
         ]
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
         """Return form for deleting a serial console."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
@@ -219,7 +227,7 @@ class DeleteSerialConsoleCommand(BaseAPIView):
         input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
         return input.as_json
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
         """Delete serial console."""
         if not request.user.is_superuser:
             return ErrorMessage(
@@ -251,7 +259,7 @@ class DeleteSerialConsoleCommand(BaseAPIView):
                     "data": [],
                 }
                 for key, value in result[1].items():
-                    response["data"].append(
+                    response["data"].append(  # type: ignore
                         {"objects": key.replace("data.", ""), "count": value}
                     )
                 return JsonResponse(response)
@@ -268,7 +276,7 @@ class DeleteRemotePowerCommand(BaseAPIView):
     URL_POST = "/remotepower/delete"
 
     @staticmethod
-    def get_urls():
+    def get_urls() -> List[URLPattern]:
         return [
             re_path(
                 r"^remotepower/delete",
@@ -277,7 +285,7 @@ class DeleteRemotePowerCommand(BaseAPIView):
             ),
         ]
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
         """Return form for deleting a remote power."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
@@ -292,7 +300,7 @@ class DeleteRemotePowerCommand(BaseAPIView):
         input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
         return input.as_json
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
         """Delete remote power."""
         if not request.user.is_superuser:
             return ErrorMessage(
@@ -324,7 +332,7 @@ class DeleteRemotePowerCommand(BaseAPIView):
                     "data": [],
                 }
                 for key, value in result[1].items():
-                    response["data"].append(
+                    response["data"].append(  # type: ignore
                         {"objects": key.replace("data.", ""), "count": value}
                     )
                 return JsonResponse(response)
@@ -341,7 +349,7 @@ class DeleteRemotePowerDeviceCommand(BaseAPIView):
     URL_POST = "/remotepowerdevice/delete"
 
     @staticmethod
-    def get_urls():
+    def get_urls() -> List[URLPattern]:
         return [
             re_path(
                 r"^remotepowerdevice/delete",
@@ -350,7 +358,7 @@ class DeleteRemotePowerDeviceCommand(BaseAPIView):
             ),
         ]
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
         """Return form for deleting a remote power."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
@@ -365,7 +373,7 @@ class DeleteRemotePowerDeviceCommand(BaseAPIView):
         input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
         return input.as_json
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
         """Delete remote power."""
         if not request.user.is_superuser:
             return ErrorMessage(
@@ -380,7 +388,7 @@ class DeleteRemotePowerDeviceCommand(BaseAPIView):
             try:
                 cleaned_data = form.cleaned_data
 
-                device = RemotePowerDevice.objects.get(
+                device = RemotePowerDevice.objects.get(  # type: ignore
                     fqdn__iexact=cleaned_data["fqdn"]
                 )
 
@@ -396,7 +404,7 @@ class DeleteRemotePowerDeviceCommand(BaseAPIView):
                     "data": [],
                 }
                 for key, value in result[1].items():
-                    response["data"].append(
+                    response["data"].append(  # type: ignore
                         {"objects": key.replace("data.", ""), "count": value}
                     )
                 return JsonResponse(response)

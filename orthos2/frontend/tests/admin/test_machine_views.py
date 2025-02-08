@@ -1,7 +1,7 @@
 from unittest import mock
 
 from django.urls import reverse
-from django_webtest import WebTest
+from django_webtest import WebTest  # type: ignore
 
 from orthos2.data.models import Architecture, Machine, ServerConfig, System
 
@@ -39,7 +39,7 @@ class ChangeView(WebTest):
 
         m2.save()
 
-    def test_visible_fieldsets_non_administrative_systems(self):
+    def test_visible_fieldsets_non_administrative_systems(self) -> None:
         """Test for fieldsets."""
         # Act
         page = self.app.get(
@@ -49,7 +49,7 @@ class ChangeView(WebTest):
         # Assert
         self.assertContains(page, "VIRTUALIZATION")
 
-    def test_visible_inlines_non_administrative_systems(self):
+    def test_visible_inlines_non_administrative_systems(self) -> None:
         """Test for inlines."""
         # Act
         page = self.app.get(
@@ -60,7 +60,7 @@ class ChangeView(WebTest):
         self.assertContains(page, "Add another Serial Console")
         self.assertContains(page, "Remote Power")
 
-    def test_visible_fieldsets_administrative_systems(self):
+    def test_visible_fieldsets_administrative_systems(self) -> None:
         """Test for fieldsets."""
         # Act
         page = self.app.get(
@@ -70,7 +70,7 @@ class ChangeView(WebTest):
         # Assert
         self.assertContains(page, "VIRTUALIZATION")
 
-    def test_visible_inlines_administrative_systems(self):
+    def test_visible_inlines_administrative_systems(self) -> None:
         """Test for inlines."""
         # Act
         page = self.app.get(

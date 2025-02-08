@@ -1,18 +1,20 @@
+from typing import Optional, Tuple
+
 from django.db import models
 
 from orthos2.utils.misc import safe_get_or_default
 
 
 class System(models.Model):
-    class Manager(models.Manager):
-        def get_by_natural_key(self, name):
+    class Manager(models.Manager["System"]):
+        def get_by_natural_key(self, name: str) -> Optional["System"]:
             return self.get(name=name)
 
     class Type:
         @classmethod
-        def prep(cls):
+        def prep(cls) -> None:
             """Preparation of const variables for fast and developer-friendly handling."""
-            cls.BAREMETAL = safe_get_or_default(System, "name", "BareMetal", "pk", -1)
+            cls.BAREMETAL = safe_get_or_default(System, "name", "BareMetal", "pk", -1)  # type: ignore
 
     help_text = "Describes the system type of a machine"
 
@@ -55,8 +57,8 @@ class System(models.Model):
 
     objects = Manager()
 
-    def natural_key(self):
+    def natural_key(self) -> Tuple[str]:
         return (self.name,)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name

@@ -24,7 +24,7 @@ class HostnameFinder(object):
     """
 
     @staticmethod
-    def by_domain(domain: str, arch: str = "x86_64"):
+    def by_domain(domain: str, arch: str = "x86_64") -> Optional["HostnameFinder"]:
         """
         Returns a HostnameFinder instance by domain.
         """
@@ -32,14 +32,14 @@ class HostnameFinder(object):
             logger.info("Config file is missing HOSTNAMEFINDER variable")
             return None
         config = next(
-            (x for x in settings.HOSTNAMEFINDER if x["network"] == domain), None
+            (x for x in settings.HOSTNAMEFINDER if x["network"] == domain), None  # type: ignore
         )
         if not config:
             logger.info("Domain %s has no hostfinder configuration", domain)
             return None
         return HostnameFinder(config)
 
-    def __init__(self, config: Dict[str, str]):
+    def __init__(self, config: Dict[str, str]) -> None:
         """
         Creates a new object with the given domain model object.
         """
@@ -49,7 +49,7 @@ class HostnameFinder(object):
         if not hasattr(config, "ip_range"):
             self.ip_range = range(1, 254)
         else:
-            self.ip_range = config["ip_range"]
+            self.ip_range = config["ip_range"]  # type: ignore
 
     def free_hostnames(self) -> Tuple[List[str], List[str]]:
         """
@@ -66,7 +66,7 @@ class HostnameFinder(object):
         )
         for i in self.sections:
             for j in self.ip_range:
-                ip = "10.161.%d.%d" % (i, j)
+                ip = "10.161.%d.%d" % (i, j)  # type: ignore
                 try:
                     res = socket.gethostbyaddr(ip)
                 except socket.error:

@@ -1,7 +1,8 @@
 import collections
 import logging
-from typing import Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
+from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -10,11 +11,18 @@ from orthos2.data.models.serverconfig import ServerConfig
 from orthos2.utils.cobbler import CobblerServer
 from orthos2.utils.misc import has_valid_domain_ending
 
+if TYPE_CHECKING:
+    from orthos2.data.models.machine import Machine
+
 logger = logging.getLogger("models")
 
 
-def validate_domain_ending(value):
+def validate_domain_ending(value: str) -> None:
     valid_domain_endings = ServerConfig.objects.get_valid_domain_endings()
+    if valid_domain_endings is None:
+        raise ValidationError(
+            "Valid domain endings could not be retrieved from settings."
+        )
 
     if not has_valid_domain_ending(value, valid_domain_endings):
         raise ValidationError(
@@ -25,8 +33,8 @@ def validate_domain_ending(value):
 
 
 class Domain(models.Model):
-    class Manager(models.Manager):
-        def get_by_natural_key(self, name):
+    class Manager(models.Manager["Domain"]):
+        def get_by_natural_key(self, name: str) -> Optional["Domain"]:
             return self.get(name=name)
 
     name = models.CharField(
@@ -77,7 +85,7 @@ class Domain(models.Model):
         limit_choices_to={"administrative": True},
     )
 
-    supported_architectures = models.ManyToManyField(
+    supported_architectures = models.ManyToManyField(  # type: ignore
         "data.Architecture",
         related_name="supported_domains",
         verbose_name="Supported architectures",
@@ -85,29 +93,30 @@ class Domain(models.Model):
         blank=False,
     )
 
+    machine_set: models.Manager["Machine"]
+
     objects = Manager()
 
-    def natural_key(self):
+    def natural_key(self) -> Tuple[str]:
         return (self.name,)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         validate_domain_ending(self.name)
 
         super(Domain, self).save(*args, **kwargs)
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args: Any, **kwargs: Any) -> Tuple[int, Dict[str, int]]:
         if self.machine_set.count() > 0:
             raise ValidationError("Domain contains machines.")
         else:
-            super(Domain, self).delete(*args, **kwargs)
+            return super(Domain, self).delete(*args, **kwargs)
 
-    def get_machine_count(self):
+    @admin.display(description="Machines")
+    def get_machine_count(self) -> int:
         return self.machine_set.count()
-
-    get_machine_count.short_description = "Machines"
 
     def get_setup_records(
         self, architecture: str, delimiter: str = ":"
@@ -149,10 +158,10 @@ class Domain(models.Model):
         :returns: The list of setup records from the TFTP server grouped. They key is the distribution and the value is
                   a list of profile suffixes.
         """
-        server = CobblerServer(self.tftp_server.fqdn_domain)
+        server = CobblerServer(self.tftp_server.fqdn_domain)  # type: ignore
         profiles = server.get_profiles(architecture)
 
-        groups = {}
+        groups: Dict[str, List[str]] = {}
         for record in profiles:
             delim_c = record.count(delimiter)
             # <distro>:<profile>
@@ -174,7 +183,7 @@ class Domain(models.Model):
 
         return records
 
-    def is_valid_setup_choice(self, choice: str, architecture: str):
+    def is_valid_setup_choice(self, choice: str, architecture: str) -> bool:
         """Check if `choice` is a valid setup record."""
         choices = self.get_setup_records(architecture)
         result = choice in choices
@@ -189,5 +198,5 @@ class DomainAdmin(models.Model):
 
     contact_email = models.EmailField(blank=False)
 
-    def natural_key(self):
+    def natural_key(self) -> Tuple[str, str]:
         return self.domain.name, self.arch.name

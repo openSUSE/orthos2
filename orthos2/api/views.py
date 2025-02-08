@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.http import HttpRequest, JsonResponse
 from django.urls import reverse
 from rest_framework.decorators import api_view
 
@@ -7,7 +8,7 @@ from orthos2.data.models import ServerConfig
 
 
 @api_view(["GET"])
-def root(request):
+def root(request: HttpRequest) -> JsonResponse:
     """API root."""
     import orthos2.api.commands as commands
 

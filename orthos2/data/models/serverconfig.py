@@ -1,4 +1,6 @@
+import datetime
 import logging
+from typing import List, Optional
 
 from django.db import models
 
@@ -7,10 +9,11 @@ from orthos2.utils.misc import str_time_to_datetime
 logger = logging.getLogger("models")
 
 
-class BaseManager(models.Manager):
-    def by_key(self, key, fallback=None):
+class ServerConfigManager(models.Manager["ServerConfig"]):
+    def by_key(self, key: str, fallback: Optional[str] = None) -> Optional[str]:
         """Return the value by key."""
         try:
+            obj: ServerConfig
             obj, created = ServerConfig.objects.get_or_create(
                 key=key, defaults={"value": fallback}
             )
@@ -21,7 +24,7 @@ class BaseManager(models.Manager):
             logger.exception("Key '%s': %s", key, e)
         return fallback
 
-    def bool_by_key(self, key):
+    def bool_by_key(self, key: str) -> bool:
         """
         Return a boolean value by key.
 
@@ -37,7 +40,7 @@ class BaseManager(models.Manager):
             logger.exception("Key '%s': %s", key, e)
         return False
 
-    def list_by_key(self, key, delimiter=","):
+    def list_by_key(self, key: str, delimiter: str = ",") -> Optional[List[str]]:
         """Return a list of strings seperated by `delimiter`."""
         try:
             obj = ServerConfig.objects.get(key=key)
@@ -50,12 +53,13 @@ class BaseManager(models.Manager):
             logger.exception("Key '%s': %s", key, e)
         return None
 
-    def get_smtp_relay(self):
+    def get_smtp_relay(self) -> Optional[str]:
         """Return the FQDN of the SMTP relay server."""
         try:
+            obj: Optional[ServerConfig]
             obj = ServerConfig.objects.get(key="mail.smtprelay.fqdn")
 
-            if obj.value:
+            if obj and obj.value:
                 return obj.value
             else:
                 logger.warning("SMTP relay entry is empty")
@@ -63,7 +67,7 @@ class BaseManager(models.Manager):
             logger.warning("No SMTP relay server entry found")
         return None
 
-    def get_valid_domain_endings(self):
+    def get_valid_domain_endings(self) -> Optional[List[str]]:
         """Return a list of valid domain endings."""
         try:
             obj = ServerConfig.objects.get(key="domain.validendings")
@@ -76,7 +80,7 @@ class BaseManager(models.Manager):
             logger.warning("No valid domain endings entry found")
         return None
 
-    def get_daily_execution_time(self):
+    def get_daily_execution_time(self) -> Optional[datetime.time]:
         """
         Return the execution time when daily tasks should be executed as datetime.time
         object.
@@ -99,8 +103,8 @@ class BaseManager(models.Manager):
         return None
 
 
-class SSHManager(BaseManager):
-    def get_keys(self):
+class ServerConfigSSHManager(ServerConfigManager):
+    def get_keys(self) -> Optional[List[str]]:
         """Return a list of file paths to SSH master keys for SSH authentication."""
         try:
             obj = ServerConfig.objects.get(key="ssh.keys.paths")
@@ -113,7 +117,7 @@ class SSHManager(BaseManager):
             logger.warning("No SSH key paths entry found")
         return None
 
-    def get_timeout(self):
+    def get_timeout(self) -> Optional[int]:
         """Return the timeout in seconds for SSH connection attempts as integer."""
         try:
             obj = ServerConfig.objects.get(key="ssh.timeout.seconds")
@@ -128,12 +132,13 @@ class SSHManager(BaseManager):
             logger.exception("SSH timeout value is no number/integer")
         return None
 
-    def get_remote_scripts_directory(self):
+    def get_remote_scripts_directory(self) -> Optional[str]:
         """Return a path where remote executed scripts (host side) should be placed."""
         try:
+            obj: Optional[ServerConfig]
             obj = ServerConfig.objects.get(key="ssh.scripts.remote.directory")
 
-            if obj.value:
+            if obj and obj.value:
                 return obj.value
             else:
                 logger.warning("Remote scripts directory entry is empty")
@@ -141,12 +146,13 @@ class SSHManager(BaseManager):
             logger.warning("No remote scripts directory entry found")
         return None
 
-    def get_local_scripts_directory(self):
+    def get_local_scripts_directory(self) -> Optional[str]:
         """Return a path to the local scripts directory (server side)."""
         try:
+            obj: Optional[ServerConfig]
             obj = ServerConfig.objects.get(key="ssh.scripts.local.directory")
 
-            if obj.value:
+            if obj and obj.value:
                 return obj.value
             else:
                 logger.warning("Local scripts directory entry is empty")
@@ -164,8 +170,8 @@ class ServerConfig(models.Model):
 
     value = models.CharField(max_length=512, blank=True)
 
-    objects = BaseManager()
-    ssh = SSHManager()
+    objects = ServerConfigManager()
+    ssh = ServerConfigSSHManager()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.key

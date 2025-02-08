@@ -1,12 +1,16 @@
 import logging
 import os
+from abc import abstractmethod
 from datetime import date
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Tuple, Union
+
+from paramiko.channel import ChannelFile, ChannelStderrFile
 
 from orthos2.utils.misc import get_random_mac_address
 
 if TYPE_CHECKING:
-    from orthos2.data.models import Machine
+    from orthos2.data.models import Machine, NetworkInterface
+    from orthos2.utils.ssh import SSH
 
 logger = logging.getLogger("models")
 
@@ -16,7 +20,7 @@ class VirtualizationAPI:
         LIBVIRT = 0
 
         @classmethod
-        def to_str(cls, index):
+        def to_str(cls, index: int) -> str:
             """Return type as string (Virtualization API type name) by index."""
             for type_tuple in VirtualizationAPI.TYPE_CHOICES:
                 if int(index) == type_tuple[0]:
@@ -26,7 +30,7 @@ class VirtualizationAPI:
             )
 
         @classmethod
-        def to_int(cls, name):
+        def to_int(cls, name: str) -> int:
             """Return type as integer if name matches."""
             for type_tuple in VirtualizationAPI.TYPE_CHOICES:
                 if name.lower() == type_tuple[1].lower():
@@ -35,7 +39,7 @@ class VirtualizationAPI:
 
     TYPE_CHOICES = ((Type.LIBVIRT, "libvirt"),)
 
-    def __init__(self, type, host: "Machine", *args, **kwargs):
+    def __init__(self, type: int, host: "Machine", *args: Any, **kwargs: Any) -> None:
         """
         Cast plain `VirtualizationAPI` object to respective subclass.
 
@@ -64,26 +68,32 @@ class VirtualizationAPI:
         self.type = type
         self.host = host
 
-        self.__init__(*args, **kwargs)
+        self.__init__(*args, **kwargs)  # type: ignore
 
-    def _set_virtualization_api(self, type):
+    def _set_virtualization_api(self, type: int) -> None:
         """Set virtualization API type."""
-        self.__class__ = self._virtualizationapis[type]["class"]
+        self.__class__ = self._virtualizationapis[type]["class"]  # type: ignore
 
-    def __setattr__(self, attr, value):
+    def __setattr__(self, attr: str, value: Any) -> None:
         """If `type` attribute changes, set respective subclass."""
         # check for `None` explicitly because type 0 results in false
         if attr == "type" and value is not None:
             self._set_virtualization_api(value)
         super(VirtualizationAPI, self).__setattr__(attr, value)
 
-    def get_type(self):
+    def get_type(self) -> int:
         return self.type
 
-    def get_image_list(self):
+    def get_image_list(self) -> Tuple[List[str], List[Tuple[str, str]]]:
         raise NotImplementedError
 
-    def create(self, *args, **kwargs):
+    @abstractmethod
+    def _create(self, vm: "Machine", *args: Any, **kwargs: Any) -> bool:
+        """
+        Wrapper function for creating a VM. This should implement the provider specific real creation of a VM.
+        """
+
+    def create(self, *args: Any, **kwargs: Any) -> "Machine":
         """
         Create a virtual machine.
 
@@ -102,19 +112,19 @@ class VirtualizationAPI:
         )
 
         vm = Machine()
-        vm.unsaved_networkinterfaces = []
+        vm.unsaved_networkinterfaces = []  # type: ignore
 
         vm.architecture = Architecture.objects.get(name=kwargs["architecture"])
         vm.system = System.objects.get(pk=kwargs["system"])
 
         self._create(vm, *args, **kwargs)
 
-        vm.mac_address = vm.unsaved_networkinterfaces[0].mac_address
+        vm.mac_address = vm.unsaved_networkinterfaces[0].mac_address  # type: ignore
         vm.check_connectivity = Machine.Connectivity.ALL
         vm.collect_system_information = True
         vm.save()
 
-        for networkinterface in vm.unsaved_networkinterfaces[1:]:
+        for networkinterface in vm.unsaved_networkinterfaces[1:]:  # type: ignore
             networkinterface.machine = vm
             networkinterface.save()
         vm.remotepower = RemotePower(fence_name="virsh")
@@ -127,24 +137,24 @@ class VirtualizationAPI:
             vm.serialconsole = SerialConsole(stype=stype, baud_rate=115200)
             vm.serialconsole.save()
 
-        if vm.vnc["enabled"]:
+        if vm.vnc["enabled"]:  # type: ignore
             vm.annotations.create(
-                text="VNC enabled: {}:{}".format(self.host.fqdn, vm.vnc["port"]),
+                text="VNC enabled: {}:{}".format(self.host.fqdn, vm.vnc["port"]),  # type: ignore
                 reporter=User.objects.get(username="admin"),
             )
 
         return vm
 
-    def remove(self, *args, **kwargs):
-        return self._remove(*args, **kwargs)
+    def remove(self, *args: Any, **kwargs: Any) -> bool:
+        return self._remove(*args, **kwargs)  # type: ignore
 
-    def get_list(self):
+    def get_list(self) -> str:
         raise NotImplementedError
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.Type.to_str(self.type)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<VirtualizationAPI: {} ({})>".format(self, self.host.fqdn)
 
 
@@ -158,10 +168,10 @@ class Libvirt(VirtualizationAPI):
         "/usr/bin/qemu-img convert -O qcow2 -o preallocation=metadata {0}.tmp {0}"
     )
 
-    def __init__(self):
-        self.conn = None
+    def __init__(self) -> None:
+        self.conn: Optional["SSH"] = None
 
-    def get_image_list(self):
+    def get_image_list(self) -> Tuple[List[str], List[Tuple[str, str]]]:
         """
         Return the available architectures and the full image list (over all available
         architectures).
@@ -178,6 +188,10 @@ class Libvirt(VirtualizationAPI):
             "virtualization.libvirt.images.directory", "/var/lib/libvirt/images"
         )
         image_list = []
+        if image_directory is None:
+            raise ValueError(
+                'ServerConfig key "virtualization.libvirt.images.directory" cannot be None'
+            )
 
         try:
             for architecture in architectures:
@@ -189,10 +203,10 @@ class Libvirt(VirtualizationAPI):
 
                     if size < (1024**3):
                         size = int(size / (1024**2))
-                        size = "{}M".format(size)
+                        size = "{}M".format(size)  # type: ignore
                     else:
                         size = int(size / (1024**3))
-                        size = "{}G".format(size)
+                        size = "{}G".format(size)  # type: ignore
 
                     pretty_image = image.split(".")[0]
 
@@ -203,52 +217,56 @@ class Libvirt(VirtualizationAPI):
         except FileNotFoundError as e:
             logger.exception(e)
 
-        return (architectures, image_list)
+        return architectures, image_list
 
-    def connect(function):
+    def connect(function) -> Callable[["Libvirt", Any, Any], Any]:
         """Create SSH connection if needed."""
 
-        def decorator(self, *args, **kwargs):
+        def decorator(self: "Libvirt", *args: Any, **kwargs: Any) -> Any:
             from orthos2.utils.ssh import SSH
 
             if not self.conn:
                 self.conn = SSH(self.host.fqdn)
                 self.conn.connect()
-            return function(self, *args, **kwargs)
+            return function(self, *args, **kwargs)  # type: ignore
 
         return decorator
 
-    @connect
-    def _execute(self, command):
+    @connect  # type: ignore
+    def _execute(
+        self, command: str
+    ) -> Tuple[Union[Iterable, ChannelFile], Union[Iterable, ChannelStderrFile], int]:
+        if self.conn is None:
+            raise Exception("Connection not established")
         return self.conn.execute(command)
 
-    def check_connection(self):
+    def check_connection(self) -> bool:
         """Check libvirt connection (running libvirt)."""
-        _stdout, _stderr, exitstatus = self._execute("{} version".format(self.VIRSH))
+        _stdout, _stderr, exitstatus = self._execute("{} version".format(self.VIRSH))  # type: ignore
         if exitstatus == 0:
             return True
         return False
 
-    def get_list(self, parameters="--all"):
+    def get_list(self, parameters: str = "--all") -> str:
         """Return `virsh list` output."""
-        stdout, stderr, exitstatus = self._execute(
+        stdout, stderr, exitstatus = self._execute(  # type: ignore
             "{} list {}".format(self.VIRSH, parameters)
         )
 
         if exitstatus == 0:
             return "".join(stdout)
-        else:
-            raise Exception("".join(stderr))
+        raise Exception("".join(stderr))
 
-        return False
-
-    def check_network_bridge(self, bridge="br0"):
+    def check_network_bridge(self, bridge: str = "br0") -> bool:
         """
         Execute `create_bridge.sh` script remotely and try to set up bridge if it doesn't exist.
 
         Returns true if the bridge is available, false otherwise.
         """
-        stdout, stderr, exitstatus = self.conn.execute_script_remote("create_bridge.sh")
+        if self.conn is None:
+            raise Exception("Connection not established")
+
+        stdout, stderr, exitstatus = self.conn.execute_script_remote("create_bridge.sh")  # type: ignore
 
         if exitstatus != 0:
             raise Exception("".join(stderr))
@@ -262,16 +280,16 @@ class Libvirt(VirtualizationAPI):
             if line.startswith(bridge):
                 return True
 
-        raise False
+        raise False  # type: ignore
 
-    def generate_hostname(self):
+    def generate_hostname(self) -> Optional[str]:
         """
         Generate domain name (hostname).
 
         Check hostnames against Orthos machines and libvirt `virsh list`.
         """
         hostname = None
-        occupied_hostnames = {vm.hostname for vm in self.host.get_virtual_machines()}
+        occupied_hostnames = {vm.hostname for vm in self.host.get_virtual_machines()}  # type: ignore
 
         libvirt_list = self.get_list()
         for line in libvirt_list.split("\n")[2:]:
@@ -291,7 +309,9 @@ class Libvirt(VirtualizationAPI):
 
         return hostname
 
-    def generate_networkinterfaces(self, amount=1, bridge="br0", model="virtio"):
+    def generate_networkinterfaces(
+        self, amount: int = 1, bridge: str = "br0", model: str = "virtio"
+    ) -> List["NetworkInterface"]:
         """Generate networkinterfaces."""
         from orthos2.data.models import NetworkInterface
 
@@ -302,15 +322,18 @@ class Libvirt(VirtualizationAPI):
                 mac_address = get_random_mac_address()
 
             networkinterface = NetworkInterface(mac_address=mac_address)
-            networkinterface.bridge = bridge
-            networkinterface.model = model
+            networkinterface.bridge = bridge  # type: ignore
+            networkinterface.model = model  # type: ignore
 
             networkinterfaces.append(networkinterface)
 
         return networkinterfaces
 
-    def copy_image(self, image, disk_image):
+    def copy_image(self, image: str, disk_image: str) -> bool:
         """Copy and allocate disk image."""
+        if self.conn is None:
+            raise Exception("Connection not established")
+
         _stdout, _stderr, exitstatus = self.conn.execute(
             "cp {} {}.tmp".format(image, disk_image)
         )
@@ -334,8 +357,11 @@ class Libvirt(VirtualizationAPI):
 
         return True
 
-    def delete_disk_image(self, disk_image):
+    def delete_disk_image(self, disk_image: str) -> bool:
         """Delete the old disk image."""
+        if self.conn is None:
+            raise Exception("Connection not established")
+
         _stdout, _stderr, exitstatus = self.conn.execute("rm -rf {}".format(disk_image))
 
         if exitstatus != 0:
@@ -343,7 +369,7 @@ class Libvirt(VirtualizationAPI):
 
         return True
 
-    def calculate_vcpu(self):
+    def calculate_vcpu(self) -> int:
         """Return virtual CPU amount."""
         vcpu = 1
 
@@ -355,7 +381,7 @@ class Libvirt(VirtualizationAPI):
 
         return vcpu
 
-    def check_memory(self, memory_amount):
+    def check_memory(self, memory_amount: int) -> bool:
         """
         Check if memory amount for VM is available on host.
 
@@ -376,7 +402,9 @@ class Libvirt(VirtualizationAPI):
 
         return True
 
-    def execute_virt_install(self, *args, dry_run=True, **kwargs):
+    def execute_virt_install(
+        self, *args: Any, dry_run: bool = True, **kwargs: Any
+    ) -> bool:
         """Run `virt-install` command."""
         command = "/usr/bin/virt-install "
         command += "--name {hostname} "
@@ -409,6 +437,8 @@ class Libvirt(VirtualizationAPI):
             command += "--dry-run"
 
         command = command.format(**kwargs)
+        if self.conn is None:
+            raise Exception("Connection not established")
         logger.debug(command)
         _stdout, stderr, exitstatus = self.conn.execute(command)
 
@@ -417,13 +447,13 @@ class Libvirt(VirtualizationAPI):
 
         return True
 
-    def _create(self, vm, *args, **kwargs):
+    def _create(self, vm: "Machine", *args: Any, **kwargs: Any) -> bool:
         """
         Wrapper function for creating a VM.
 
         Steps:
             - check connection to host
-            - check maxinmum VM number limit
+            - check maximum VM number limit
             - check network bridge
             - check image source directory (if needed)
             - check Open Virtual Machine Firmware (OVMF) binary (if needed)
@@ -435,6 +465,9 @@ class Libvirt(VirtualizationAPI):
 
         from orthos2.data.models import ServerConfig
 
+        if self.conn is None:
+            raise Exception("Connection not established")
+
         bridge = ServerConfig.objects.by_key("virtualization.libvirt.bridge")
         image_directory = ServerConfig.objects.by_key(
             "virtualization.libvirt.images.directory"
@@ -442,28 +475,28 @@ class Libvirt(VirtualizationAPI):
         disk_image_directory = ServerConfig.objects.by_key(
             "virtualization.libvirt.images.install_directory"
         )
-        disk_image = "{}/{}.qcow2".format(disk_image_directory.rstrip("/"), "{}")
+        disk_image = "{}/{}.qcow2".format(disk_image_directory.rstrip("/"), "{}")  # type: ignore
         ovmf = ServerConfig.objects.by_key("virtualization.libvirt.ovmf.path")
 
         image_directory = "{}/{}/".format(
-            image_directory.rstrip("/"), kwargs["architecture"]
+            image_directory.rstrip("/"), kwargs["architecture"]  # type: ignore
         )
 
         if not self.check_connection():
             raise Exception("Host system not reachable!")
 
-        if self.host.get_virtual_machines().count() >= self.host.vm_max:
+        if self.host.get_virtual_machines().count() >= self.host.vm_max:  # type: ignore
             raise Exception("Maximum number of VMs reached!")
 
-        if not self.check_network_bridge(bridge=bridge):
+        if not self.check_network_bridge(bridge=bridge):  # type: ignore
             raise Exception("Network bridge setup failed!")
 
         if kwargs["image"] is not None:
             if not self.conn.check_path(image_directory, "-e"):
                 raise Exception("Image source directory missing on host system!")
 
-        if not self.conn.check_path(disk_image_directory, "-w"):
-            _stdout, stderr, exitstatus = self._execute(
+        if not self.conn.check_path(disk_image_directory, "-w"):  # type: ignore
+            _stdout, stderr, exitstatus = self._execute(  # type: ignore
                 "mkdir -p {}".format(disk_image_directory)
             )
             if exitstatus != 0:
@@ -473,7 +506,7 @@ class Libvirt(VirtualizationAPI):
                     )
                 )
         if kwargs["uefi_boot"]:
-            if not self.conn.check_path(ovmf, "-e"):
+            if not self.conn.check_path(ovmf, "-e"):  # type: ignore
                 raise Exception("OVMF file not found: '{}'!".format(ovmf))
             boot = "--boot loader={},network,hd".format(ovmf)
         else:
@@ -485,8 +518,8 @@ class Libvirt(VirtualizationAPI):
         vm.hypervisor = self.host
         vm.fqdn = "{}.{}".format(vm.hostname, self.host.fqdn_domain.name)
 
-        vnc_port = 5900 + int(vm.hostname.split("-")[1])
-        vm.vnc = {"enabled": kwargs["vnc"], "port": vnc_port}
+        vnc_port = 5900 + int(vm.hostname.split("-")[1])  # type: ignore
+        vm.vnc = {"enabled": kwargs["vnc"], "port": vnc_port}  # type: ignore
 
         vm.cpu_cores = self.calculate_vcpu()
 
@@ -513,7 +546,7 @@ class Libvirt(VirtualizationAPI):
         }
 
         networkinterfaces = self.generate_networkinterfaces(
-            amount=kwargs["networkinterfaces"], bridge=bridge
+            amount=kwargs["networkinterfaces"], bridge=bridge  # type: ignore
         )
 
         parameters = "--events on_reboot=restart,on_poweroff=destroy "
@@ -529,7 +562,7 @@ class Libvirt(VirtualizationAPI):
             disk=disk,
             networkinterfaces=networkinterfaces,
             boot=boot,
-            vnc=vm.vnc,
+            vnc=vm.vnc,  # type: ignore
             parameters=parameters,
         )
 
@@ -540,18 +573,18 @@ class Libvirt(VirtualizationAPI):
             disk=disk,
             networkinterfaces=networkinterfaces,
             boot=boot,
-            vnc=vm.vnc,
+            vnc=vm.vnc,  # type: ignore
             parameters=parameters,
             dry_run=False,
         )
 
-        vm.unsaved_networkinterfaces = []
+        vm.unsaved_networkinterfaces = []  # type: ignore
         for networkinterface in networkinterfaces:
-            vm.unsaved_networkinterfaces.append(networkinterface)
+            vm.unsaved_networkinterfaces.append(networkinterface)  # type: ignore
 
         return True
 
-    def _remove(self, vm) -> bool:
+    def _remove(self, vm: "Machine") -> bool:
         """Wrapper function for removing a VM (destroy domain > undefine domain).
 
         :return: Bool whether the VM could successfully be removed via virsh from Hypervisor
@@ -571,9 +604,9 @@ class Libvirt(VirtualizationAPI):
             return False
         return True
 
-    def destroy(self, vm):
+    def destroy(self, vm: "Machine") -> bool:
         """Destroy VM on host system. Ignore `domain is not running` error and proceed."""
-        _stdout, stderr, exitstatus = self._execute(
+        _stdout, stderr, exitstatus = self._execute(  # type: ignore
             "{} destroy {}".format(self.VIRSH, vm.hostname)
         )
         if exitstatus != 0:
@@ -584,9 +617,9 @@ class Libvirt(VirtualizationAPI):
 
         return True
 
-    def undefine(self, vm):
+    def undefine(self, vm: "Machine") -> bool:
         """Undefine VM on host system."""
-        _stdout, stderr, exitstatus = self._execute(
+        _stdout, stderr, exitstatus = self._execute(  # type: ignore
             "{} undefine {}".format(self.VIRSH, vm.hostname)
         )
         if exitstatus != 0:

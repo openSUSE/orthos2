@@ -1,6 +1,9 @@
+from typing import Any, List, Union
+
 from django.contrib.auth.models import AnonymousUser
-from django.http import HttpResponseRedirect
-from django.urls import re_path
+from django.http import HttpResponseRedirect, JsonResponse
+from django.urls import URLPattern, re_path
+from rest_framework.request import Request
 
 from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.serializers.misc import (
@@ -31,14 +34,18 @@ Example:
 """
 
     @staticmethod
-    def get_urls():
+    def get_urls() -> List[URLPattern]:
         return [
             re_path(r"^release$", ReleaseCommand.as_view(), name="release"),
         ]
 
-    def get(self, request, *args, **kwargs):
+    def get(
+        self, request: Request, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
         """Release a machine."""
         fqdn = request.GET.get("fqdn", None)
+        if fqdn is None:
+            return ErrorMessage("fqdn is required").as_json
 
         try:
             result = get_machine(fqdn, redirect_to="api:release", data=request.GET)

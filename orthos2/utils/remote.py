@@ -5,13 +5,14 @@
 # python3 /usr/lib/python3.*/site-packages/orthos2/utils/remote.py ls gatria-1.arch.suse.de
 
 import logging
+from typing import List, Tuple
 
 from orthos2.utils.misc import execute
 
 logger = logging.getLogger("utils")
 
 
-def single_quote(buf):
+def single_quote(buf: str) -> str:
     """
     Put the whole string into single quotes and escape
     single quotes via '\'' to properly pass shell commands via ssh
@@ -25,24 +26,17 @@ def single_quote(buf):
     return buf
 
 
-def ssh_execute(cmd, host, user="root", log_error=True):
+def ssh_execute(
+    cmd: str, host: str, user: str = "root", log_error: bool = True
+) -> Tuple[List[str], List[str], int]:
     """
     Get the output of a command remotly via SSH.
 
-    @type  cmd:       string
-    @param cmd:       The command to execute.
-    @type  host:      string
-    @type  log_error: bool
-    @param log_error: If True and ssh returns an error code, the stderr is written to the log.
-    @type  verbose:   bool
-    @param verbose:   If True, the ssh command and stderr are written to the log.
-    @param host:      The host on which the command should be executed.
-    @rtype:           string
-    @return:          The stdout output of the executed command.
-    @rtype:           string
-    @return:          The stderr output of the executed command.
-    @rtype:           int
-    @return:          The exit code of the executed command
+    :param cmd: The command to execute.
+    :param host: The host on which the command should be executed.
+    :param user: The username on the host where the command should be executed.
+    :param log_error: If True and ssh returns an error code, the stderr is written to the log.
+    :returns: A tuple of (stdout, stderr, return_code).
     """
     ssh_command = (
         "ssh -o UserKnownHostsFile=/dev/null "
@@ -55,24 +49,22 @@ def ssh_execute(cmd, host, user="root", log_error=True):
         logger.warning("ssh command: %s", ssh_command)
         logger.warning("stdout: %s", stdout)
 
-    stdout = stdout.splitlines()
-    stderr = stderr.splitlines()
-    stdout = stdout if stdout else []
-    stderr = stderr if stderr else []
+    stdout_split = stdout.splitlines()
+    stderr_split = stderr.splitlines()
+    stdout_split = stdout_split if stdout_split else []
+    stderr_split = stderr_split if stderr_split else []
 
-    return (stdout, stderr, err)
+    return stdout_split, stderr_split, err
 
 
-def scp_execute(source, target, user="root"):
+def scp_execute(source: str, target: str, user: str = "root") -> int:
     """
     Copy a file via SSH without host key checking.
 
-    @type  source:  string
-    @param source:  The full path and filename of the source.
-    @type  target:  string
-    @param target:  The full path and filename of the target.
-    @rtype:         int
-    @return:        0 if everything went well.
+    :param source: The full path and filename of the source.
+    :param target: The full path and filename of the target.
+    :param user: The username used to connect to the target host.
+    :returns: 0 if everything went well.
     """
     command = (
         "scp -o UserKnownHostsFile=/dev/null "
@@ -80,26 +72,4 @@ def scp_execute(source, target, user="root"):
         "-o ConnectTimeout=5 "
         "{} {}@{}".format(source, user, target)
     )
-    return execute(command)
-
-
-# Test ssh code above by passing:
-# cmd:  arg[0]
-# host: arg[1]
-if __name__ == "__main__":
-    import sys
-
-    if len(sys.argv) == 3:
-        args = sys.argv[1:]
-        cmd = args[0]
-        host = args[1]
-
-    stdout, stderr, err = ssh_execute(cmd, host)
-    # stdout, stderr, err = ssh_execute('/sbin/ip a', "gatria-1.arch.suse.de")
-    # stdout, stderr, err = scp_execute(cmd, host)
-    if err:
-        print("ERROR")
-        print(stderr)
-    else:
-        print("SUCCESS")
-        print(stdout)
+    return execute(command)[2]
