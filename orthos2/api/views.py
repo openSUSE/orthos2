@@ -18,7 +18,9 @@ def root(request: HttpRequest) -> JsonResponse:
         "user": request.user.username,
         "api": request.build_absolute_uri(reverse("api:root")),
         "web": request.build_absolute_uri(reverse("frontend:root")),
-        "message": ServerConfig.objects.by_key("orthos.api.welcomemessage"),
+        "message": ServerConfig.objects.by_key(
+            "orthos.api.welcomemessage", "Come in, reserve and play..."
+        ),
         "commands": {
             "info": commands.InfoCommand.description(),
             "query": commands.QueryCommand.description(),
