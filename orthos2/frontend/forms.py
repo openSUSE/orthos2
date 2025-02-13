@@ -141,6 +141,78 @@ class ReserveMachineForm(forms.Form):
             self.add_error("until", "Reservation period is limited (max. 90 days).")
 
 
+def get_vendors() -> List[Tuple[str, str]]:
+    vendors: List[Tuple[str, str]] = [("", "--all--")]
+    for vendor in Vendor.objects.all().values("id", "name"):
+        vendors.append((vendor["id"], vendor["name"]))  # type: ignore
+    return vendors
+
+
+def get_platforms() -> List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]]:
+    platforms: List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]] = [
+        ("", "--all--")
+    ]
+    groups: Dict[str, Tuple[Tuple[int, str], ...]] = {}
+    for platform in Platform.objects.all():
+        platform_id = platform.id
+        name = platform.name
+        vendor = platform.vendor
+
+        if platform.is_cartridge:
+            continue
+
+        if vendor.name in groups.keys():
+            groups[vendor.name] += ((platform_id, name),)
+        else:
+            groups[vendor.name] = ((platform_id, name),)
+
+    for vendor, platforms_ in groups.items():  # type: ignore
+        platforms.append((vendor, platforms_))  # type: ignore
+    return platforms
+
+
+def get_cartridge_platforms():
+    platforms = [("", "--all--")]
+    groups = {}
+    for platform in Platform.objects.all():
+        id = platform.id
+        name = platform.name
+        vendor = platform.vendor
+
+        if not platform.is_cartridge:
+            continue
+
+        if vendor.name in groups.keys():
+            groups[vendor.name] += ((id, name),)
+        else:
+            groups[vendor.name] = ((id, name),)
+
+    for vendor, platforms_ in groups.items():
+        platforms.append((vendor, platforms_))
+    return platforms
+
+
+def get_distributions():
+    installations = [("", "--all--")]
+    for installation in Installation.objects.all().values("distribution").distinct():
+        installations.append(
+            (installation["distribution"], installation["distribution"])
+        )
+    return installations
+
+
+def get_systems():
+    """Return system choices."""
+    return Machine._meta.get_field("system").get_choices(blank_choice=[("", "--all--")])
+
+
+def get_architectures():
+    """Return architecture choices."""
+    return Machine._meta.get_field("architecture").get_choices(
+        blank_choice=[("", "--all--")]
+    )
+
+
 class SearchForm(forms.Form):
     def clean(self) -> None:
         cleaned_data = super(SearchForm, self).clean()
@@ -174,109 +246,33 @@ class SearchForm(forms.Form):
             except ValueError:
                 self.add_error("cpu_cores", "Value must be a number.")
 
-    @staticmethod
-    def get_vendors() -> List[Tuple[str, str]]:
-        vendors: List[Tuple[str, str]] = [("", "--all--")]
-        for vendor in Vendor.objects.all().values("id", "name"):
-            vendors.append((vendor["id"], vendor["name"]))  # type: ignore
-        return vendors
-
-    @staticmethod
-    def get_platforms() -> List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]]:
-        platforms: List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]] = [
-            ("", "--all--")
-        ]
-        groups: Dict[str, Tuple[Tuple[int, str], ...]] = {}
-        for platform in Platform.objects.all():
-            id = platform.id
-            name = platform.name
-            vendor = platform.vendor
-
-            if platform.is_cartridge:
-                continue
-
-            if vendor.name in groups.keys():
-                groups[vendor.name] += ((id, name),)
-            else:
-                groups[vendor.name] = ((id, name),)
-
-        for vendor, platforms_ in groups.items():  # type: ignore
-            platforms.append((vendor, platforms_))  # type: ignore
-        return platforms
-
-    @staticmethod
-    def get_cartridge_platforms():
-        platforms = [("", "--all--")]
-        groups = {}
-        for platform in Platform.objects.all():
-            id = platform.id
-            name = platform.name
-            vendor = platform.vendor
-
-            if not platform.is_cartridge:
-                continue
-
-            if vendor.name in groups.keys():
-                groups[vendor.name] += ((id, name),)
-            else:
-                groups[vendor.name] = ((id, name),)
-
-        for vendor, platforms_ in groups.items():
-            platforms.append((vendor, platforms_))
-        return platforms
-
-    @staticmethod
-    def get_distributions():
-        installations = [("", "--all--")]
-        for installation in (
-            Installation.objects.all().values("distribution").distinct()
-        ):
-            installations.append(
-                (installation["distribution"], installation["distribution"])
-            )
-        return installations
-
-    @staticmethod
-    def get_systems():
-        """Return system choices."""
-        return Machine._meta.get_field("system").get_choices(
-            blank_choice=[("", "--all--")]
-        )
-
-    @staticmethod
-    def get_architectures():
-        """Return architecture choices."""
-        return Machine._meta.get_field("architecture").get_choices(
-            blank_choice=[("", "--all--")]
-        )
-
     enclosure__platform__vendor = forms.ChoiceField(
         required=False,
-        choices=(get_vendors),
+        choices=get_vendors,
         widget=forms.Select(attrs={"class": "custom-select form-control"}),
     )
 
     enclosure__platform = forms.ChoiceField(
         required=False,
-        choices=(get_platforms),
+        choices=get_platforms,
         widget=forms.Select(attrs={"class": "custom-select form-control"}),
     )
 
     platform = forms.ChoiceField(
         required=False,
-        choices=(get_cartridge_platforms),
+        choices=get_cartridge_platforms,
         widget=forms.Select(attrs={"class": "custom-select form-control"}),
     )
 
     system = forms.ChoiceField(
         required=False,
-        choices=(get_systems),
+        choices=get_systems,
         widget=forms.Select(attrs={"class": "custom-select form-control"}),
     )
 
     architecture = forms.ChoiceField(
         required=False,
-        choices=(get_architectures),
+        choices=get_architectures,
         widget=forms.Select(attrs={"class": "custom-select form-control"}),
     )
 
