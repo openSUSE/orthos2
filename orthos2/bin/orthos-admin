@@ -2,4 +2,4 @@
 
 # Django wrapper script for orthos server managmenent
 
-sudo -i -u orthos DJANGO_SETTINGS_MODULE=orthos2.settings django-admin $@
+sudo -i -u orthos DJANGO_SETTINGS_MODULE=orthos2.settings django-admin-3.11 $@
