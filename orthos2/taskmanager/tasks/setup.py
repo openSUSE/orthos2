@@ -38,8 +38,8 @@ class SetupMachine(Task):
 
             try:
                 logger.debug("trying %s for setup", server.fqdn)
-                cobbler_server = CobblerServer(server.fqdn, domain)  # type: ignore
-                cobbler_server.setup(machine, self.choice)  # type: ignore
+                cobbler_server = CobblerServer(domain)
+                cobbler_server.setup(machine, self.choice)
 
             except CobblerException as e:
                 logger.warning(
