@@ -110,8 +110,6 @@ class UpdateCobblerMachine(Task):
                     logger.exception(message)
                 else:
                     logger.exception(message)
-        except SSH.Exception as e:
-            logger.exception(e)
         except Domain.DoesNotExist:
             logger.error("No Domain with id %s, aborting", self._domain_id)
         except Domain.MultipleObjectsReturned:

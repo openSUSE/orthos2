@@ -944,7 +944,9 @@ def login(
     }
     context.update(extra_context)
 
-    welcome_message = ServerConfig.objects.by_key("orthos.web.welcomemessage")
+    welcome_message = ServerConfig.objects.by_key(
+        "orthos.web.welcomemessage", "Come in, reserve and play..."
+    )
 
     if welcome_message:
         messages.info(request, mark_safe(welcome_message))

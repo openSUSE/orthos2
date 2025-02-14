@@ -51,12 +51,10 @@ Installation/Setup (Production system)
     .. code-block::
 
         systemctl enable nginx
-        systemctl enable orthos2.socket
         systemctl enable orthos2.service
         systemctl enable orthos2_taskmanager
 
         systemctl start nginx
-        systemctl start orthos2.socket
         systemctl start orthos2.service
         systemctl start orthos2_taskmanager
 

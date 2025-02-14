@@ -9,7 +9,7 @@ StartLimitBurst=2
 [Service]
 User=orthos
 Group=orthos
-ExecStart=/usr/sbin/uwsgi --ini /etc/orthos2/orthos2.ini --plugin python3
+ExecStart=/usr/bin/gunicorn orthos2.wsgi:application
 
 Restart=on-failure
 RestartSec=5s
