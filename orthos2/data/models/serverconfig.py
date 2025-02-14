@@ -24,21 +24,23 @@ class ServerConfigManager(models.Manager["ServerConfig"]):
             logger.exception("Key '%s': %s", key, e)
         return fallback
 
-    def bool_by_key(self, key: str) -> bool:
+    def bool_by_key(self, key: str, fallback: bool = False) -> bool:
         """
         Return a boolean value by key.
 
-        Valid DB values are 'bool:true' (string) and 'bool:false'
-        (string). If the value is not valid, `False` gets returned.
+        Valid DB values are 'bool:true' and 'bool:false' (both strings). If the value is not valid, `False` gets
+        returned.
+
+        :param key: The key to retrieve.
+        :param fallback: Returns false per default in case the key doesn't exist.
+        :returns: True in case the boolean in the database is true.
         """
         try:
             obj = ServerConfig.objects.get(key=key)
-
-            if obj.value.lower() == "bool:true":
-                return True
-        except Exception as e:
-            logger.exception("Key '%s': %s", key, e)
-        return False
+            return obj.value.lower() == "bool:true"
+        except ServerConfig.DoesNotExist as e:
+            logger.warning('Key "%s" did not exist, returning fallback value', key, e)
+            return fallback
 
     def list_by_key(self, key: str, delimiter: str = ",") -> Optional[List[str]]:
         """Return a list of strings seperated by `delimiter`."""
