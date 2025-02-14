@@ -9,11 +9,10 @@ StartLimitBurst=5
 [Service]
 User=orthos
 Group=orthos
-ExecStart=/usr/bin/orthos-admin taskmanager --start
-
+Environment=DJANGO_SETTINGS_MODULE=orthos2.settings
+ExecStart=/usr/bin/django-admin taskmanager --start
 Restart=on-failure
 RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target
-
