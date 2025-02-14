@@ -39,6 +39,10 @@ class SetupMachine(Task):
             try:
                 logger.debug("trying %s for setup", server.fqdn)
                 cobbler_server = CobblerServer(domain)
+                if self.choice is None:
+                    self.choice = machine.architecture.default_profile
+                if self.choice is None:
+                    self.choice = ""
                 cobbler_server.setup(machine, self.choice)
 
             except CobblerException as e:

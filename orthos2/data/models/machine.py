@@ -1055,7 +1055,7 @@ class Machine(models.Model):
         reservationhistory.save()
 
         if self.autoreinstall:
-            self.setup()
+            self.setup(self.architecture.default_profile)
         else:
             self.update_motd()
 
