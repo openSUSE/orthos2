@@ -762,6 +762,7 @@ class Machine(models.Model):
                 # Add the machine to the new Cobbler system
                 # TODO: check if machine is known to us, and also a cobbler server
                 new_domain_id = self.fqdn_domain.pk
+                # FIXME: Get IP from Cobbler instead of DNS resolving it
                 self.__ipv4 = get_ipv4(self.fqdn)
                 self.__ipv6 = get_ipv6(self.fqdn)
                 from orthos2.data.signals import signal_cobbler_machine_update

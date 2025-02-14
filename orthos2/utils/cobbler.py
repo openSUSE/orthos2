@@ -242,6 +242,7 @@ class CobblerServer:
         :param object_id: ID of object to be added.
         :param save: Whether to save the machine or not.
         """
+        # FIXME: Get IP from Cobbler instead of DNS resolving it
         interface_options = {
             "macaddress-default": machine.mac_address,
             "ipaddress-default": machine.ipv4 or "",
