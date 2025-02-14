@@ -234,7 +234,7 @@ class CobblerServer:
         :param machine: Machine that should be added or updated.
         :param save: Whether to save the machine or not.
         """
-        system_handle = self._xmlrpc_server.get_system_handle(machine.fqdn)
+        system_handle = self._xmlrpc_server.get_system_handle(machine.fqdn, self._token)
         interface_options = {
             "interfacemaster-default": True,
             "macaddress-default": machine.mac_address,
@@ -261,7 +261,7 @@ class CobblerServer:
         :param save: Whether to save the machine or not.
         """
         bmc = machine.bmc
-        system_handle = self._xmlrpc_server.get_system_handle(machine.fqdn)
+        system_handle = self._xmlrpc_server.get_system_handle(machine.fqdn, self._token)
         interface_options = {
             "interfacetype-bmc": "bmc",
             "macaddress-bmc": bmc.mac,
@@ -287,7 +287,7 @@ class CobblerServer:
         """
         console = machine.serialconsole
 
-        system_handle = self._xmlrpc_server.get_system_handle(machine.fqdn)
+        system_handle = self._xmlrpc_server.get_system_handle(machine.fqdn, self._token)
         self._xmlrpc_server.modify_system(
             system_handle, "serial_device", console.kernel_device_num, self._token
         )
@@ -342,7 +342,7 @@ class CobblerServer:
                 "Fence for machine %s couldn't be retrieved via RemotePowerType!"
                 % machine.fqdn
             )
-        system_handle = self._xmlrpc_server.get_system_handle(machine.fqdn)
+        system_handle = self._xmlrpc_server.get_system_handle(machine.fqdn, self._token)
 
         self._xmlrpc_server.modify_system(
             system_handle, "power_type", fence.fence, self._token
@@ -424,7 +424,7 @@ class CobblerServer:
         :param netboot_state: Whether to enable or disable the netboot state.
         :param save: Whether to save the machine or not.
         """
-        system_handle = self._xmlrpc_server.get_system_handle(machine.fqdn)
+        system_handle = self._xmlrpc_server.get_system_handle(machine.fqdn, self._token)
         self._xmlrpc_server.modify_system(
             system_handle, "netboot_enabled", netboot_state, self._token
         )
@@ -554,7 +554,7 @@ class CobblerServer:
             self._cobbler_server.fqdn,
             choice,
         )
-        object_id = self._xmlrpc_server.get_system_handle(machine.fqdn)
+        object_id = self._xmlrpc_server.get_system_handle(machine.fqdn, self._token)
         if choice:
             self._xmlrpc_server.modify_system(
                 object_id, "profile", f"{machine.architecture}:{choice}", self._token
