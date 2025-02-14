@@ -191,6 +191,8 @@ class CobblerServer:
                     machine=machine.fqdn
                 )
             )
+        if not self._xmlrpc_server.has_item("profile", default_profile, self._token):
+            raise CobblerException("default profile didn't exist on cobbler server")
         tftp_server = get_tftp_server(machine)
         kernel_options = machine.kernel_options if machine.kernel_options else ""
 
