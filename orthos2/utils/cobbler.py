@@ -243,7 +243,6 @@ class CobblerServer:
         :param save: Whether to save the machine or not.
         """
         interface_options = {
-            "interfacemaster-default": True,
             "macaddress-default": machine.mac_address,
             "ipaddress-default": machine.ipv4 or "",
             "ipv6address-default": machine.ipv6 or "",
