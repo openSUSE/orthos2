@@ -463,6 +463,11 @@ class Libvirt(VirtualizationAPI):
             - run `virt-install`
         """
 
+        parameters = "--events on_reboot=restart,on_poweroff=destroy "
+        parameters += "--noautoconsole "
+        parameters += "--autostart "
+        parameters += kwargs["parameters"]
+
         from orthos2.data.models import ServerConfig
 
         if self.conn is None:
@@ -528,6 +533,7 @@ class Libvirt(VirtualizationAPI):
         disk_image = disk_image.format(vm.hostname)
 
         if kwargs["image"] is not None:
+            parameters += "--import "
             image = "{}/{}".format(image_directory.rstrip("/"), kwargs["image"])
 
             if not self.copy_image(image, disk_image):
@@ -548,12 +554,6 @@ class Libvirt(VirtualizationAPI):
         networkinterfaces = self.generate_networkinterfaces(
             amount=kwargs["networkinterfaces"], bridge=bridge  # type: ignore
         )
-
-        parameters = "--events on_reboot=restart,on_poweroff=destroy "
-        parameters += "--import "
-        parameters += "--noautoconsole "
-        parameters += "--autostart "
-        parameters += kwargs["parameters"]
 
         self.execute_virt_install(
             hostname=vm.hostname,
