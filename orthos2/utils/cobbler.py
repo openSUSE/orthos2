@@ -578,6 +578,7 @@ class CobblerServer:
         self.set_netboot_state(machine, True)
         self._xmlrpc_server.save_system(object_id, self._token, "bypass")
 
+    @login_required
     def powerswitch(self, machine: "Machine", action: str) -> str:
         if not self.is_running():
             raise CobblerException(
