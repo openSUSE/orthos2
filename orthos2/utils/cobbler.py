@@ -280,6 +280,7 @@ class CobblerServer:
             "ipaddress-bmc": get_ipv4(bmc.fqdn),
             "ipv6address-bmc": get_ipv6(bmc.fqdn),
             "hostname-bmc": get_hostname(bmc.fqdn),
+            "dnsname-bmc": bmc.fqdn,
         }
         self._xmlrpc_server.modify_system(
             object_id, "modify_interface", interface_options, self._token
