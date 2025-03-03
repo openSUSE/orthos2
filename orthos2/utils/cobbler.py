@@ -196,7 +196,10 @@ class CobblerServer:
         tftp_server = get_tftp_server(machine)
         kernel_options = machine.kernel_options if machine.kernel_options else ""
 
-        object_id = self._xmlrpc_server.new_system(self._token)
+        if save == CobblerSaveModes.NEW:
+            object_id = self._xmlrpc_server.new_system(self._token)
+        else:
+            object_id = self._xmlrpc_server.get_system_handle(machine.fqdn, self._token)
         if not isinstance(object_id, str):
             raise TypeError("Cobbler System ID must be a string!")
         self._xmlrpc_server.modify_system(object_id, "name", machine.fqdn, self._token)
