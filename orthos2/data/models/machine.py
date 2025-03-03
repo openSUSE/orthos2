@@ -797,7 +797,10 @@ class Machine(models.Model):
         if update_sconsole:
             from orthos2.data.signals import signal_serialconsole_regenerate
 
-            if hasattr(self.fqdn_domain, "cscreen_server"):
+            if (
+                hasattr(self.fqdn_domain, "cscreen_server")
+                and self.fqdn_domain.cscreen_server is not None
+            ):
                 cscreen_server_fqdn = self.fqdn_domain.cscreen_server.fqdn  # type: ignore
                 signal_serialconsole_regenerate.send(
                     sender=self.__class__, cscreen_server_fqdn=cscreen_server_fqdn
