@@ -196,7 +196,10 @@ class CobblerServer:
         tftp_server = get_tftp_server(machine)
         kernel_options = machine.kernel_options if machine.kernel_options else ""
 
-        object_id = self._xmlrpc_server.new_system(self._token)
+        if save == CobblerSaveModes.NEW:
+            object_id = self._xmlrpc_server.new_system(self._token)
+        else:
+            object_id = self._xmlrpc_server.get_system_handle(machine.fqdn, self._token)
         if not isinstance(object_id, str):
             raise TypeError("Cobbler System ID must be a string!")
         self._xmlrpc_server.modify_system(object_id, "name", machine.fqdn, self._token)
@@ -277,6 +280,7 @@ class CobblerServer:
             "ipaddress-bmc": get_ipv4(bmc.fqdn),
             "ipv6address-bmc": get_ipv6(bmc.fqdn),
             "hostname-bmc": get_hostname(bmc.fqdn),
+            "dnsname-bmc": bmc.fqdn,
         }
         self._xmlrpc_server.modify_system(
             object_id, "modify_interface", interface_options, self._token
@@ -578,6 +582,7 @@ class CobblerServer:
         self.set_netboot_state(machine, True)
         self._xmlrpc_server.save_system(object_id, self._token, "bypass")
 
+    @login_required
     def powerswitch(self, machine: "Machine", action: str) -> str:
         if not self.is_running():
             raise CobblerException(
@@ -589,15 +594,14 @@ class CobblerServer:
         task_id = self._xmlrpc_server.background_power_system(
             background_power_options, self._token
         )
+        if not isinstance(task_id, str):
+            raise TypeError("Background power system returned incorrect data type")
         try:
             max_tries = 30
             tries = 0
             # Below code cannot be type checked since we don't want to save the data to a
             # variable and the XML-RPC API doesn't know what type the other end will return.
-            while (
-                self._xmlrpc_server.get_task_status(task_id)[2] == "running"  # type: ignore
-                and tries < max_tries
-            ):
+            while self.__get_task_status(task_id) == "running" and tries < max_tries:
                 tries += 1
                 logger.debug("Waiting for power task to finish (%s)", tries)
                 time.sleep(2)
@@ -622,3 +626,25 @@ class CobblerServer:
                     error=xmlrpc_fault.faultString,
                 )
             ) from xmlrpc_fault
+
+    def __get_task_status(self, event_id: str) -> str:
+        """
+        Wrapper method to have a type safe way to check the event status.
+
+        :param event_id: The event ID to query the API for.
+        :returns: A normalized version of the current event status.
+        """
+        event_result_obj = self._xmlrpc_server.get_task_status(event_id)
+        if not isinstance(event_result_obj, list):
+            raise TypeError(
+                "Cobbler server returned incorrect data type for event result"
+            )
+        event_status = event_result_obj[2]
+        if not isinstance(event_status, str):
+            raise TypeError(
+                "Cobbler Server returned incorrect data type for event status"
+            )
+        if event_status == "notification":
+            # This is a bug that Cobbler has in the 3.3.7 release.
+            return "running"
+        return event_status

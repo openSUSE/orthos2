@@ -163,15 +163,15 @@ class RemotePower(models.Model):
 
     def get_status(self) -> int:
         """Return the current power status."""
-        status = self.Status.UNKNOWN
         result = self._perform("status")
         if not result:
             raise RuntimeError("recieved no result from _perform('status')")
-        result = "\n".join(result)
 
-        if result.lower().find("off") > -1:
+        if result.lower().find("failed to execute power task on") > -1:
+            status = self.Status.UNKNOWN
+        elif result.lower().find("status: off") > -1:
             status = self.Status.OFF
-        elif result.lower().find("on") > -1:
+        elif result.lower().find("status: on") > -1:
             status = self.Status.ON
         else:
             raise RuntimeError("Inconclusive result from _perform('status')")

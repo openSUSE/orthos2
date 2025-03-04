@@ -663,96 +663,82 @@ class Machine(models.Model):
             # check if DHCP needs to be regenerated
             if self.mac_address != self._original.mac_address:
                 self.delete_secondary_interfaces()
-            try:
-                assert self.mac_address == self._original.mac_address
-                assert self.fqdn == self._original.fqdn
-                assert self.fqdn_domain == self._original.fqdn_domain
-                assert self.architecture == self._original.architecture
-                assert self.group == self._original.group
-                assert self.dhcp_filename == self._original.dhcp_filename
-                assert self.kernel_options == self._original.kernel_options
-                if hasattr(self, "bmc"):
-                    assert hasattr(self._original, "bmc")
-                    assert self.bmc.mac == self._original.bmc.mac
-                    assert self.bmc.fqdn == self._original.bmc.fqdn
-            except AssertionError:
+            if any(
+                [
+                    self.mac_address != self._original.mac_address,
+                    self.fqdn != self._original.fqdn,
+                    self.fqdn_domain != self._original.fqdn_domain,
+                    self.architecture != self._original.architecture,
+                    self.group != self._original.group,
+                    self.dhcp_filename != self._original.dhcp_filename,
+                    self.kernel_options != self._original.kernel_options,
+                ]
+            ):
                 sync_dhcp = True
                 update_machine = True
-            try:
-                if hasattr(self, "bmc"):
-                    assert hasattr(self._original, "bmc")
-                    assert self.bmc.username == self._original.bmc.username
-                    assert self.bmc.password == self._original.bmc.password
-                if self.has_remotepower():
-                    assert hasattr(self._original, "remotepower")
-                    assert (
+            if self.has_bmc():
+                if not hasattr(self._original, "bmc"):
+                    # BMC added
+                    sync_dhcp = True
+                    update_machine = True
+                    update_sconsole = True
+                if hasattr(self._original, "bmc") and any(
+                    [
+                        self.bmc.mac != self._original.bmc.mac,
+                        self.bmc.fqdn != self._original.bmc.fqdn,
+                        self.bmc.username != self._original.bmc.username,
+                        self.bmc.password != self._original.bmc.password,
+                    ]
+                ):
+                    # BMC updated
+                    sync_dhcp = True
+                    update_machine = True
+                    update_sconsole = True
+            if self.has_remotepower():
+                if not hasattr(self._original, "remotepower") or not hasattr(
+                    self._original, "remote_power_device"
+                ):
+                    # Remotepower or remote power device added
+                    update_machine = True
+                if hasattr(self._original, "remotepower") and any(
+                    [
                         self.remotepower.fence_name
-                        == self._original.remotepower.fence_name
-                    )
-                    assert (
-                        self.remotepower.options == self._original.remotepower.options
-                    )
-                    if hasattr(self.remotepower, "remote_power_device"):
-                        assert hasattr(
-                            self._original.remotepower, "remote_power_device"
-                        )
-                        assert (
-                            self.remotepower.remote_power_device
-                            == self._original.remotepower.remote_power_device
-                        )
-                if self.has_serialconsole():
-                    assert hasattr(self._original, "serialconsole")
-                    assert (
+                        != self._original.remotepower.fence_name,
+                        self.remotepower.options != self._original.remotepower.options,
+                    ]
+                ):
+                    # Remotepower updated
+                    update_machine = True
+                if hasattr(self.remotepower, "remote_power_device") and any(
+                    [
+                        not hasattr(self._original.remotepower, "remote_power_device"),
+                        self.remotepower.remote_power_device
+                        != self._original.remotepower.remote_power_device,
+                    ]
+                ):
+                    # Remote power device updated
+                    update_machine = True
+            if self.has_serialconsole():
+                if not hasattr(self._original, "serialconsole"):
+                    # Serial console added
+                    update_sconsole = True
+                    update_machine = True
+                if hasattr(self._original, "serialconsole") and any(
+                    [
                         self.serialconsole.baud_rate
-                        == self._original.serialconsole.baud_rate
-                    )
-                    assert (
+                        != self._original.serialconsole.baud_rate,
                         self.serialconsole.command
-                        == self._original.serialconsole.command
-                    )
-                    assert (
-                        self.serialconsole.stype == self._original.serialconsole.stype
-                    )
-                    assert (
+                        != self._original.serialconsole.command,
+                        self.serialconsole.stype == self._original.serialconsole.stype,
                         self.serialconsole.kernel_device
-                        == self._original.serialconsole.kernel_device
-                    )
-                    assert (
+                        != self._original.serialconsole.kernel_device,
                         self.serialconsole.kernel_device_num
-                        == self._original.serialconsole.kernel_device_num
-                    )
-            except AssertionError:
-                update_machine = True
-            try:
-                if hasattr(self, "bmc"):
-                    assert hasattr(self._original, "bmc")
-                    assert self.bmc.mac == self._original.bmc.mac
-                    assert self.bmc.fqdn == self._original.bmc.fqdn
-                    assert self.bmc.username == self._original.bmc.username
-                    assert self.bmc.password == self._original.bmc.password
-                if self.has_serialconsole():
-                    assert hasattr(self._original, "serialconsole")
-                    assert (
-                        self.serialconsole.baud_rate
-                        == self._original.serialconsole.baud_rate
-                    )
-                    assert (
-                        self.serialconsole.command
-                        == self._original.serialconsole.command
-                    )
-                    assert (
-                        self.serialconsole.stype == self._original.serialconsole.stype
-                    )
-                    assert (
-                        self.serialconsole.kernel_device
-                        == self._original.serialconsole.kernel_device
-                    )
-                    assert (
-                        self.serialconsole.kernel_device_num
-                        == self._original.serialconsole.kernel_device_num
-                    )
-            except AssertionError:
-                update_sconsole = True
+                        != self._original.serialconsole.kernel_device_num,
+                    ]
+                ):
+                    # Serial console updated
+                    update_sconsole = True
+                    update_machine = True
 
             if self.fqdn_domain != self._original.fqdn_domain:
                 logger.info(f"Domain change for: %s", self.fqdn)
@@ -797,7 +783,10 @@ class Machine(models.Model):
         if update_sconsole:
             from orthos2.data.signals import signal_serialconsole_regenerate
 
-            if hasattr(self.fqdn_domain, "cscreen_server"):
+            if (
+                hasattr(self.fqdn_domain, "cscreen_server")
+                and self.fqdn_domain.cscreen_server is not None
+            ):
                 cscreen_server_fqdn = self.fqdn_domain.cscreen_server.fqdn  # type: ignore
                 signal_serialconsole_regenerate.send(
                     sender=self.__class__, cscreen_server_fqdn=cscreen_server_fqdn
