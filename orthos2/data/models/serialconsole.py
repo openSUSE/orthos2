@@ -202,8 +202,8 @@ A value of 1 might end up in console=ttyS1 kernel command line paramter.""",
         prefix = 'screen -t {{ machine.hostname|ljust:"20" }} -L '
         template = self.stype.command
 
-        username = ServerConfig.objects.by_key("serialconsole.ipmi.username")
-        password = ServerConfig.objects.by_key("serialconsole.ipmi.password")
+        username = ServerConfig.objects.by_key("serialconsole.ipmi.username", "")
+        password = ServerConfig.objects.by_key("serialconsole.ipmi.password", "")
 
         if username is None or password is None:
             return None
@@ -211,10 +211,12 @@ A value of 1 might end up in console=ttyS1 kernel command line paramter.""",
         ipmi: Dict[str, str] = {"user": username, "password": password}
 
         bmc = None
-        if hasattr(self.machine, "bmc"):
+        if self.machine.has_bmc():
             bmc = self.machine.bmc
             if bmc.username:
-                ipmi = {"user": bmc.username, "password": bmc.password}
+                ipmi["username"] = bmc.username
+            if bmc.password:
+                ipmi["password"] = bmc.password
 
         context = Context(
             {
