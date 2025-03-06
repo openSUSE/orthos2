@@ -197,9 +197,9 @@ class SSH(object):
         retval = ("", "", 1)
 
         remotescript_directory = ServerConfig.ssh.get_remote_scripts_directory()
-        remotescript = os.path.join(remotescript_directory, script)  # type: ignore
+        remotescript = os.path.join(remotescript_directory, script)
         localscript = os.path.join(
-            ServerConfig.ssh.get_local_scripts_directory(), script  # type: ignore
+            ServerConfig.ssh.get_local_scripts_directory(), script
         )
 
         if not self._sftp:

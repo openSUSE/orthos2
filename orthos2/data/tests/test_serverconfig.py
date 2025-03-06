@@ -41,11 +41,11 @@ class GeneralManagerTest(TestCase):
         ServerConfig.objects.filter(key=SSH_TIMEOUT).delete()
 
     def test_get_remote_scripts_dir(self) -> None:
-        """Method should return a path, None otherwise."""
-        assert ServerConfig.ssh.get_remote_scripts_directory() is None
+        """Method should always return a path."""
+        assert ServerConfig.ssh.get_remote_scripts_directory() == "/tmp/orthos2"
 
         ServerConfig(key=SSH_REMOTE_DIR).save()
-        assert ServerConfig.ssh.get_remote_scripts_directory() is None
+        assert ServerConfig.ssh.get_remote_scripts_directory() == "/tmp/orthos2"
         ServerConfig.objects.filter(key=SSH_REMOTE_DIR).delete()
 
         ServerConfig(key=SSH_REMOTE_DIR, value="/tmp").save()
@@ -53,11 +53,15 @@ class GeneralManagerTest(TestCase):
         ServerConfig.objects.filter(key=SSH_REMOTE_DIR).delete()
 
     def test_get_local_scripts_dir(self) -> None:
-        """Method should return a path, None otherwise."""
-        assert ServerConfig.ssh.get_local_scripts_directory() is None
+        """Method should always return a path."""
+        assert (
+            ServerConfig.ssh.get_local_scripts_directory() == "/usr/lib/orthos2/scripts"
+        )
 
         ServerConfig(key=SSH_LOCAL_DIR).save()
-        assert ServerConfig.ssh.get_local_scripts_directory() is None
+        assert (
+            ServerConfig.ssh.get_local_scripts_directory() == "/usr/lib/orthos2/scripts"
+        )
         ServerConfig.objects.filter(key=SSH_LOCAL_DIR).delete()
 
         ServerConfig(key=SSH_LOCAL_DIR, value="/tmp").save()
