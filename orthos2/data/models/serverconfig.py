@@ -134,8 +134,9 @@ class ServerConfigSSHManager(ServerConfigManager):
             logger.exception("SSH timeout value is no number/integer")
         return None
 
-    def get_remote_scripts_directory(self) -> Optional[str]:
+    def get_remote_scripts_directory(self) -> str:
         """Return a path where remote executed scripts (host side) should be placed."""
+        default_scripts_directory = "/tmp/orthos2"
         try:
             obj: Optional[ServerConfig]
             obj = ServerConfig.objects.get(key="ssh.scripts.remote.directory")
@@ -143,13 +144,20 @@ class ServerConfigSSHManager(ServerConfigManager):
             if obj and obj.value:
                 return obj.value
             else:
-                logger.warning("Remote scripts directory entry is empty")
+                logger.warning(
+                    "Remote scripts directory entry is empty, returning %s",
+                    default_scripts_directory,
+                )
         except ServerConfig.DoesNotExist:
-            logger.warning("No remote scripts directory entry found")
-        return None
+            logger.info(
+                "No remote scripts directory entry found, returning %s",
+                default_scripts_directory,
+            )
+        return default_scripts_directory
 
-    def get_local_scripts_directory(self) -> Optional[str]:
+    def get_local_scripts_directory(self) -> str:
         """Return a path to the local scripts directory (server side)."""
+        default_scripts_directory = "/usr/lib/orthos2/scripts"
         try:
             obj: Optional[ServerConfig]
             obj = ServerConfig.objects.get(key="ssh.scripts.local.directory")
@@ -157,10 +165,16 @@ class ServerConfigSSHManager(ServerConfigManager):
             if obj and obj.value:
                 return obj.value
             else:
-                logger.warning("Local scripts directory entry is empty")
+                logger.info(
+                    "Local scripts directory entry is empty, returning %s",
+                    default_scripts_directory,
+                )
         except ServerConfig.DoesNotExist:
-            logger.warning("No local scripts directory entry found")
-        return None
+            logger.info(
+                "No local scripts directory entry found, returning %s",
+                default_scripts_directory,
+            )
+        return default_scripts_directory
 
 
 class ServerConfig(models.Model):
