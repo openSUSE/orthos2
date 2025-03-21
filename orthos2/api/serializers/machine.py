@@ -217,3 +217,23 @@ class MachineSerializer(serializers.ModelSerializer[Machine]):
             result[name] = {"label": field.label, "value": data[name]}
 
         return result
+
+    def get_status_ipv4(self, obj: "Machine") -> str:
+        """
+        Dynamically called method by SerializerMethodField of ``status_ipv4``.
+
+        :param obj: The machine to be serialized.
+        :returns: The string representation of the enum value.
+        """
+        # get_FOO_display() is a magic method of choice model fields.
+        return obj.get_status_ipv4_display()
+
+    def get_status_ipv6(self, obj: "Machine") -> str:
+        """
+        Dynamically called method by SerializerMethodField of ``status_ipv4``.
+
+        :param obj: The machine to be serialized.
+        :returns: The string representation of the enum value.
+        """
+        # get_FOO_display() is a magic method of choice model fields.
+        return obj.get_status_ipv6_display()
