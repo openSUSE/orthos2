@@ -5,8 +5,8 @@ window.addEventListener("load", function () {
                 's390x': ['zVM', 'zKVM', 'LPAR zSeries'],
                 'x86_64': ['BareMetal', 'KVM', 'XEN', 'HMC'],
 
-                'ppc64': ['LPAR PowerPC', 'PowerVM', 'KVM', 'HMC'],
-                'ppc64le': ['LPAR PowerPC', 'PowerVM', 'KVM', 'HMC'],
+                'ppc64': ['LPAR PowerPC', 'PowerVM', 'KVM', 'HMC', 'BareMetal'],
+                'ppc64le': ['LPAR PowerPC', 'PowerVM', 'KVM', 'HMC', 'BareMetal'],
 
                 'aarch64': ['BareMetal', 'KVM'],
                 'embedded': ['BareMetal', 'Storage Array', 'FC Switch', 'Network Switch', 'Omni-Path Switch']
