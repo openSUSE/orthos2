@@ -214,7 +214,7 @@ A value of 1 might end up in console=ttyS1 kernel command line paramter.""",
         if self.machine.has_bmc():
             bmc = self.machine.bmc
             if bmc.username:
-                ipmi["username"] = bmc.username
+                ipmi["user"] = bmc.username
             if bmc.password:
                 ipmi["password"] = bmc.password
 
