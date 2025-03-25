@@ -1,0 +1,126 @@
+[
+  {
+    "model": "data.architecture",
+    "pk": null,
+    "fields": {
+      "name": "x86_64",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.domain",
+    "pk": null,
+    "fields": {
+      "name": "example.our-org.tld"
+    }
+  },
+  {
+    "model": "data.platform",
+    "pk": null,
+    "fields": {
+      "name": "Other",
+      "vendor": 1
+    }
+  },
+  {
+    "model": "data.enclosure",
+    "pk": null,
+    "fields": {
+      "name": "test",
+      "platform": 1,
+      "description": "test enclosure"
+    }
+  },
+  {
+    "model": "data.machine",
+    "pk": null,
+    "fields": {
+      "enclosure": 1,
+      "fqdn": "test.testing.suse.de",
+      "system": 1,
+      "comment": "test machine",
+      "serial_number": "SN12345678",
+      "product_code": "ABC-123",
+      "architecture": 1,
+      "fqdn_domain_id": 1,
+      "cpu_model": "Intel(R) Celeron(R) CPU 1037U @ 1.80GHz",
+      "cpu_flags": "fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer xsave lahf_lm arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid fsgsbase smep erms",
+      "cpu_physical": 2,
+      "cpu_cores": 4,
+      "cpu_threads": 8,
+      "cpu_speed": 869.835,
+      "ram_amount": 8192,
+      "efi": true,
+      "nda": false,
+      "ipmi": true,
+      "reserved_until": "9999-12-31T23:59:59.999+00:00",
+      "reserved_reason": "test infinite reservation",
+      "vm_capable": true,
+      "vm_dedicated_host": true,
+      "virt_api_int": 0,
+      "platform": 1,
+      "disk_type": "scsi controller",
+      "last": "root      Sat Dec 10 01:19",
+      "status_ssh": true,
+      "status_login": true,
+      "administrative": false,
+      "updated": "2016-01-01T10:00:00+00:00",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.installation",
+    "pk": null,
+    "fields": {
+      "machine": 1,
+      "active": true,
+      "architecture": 1,
+      "distribution": "SLES12 SP2",
+      "kernelversion": "3.16.7-48-git.e24f360",
+      "partition": "/dev/sda1"
+    }
+  },
+  {
+    "model": "data.networkinterface",
+    "pk": null,
+    "fields": {
+      "machine": 1,
+      "primary": true,
+      "mac_address": "00:11:22:33:44:55",
+      "ethernet_type": "Twisted pair",
+      "driver_module": "",
+      "name": "eth0",
+      "updated": "2016-01-01T10:00:00+00:00",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.networkinterface",
+    "pk": null,
+    "fields": {
+      "machine": 1,
+      "primary": false,
+      "mac_address": "12:34:56:78:90:aa",
+      "ethernet_type": "Twisted pair",
+      "driver_module": "",
+      "name": "eth1",
+      "updated": "2016-01-01T10:00:00+00:00",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.networkinterface",
+    "pk": null,
+    "fields": {
+      "machine": 1,
+      "primary": false,
+      "mac_address": "aa:bb:cc:dd:ee:ff",
+      "ethernet_type": "",
+      "driver_module": "",
+      "name": "eth2",
+      "updated": "2016-01-01T10:00:00+00:00",
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  }
+]
