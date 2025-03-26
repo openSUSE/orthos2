@@ -1,5 +1,7 @@
+import datetime
 from typing import TYPE_CHECKING, Any, Dict
 
+from django.utils import timezone
 from rest_framework import serializers
 
 from orthos2.api.serializers.annotation import AnnotationSerializer
@@ -65,6 +67,24 @@ class BMCListingField(BMCSerializer):
         return result
 
 
+class DateTimeInfiniteField(serializers.DateTimeField):
+    def to_representation(self, value: "datetime.datetime") -> str:
+        if value.date() == datetime.date.max:
+            current_time_offset = datetime.datetime.now(
+                tz=timezone.get_current_timezone()
+            ).utcoffset()
+            if current_time_offset is None:
+                raise RuntimeError("Timezone could not be determined!")
+            custom_max = (
+                datetime.datetime.combine(
+                    datetime.date.max, datetime.time.max, tzinfo=datetime.timezone.utc
+                )
+                - current_time_offset
+            )
+            return super().to_representation(custom_max)
+        return super().to_representation(value)
+
+
 class MachineSerializer(serializers.ModelSerializer[Machine]):
 
     enclosure = serializers.StringRelatedField()  # type: ignore
@@ -76,6 +96,7 @@ class MachineSerializer(serializers.ModelSerializer[Machine]):
     networkinterfaces = NetworkInterfaceListingField(many=True)
 
     reserved_by = serializers.StringRelatedField()  # type: ignore
+    reserved_until = DateTimeInfiniteField()
 
     installations = InstallationListingField(many=True)
 
@@ -217,3 +238,23 @@ class MachineSerializer(serializers.ModelSerializer[Machine]):
             result[name] = {"label": field.label, "value": data[name]}
 
         return result
+
+    def get_status_ipv4(self, obj: "Machine") -> str:
+        """
+        Dynamically called method by SerializerMethodField of ``status_ipv4``.
+
+        :param obj: The machine to be serialized.
+        :returns: The string representation of the enum value.
+        """
+        # get_FOO_display() is a magic method of choice model fields.
+        return obj.get_status_ipv4_display()
+
+    def get_status_ipv6(self, obj: "Machine") -> str:
+        """
+        Dynamically called method by SerializerMethodField of ``status_ipv4``.
+
+        :param obj: The machine to be serialized.
+        :returns: The string representation of the enum value.
+        """
+        # get_FOO_display() is a magic method of choice model fields.
+        return obj.get_status_ipv6_display()

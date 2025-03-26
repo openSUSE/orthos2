@@ -277,11 +277,15 @@ class CobblerServer:
         interface_options = {
             "interfacetype-bmc": "bmc",
             "macaddress-bmc": bmc.mac,
-            "ipaddress-bmc": get_ipv4(bmc.fqdn),
-            "ipv6address-bmc": get_ipv6(bmc.fqdn),
             "hostname-bmc": get_hostname(bmc.fqdn),
             "dnsname-bmc": bmc.fqdn,
         }
+        ipv4_address = get_ipv4(bmc.fqdn)
+        if ipv4_address is not None:
+            interface_options["ipaddress-bmc"] = ipv4_address
+        ipv6_address = get_ipv6(bmc.fqdn)
+        if ipv6_address is not None:
+            interface_options["ipv6address-bmc"] = ipv6_address
         self._xmlrpc_server.modify_system(
             object_id, "modify_interface", interface_options, self._token
         )

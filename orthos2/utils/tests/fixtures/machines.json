@@ -11,8 +11,8 @@
   "pk": null,
   "fields": {
     "name": "x86_64",
-    "updated": "2022-05-10",
-    "created": "2022-05-10"
+    "updated": "2022-05-10T11:00:00+00:00",
+    "created": "2022-05-10T10:00:00+00:00"
   }
 },
 {
@@ -107,7 +107,7 @@
     "vm_max": 5,
     "vm_dedicated_host": false,
     "vm_auto_delete": false,
-    "reserved_until": "9999-12-31",
+    "reserved_until": "9999-12-31T23:59:59.999+00:00",
     "reserved_reason": "test HOS",
     "platform": null,
     "bios_version": "",
