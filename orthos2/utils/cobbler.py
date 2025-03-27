@@ -314,34 +314,6 @@ class CobblerServer:
         self._xmlrpc_server.modify_system(
             object_id, "serial_baud_rate", console.baud_rate, self._token
         )
-        if console.kernel_device != "None":
-            system_dict = self._xmlrpc_server.get_system(machine.fqdn)
-            if not isinstance(system_dict, dict):
-                raise TypeError(
-                    'System details for system "%s" must be a dict.' % machine.fqdn
-                )
-            current_kernel_options = system_dict.get("kernel_options", {})
-            if not isinstance(current_kernel_options, (dict, str)):
-                raise TypeError(
-                    'Kernel options for system "%s" must be a dict or str.'
-                    % machine.fqdn
-                )
-            if isinstance(current_kernel_options, str):
-                if current_kernel_options == "<<inherit>>":
-                    new_kernel_options: Dict[str, str] = {}
-                else:
-                    raise TypeError(
-                        'Kernel options for system "%s" were neither inherit nor a dictionary.'
-                        % machine.fqdn
-                    )
-            else:
-                new_kernel_options = current_kernel_options.copy()
-            new_kernel_options[
-                "console"
-            ] = f"{console.kernel_device}{console.kernel_device_num},{console.baud_rate}"
-            self._xmlrpc_server.modify_system(
-                object_id, "kernel_options", new_kernel_options, self._token
-            )
         if save != CobblerSaveModes.SKIP:
             self._xmlrpc_server.save_system(object_id, self._token, save.value)
 
