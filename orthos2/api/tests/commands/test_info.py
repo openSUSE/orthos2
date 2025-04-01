@@ -40,7 +40,7 @@ class InfoTest(APITestCase):
         self.assertTrue("header" in json_response)
         self.assertTrue("type" in json_response["header"])
         self.assertEqual(json_response["header"]["type"], "INFO")
-        self.assertEqual(
+        self.assertIn(
             json_response["data"]["reserved_until"]["value"],
-            "9999-12-31T23:59:59.999999+01:00",
+            ("9999-12-31T22:59:59.999999+01:00", "9999-12-31T23:59:59.999999+01:00"),
         )

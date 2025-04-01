@@ -184,6 +184,9 @@ class CobblerServer:
         :param machine: Machine to be added or updated.
         :param save: Whether to save the machine or not.
         """
+        old_machine_has_bmc = False
+        old_machine_has_remote_power = False
+        old_machine_has_serial_console = False
         default_profile = get_default_profile(machine)
         if not default_profile:
             raise CobblerException(
@@ -200,6 +203,16 @@ class CobblerServer:
             object_id = self._xmlrpc_server.new_system(self._token)
         else:
             object_id = self._xmlrpc_server.get_system_handle(machine.fqdn, self._token)
+            old_machine_dict = self._get_cobbler_datastructure(machine)
+            if "bmc" in old_machine_dict.get("interfaces", {}):
+                old_machine_has_bmc = True
+            if (
+                old_machine_dict.get("serial_device", -1) > -1
+                and old_machine_dict.get("serial_baud_rate", -1) > -1
+            ):
+                old_machine_has_serial_console = True
+            if old_machine_dict.get("power_type", "") != "":
+                old_machine_has_remote_power = True
         if not isinstance(object_id, str):
             raise TypeError("Cobbler System ID must be a string!")
         self._xmlrpc_server.modify_system(object_id, "name", machine.fqdn, self._token)
@@ -218,10 +231,16 @@ class CobblerServer:
                 self._xmlrpc_server.modify_system(
                     object_id, "next_server_v4", ipv4, self._token
                 )
+        if old_machine_has_bmc and not machine.has_bmc():
+            self.remove_bmc(object_id, save)
         if machine.has_bmc():
             self.add_bmc(machine, object_id)
+        if old_machine_has_remote_power and not machine.has_remotepower():
+            self.remove_power_options(object_id, save)
         if machine.has_remotepower():
             self.add_power_options(machine, object_id)
+        if old_machine_has_serial_console and not machine.has_serialconsole():
+            self.remove_serial_console(object_id, save)
         if machine.has_serialconsole():
             self.add_serial_console(machine, object_id)
         self._xmlrpc_server.modify_system(
@@ -314,34 +333,6 @@ class CobblerServer:
         self._xmlrpc_server.modify_system(
             object_id, "serial_baud_rate", console.baud_rate, self._token
         )
-        if console.kernel_device != "None":
-            system_dict = self._xmlrpc_server.get_system(machine.fqdn)
-            if not isinstance(system_dict, dict):
-                raise TypeError(
-                    'System details for system "%s" must be a dict.' % machine.fqdn
-                )
-            current_kernel_options = system_dict.get("kernel_options", {})
-            if not isinstance(current_kernel_options, (dict, str)):
-                raise TypeError(
-                    'Kernel options for system "%s" must be a dict or str.'
-                    % machine.fqdn
-                )
-            if isinstance(current_kernel_options, str):
-                if current_kernel_options == "<<inherit>>":
-                    new_kernel_options: Dict[str, str] = {}
-                else:
-                    raise TypeError(
-                        'Kernel options for system "%s" were neither inherit nor a dictionary.'
-                        % machine.fqdn
-                    )
-            else:
-                new_kernel_options = current_kernel_options.copy()
-            new_kernel_options[
-                "console"
-            ] = f"{console.kernel_device}{console.kernel_device_num},{console.baud_rate}"
-            self._xmlrpc_server.modify_system(
-                object_id, "kernel_options", new_kernel_options, self._token
-            )
         if save != CobblerSaveModes.SKIP:
             self._xmlrpc_server.save_system(object_id, self._token, save.value)
 
@@ -499,6 +490,61 @@ class CobblerServer:
                 machine.fqdn,
                 xmlrpc_fault.faultString,
             )
+
+    @login_required
+    def remove_bmc(
+        self, object_id: str, save: CobblerSaveModes = CobblerSaveModes.SKIP
+    ) -> None:
+        """
+        Remove the virtual network interface that is present to represent the out-of-band management.
+
+        :param object_id: ID of object to be added.
+        :param save: Whether to save the machine or not.
+        """
+        self._xmlrpc_server.modify_system(
+            object_id, "delete_interface", "bmc", self._token
+        )
+        if save != CobblerSaveModes.SKIP:
+            self._xmlrpc_server.save_system(object_id, self._token, save.value)
+
+    @login_required
+    def remove_serial_console(
+        self, object_id: str, save: CobblerSaveModes = CobblerSaveModes.SKIP
+    ) -> None:
+        """
+        Remove the options that are representing the serial console kernel options.
+
+        :param object_id: ID of object to be added.
+        :param save: Whether to save the machine or not.
+        """
+        self._xmlrpc_server.modify_system(object_id, "serial_device", -1, self._token)
+        self._xmlrpc_server.modify_system(
+            object_id, "serial_baud_rate", -1, self._token
+        )
+        if save != CobblerSaveModes.SKIP:
+            self._xmlrpc_server.save_system(object_id, self._token, save.value)
+
+    @login_required
+    def remove_power_options(
+        self, object_id: str, save: CobblerSaveModes = CobblerSaveModes.SKIP
+    ) -> None:
+        """
+        Remove the options that are allowing for remote power operations.
+
+        :param object_id: ID of object to be added.
+        :param save: Whether to save the machine or not.
+        """
+        self._xmlrpc_server.modify_system(object_id, "power_type", "", self._token)
+        self._xmlrpc_server.modify_system(object_id, "power_user", "", self._token)
+        self._xmlrpc_server.modify_system(
+            object_id, "power_identity_file", "", self._token
+        )
+        self._xmlrpc_server.modify_system(object_id, "power_pass", "", self._token)
+        self._xmlrpc_server.modify_system(object_id, "power_id", "", self._token)
+        self._xmlrpc_server.modify_system(object_id, "power_address", "", self._token)
+        self._xmlrpc_server.modify_system(object_id, "power_options", "", self._token)
+        if save != CobblerSaveModes.SKIP:
+            self._xmlrpc_server.save_system(object_id, self._token, save.value)
 
     @login_required
     def sync_dhcp(self) -> None:
