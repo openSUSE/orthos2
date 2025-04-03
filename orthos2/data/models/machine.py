@@ -37,8 +37,6 @@ from orthos2.utils.misc import (
     Serializer,
     get_domain,
     get_hostname,
-    get_ipv4,
-    get_ipv6,
     get_s390_hostname,
     is_dns_resolvable,
 )
@@ -60,7 +58,7 @@ def validate_dns(value: str) -> None:
 
 
 def check_permission(
-    function: Callable[Concatenate["Machine", P], R]
+    function: Callable[Concatenate["Machine", P], R],
 ) -> Callable[Concatenate["Machine", P], R]:
     """Return decorator for checking machine specific methods."""
 
@@ -507,11 +505,15 @@ class Machine(models.Model):
     )
     hostname: Optional[str] = None
 
-    __ipv4: Optional[str] = None
-
-    __ipv6: Optional[str] = None
-
     mac_address: Optional[str] = None
+
+    ip_address_v4 = models.GenericIPAddressField(
+        protocol="IPv4", unique=True, null=True, blank=True
+    )
+
+    ip_address_v6 = models.GenericIPAddressField(
+        protocol="IPv6", unique=True, null=True, blank=True
+    )
 
     # Runtime object created on virt_api_int in init()
     virtualization_api = None
@@ -748,9 +750,6 @@ class Machine(models.Model):
                 # Add the machine to the new Cobbler system
                 # TODO: check if machine is known to us, and also a cobbler server
                 new_domain_id = self.fqdn_domain.pk
-                # FIXME: Get IP from Cobbler instead of DNS resolving it
-                self.__ipv4 = get_ipv4(self.fqdn)
-                self.__ipv6 = get_ipv6(self.fqdn)
                 from orthos2.data.signals import signal_cobbler_machine_update
 
                 signal_cobbler_machine_update.send(
@@ -792,18 +791,6 @@ class Machine(models.Model):
                 signal_serialconsole_regenerate.send(
                     sender=self.__class__, cscreen_server_fqdn=cscreen_server_fqdn
                 )
-
-    @property
-    def ipv4(self) -> Optional[str]:
-        if self.__ipv4 is None:
-            self.__ipv4 = get_ipv4(self.fqdn)
-        return self.__ipv4
-
-    @property
-    def ipv6(self) -> Optional[str]:
-        if self.__ipv6 is None:
-            self.__ipv6 = get_ipv6(self.fqdn)
-        return self.__ipv6
 
     @property
     def status_ping(self) -> bool:
