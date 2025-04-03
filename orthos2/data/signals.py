@@ -38,6 +38,7 @@ signal_motd_regenerate = Signal()
 @receiver(pre_save, sender=Machine)
 def machine_pre_save(sender: Any, instance: Machine, *args: Any, **kwargs: Any) -> None:
     """Prevent saving machine object if MAC address is already in use (exclude own interfaces)."""
+    # FIXME: Get rid of this signal
 
     exclude = []
     if hasattr(instance, "networkinterfaces") and instance.pk:
@@ -102,6 +103,7 @@ def machine_post_init(
     sender: Any, instance: Machine, *args: Any, **kwargs: Any
 ) -> None:
     """Post init action for machine. Set non-database saved values here."""
+    # FIXME: Get rid of this signal --> This work should be done by the python property
     if instance.pk:
         try:
             instance.hostname = get_hostname(instance.fqdn)

@@ -3,12 +3,14 @@
 import datetime
 import socket
 from typing import List, NamedTuple, Optional
+
 import django.core.validators
-from django.db import migrations, models
 import django.db.models.deletion
-import orthos2.data.validators
 from django.apps.registry import Apps
+from django.db import migrations, models
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
+
+import orthos2.data.validators
 
 
 class DNSLookupTuple(NamedTuple):
@@ -75,28 +77,28 @@ def get_ipv6(fqdn: str) -> Optional[str]:
 
 
 def set_ipv4_machine_defaults(apps: Apps, schema_editor: BaseDatabaseSchemaEditor):
-    Machine = apps.get_model("machine", "Machine")
+    Machine = apps.get_model("data", "Machine")
     for machine in Machine.objects.all().iterator():
         machine.ip_address_v4 = get_ipv4(machine.fqdn)
         machine.save()
 
 
 def set_ipv6_machine_defaults(apps: Apps, schema_editor: BaseDatabaseSchemaEditor):
-    Machine = apps.get_model("machine", "Machine")
+    Machine = apps.get_model("data", "Machine")
     for machine in Machine.objects.all().iterator():
         machine.ip_address_v6 = get_ipv6(machine.fqdn)
         machine.save()
 
 
 def set_ipv4_bmc_defaults(apps: Apps, schema_editor: BaseDatabaseSchemaEditor):
-    BMC = apps.get_model("bmc", "BMC")
+    BMC = apps.get_model("data", "BMC")
     for bmc in BMC.objects.all().iterator():
         bmc.ip_address_v4 = get_ipv4(bmc.fqdn)
         bmc.save()
 
 
 def set_ipv6_bmc_defaults(apps: Apps, schema_editor: BaseDatabaseSchemaEditor):
-    BMC = apps.get_model("bmc", "BMC")
+    BMC = apps.get_model("data", "BMC")
     for bmc in BMC.objects.all().iterator():
         bmc.ip_address_v6 = get_ipv6(bmc.fqdn)
         bmc.save()

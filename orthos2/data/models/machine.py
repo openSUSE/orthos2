@@ -238,7 +238,7 @@ class Machine(models.Model):
         max_length=200,
         blank=False,
         unique=True,
-        validators=[validate_dns, validate_domain_ending],
+        validators=[validate_domain_ending],
         db_index=True,
         help_text="The Fully Qualified Domain Name of the main network interface of the machine",
     )
@@ -503,16 +503,28 @@ class Machine(models.Model):
         on_delete=models.SET_NULL,
         help_text="The physical host this virtual machine is running on",
     )
+
+    # FIXME: Convert mac_address, hostname, ip_address_v4, ip_address_v6 into Python property (IPs stored in network interface)
     hostname: Optional[str] = None
 
     mac_address: Optional[str] = None
 
     ip_address_v4 = models.GenericIPAddressField(
-        protocol="IPv4", unique=True, null=True, blank=True
+        protocol="IPv4",
+        unique=True,
+        null=True,
+        blank=True,
+        verbose_name="IPv4 address",
+        help_text="IPv4 address",
     )
 
     ip_address_v6 = models.GenericIPAddressField(
-        protocol="IPv6", unique=True, null=True, blank=True
+        protocol="IPv6",
+        unique=True,
+        null=True,
+        blank=True,
+        verbose_name="IPv6 address",
+        help_text="IPv6 address",
     )
 
     # Runtime object created on virt_api_int in init()
@@ -611,7 +623,7 @@ class Machine(models.Model):
         """
         self.fqdn = self.fqdn.lower()
 
-        validate_dns(self.fqdn)
+        validate_domain_ending(self.fqdn)
 
         if not self.mac_address and not self.unknown_mac:
             raise ValidationError(

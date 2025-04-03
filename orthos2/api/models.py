@@ -722,7 +722,9 @@ class APIQuery:
 
         return fields
 
-    def _prepare_conditions(self, conditions_str: str) -> Tuple[
+    def _prepare_conditions(
+        self, conditions_str: str
+    ) -> Tuple[
         List[Tuple[QueryField, str, Union[bool, int]]],
         List[str],
         List[Dict[str, Length]],

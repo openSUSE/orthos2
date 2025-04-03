@@ -20,9 +20,12 @@ from orthos2.data.models import (
     Domain,
     DomainAdmin,
     Enclosure,
+    IPRangeV4,
+    IPRangeV6,
     Machine,
     MachineGroup,
     MachineGroupMembership,
+    Network,
     NetworkInterface,
     Platform,
     RemotePower,
@@ -63,7 +66,11 @@ class BMCInline(admin.StackedInline):
     ):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
-        return super(BMCInline, self).get_formset(request, obj, **kwargs)
+        formset = super(BMCInline, self).get_formset(request, obj, **kwargs)
+        # FIXME: Here we need a method that proposes a free IP address
+        formset.form.base_fields["ip_address_v4"].initial = "127.0.0.1"
+        formset.form.base_fields["ip_address_v6"].initial = "::1"
+        return formset
 
 
 class SerialConsoleInline(admin.StackedInline):
@@ -195,6 +202,8 @@ class NetworkInterfaceInline(admin.TabularInline):
         "driver_module",
     )
 
+    # FIXME: Allow adding PRIMARY interface manually and remove mac, ipv4, ipv6 from dhcp section
+
     def has_add_permission(self, request, obj=None) -> bool:
         """Network interfaces get added by machine scan."""
         return False
@@ -285,6 +294,8 @@ class MachineAdminForm(forms.ModelForm):
         """
         Only collect system information if connectivity is set to `Full`.
         """
+        # FIXME: Verify that IP comes from an existing network
+        # FIXME: Verify that IP is not taken --> Search in NetworkInterface database
         cleaned_data = self.cleaned_data
 
         check_connectivity = cleaned_data.get("check_connectivity")
@@ -476,7 +487,6 @@ class MachineAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     ("fqdn", "enclosure"),
-                    "mac_address",
                     "architecture",
                     "system",
                     "group",
@@ -495,7 +505,6 @@ class MachineAdmin(admin.ModelAdmin):
                     ("administrative", "nda"),
                     "autoreinstall",
                     "active",
-                    "unknown_mac",
                 )
             },
         ),
@@ -522,11 +531,24 @@ class MachineAdmin(admin.ModelAdmin):
         (
             "DHCP",
             {
-                "fields": ("dhcp_filename",),
+                "fields": (
+                    "unknown_mac",
+                    "mac_address",
+                    "ip_address_v4",
+                    "ip_address_v6",
+                    "dhcp_filename",
+                ),
             },
         ),
     )
     autocomplete_fields = ["hypervisor"]
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(MachineAdmin, self).get_form(request, obj, **kwargs)
+        # FIXME: Here we need a method that proposes a free IP address
+        form.base_fields["ip_address_v4"].initial = "127.0.0.1"
+        form.base_fields["ip_address_v6"].initial = "::1"
+        return form
 
     def get_queryset(self, request):
         """
@@ -849,3 +871,6 @@ class MachineGroupAdmin(admin.ModelAdmin):
 
 admin.site.register(MachineGroup, MachineGroupAdmin)
 admin.site.register(Vendor)
+admin.site.register(Network)
+admin.site.register(IPRangeV4)
+admin.site.register(IPRangeV6)

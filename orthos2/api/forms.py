@@ -27,7 +27,6 @@ from orthos2.data.models import (
     SerialConsoleType,
     System,
     is_unique_mac_address,
-    validate_dns,
     validate_mac_address,
 )
 from orthos2.data.models.domain import validate_domain_ending
@@ -266,7 +265,7 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
     fqdn = forms.CharField(
         label="FQDN",
         max_length=200,
-        validators=[validate_dns, validate_domain_ending],
+        validators=[validate_domain_ending],
     )
 
     enclosure = forms.CharField(

@@ -17,11 +17,21 @@ class BMC(models.Model):
     )
 
     ip_address_v4 = models.GenericIPAddressField(
-        protocol="IPv4", blank=True, unique=True, null=True
+        protocol="IPv4",
+        blank=True,
+        unique=True,
+        null=True,
+        verbose_name="IPv4 address",
+        help_text="IPv4 address",
     )
 
     ip_address_v6 = models.GenericIPAddressField(
-        protocol="IPv6", blank=True, unique=True, null=True
+        protocol="IPv6",
+        blank=True,
+        unique=True,
+        null=True,
+        verbose_name="IPv6 address",
+        help_text="IPv6 address",
     )
 
     def natural_key(self) -> str:

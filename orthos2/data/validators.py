@@ -3,8 +3,8 @@ import re
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.utils.deconstruct import deconstructible
-from django.utils.translation import gettext_lazy as _
 from django.utils.regex_helper import _lazy_re_compile  # type: ignore
+from django.utils.translation import gettext_lazy as _
 
 
 # Copied from django/core/validators.py
