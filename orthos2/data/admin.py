@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 from django import forms
 from django.contrib import admin, messages
@@ -11,6 +11,7 @@ from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.urls import URLPattern, re_path, reverse
 from django.utils.html import format_html
+from netaddr import IPNetwork, IPAddress
 
 from orthos2.api.forms import RemotePowerDeviceAPIForm
 from orthos2.data.models import (
@@ -20,8 +21,6 @@ from orthos2.data.models import (
     Domain,
     DomainAdmin,
     Enclosure,
-    IPRangeV4,
-    IPRangeV6,
     Machine,
     MachineGroup,
     MachineGroupMembership,
@@ -39,6 +38,38 @@ from orthos2.data.models import (
     validate_mac_address,
 )
 from orthos2.utils.remotepowertype import RemotePowerType
+
+
+def suggest_ip(protocol: Literal[4, 6], network: str, subnet: int) -> str:
+    """
+    Currently unused, will be used as soon we can move away from django admin.
+    """
+    net = IPNetwork(f"{network}/{subnet}")
+    network_ip_bits = int(net.ip) >> ((32 if net.version == 4 else 128) - subnet)
+    used_ips: set[IPAddress] = set()
+
+    # Get all interfaces with the same net address
+    if protocol == 4:
+        for intf in NetworkInterface.objects.all():
+            ip = IPAddress(intf.ip_address_v4, 4)
+            intf_ip_bits = int(ip) >> (32 - subnet)
+            if intf_ip_bits == network_ip_bits:
+                used_ips.add(ip)
+    if protocol == 6:
+        for intf in NetworkInterface.objects.all():
+            ip = IPAddress(intf.ip_address_v6, 6)
+            intf_ip_bits = int(ip) >> (128 - subnet)
+            if intf_ip_bits == network_ip_bits:
+                used_ips.add(ip)
+
+    # Now filter all used IPs, which leaves the free ones.
+    free_ips = set(net) - used_ips
+
+    # Check if there are any free IPs left to give out.
+    if len(free_ips) == 0:
+        return "127.0.0.1" if protocol == 4 else "::1"
+
+    return str(next(iter(free_ips)))
 
 
 class BMCInlineFormset(forms.models.BaseInlineFormSet):
@@ -872,5 +903,3 @@ class MachineGroupAdmin(admin.ModelAdmin):
 admin.site.register(MachineGroup, MachineGroupAdmin)
 admin.site.register(Vendor)
 admin.site.register(Network)
-admin.site.register(IPRangeV4)
-admin.site.register(IPRangeV6)

@@ -56,6 +56,24 @@ class NetworkInterface(models.Model):
         validators=[validate_mac_address],
     )
 
+    ip_address_v4 = models.GenericIPAddressField(
+        protocol="IPv4",
+        unique=True,
+        null=True,
+        blank=True,
+        verbose_name="IPv4 address",
+        help_text="IPv4 address",
+    )
+
+    ip_address_v6 = models.GenericIPAddressField(
+        protocol="IPv6",
+        unique=True,
+        null=True,
+        blank=True,
+        verbose_name="IPv6 address",
+        help_text="IPv6 address",
+    )
+
     ethernet_type = models.CharField(
         max_length=100,
         blank=True,

@@ -504,29 +504,6 @@ class Machine(models.Model):
         help_text="The physical host this virtual machine is running on",
     )
 
-    # FIXME: Convert mac_address, hostname, ip_address_v4, ip_address_v6 into Python property (IPs stored in network interface)
-    hostname: Optional[str] = None
-
-    mac_address: Optional[str] = None
-
-    ip_address_v4 = models.GenericIPAddressField(
-        protocol="IPv4",
-        unique=True,
-        null=True,
-        blank=True,
-        verbose_name="IPv4 address",
-        help_text="IPv4 address",
-    )
-
-    ip_address_v6 = models.GenericIPAddressField(
-        protocol="IPv6",
-        unique=True,
-        null=True,
-        blank=True,
-        verbose_name="IPv6 address",
-        help_text="IPv6 address",
-    )
-
     # Runtime object created on virt_api_int in init()
     virtualization_api = None
 
@@ -607,6 +584,31 @@ class Machine(models.Model):
 
     def __str__(self) -> str:
         return self.fqdn
+
+    @property
+    def ip_address_v4(self):
+        intf = self.get_primary_networkinterface()
+        if intf is None:
+            return None
+        return intf.ip_address_v4
+
+    @property
+    def ip_address_v6(self):
+        intf = self.get_primary_networkinterface()
+        if intf is None:
+            return None
+        return intf.ip_address_v6
+
+    @property
+    def hostname(self) -> Optional[str]:
+        return get_hostname(self.fqdn)
+
+    @property
+    def mac_address(self) -> Optional[str]:
+        intf = self.get_primary_networkinterface()
+        if intf is None:
+            return None
+        return intf.mac_address
 
     def bmc_allowed(self) -> bool:
         return self.system.allowBMC

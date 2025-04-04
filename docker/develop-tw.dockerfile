@@ -11,7 +11,8 @@ RUN zypper in -y \
     openldap2-devel \
     cyrus-sasl-devel \
     jq \
-    sudo
+    sudo \
+    git
 
 # Install requirements via zypper
 RUN zypper in -y \
@@ -35,8 +36,9 @@ RUN zypper in -y \
     iputils
 
 # Create required user
+ARG USER=1000
 RUN groupadd -r orthos
-RUN useradd -r -g orthos -d /var/lib/orthos2 -s /bin/bash -c "orthos account" orthos
+RUN useradd -r -u $USER -g orthos -d /var/lib/orthos2 -s /bin/bash -c "orthos account" orthos
 
 # Create required directories
 RUN mkdir -p /var/log/orthos2
