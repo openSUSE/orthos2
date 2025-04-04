@@ -8,6 +8,7 @@ from .enclosure import *  # noqa: F403
 from .installation import *  # noqa: F403
 from .machine import *  # noqa: F403
 from .machinegroup import MachineGroup, MachineGroupMembership
+from .network import Network
 from .networkinterface import *  # noqa: F403
 from .platform import *  # noqa: F403
 from .remotepower import *  # noqa: F403

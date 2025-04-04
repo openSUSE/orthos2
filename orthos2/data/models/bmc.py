@@ -16,6 +16,24 @@ class BMC(models.Model):
         choices=remotepower_type_choices, max_length=255, verbose_name="Fence agent"
     )
 
+    ip_address_v4 = models.GenericIPAddressField(
+        protocol="IPv4",
+        blank=True,
+        unique=True,
+        null=True,
+        verbose_name="IPv4 address",
+        help_text="IPv4 address",
+    )
+
+    ip_address_v6 = models.GenericIPAddressField(
+        protocol="IPv6",
+        blank=True,
+        unique=True,
+        null=True,
+        verbose_name="IPv6 address",
+        help_text="IPv6 address",
+    )
+
     def natural_key(self) -> str:
         return self.fqdn
 

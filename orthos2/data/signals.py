@@ -6,7 +6,6 @@ from typing import Any, Optional
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models.signals import (
     post_delete,
-    post_init,
     post_save,
     pre_delete,
     pre_save,
@@ -23,7 +22,7 @@ from orthos2.data.models import (
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.cobbler import CobblerServer
-from orthos2.utils.misc import Serializer, get_hostname
+from orthos2.utils.misc import Serializer
 
 logger = logging.getLogger("orthos")
 
@@ -38,6 +37,7 @@ signal_motd_regenerate = Signal()
 @receiver(pre_save, sender=Machine)
 def machine_pre_save(sender: Any, instance: Machine, *args: Any, **kwargs: Any) -> None:
     """Prevent saving machine object if MAC address is already in use (exclude own interfaces)."""
+    # FIXME: Get rid of this signal
 
     exclude = []
     if hasattr(instance, "networkinterfaces") and instance.pk:
@@ -95,21 +95,6 @@ def machine_post_save(
                 primary_networkinterface.delete()
             else:
                 instance.scan("networkinterfaces")
-
-
-@receiver(post_init, sender=Machine)
-def machine_post_init(
-    sender: Any, instance: Machine, *args: Any, **kwargs: Any
-) -> None:
-    """Post init action for machine. Set non-database saved values here."""
-    if instance.pk:
-        try:
-            instance.hostname = get_hostname(instance.fqdn)
-            pm = instance.get_primary_networkinterface()
-            if pm:
-                instance.mac_address = pm.mac_address
-        except Exception as e:
-            logger.warning("Errors occurred during machine init: '%s': %s", instance, e)
 
 
 @receiver(pre_delete, sender=Machine)

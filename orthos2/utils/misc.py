@@ -8,7 +8,7 @@ from datetime import date, datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
-from typing import TYPE_CHECKING, Any, List, NamedTuple, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Type, Union
 
 import validators  # type: ignore
 from django import forms
@@ -39,73 +39,6 @@ def get_domain(fqdn: str) -> str:
 def get_hostname(fqdn: str) -> str:
     """Return hostname of FQDN."""
     return fqdn.split(".")[0]
-
-
-class DNSLookupTuple(NamedTuple):
-    """
-    Describes a DNS lookup done by the application.
-    """
-
-    ipv4: List[str]
-    ipv6: List[str]
-
-
-def get_ip(fqdn: str, ip_version: int = 4) -> Optional[DNSLookupTuple]:
-    """
-    Return all IP addresses for FQDN.
-
-    Use `ip_version` to specify which IP version gets returned.
-
-    IP versions (`ip_version`):
-        4  - ['192.168.0.1', ...]
-        6  - ['0:0:0:0:0:ffff:c0a8:1', ...]
-        10 - (['192.168.0.1', ...], [0:0:0:0:0:ffff:c0a8:1, ...])
-    """
-    ipv4: List[str] = []
-    ipv6: List[str] = []
-
-    try:
-        result = socket.getaddrinfo(fqdn, None, 0, socket.SOCK_STREAM, socket.SOL_TCP)
-
-        for address_family in result:
-            if address_family[0] == socket.AF_INET:
-                ipv4.append(address_family[4][0])
-            elif address_family[0] == socket.AF_INET6:
-                ipv6.append(address_family[4][0])
-    except (IndexError, socket.gaierror) as e:
-        logger.exception(
-            "DNS lookup for '%s': NXDOMAIN (non-existing domain) (%s)", fqdn, str(e)
-        )
-        return None
-
-    if not ipv4:
-        logger.error("FQDN '%s' doesn't have any IPv4 address!", fqdn)
-        return None
-
-    if ip_version == 4:
-        return DNSLookupTuple(ipv4, [])
-    elif ip_version == 6:
-        return DNSLookupTuple([], ipv6)
-    elif ip_version == 10:
-        return DNSLookupTuple(ipv4, ipv6)
-    else:
-        raise ValueError("Unknown IP version '{}'!".format(ip_version))
-
-
-def get_ipv4(fqdn: str) -> Optional[str]:
-    """Return (first) IPv4 address for FQDN."""
-    lookup_result = get_ip(fqdn, ip_version=4)
-    if lookup_result and lookup_result.ipv4:
-        return lookup_result.ipv4[0]
-    return None
-
-
-def get_ipv6(fqdn: str) -> Optional[str]:
-    """Return (first) IPv6 address for FQDN."""
-    lookup_result = get_ip(fqdn, ip_version=6)
-    if lookup_result and lookup_result.ipv6:
-        return lookup_result.ipv6[0]
-    return None
 
 
 def is_dns_resolvable(fqdn: str) -> bool:
