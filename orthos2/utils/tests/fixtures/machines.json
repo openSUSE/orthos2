@@ -1,252 +1,252 @@
 [
-{
-  "model": "data.Domain",
-  "pk": 1,
-  "fields": {
-    "name": "orthos2.test"
+  {
+    "model": "data.Domain",
+    "pk": 1,
+    "fields": {
+      "name": "orthos2.test"
+    }
+  },
+  {
+    "model": "data.Architecture",
+    "pk": null,
+    "fields": {
+      "name": "x86_64",
+      "updated": "2022-05-10T11:00:00+00:00",
+      "created": "2022-05-10T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.serialconsoletype",
+    "pk": null,
+    "fields": {
+      "name": "IPMI",
+      "command": "ipmitool -I lanplus -H {{ machine.bmc.fqdn }} -U {{ ipmi.user}} -P {{ ipmi.password }} sol activate",
+      "comment": "IPMI"
+    }
+  },
+  {
+    "model": "data.system",
+    "pk": null,
+    "fields": {
+      "name": "BareMetal",
+      "administrative": false,
+      "virtual": false,
+      "created": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.enclosure",
+    "pk": null,
+    "fields": {
+      "name": "test",
+      "platform": 1,
+      "description": "test enclosure"
+    }
+  },
+  {
+    "model": "data.platform",
+    "pk": null,
+    "fields": {
+      "name": "Other",
+      "vendor": 1
+    }
+  },
+  {
+    "model": "data.vendor",
+    "pk": null,
+    "fields": {
+      "name": "Other"
+    }
+  },
+  {
+    "model": "data.remotepowerdevice",
+    "pk": null,
+    "fields": {
+      "username": "test",
+      "password": "test",
+      "fqdn": "bmc.orthos2.test",
+      "mac": "AA:BB:CC:DD:EE",
+      "url": "https://rpower.orthos2.test"
+    }
+  },
+  {
+    "model": "data.remotepower",
+    "pk": null,
+    "fields": {
+      "fence_name": "ipmilanplus",
+      "remote_power_device": 1
+    }
+  },
+  {
+    "model": "data.BMC",
+    "pk": null,
+    "fields": {
+      "username": "",
+      "password": "",
+      "fqdn": "my-bmc.foo.lan",
+      "mac": "",
+      "machine": 1,
+      "fence_name": "fence_ipmilanplus"
+    }
+  },
+  {
+    "model": "data.machine",
+    "pk": 1,
+    "fields": {
+      "enclosure": 1,
+      "fqdn": "cobbler.orthos2.test",
+      "system": 1,
+      "comment": "",
+      "serial_number": "",
+      "product_code": "",
+      "architecture": 1,
+      "fqdn_domain": 1,
+      "cpu_model": "",
+      "cpu_flags": "",
+      "cpu_physical": 1,
+      "cpu_cores": 1,
+      "cpu_threads": 1,
+      "cpu_speed": "0.00",
+      "cpu_id": "",
+      "ram_amount": 0,
+      "efi": false,
+      "nda": true,
+      "ipmi": false,
+      "vm_capable": false,
+      "vm_max": 5,
+      "vm_dedicated_host": false,
+      "vm_auto_delete": false,
+      "reserved_until": "9999-12-31T23:59:59.999+00:00",
+      "reserved_reason": "test HOS",
+      "platform": null,
+      "bios_version": "",
+      "bios_date": "2010-10-10",
+      "disk_primary_size": null,
+      "disk_type": "",
+      "lsmod": "",
+      "last": "",
+      "hwinfo": "",
+      "dmidecode": "",
+      "dmesg": "",
+      "lsscsi": "",
+      "lsusb": "",
+      "lspci": "",
+      "status_ipv4": true,
+      "status_ipv6": true,
+      "status_ssh": true,
+      "status_login": false,
+      "administrative": false,
+      "check_connectivity": 3,
+      "collect_system_information": true,
+      "dhcp_filename": null,
+      "active": true,
+      "group": null,
+      "contact_email": "",
+      "tftp_server": 1,
+      "updated": "2017-11-17T15:36:51.499Z",
+      "created": "2017-10-24T14:20:37.298Z"
+    }
+  },
+  {
+    "model": "data.machine",
+    "pk": 2,
+    "fields": {
+      "enclosure": 1,
+      "fqdn": "testsys.orthos2.test",
+      "system": 1,
+      "comment": "",
+      "serial_number": "",
+      "product_code": "",
+      "architecture": 1,
+      "fqdn_domain": 1,
+      "cpu_model": "",
+      "cpu_flags": "",
+      "cpu_physical": 1,
+      "cpu_cores": 1,
+      "cpu_threads": 1,
+      "cpu_speed": "0.00",
+      "cpu_id": "",
+      "ram_amount": 0,
+      "efi": false,
+      "nda": true,
+      "ipmi": false,
+      "vm_capable": false,
+      "vm_max": 5,
+      "vm_dedicated_host": false,
+      "vm_auto_delete": false,
+      "reserved_until": "9999-12-31T23:59:59.999+00:00",
+      "reserved_reason": "test HOS",
+      "platform": null,
+      "bios_version": "",
+      "bios_date": "2010-10-10",
+      "disk_primary_size": null,
+      "disk_type": "",
+      "lsmod": "",
+      "last": "",
+      "hwinfo": "",
+      "dmidecode": "",
+      "dmesg": "",
+      "lsscsi": "",
+      "lsusb": "",
+      "lspci": "",
+      "status_ipv4": true,
+      "status_ipv6": true,
+      "status_ssh": true,
+      "status_login": false,
+      "administrative": false,
+      "check_connectivity": 3,
+      "collect_system_information": true,
+      "dhcp_filename": null,
+      "active": true,
+      "group": null,
+      "contact_email": "",
+      "tftp_server": 1,
+      "updated": "2017-11-17T15:36:51.499Z",
+      "created": "2017-10-24T14:20:37.298Z"
+    }
+  },
+  {
+    "model": "data.serialconsole",
+    "pk": 1,
+    "fields": {
+      "stype": 1,
+      "kernel_device": "ttyS",
+      "kernel_device_num": 1,
+      "baud_rate": 115200,
+      "machine": 2
+    }
+  },
+  {
+    "model": "data.bmc",
+    "pk": 1,
+    "fields": {
+      "username": "root",
+      "password": "root",
+      "fqdn": "testsys-sp.orthos2.test",
+      "mac": "AA:BB:CC:DD:EE:FF",
+      "machine": 2,
+      "fence_name": "ipmilanplus"
+    }
+  },
+  {
+    "model": "data.networkinterface",
+    "pk": 1,
+    "fields": {
+      "machine": 2,
+      "primary": true,
+      "mac_address": "AA:BB:CC:DD:EE:EF",
+      "name": "unknown",
+      "updated": "2024-08-05T12:25:52.168Z",
+      "created": "2024-08-05T12:25:52.168Z"
+    }
+  },
+  {
+    "model": "data.remotepower",
+    "pk": null,
+    "fields": {
+      "fence_name": "ipmilanplus",
+      "options": "",
+      "machine": 2
+    }
   }
-},
-{
-  "model": "data.Architecture",
-  "pk": null,
-  "fields": {
-    "name": "x86_64",
-    "updated": "2022-05-10T11:00:00+00:00",
-    "created": "2022-05-10T10:00:00+00:00"
-  }
-},
-{
-  "model": "data.serialconsoletype",
-  "pk": null,
-  "fields": {
-    "name": "IPMI",
-    "command": "ipmitool -I lanplus -H {{ machine.bmc.fqdn }} -U {{ ipmi.user}} -P {{ ipmi.password }} sol activate",
-    "comment": "IPMI"
-  }
-},
-{
-  "model": "data.system",
-  "pk": null,
-  "fields": {
-    "name": "BareMetal",
-    "administrative": false,
-    "virtual": false,
-    "created": "2016-01-01T10:00:00+00:00"
-  }
-},
-{
-  "model": "data.enclosure",
-  "pk": null,
-  "fields": {
-    "name": "test",
-    "platform": 1,
-    "description": "test enclosure"
-  }
-},
-{
-  "model": "data.platform",
-  "pk": null,
-  "fields": {
-    "name": "Other",
-    "vendor": 1
-  }
-},
-{
-  "model": "data.vendor",
-  "pk": null,
-  "fields": {
-    "name": "Other"
-  }
-},
-{
-  "model": "data.remotepowerdevice",
-  "pk": null,
-  "fields": {
-    "username": "test",
-    "password": "test",
-    "fqdn": "bmc.orthos2.test",
-    "mac": "AA:BB:CC:DD:EE",
-    "url": "https://rpower.orthos2.test"
-  }
-},
-{
-  "model": "data.remotepower",
-  "pk": null,
-  "fields": {
-    "fence_name": "ipmilanplus",
-    "remote_power_device": 1
-  }
-},
-{
-  "model": "data.BMC",
-  "pk": null,
-  "fields": {
-    "username": "",
-    "password": "",
-    "fqdn": "my-bmc.foo.lan",
-    "mac": "",
-    "machine": 1,
-    "fence_name": "fence_ipmilanplus"
-  }
-},
-{
-  "model": "data.machine",
-  "pk": 1,
-  "fields": {
-    "enclosure": 1,
-    "fqdn": "cobbler.orthos2.test",
-    "system": 1,
-    "comment": "",
-    "serial_number": "",
-    "product_code": "",
-    "architecture": 1,
-    "fqdn_domain": 1,
-    "cpu_model": "",
-    "cpu_flags": "",
-    "cpu_physical": 1,
-    "cpu_cores": 1,
-    "cpu_threads": 1,
-    "cpu_speed": "0.00",
-    "cpu_id": "",
-    "ram_amount": 0,
-    "efi": false,
-    "nda": true,
-    "ipmi": false,
-    "vm_capable": false,
-    "vm_max": 5,
-    "vm_dedicated_host": false,
-    "vm_auto_delete": false,
-    "reserved_until": "9999-12-31T23:59:59.999+00:00",
-    "reserved_reason": "test HOS",
-    "platform": null,
-    "bios_version": "",
-    "bios_date": "2010-10-10",
-    "disk_primary_size": null,
-    "disk_type": "",
-    "lsmod": "",
-    "last": "",
-    "hwinfo": "",
-    "dmidecode": "",
-    "dmesg": "",
-    "lsscsi": "",
-    "lsusb": "",
-    "lspci": "",
-    "status_ipv4": true,
-    "status_ipv6": true,
-    "status_ssh": true,
-    "status_login": false,
-    "administrative": false,
-    "check_connectivity": 3,
-    "collect_system_information": true,
-    "dhcp_filename": null,
-    "active": true,
-    "group": null,
-    "contact_email": "",
-    "tftp_server": 1,
-    "updated": "2017-11-17T15:36:51.499Z",
-    "created": "2017-10-24T14:20:37.298Z"
-  }
-},
-{
-  "model": "data.machine",
-  "pk": 2,
-  "fields": {
-    "enclosure": 1,
-    "fqdn": "testsys.orthos2.test",
-    "system": 1,
-    "comment": "",
-    "serial_number": "",
-    "product_code": "",
-    "architecture": 1,
-    "fqdn_domain": 1,
-    "cpu_model": "",
-    "cpu_flags": "",
-    "cpu_physical": 1,
-    "cpu_cores": 1,
-    "cpu_threads": 1,
-    "cpu_speed": "0.00",
-    "cpu_id": "",
-    "ram_amount": 0,
-    "efi": false,
-    "nda": true,
-    "ipmi": false,
-    "vm_capable": false,
-    "vm_max": 5,
-    "vm_dedicated_host": false,
-    "vm_auto_delete": false,
-    "reserved_until": "9999-12-31T23:59:59.999+00:00",
-    "reserved_reason": "test HOS",
-    "platform": null,
-    "bios_version": "",
-    "bios_date": "2010-10-10",
-    "disk_primary_size": null,
-    "disk_type": "",
-    "lsmod": "",
-    "last": "",
-    "hwinfo": "",
-    "dmidecode": "",
-    "dmesg": "",
-    "lsscsi": "",
-    "lsusb": "",
-    "lspci": "",
-    "status_ipv4": true,
-    "status_ipv6": true,
-    "status_ssh": true,
-    "status_login": false,
-    "administrative": false,
-    "check_connectivity": 3,
-    "collect_system_information": true,
-    "dhcp_filename": null,
-    "active": true,
-    "group": null,
-    "contact_email": "",
-    "tftp_server": 1,
-    "updated": "2017-11-17T15:36:51.499Z",
-    "created": "2017-10-24T14:20:37.298Z"
-  }
-},
-{
-  "model": "data.serialconsole",
-  "pk": 1,
-  "fields": {
-    "stype": 1,
-    "kernel_device": "ttyS",
-    "kernel_device_num": 1,
-    "baud_rate": 115200,
-    "machine": 2
-  }
-},
-{
-  "model": "data.bmc",
-  "pk": 1,
-  "fields": {
-    "username": "root",
-    "password": "root",
-    "fqdn": "testsys-sp.orthos2.test",
-    "mac": "AA:BB:CC:DD:EE:FF",
-    "machine": 2,
-    "fence_name": "ipmilanplus"
-  }
-},
-{
-  "model": "data.networkinterface",
-  "pk": 1,
-  "fields": {
-    "machine": 2,
-    "primary": true,
-    "mac_address": "AA:BB:CC:DD:EE:EF",
-    "name": "unknown",
-    "updated": "2024-08-05T12:25:52.168Z",
-    "created": "2024-08-05T12:25:52.168Z"
-  }
-},
-{
-  "model": "data.remotepower",
-  "pk": null,
-  "fields": {
-    "fence_name": "ipmilanplus",
-    "options": "",
-    "machine": 2
-  }
-}
 ]
