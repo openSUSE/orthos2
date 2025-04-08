@@ -153,7 +153,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          sudo apt-get install python3-setuptools libldap2-dev libsasl2-dev 
+          sudo apt-get install python3-setuptools libldap2-dev libsasl2-dev
           python -m pip install --upgrade pip
           python -m pip install -r requirements-devel.txt
       - name: Create required directories
@@ -175,3 +175,14 @@ jobs:
           ORTHOS_USER: runner
         run: |
           python3 manage.py check
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - name: Install Prettier
+        run: |
+          npm install --save-dev --save-exact prettier
+      - name: Run Prettier
+        run: |
+          npx prettier --check *.json ./**/*.json
