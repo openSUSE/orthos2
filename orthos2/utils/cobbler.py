@@ -220,8 +220,7 @@ class CobblerServer:
             object_id, "profile", default_profile, self._token
         )
 
-        if machine.mac_address:
-            self.add_primary_network_interface(machine, object_id)
+        self.add_network_interfaces(machine, object_id)
         self._xmlrpc_server.modify_system(
             object_id, "filename", get_filename(machine) or "", self._token
         )
@@ -254,7 +253,7 @@ class CobblerServer:
             self._xmlrpc_server.save_system(object_id, self._token, save.value)
 
     @login_required
-    def add_primary_network_interface(
+    def add_network_interfaces(
         self,
         machine: "Machine",
         object_id: str,
@@ -267,17 +266,40 @@ class CobblerServer:
         :param object_id: ID of object to be added.
         :param save: Whether to save the machine or not.
         """
-        interface_options = {
-            "macaddress-default": machine.mac_address,
-            "ipaddress-default": machine.ip_address_v4 or "",
-            "ipv6address-default": machine.ip_address_v6 or "",
-            "hostname-default": get_hostname(machine.fqdn),
-            "dnsname-default": machine.fqdn,
-            "management-default": True,
-        }
-        self._xmlrpc_server.modify_system(
-            object_id, "modify_interface", interface_options, self._token
-        )
+        for idx, intf in enumerate(machine.networkinterfaces.all()):  # type: ignore
+            if not intf.mac_address:
+                logger.info(
+                    "Skipping machine interface %s because it has no MAC address",
+                    machine.fqdn if intf.primary else str(idx),
+                )
+                continue
+
+            if not intf.ip_address_v4 and not intf.ip_address_v6:
+                logger.info(
+                    "Skipping machine interface %s because it has neither IPv4 nor IPv6 addresses",
+                    machine.fqdn if intf.primary else str(idx),
+                )
+                continue
+
+            interface_key = "default" if intf.primary else idx
+
+            interface_options = {
+                f"macaddress-{interface_key}": intf.mac_address,
+                f"ipaddress-{interface_key}": intf.ip_address_v4 or "",
+                f"ipv6address-{interface_key}": intf.ip_address_v6 or "",
+                f"management-{interface_key}": True,
+            }
+
+            if intf.primary:
+                interface_options[f"hostname-{interface_key}"] = get_hostname(
+                    machine.fqdn
+                )
+                interface_options[f"dnsname-{interface_key}"] = machine.fqdn
+
+            self._xmlrpc_server.modify_system(
+                object_id, "modify_interface", interface_options, self._token
+            )
+
         if save != CobblerSaveModes.SKIP:
             self._xmlrpc_server.save_system(object_id, self._token, save.value)
 

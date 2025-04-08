@@ -238,10 +238,11 @@
     "model": "data.networkinterface",
     "pk": 1,
     "fields": {
-      "machine": 2,
+      "machine": 1,
       "primary": true,
       "mac_address": "AA:BB:CC:DD:EE:EF",
       "name": "unknown",
+      "ip_address_v4": "127.0.0.1",
       "updated": "2024-08-05T12:25:52.168Z",
       "created": "2024-08-05T12:25:52.168Z"
     }
@@ -250,11 +251,36 @@
     "model": "data.networkinterface",
     "pk": 2,
     "fields": {
-      "machine": 1,
+      "machine": 2,
       "primary": true,
-      "mac_address": "AA:BB:CC:DD:EE:F0",
+      "mac_address": "AA:BB:CC:DD:EE:FE",
       "name": "unknown",
-      "ip_address_v4": "127.0.0.1",
+      "ip_address_v6": "::3",
+      "updated": "2024-08-05T12:25:52.168Z",
+      "created": "2024-08-05T12:25:52.168Z"
+    }
+  },
+  {
+    "model": "data.networkinterface",
+    "pk": 3,
+    "fields": {
+      "machine": 2,
+      "primary": false,
+      "mac_address": "CA:FE:BE:EF:C0:DE",
+      "name": "unknown",
+      "ip_address_v4": "127.0.0.11",
+      "updated": "2024-08-05T12:25:52.168Z",
+      "created": "2024-08-05T12:25:52.168Z"
+    }
+  },
+  {
+    "model": "data.networkinterface",
+    "pk": 4,
+    "fields": {
+      "machine": 2,
+      "primary": false,
+      "name": "unknown",
+      "ip_address_v4": "127.0.0.12",
       "updated": "2024-08-05T12:25:52.168Z",
       "created": "2024-08-05T12:25:52.168Z"
     }
