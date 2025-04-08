@@ -8,11 +8,13 @@ from datetime import date, datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
-from typing import TYPE_CHECKING, Any, List, NamedTuple, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, List, Literal, Optional, Tuple, Type, Union
 
-import validators  # type: ignore
 from django import forms
 from django.conf import settings
+from netaddr import IPAddress, IPNetwork
+
+from orthos2.data.models.networkinterface import NetworkInterface
 
 if TYPE_CHECKING:
     from django.db import models
@@ -39,73 +41,6 @@ def get_domain(fqdn: str) -> str:
 def get_hostname(fqdn: str) -> str:
     """Return hostname of FQDN."""
     return fqdn.split(".")[0]
-
-
-class DNSLookupTuple(NamedTuple):
-    """
-    Describes a DNS lookup done by the application.
-    """
-
-    ipv4: List[str]
-    ipv6: List[str]
-
-
-def get_ip(fqdn: str, ip_version: int = 4) -> Optional[DNSLookupTuple]:
-    """
-    Return all IP addresses for FQDN.
-
-    Use `ip_version` to specify which IP version gets returned.
-
-    IP versions (`ip_version`):
-        4  - ['192.168.0.1', ...]
-        6  - ['0:0:0:0:0:ffff:c0a8:1', ...]
-        10 - (['192.168.0.1', ...], [0:0:0:0:0:ffff:c0a8:1, ...])
-    """
-    ipv4: List[str] = []
-    ipv6: List[str] = []
-
-    try:
-        result = socket.getaddrinfo(fqdn, None, 0, socket.SOCK_STREAM, socket.SOL_TCP)
-
-        for address_family in result:
-            if address_family[0] == socket.AF_INET:
-                ipv4.append(address_family[4][0])
-            elif address_family[0] == socket.AF_INET6:
-                ipv6.append(address_family[4][0])
-    except (IndexError, socket.gaierror) as e:
-        logger.exception(
-            "DNS lookup for '%s': NXDOMAIN (non-existing domain) (%s)", fqdn, str(e)
-        )
-        return None
-
-    if not ipv4:
-        logger.error("FQDN '%s' doesn't have any IPv4 address!", fqdn)
-        return None
-
-    if ip_version == 4:
-        return DNSLookupTuple(ipv4, [])
-    elif ip_version == 6:
-        return DNSLookupTuple([], ipv6)
-    elif ip_version == 10:
-        return DNSLookupTuple(ipv4, ipv6)
-    else:
-        raise ValueError("Unknown IP version '{}'!".format(ip_version))
-
-
-def get_ipv4(fqdn: str) -> Optional[str]:
-    """Return (first) IPv4 address for FQDN."""
-    lookup_result = get_ip(fqdn, ip_version=4)
-    if lookup_result and lookup_result.ipv4:
-        return lookup_result.ipv4[0]
-    return None
-
-
-def get_ipv6(fqdn: str) -> Optional[str]:
-    """Return (first) IPv6 address for FQDN."""
-    lookup_result = get_ip(fqdn, ip_version=6)
-    if lookup_result and lookup_result.ipv6:
-        return lookup_result.ipv6[0]
-    return None
 
 
 def is_dns_resolvable(fqdn: str) -> bool:
@@ -146,19 +81,6 @@ def has_valid_domain_ending(
 def wrap80(text: str) -> str:
     """Wrap the text at the given column."""
     return "\n".join(textwrap.wrap(text, width=80))
-
-
-def is_valid_mac_address(mac_address: str) -> bool:
-    """
-    Check if MAC address is valid.
-
-    Example:
-        00:11:22:33:44:55
-    """
-    if validators.mac_address(mac_address):
-        return True
-
-    return False
 
 
 def str_time_to_datetime(time: str) -> Optional[datetime]:
@@ -374,3 +296,58 @@ def safe_get_or_default(
     except Exception:
         pass
     return default
+
+
+def suggest_ip(protocol: Literal[4, 6], network: str, subnet: int) -> str:
+    """
+    Currently unused, will be used as soon we can move away from django admin.
+    """
+    net = IPNetwork(f"{network}/{subnet}")
+    network_ip_bits = int(net.ip) >> ((32 if net.version == 4 else 128) - subnet)
+    used_ips: set[IPAddress] = set()
+
+    # Get all interfaces with the same net address
+    if protocol == 4:
+        for intf in NetworkInterface.objects.all():
+            if not intf.ip_address_v4:
+                continue
+            ip = IPAddress(intf.ip_address_v4, 4)
+            intf_ip_bits = int(ip) >> (32 - subnet)
+            if intf_ip_bits == network_ip_bits:
+                used_ips.add(ip)
+    if protocol == 6:
+        for intf in NetworkInterface.objects.all():
+            if not intf.ip_address_v6:
+                continue
+            ip = IPAddress(intf.ip_address_v6, 6)
+            intf_ip_bits = int(ip) >> (128 - subnet)
+            if intf_ip_bits == network_ip_bits:
+                used_ips.add(ip)
+
+    # Now filter all used IPs, which leaves the free ones.
+    free_ips = set(net) - used_ips
+
+    # Check if there are any free IPs left to give out.
+    if len(free_ips) == 0:
+        return "127.0.0.1" if protocol == 4 else "::1"
+
+    return str(next(iter(free_ips)))
+
+
+def is_unique_mac_address(
+    mac_address: str, exclude: Optional[List[str]] = None
+) -> bool:
+    """
+    Check if `mac_address` does already exists.
+
+    Exlcude all MAC addresses in `exclude`.
+    """
+    if exclude is None:
+        exclude = []
+    mac_addresses = NetworkInterface.objects.filter(mac_address=mac_address).exclude(
+        mac_address__in=exclude
+    )
+
+    if mac_addresses.count() > 0:
+        return False
+    return True

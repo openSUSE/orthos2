@@ -56,7 +56,8 @@ class CobblerMethodTests(TestCase):
 
         # Assert
         self.longMessage = True
-        self.assertEqual(result, test_machine.fqdn)
+        self.assertIsNotNone(result)
+        self.assertEqual(result.fqdn, test_machine.fqdn)  # type: ignore[union-attr]
 
     def test_cobbler_deploy(self) -> None:
         # Arrange
@@ -103,7 +104,7 @@ class CobblerMethodTests(TestCase):
         ) as mock_add_power, mock.patch.object(
             server, "add_serial_console"
         ) as mock_add_serial, mock.patch.object(
-            server, "add_primary_network_interface"
+            server, "add_network_interfaces"
         ) as mock_add_interface:
             server.add_machine(testsys, save=cobbler.CobblerSaveModes.NEW)
 
@@ -118,7 +119,7 @@ class CobblerMethodTests(TestCase):
             self.assertEqual(mock_add_power.call_count, 1)
             self.assertEqual(mock_add_serial.call_count, 1)
 
-    def test_cobbler_add_primary_network_interface(self) -> None:
+    def test_cobbler_add_network_interfaces(self) -> None:
         # Arrange
         domain = Domain.objects.get(name="orthos2.test")
         domain.cobbler_server = Machine.objects.get(fqdn="cobbler.orthos2.test")
@@ -130,10 +131,10 @@ class CobblerMethodTests(TestCase):
         with mock.patch.object(
             server._xmlrpc_server, "modify_system"
         ) as mock_system_modify:
-            server.add_primary_network_interface(testsys, object_id)
+            server.add_network_interfaces(testsys, object_id)
 
             # Assert
-            self.assertEqual(mock_system_modify.call_count, 1)
+            self.assertEqual(mock_system_modify.call_count, 2)
 
     def test_cobbler_add_bmc(self) -> None:
         # Arrange

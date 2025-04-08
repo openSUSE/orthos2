@@ -1,3 +1,4 @@
+import ipaddress
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from django import forms
@@ -32,38 +33,137 @@ from orthos2.data.models import (
     ServerConfig,
     System,
     Vendor,
-    is_unique_mac_address,
-    validate_mac_address,
 )
+from orthos2.utils.misc import get_domain, is_unique_mac_address, suggest_ip
 from orthos2.utils.remotepowertype import RemotePowerType
 
 
-class BMCInlineFormset(forms.models.BaseInlineFormSet):
-    def clean(self) -> None:
-        if self.is_valid() and self.cleaned_data:
-            data = self.cleaned_data[0]
-        else:
+class BMCForm(forms.ModelForm):
+    def clean(self):
+        """
+        Verify that all information inside a form is valid.
+        """
+        if not self.is_valid():
             return
-        data = self.cleaned_data[0]
-        username = data.get("username")
-        password = data.get("password")
+        self.__verify_username_password()
+        self.__suggest_ip_address()
+        self.__verify_ip_in_network()
+
+    def __verify_username_password(self) -> None:
+        """
+        Called during self.clean(). Verifies the username and password are both given.
+        """
+        username = self.cleaned_data.get("username")
+        password = self.cleaned_data.get("password")
         if username and not password:
             raise forms.ValidationError("Username also needs a password")
         if password and not username:
             raise forms.ValidationError("Password also needs a username")
 
+    def __verify_ip_in_network(self) -> None:
+        """
+        Called during self.clean(). Verifies the given IP address is in the network of the FQDN.
+        """
+        bmc_domain = Domain.objects.get(
+            name=get_domain(self.cleaned_data.get("fqdn", ""))
+        )
+        bmc_network_v4 = ipaddress.ip_network(
+            f"{bmc_domain.ip_v4}/{bmc_domain.subnet_mask_v4}"
+        )
+        bmc_network_v6 = ipaddress.ip_network(
+            f"{bmc_domain.ip_v6}/{bmc_domain.subnet_mask_v6}"
+        )
+
+        ip_address_v4 = self.cleaned_data.get("ip_address_v4")
+        ip_address_v6 = self.cleaned_data.get("ip_address_v6")
+        if ip_address_v4 and ipaddress.ip_address(ip_address_v4) not in bmc_network_v4:
+            raise ValidationError("IPv4 address is not in the chosen network!")
+        if ip_address_v6 and ipaddress.ip_address(ip_address_v6) not in bmc_network_v6:
+            raise ValidationError("IPv4 address is not in the chosen network!")
+
+    def __suggest_ip_address(self) -> None:
+        """
+        Called during self.clean(). Suggests an IP address in case a MAC is present.
+        """
+        bmc_domain = Domain.objects.get(name=get_domain(self.cleaned_data["fqdn"]))
+        interface_mac = self.cleaned_data.get(f"mac")
+        if interface_mac == "":
+            # We don't want to autogenerate an address for interfaces without MAC addresses
+            self.cleaned_data["ip_address_v4"] = ""
+            self.cleaned_data["ip_address_v6"] = ""
+        else:
+            ip_address_v4 = self.cleaned_data.get("ip_address_v4")
+            if ip_address_v4 == "127.0.0.1":
+                self.cleaned_data["ip_address_v4"] = suggest_ip(
+                    4, bmc_domain.ip_v4, bmc_domain.subnet_mask_v4
+                )
+            ip_address_v6 = self.cleaned_data.get("ip_address_v6")
+            if ip_address_v6 == "::1":
+                self.cleaned_data["ip_address_v6"] = suggest_ip(
+                    6, bmc_domain.ip_v6, bmc_domain.subnet_mask_v6
+                )
+
+
+class BMCFormInlineFormSet(forms.models.BaseInlineFormSet):
+    def clean(self):
+        if not self.is_valid():
+            return
+        self.__verify_unique_mac_address()
+        self.__verify_unique_ip_address()
+
+    def __verify_unique_mac_address(self):
+        """
+        This method is called in clean. It is verifying that all MAC addresses are unique inside the DB.
+        """
+        old_mac_addresses = list(
+            self.instance.networkinterfaces.all().values_list("mac_address", flat=True)
+        )
+        if self.instance.has_bmc() and self.instance.bmc.mac != "":
+            old_mac_addresses.append(self.instance.bmc.mac)
+
+        for interface in self.cleaned_data:
+            mac = interface.get("mac_address")
+            if mac == "":
+                continue
+            if not is_unique_mac_address(mac, exclude=old_mac_addresses):
+                raise ValidationError(f"MAC address {mac} is not unique")
+
+    def __verify_unique_ip_address(self):
+        """
+        This method is called in clean. It is verifying if all IPs given are unique.
+        """
+        for interface in self.cleaned_data:
+            ip_address_v4 = interface.get("ip_address_v4")
+            ip_address_v6 = interface.get("ip_address_v6")
+            if (
+                NetworkInterface.objects.filter(ip_address_v4=ip_address_v4).count() > 1
+                or BMC.objects.filter(ip_address_v4=ip_address_v4).count() > 1
+            ):
+                raise ValidationError(
+                    "IPv4 address already in use, please choose another one!"
+                )
+            if (
+                NetworkInterface.objects.filter(ip_address_v6=ip_address_v6).count() > 1
+                or BMC.objects.filter(ip_address_v6=ip_address_v6).count() > 1
+            ):
+                raise ValidationError(
+                    "IPv6 address already in use, please choose another one!"
+                )
+
 
 class BMCInline(admin.StackedInline):
     model = BMC
     extra = 0
-    formset = BMCInlineFormset
+    formset = BMCFormInlineFormSet
+    form = BMCForm
 
     def get_formset(
         self, request: HttpRequest, obj: Optional["Machine"] = None, **kwargs: Any
     ):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
-        return super(BMCInline, self).get_formset(request, obj, **kwargs)
+        formset = super(BMCInline, self).get_formset(request, obj, **kwargs)
+        return formset
 
 
 class SerialConsoleInline(admin.StackedInline):
@@ -183,25 +283,187 @@ class RemotePowerInlineHypervisor(admin.StackedInline):
         )
 
 
+class NetworkInterfaceForm(forms.ModelForm):
+    def clean(self):
+        """
+        Verifies that the data for a single network interface is valid.
+        """
+        if not self.is_valid():
+            return
+        self.__suggest_ip_address()
+        self.__verify_ip_address_in_network()
+
+    def __suggest_ip_address(self) -> None:
+        """
+        Called during self.__clean(). Suggests an IP address in case one is desired but not set.
+        """
+        interface_machine = self.cleaned_data.get("machine")
+        if not interface_machine:
+            raise forms.ValidationError("Cannot retrieve machine for interface!")
+        machine_domain = Domain.objects.get(name=get_domain(interface_machine.fqdn))
+        interface_mac = self.cleaned_data.get(f"mac_address")
+        if interface_mac == "":
+            # We don't want to autogenerate an address for interfaces without MAC addresses
+            self.cleaned_data["ip_address_v4"] = ""
+            self.cleaned_data["ip_address_v6"] = ""
+        else:
+            ip_address_v4 = self.cleaned_data.get("ip_address_v4")
+            if ip_address_v4 == "127.0.0.1":
+                self.cleaned_data["ip_address_v4"] = suggest_ip(
+                    4, machine_domain.ip_v4, machine_domain.subnet_mask_v4
+                )
+            ip_address_v6 = self.cleaned_data.get("ip_address_v6")
+            if ip_address_v6 == "::1":
+                self.cleaned_data["ip_address_v6"] = suggest_ip(
+                    6, machine_domain.ip_v6, machine_domain.subnet_mask_v6
+                )
+
+    def __verify_ip_address_in_network(self):
+        """
+        This method is called in clean. It is verifying that the chosen IP is inside the configured network.
+        """
+        interface_machine = self.cleaned_data.get("machine")
+        if not interface_machine:
+            raise forms.ValidationError("Cannot retrieve machine for interface!")
+        machine_domain = Domain.objects.get(name=get_domain(interface_machine.fqdn))
+        machine_network_v4 = ipaddress.ip_network(
+            f"{machine_domain.ip_v4}/{machine_domain.subnet_mask_v4}"
+        )
+        machine_network_v6 = ipaddress.ip_network(
+            f"{machine_domain.ip_v6}/{machine_domain.subnet_mask_v6}"
+        )
+
+        ip_address_v4 = self.cleaned_data.get("ip_address_v4")
+        ip_address_v6 = self.cleaned_data.get("ip_address_v6")
+        if (
+            ip_address_v4
+            and ipaddress.ip_address(ip_address_v4) not in machine_network_v4
+        ):
+            raise ValidationError("IPv4 address is not in the chosen network!")
+        if (
+            ip_address_v6
+            and ipaddress.ip_address(ip_address_v6) not in machine_network_v6
+        ):
+            raise ValidationError("IPv4 address is not in the chosen network!")
+
+
+class NetworkInterfaceInlineFormset(forms.models.BaseInlineFormSet):
+    def clean(self) -> None:
+        """
+        Verifies that the data for all network interfaces is valid if viewed at together.
+        """
+        if not self.is_valid():
+            return
+        self.__verify_single_primary_interface()
+        self.__verify_unique_mac_address()
+        self.__verify_unique_ip_address()
+
+    def __verify_single_primary_interface(self):
+        """
+        This method is called in clean. It is verifying if there is only a single interface is marked as primary.
+        """
+        primary_count = 0
+        for interface in self.cleaned_data:
+            if interface.get("primary", False):
+                primary_count += 1
+            if primary_count > 1:
+                raise ValidationError(
+                    "More then a single primary interface is not allowed!"
+                )
+        if len(self.cleaned_data) > 0 and primary_count != 1:
+            raise ValidationError(
+                "You need exactly one primary interface if you have one or more interfaces!"
+            )
+
+    def __verify_unique_mac_address(self):
+        """
+        This method is called in clean. It is verifying that all MAC addresses are unique inside the DB.
+        """
+        old_mac_addresses = list(
+            self.instance.networkinterfaces.all().values_list("mac_address", flat=True)
+        )
+        new_mac_addresses = [
+            instance.get("mac_address") for instance in self.cleaned_data
+        ]
+        if self.instance.has_bmc() and self.instance.bmc.mac != "":
+            old_mac_addresses.append(self.instance.bmc.mac)
+
+        if len(new_mac_addresses) != len(set(new_mac_addresses)):
+            raise ValidationError("Duplicate MAC address detected!")
+
+        for interface in self.cleaned_data:
+            mac = interface.get("mac_address")
+            if mac == "":
+                continue
+            if not is_unique_mac_address(mac, exclude=old_mac_addresses):
+                raise ValidationError(
+                    "MAC address '{}' is already used by '{}'!".format(
+                        mac,
+                        NetworkInterface.objects.get(mac_address=mac).machine.fqdn,  # type: ignore
+                    ),
+                )
+
+    def __verify_unique_ip_address(self):
+        """
+        This method is called in clean. It is verifying if all IPs given are unique.
+        """
+        new_ip_addresses_4 = []
+        for interface in self.cleaned_data:
+            address = interface.get("ip_address_v4")
+            if address != "":
+                new_ip_addresses_4.append(address)
+        new_ip_addresses_6 = []
+        for interface in self.cleaned_data:
+            address = interface.get("ip_address_v6")
+            if address != "":
+                new_ip_addresses_6.append(address)
+
+        if len(new_ip_addresses_4) != len(set(new_ip_addresses_4)):
+            raise ValidationError("Duplicate IPv4 address detected!")
+        if len(new_ip_addresses_6) != len(set(new_ip_addresses_6)):
+            raise ValidationError("Duplicate IPv6 address detected!")
+
+        for interface in self.cleaned_data:
+            ip_address_v4 = interface.get("ip_address_v4")
+            ip_address_v6 = interface.get("ip_address_v6")
+            network_interface_v4 = NetworkInterface.objects.filter(
+                ip_address_v4=ip_address_v4
+            )
+            bmc_interface_v4 = BMC.objects.filter(ip_address_v4=ip_address_v4)
+            network_interface_v6 = NetworkInterface.objects.filter(
+                ip_address_v6=ip_address_v6
+            )
+            bmc_interface_v6 = BMC.objects.filter(ip_address_v6=ip_address_v6)
+            if interface.get("id") is not None:
+                network_interface_v4 = network_interface_v4.exclude(
+                    id=interface.get("id").id
+                )
+                network_interface_v6 = network_interface_v6.exclude(
+                    id=interface.get("id").id
+                )
+                bmc_interface_v4 = bmc_interface_v4.exclude(id=interface.get("id").id)
+                bmc_interface_v6 = bmc_interface_v6.exclude(id=interface.get("id").id)
+            if network_interface_v4.count() > 0 or bmc_interface_v4.count() > 0:
+                raise ValidationError(
+                    "IPv4 address already in use, please choose another one!"
+                )
+            if network_interface_v6.count() > 0 or bmc_interface_v6.count() > 0:
+                raise ValidationError(
+                    "IPv6 address already in use, please choose another one!"
+                )
+
+
 class NetworkInterfaceInline(admin.TabularInline):
     model = NetworkInterface
     extra = 0
     fk_name = "machine"
     readonly_fields = (
-        "primary",
-        "mac_address",
         "name",
         "ethernet_type",
         "driver_module",
     )
-
-    def has_add_permission(self, request, obj=None) -> bool:
-        """Network interfaces get added by machine scan."""
-        return False
-
-    def has_delete_permission(self, request, obj=None) -> bool:
-        """Network interfaces get deleted by machine scan."""
-        return False
+    formset = NetworkInterfaceInlineFormset
+    form = NetworkInterfaceForm
 
 
 class AnnotationInline(admin.TabularInline):
@@ -216,14 +478,6 @@ class AnnotationInline(admin.TabularInline):
 
 
 class MachineAdminForm(forms.ModelForm):
-
-    mac_address = forms.CharField(
-        label="MAC address",
-        validators=[validate_mac_address],
-        help_text="The MAC address of the main network interface",
-        required=False,
-    )
-
     class Meta:
         model = Machine
         fields = "__all__"
@@ -235,37 +489,7 @@ class MachineAdminForm(forms.ModelForm):
         super(MachineAdminForm, self).__init__(*args, **kwargs)
 
         if instance:
-            self.fields["mac_address"].initial = instance.mac_address
-
             self.machine = instance
-
-    def save(self, commit: bool = True):
-        machine = super(MachineAdminForm, self).save(commit=False)
-        machine.mac_address = self.cleaned_data["mac_address"]
-        if commit:
-            machine.save()
-        return machine
-
-    def clean_mac_address(self) -> str:
-        """Check if another machine has already this MAC address."""
-        mac_address = self.cleaned_data["mac_address"]
-
-        if hasattr(self, "machine"):
-            exclude = self.machine.networkinterfaces.all().values_list(
-                "mac_address", flat=True
-            )
-        else:
-            exclude = []
-
-        if mac_address and not is_unique_mac_address(mac_address, exclude=exclude):
-            raise ValidationError(
-                "MAC address '{}' is already used by '{}'!".format(
-                    mac_address,
-                    NetworkInterface.objects.get(mac_address=mac_address).machine.fqdn,  # type: ignore
-                )
-            )
-
-        return mac_address
 
     def clean_fqdn(self) -> str:
         """Check if another machine has already this FQDN (except self)."""
@@ -283,10 +507,21 @@ class MachineAdminForm(forms.ModelForm):
 
     def clean(self) -> Optional[Dict[str, Any]]:
         """
-        Only collect system information if connectivity is set to `Full`.
+        Verify that all information for a given machine is valid.
         """
         cleaned_data = self.cleaned_data
+        # Individual field validation has already run, so FQDN can be assumed "clean".
 
+        self.__verify_system_information_collection(cleaned_data)
+        self.__verify_hypervisor_allowed_for_machine(cleaned_data)
+
+        return cleaned_data
+
+    def __verify_system_information_collection(self, cleaned_data: Dict[str, Any]):
+        """
+        This method is called in clean. It is verifying that there is no issue when attempting to collect system
+        information via Ansible.
+        """
         check_connectivity = cleaned_data.get("check_connectivity")
         collect_system_information = cleaned_data.get("collect_system_information")
 
@@ -298,6 +533,10 @@ class MachineAdminForm(forms.ModelForm):
                 "collect_system_information", "Connectivity check must set to 'Full'"
             )
 
+    def __verify_hypervisor_allowed_for_machine(self, cleaned_data: Dict[str, Any]):
+        """
+        This method is called in clean. It is verifying that the machine can be a hypervisor.
+        """
         hypervisor = cleaned_data.get("hypervisor")
         system = cleaned_data.get("system")
         if hypervisor and System.objects.filter(name=system, virtual=False):
@@ -319,27 +558,6 @@ class MachineAdminForm(forms.ModelForm):
             self.add_error(
                 "vm_dedicated_host", "System cannot be set as dedicated VM host"
             )
-
-        mac = cleaned_data.get("mac_address")
-        unknown_mac = cleaned_data.get("unknown_mac")
-
-        if mac and unknown_mac:
-            self.add_error(
-                "unknown_mac", "MAC unknown must not be selected when a MAC is provided"
-            )
-            self.add_error(
-                "mac_address", "MAC unknown must not be selected when a MAC is provided"
-            )
-        if not mac and not unknown_mac:
-            self.add_error(
-                "unknown_mac",
-                "Either specify a MAC, or confirm that the MAC is not yet known",
-            )
-            self.add_error(
-                "mac_address",
-                "Either specify a MAC, or confirm that the MAC is not yet known",
-            )
-        return cleaned_data
 
 
 class MachineArchitectureFilter(admin.SimpleListFilter):
@@ -476,7 +694,6 @@ class MachineAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     ("fqdn", "enclosure"),
-                    "mac_address",
                     "architecture",
                     "system",
                     "group",
@@ -495,7 +712,6 @@ class MachineAdmin(admin.ModelAdmin):
                     ("administrative", "nda"),
                     "autoreinstall",
                     "active",
-                    "unknown_mac",
                 )
             },
         ),

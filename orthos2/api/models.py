@@ -42,7 +42,7 @@ class HelperFunctions:
         This value gets set after initialising a machine.
         """
         machine = Machine.objects.get(pk=machine_id)
-        value = getattr(machine, "ipv4", None)
+        value = getattr(machine, "ip_address_v4", None)
         return value
 
     @staticmethod
@@ -53,7 +53,7 @@ class HelperFunctions:
         This value gets set after initialising a machine.
         """
         machine = Machine.objects.get(pk=machine_id)
-        value = getattr(machine, "ipv6", None)
+        value = getattr(machine, "ip_address_v6", None)
         return value
 
     @staticmethod
@@ -129,16 +129,16 @@ class QueryField:
         ),
         "enclosure": QueryFieldMappingItem(
             field=Machine._meta.get_field("enclosure"),
-            pre=lambda x: Enclosure.objects.get(name__iexact=x)
-            if isinstance(x, str)
-            else x,
+            pre=lambda x: (
+                Enclosure.objects.get(name__iexact=x) if isinstance(x, str) else x
+            ),
             post=lambda x: Enclosure.objects.get(pk=x).name,
         ),
         "group": QueryFieldMappingItem(
             field=Machine._meta.get_field("group"),
-            pre=lambda x: MachineGroup.objects.get(name__iexact=x)
-            if isinstance(x, str)
-            else x,
+            pre=lambda x: (
+                MachineGroup.objects.get(name__iexact=x) if isinstance(x, str) else x
+            ),
             post=lambda x: MachineGroup.objects.get(pk=x).name,
         ),
         "system": QueryFieldMappingItem(
@@ -155,23 +155,23 @@ class QueryField:
             field=Domain._meta.get_field("cobbler_server"),
             related_name="fqdn_domain",
             verbose_name="Cobbler server",
-            pre=lambda x: Machine.objects.get(fqdn__iexact=x)
-            if isinstance(x, str)
-            else x,
+            pre=lambda x: (
+                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x
+            ),
             post=lambda x: Machine.objects.get(pk=x).fqdn,
         ),
         "reserved_by": QueryFieldMappingItem(
             field=Machine._meta.get_field("reserved_by"),
-            pre=lambda x: HelperFunctions.username_to_id(x)
-            if isinstance(x, str)
-            else x,
+            pre=lambda x: (
+                HelperFunctions.username_to_id(x) if isinstance(x, str) else x
+            ),
             post=lambda x: User.objects.get(pk=x).username,
         ),
         "res_by": QueryFieldMappingItem(
             field=Machine._meta.get_field("reserved_by"),
-            pre=lambda x: HelperFunctions.username_to_id(x)
-            if isinstance(x, str)
-            else x,
+            pre=lambda x: (
+                HelperFunctions.username_to_id(x) if isinstance(x, str) else x
+            ),
             post=lambda x: User.objects.get(pk=x).username,
         ),
         "reserved_by_email": QueryFieldMappingItem(
@@ -181,20 +181,24 @@ class QueryField:
         ),
         "status_ipv4": QueryFieldMappingItem(
             field=Machine._meta.get_field("status_ipv4"),
-            pre=lambda x: dict(
-                {value: key for key, value in dict(Machine.StatusIP.CHOICE).items()}
-            ).get(x)
-            if isinstance(x, str)
-            else x,
+            pre=lambda x: (
+                dict(
+                    {value: key for key, value in dict(Machine.StatusIP.CHOICE).items()}
+                ).get(x)
+                if isinstance(x, str)
+                else x
+            ),
             post=lambda x: dict(Machine.StatusIP.CHOICE).get(x),
         ),
         "status_ipv6": QueryFieldMappingItem(
             field=Machine._meta.get_field("status_ipv6"),
-            pre=lambda x: dict(
-                {value: key for key, value in dict(Machine.StatusIP.CHOICE).items()}
-            ).get(x)
-            if isinstance(x, str)
-            else x,
+            pre=lambda x: (
+                dict(
+                    {value: key for key, value in dict(Machine.StatusIP.CHOICE).items()}
+                ).get(x)
+                if isinstance(x, str)
+                else x
+            ),
             post=lambda x: dict(Machine.StatusIP.CHOICE).get(x),
         ),
         # SerialConsole
@@ -202,9 +206,9 @@ class QueryField:
             field=SerialConsole._meta.get_field("console_server"),
             related_name="serialconsole",
             verbose_name="Console server",
-            pre=lambda x: Machine.objects.get(fqdn__iexact=x)
-            if isinstance(x, str)
-            else x,
+            pre=lambda x: (
+                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x
+            ),
             post=lambda x: Machine.objects.get(pk=x).fqdn,
         ),
         "serial_type": QueryFieldMappingItem(
@@ -255,9 +259,9 @@ class QueryField:
             field=RemotePower._meta.get_field("remote_power_device"),
             related_name="remotepower",
             verbose_name="Remote power device",
-            pre=lambda x: Machine.objects.get(fqdn__iexact=x)
-            if isinstance(x, str)
-            else x,
+            pre=lambda x: (
+                Machine.objects.get(fqdn__iexact=x) if isinstance(x, str) else x
+            ),
             post=lambda x: Machine.objects.get(pk=x).fqdn,
         ),
         "rpower_port": QueryFieldMappingItem(
@@ -415,9 +419,9 @@ class QueryField:
             field=Annotation._meta.get_field("reporter"),
             related_name="annotations",
             verbose_name="Reporter",
-            pre=lambda x: HelperFunctions.username_to_id(x)
-            if isinstance(x, str)
-            else x,
+            pre=lambda x: (
+                HelperFunctions.username_to_id(x) if isinstance(x, str) else x
+            ),
             post=lambda x: User.objects.get(pk=x).username,
         ),
         "annotation_created": QueryFieldMappingItem(
@@ -437,7 +441,7 @@ class QueryField:
         Example:
             QueryField('comment')                -> Machine.comment
             QueryField('comment_length')         -> Machine.comment (for querying the char length)
-            QueryField('ipv4')                   -> Machine.ipv4 (dynamic field)
+            QueryField('mac_address')            -> Machine.mac_address (dynamic field)
             QueryField('installations__comment') -> Machine.installations.comment (related field)
         """
         field = None

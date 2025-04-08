@@ -226,35 +226,35 @@ def get_status_ip(fqdn: str) -> Optional[Union[bool, Machine]]:
         if values["mac_address"] == machine.mac_address:  # type: ignore
             if values["inet"] is None:  # type: ignore
                 machine_.status_ipv4 = Machine.StatusIP.AF_DISABLED
-            elif machine.ipv4 not in values["inet"]:  # type: ignore
+            elif machine.ip_address_v4 not in values["inet"]:  # type: ignore
                 machine_.status_ipv4 = Machine.StatusIP.NO_ADDRESS
                 if [
                     ipv4 for ipv4 in values["inet"] if not ipv4.startswith("127.0.0.1")  # type: ignore
                 ]:
                     machine_.status_ipv4 = Machine.StatusIP.ADDRESS_MISMATCH
-            elif machine.ipv4 in values["inet"]:  # type: ignore
+            elif machine.ip_address_v4 in values["inet"]:  # type: ignore
                 machine_.status_ipv4 = Machine.StatusIP.CONFIRMED
             else:
                 machine_.status_ipv4 = Machine.StatusIP.MISSING  # type: ignore
 
             if values["inet6"] is None:  # type: ignore
                 machine_.status_ipv6 = Machine.StatusIP.AF_DISABLED
-            elif machine.ipv6 not in values["inet6"]:  # type: ignore
+            elif machine.ip_address_v6 not in values["inet6"]:  # type: ignore
                 machine_.status_ipv6 = Machine.StatusIP.NO_ADDRESS
                 if [ipv6 for ipv6 in values["inet6"] if not ipv6.startswith("fe80::")]:  # type: ignore
                     machine_.status_ipv6 = Machine.StatusIP.ADDRESS_MISMATCH
-            elif machine.ipv6 in values["inet6"]:  # type: ignore
+            elif machine.ip_address_v6 in values["inet6"]:  # type: ignore
                 machine_.status_ipv6 = Machine.StatusIP.CONFIRMED
 
         addresses["inet"].append(values["inet"])  # type: ignore
         addresses["inet6"].append(values["inet6"])  # type: ignore
 
     if machine_.status_ipv4 == Machine.StatusIP.NO_ADDRESS:
-        if machine.ipv4 in addresses["inet"]:
+        if machine.ip_address_v4 in addresses["inet"]:
             machine_.status_ipv4 = Machine.StatusIP.MAC_MISMATCH
 
     if machine_.status_ipv6 == Machine.StatusIP.NO_ADDRESS:
-        if machine.ipv6 in addresses["inet6"]:
+        if machine.ip_address_v6 in addresses["inet6"]:
             machine_.status_ipv6 = Machine.StatusIP.MAC_MISMATCH
 
     return machine_

@@ -99,8 +99,8 @@ class SSH(object):
 
         # Paramiko doesn't provide address family option, use IPv4 address explicitly (=AF_INET)
         fqdn_or_ipv4 = self._fqdn
-        if self._machine and self._machine.ipv4:
-            fqdn_or_ipv4 = self._machine.ipv4
+        if self._machine and self._machine.ip_address_v4:
+            fqdn_or_ipv4 = self._machine.ip_address_v4
 
         configuration = {
             "hostname": fqdn_or_ipv4,

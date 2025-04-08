@@ -26,12 +26,11 @@ from orthos2.data.models import (
     SerialConsole,
     SerialConsoleType,
     System,
-    is_unique_mac_address,
-    validate_dns,
-    validate_mac_address,
 )
 from orthos2.data.models.domain import validate_domain_ending
+from orthos2.data.validators import validate_mac_address
 from orthos2.frontend.forms import ReserveMachineForm, VirtualMachineForm
+from orthos2.utils.misc import is_unique_mac_address
 from orthos2.utils.remotepowertype import get_remote_power_type_choices
 
 logger = logging.getLogger("api")
@@ -266,7 +265,7 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
     fqdn = forms.CharField(
         label="FQDN",
         max_length=200,
-        validators=[validate_dns, validate_domain_ending],
+        validators=[validate_domain_ending],
     )
 
     enclosure = forms.CharField(
@@ -274,9 +273,6 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         required=False,
     )
 
-    unknown_mac = forms.BooleanField(
-        label="MAC address currently unknown", initial=False, required=False
-    )
     mac_address = forms.CharField(
         label="MAC address", validators=[validate_mac_address], required=False
     )
@@ -332,7 +328,6 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         return [
             "fqdn",
             "enclosure",
-            "unknown_mac",
             "mac_address",
             "architecture_id",
             "system_id",
