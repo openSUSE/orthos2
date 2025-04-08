@@ -68,7 +68,7 @@
     "pk": null,
     "fields": {
       "key": "setup.execute.command",
-      "value":  "/usr/bin/cobbler system edit --name={{machine.fqdn}}  --profile={{architecture}}:{{choice}} --netboot=True"
+      "value": "/usr/bin/cobbler system edit --name={{machine.fqdn}}  --profile={{architecture}}:{{choice}} --netboot=True"
     }
   },
   {

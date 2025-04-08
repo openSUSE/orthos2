@@ -140,3 +140,8 @@ cython_debug/
 # IDE stuff
 .idea
 .vscode
+
+# Prettier
+node_modules/
+package.json
+package-lock.json
