@@ -19,6 +19,8 @@ from orthos2.data.models.networkinterface import NetworkInterface
 if TYPE_CHECKING:
     from django.db import models
 
+    from orthos2.data.models.domain import Domain
+
 logger = logging.getLogger("utils")
 
 
@@ -277,40 +279,75 @@ def format_cli_form_errors(form: forms.Form) -> str:
     return output.rstrip("\n")
 
 
-def suggest_ip(protocol: Literal[4, 6], network: str, subnet: int) -> str:
+def suggest_host_ip(protocol: Literal[4, 6], domain: "Domain") -> str:
     """
-    Currently unused, will be used as soon we can move away from django admin.
+    Suggest a free IP address for a new network interface.
     """
-    net = IPNetwork(f"{network}/{subnet}")
-    network_ip_bits = int(net.ip) >> ((32 if net.version == 4 else 128) - subnet)
+    domain_ip = domain.ip_v4 if protocol == 4 else domain.ip_v6
+    subnet = domain.subnet_mask_v4 if protocol == 4 else domain.subnet_mask_v6
+    net = IPNetwork(f"{domain_ip}/{subnet}")
+    # The size of the host part in bits
+    host_size = int((32 if net.version == 4 else 128) - subnet)
+    # The full network address as bits
+    network_ip = int(net.ip)
+    # The network part as bits
+    network_ip_bits = network_ip >> host_size
     used_ips: set[IPAddress] = set()
+    dyn_range_start = int(
+        IPAddress(
+            domain.dynamic_range_v4_start
+            if protocol == 4
+            else domain.dynamic_range_v6_start
+        )
+    )
+    dyn_range_end = int(
+        IPAddress(
+            domain.dynamic_range_v4_end
+            if protocol == 4
+            else domain.dynamic_range_v6_end
+        )
+    )
 
-    # Get all interfaces with the same net address
-    if protocol == 4:
-        for intf in NetworkInterface.objects.all():
+    # Get all interfaces that match the network address
+    intf_ip = IPAddress(0)
+    for intf in NetworkInterface.objects.all():
+        if protocol == 4:
             if not intf.ip_address_v4:
                 continue
-            ip = IPAddress(intf.ip_address_v4, 4)
-            intf_ip_bits = int(ip) >> (32 - subnet)
-            if intf_ip_bits == network_ip_bits:
-                used_ips.add(ip)
-    if protocol == 6:
-        for intf in NetworkInterface.objects.all():
+            intf_ip = IPAddress(intf.ip_address_v4, 4)
+        if protocol == 6:
             if not intf.ip_address_v6:
                 continue
-            ip = IPAddress(intf.ip_address_v6, 6)
-            intf_ip_bits = int(ip) >> (128 - subnet)
-            if intf_ip_bits == network_ip_bits:
-                used_ips.add(ip)
+            intf_ip = IPAddress(intf.ip_address_v6, 6)
 
-    # Now filter all used IPs, which leaves the free ones.
-    free_ips = set(net) - used_ips
+        # Check if the bit representation of this interface's network address is the same.
+        intf_ip_bits = int(intf_ip) >> host_size
+        if intf_ip_bits == network_ip_bits:
+            used_ips.add(intf_ip)
 
-    # Check if there are any free IPs left to give out.
-    if len(free_ips) == 0:
-        return "127.0.0.1" if protocol == 4 else "::1"
+    idx = 0
+    while idx < 2**host_size:
+        # IP must not be inside the dynamic range.
+        # Because this range can be huge, we skip over it when the current IP is inside this range.
+        if network_ip + idx >= dyn_range_start and network_ip + idx <= dyn_range_end:
+            idx += dyn_range_end
+            continue
 
-    return str(next(iter(free_ips)))
+        next_ip = IPAddress(network_ip + idx)
+
+        if (
+            # IP must not be already in use.
+            next_ip not in used_ips
+            # IP must not be the network address.
+            and next_ip != net.ip
+            # IP must not be the broadcast address.
+            and next_ip != net.broadcast
+        ):
+            return str(next_ip)
+        idx += 1
+
+    # If we get here, there aren't any free IPs left to give out. Return the default.
+    return "127.0.0.1" if protocol == 4 else "::1"
 
 
 def is_unique_mac_address(
