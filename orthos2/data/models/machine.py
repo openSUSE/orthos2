@@ -621,7 +621,7 @@ class Machine(models.Model):
 
         validate_domain_ending(self.fqdn)
 
-        if self.mac_address:
+        if self.pk is not None and self.mac_address:
             validate_mac_address(self.mac_address)
 
         if not self.system.virtual and self.hypervisor:

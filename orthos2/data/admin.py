@@ -34,7 +34,7 @@ from orthos2.data.models import (
     System,
     Vendor,
 )
-from orthos2.utils.misc import get_domain, is_unique_mac_address, suggest_ip
+from orthos2.utils.misc import get_domain, is_unique_mac_address, suggest_host_ip
 from orthos2.utils.remotepowertype import RemotePowerType
 
 
@@ -94,14 +94,10 @@ class BMCForm(forms.ModelForm):
         else:
             ip_address_v4 = self.cleaned_data.get("ip_address_v4")
             if ip_address_v4 == "127.0.0.1":
-                self.cleaned_data["ip_address_v4"] = suggest_ip(
-                    4, bmc_domain.ip_v4, bmc_domain.subnet_mask_v4
-                )
+                self.cleaned_data["ip_address_v4"] = suggest_host_ip(4, bmc_domain)
             ip_address_v6 = self.cleaned_data.get("ip_address_v6")
             if ip_address_v6 == "::1":
-                self.cleaned_data["ip_address_v6"] = suggest_ip(
-                    6, bmc_domain.ip_v6, bmc_domain.subnet_mask_v6
-                )
+                self.cleaned_data["ip_address_v6"] = suggest_host_ip(6, bmc_domain)
 
 
 class BMCFormInlineFormSet(forms.models.BaseInlineFormSet):
@@ -309,14 +305,10 @@ class NetworkInterfaceForm(forms.ModelForm):
         else:
             ip_address_v4 = self.cleaned_data.get("ip_address_v4")
             if ip_address_v4 == "127.0.0.1":
-                self.cleaned_data["ip_address_v4"] = suggest_ip(
-                    4, machine_domain.ip_v4, machine_domain.subnet_mask_v4
-                )
+                self.cleaned_data["ip_address_v4"] = suggest_host_ip(4, machine_domain)
             ip_address_v6 = self.cleaned_data.get("ip_address_v6")
             if ip_address_v6 == "::1":
-                self.cleaned_data["ip_address_v6"] = suggest_ip(
-                    6, machine_domain.ip_v6, machine_domain.subnet_mask_v6
-                )
+                self.cleaned_data["ip_address_v6"] = suggest_host_ip(6, machine_domain)
 
     def __verify_ip_address_in_network(self):
         """
