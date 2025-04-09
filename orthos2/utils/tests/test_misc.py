@@ -136,8 +136,8 @@ class MiscSuggestIpTests(TestCase):
         """
         # Arrange
         NetworkInterface(
-            ip_address_v4=f"192.168.178.5",
-            mac_address=f"AA:BB:CC:DD:EE:F5",
+            ip_address_v4="192.168.178.5",
+            mac_address="AA:BB:CC:DD:EE:F5",
             machine=self.machine,
         ).save()
         # Act
@@ -160,8 +160,8 @@ class MiscSuggestIpTests(TestCase):
         """
         # Arrange
         NetworkInterface(
-            ip_address_v6=f"fe80:0:0:1::5",
-            mac_address=f"AA:BB:CC:DD:EE:F5",
+            ip_address_v6="fe80:0:0:1::5",
+            mac_address="AA:BB:CC:DD:EE:F5",
             machine=self.machine,
         ).save()
         # Act
