@@ -3,6 +3,12 @@ from unittest import mock
 
 from django.test import TestCase
 
+from orthos2.data.models.architecture import Architecture
+from orthos2.data.models.domain import Domain
+from orthos2.data.models.machine import Machine
+from orthos2.data.models.networkinterface import NetworkInterface
+from orthos2.data.models.serverconfig import ServerConfig
+from orthos2.data.models.system import System
 from orthos2.utils.machinechecks import nmap_check, ping_check
 from orthos2.utils.misc import (
     execute,
@@ -12,6 +18,7 @@ from orthos2.utils.misc import (
     is_dns_resolvable,
     normalize_ascii,
     str_time_to_datetime,
+    suggest_host_ip,
 )
 
 logging.disable(logging.CRITICAL)
@@ -74,6 +81,93 @@ class MiscMethodTests(TestCase):
         assert str_time_to_datetime("") is None
         assert str_time_to_datetime("foo") is None
         assert str_time_to_datetime("12:34") == datetime(1900, 1, 1, 12, 34)
+
+
+class MiscSuggestIpTests(TestCase):
+    def setUp(self):
+        ServerConfig(
+            key="domain.validendings", value="example.de, example.com, foo.de"
+        ).save()
+
+        self.domain = Domain(
+            name="example.de",
+            ip_v4="192.168.178.0",
+            ip_v6="fe80:0:0:1::",
+            subnet_mask_v4=29,
+            subnet_mask_v6=64,
+            dynamic_range_v4_start="192.168.178.6",
+            dynamic_range_v4_end="192.168.178.6",
+            dynamic_range_v6_start="fe80:0:0:1::6",
+            dynamic_range_v6_end="fe80:0:0:1:ffff:ffff:ffff:fffe",
+        )
+        self.domain.save()
+
+        self.sys = System(name="Bare Metal")
+        self.sys.save()
+
+        self.arch = Architecture(name="foobar64")
+        self.arch.save()
+
+        self.machine = Machine(
+            fqdn="test.example.de", system=self.sys, architecture=self.arch
+        )
+        self.machine.save()
+
+        for i in range(1, 5):
+            NetworkInterface(
+                ip_address_v4=f"192.168.178.{i}",
+                ip_address_v6=f"fe80:0:0:1::{i}",
+                mac_address=f"AA:BB:CC:DD:EE:F{i}",
+                machine=self.machine,
+            ).save()
+
+    def test_suggest_host_ip_v4(self):
+        """
+        suggest_host_ip() should return a valid IP address.
+        """
+        # Act
+        suggested_ip = suggest_host_ip(4, self.domain)
+        # Assert
+        self.assertEqual(suggested_ip, "192.168.178.5")
+
+    def test_suggest_host_ip_full_network_v4(self):
+        """
+        suggest_host_ip() should return the localhost address if the network has no free host addresses.
+        """
+        # Arrange
+        NetworkInterface(
+            ip_address_v4=f"192.168.178.5",
+            mac_address=f"AA:BB:CC:DD:EE:F5",
+            machine=self.machine,
+        ).save()
+        # Act
+        suggested_ip = suggest_host_ip(4, self.domain)
+        # Assert
+        self.assertEqual(suggested_ip, "127.0.0.1")
+
+    def test_suggest_host_ip_v6(self):
+        """
+        suggest_host_ip() should return a valid IP address.
+        """
+        # Act
+        suggested_ip = suggest_host_ip(6, self.domain)
+        # Assert
+        self.assertEqual(suggested_ip, "fe80:0:0:1::5")
+
+    def test_suggest_host_ip_full_network_v6(self):
+        """
+        suggest_host_ip() should return the localhost address because everything is blocked by the dynamic range.
+        """
+        # Arrange
+        NetworkInterface(
+            ip_address_v6=f"fe80:0:0:1::5",
+            mac_address=f"AA:BB:CC:DD:EE:F5",
+            machine=self.machine,
+        ).save()
+        # Act
+        suggested_ip = suggest_host_ip(6, self.domain)
+        # Assert
+        self.assertEqual(suggested_ip, "::1")
 
 
 class ChecksMethodTests(TestCase):
