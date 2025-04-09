@@ -4,8 +4,6 @@ from typing import TYPE_CHECKING, Any, Optional, Tuple
 from django.contrib import admin
 from django.db import models
 
-from orthos2.utils.misc import safe_get_or_default
-
 if TYPE_CHECKING:
     from orthos2.data.models.machine import Machine
 
@@ -14,13 +12,6 @@ class Architecture(models.Model):
     class Manager(models.Manager["Architecture"]):
         def get_by_natural_key(self, name: str) -> Optional["Architecture"]:
             return self.get(name=name)
-
-    class Type:
-        @classmethod
-        def prep(cls) -> None:
-            """Prepare const variables for fast and developer-friendly handling."""
-            cls.X86_64 = safe_get_or_default(Architecture, "name", "x86_64", "pk", -1)  # type: ignore
-            cls.PPC64LE = safe_get_or_default(Architecture, "name", "ppc64le", "pk", -1)  # type: ignore
 
     name = models.CharField(max_length=200, blank=False, unique=True)
 

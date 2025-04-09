@@ -8,7 +8,7 @@ from datetime import date, datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
-from typing import TYPE_CHECKING, Any, List, Literal, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, List, Literal, Optional, Tuple, Union
 
 from django import forms
 from django.conf import settings
@@ -275,27 +275,6 @@ def format_cli_form_errors(form: forms.Form) -> str:
         for error in errors:
             output += "* {} [{}]\n".format(error, label)
     return output.rstrip("\n")
-
-
-def safe_get_or_default(
-    model: Type["models.Model"],
-    key: str,
-    value: str,
-    field: str,
-    default: Any = None,
-) -> Any:
-    """
-    Allow access to a `field` of a specified `model`.
-
-    `key` and `value` is needed for filtering down to the expected object. If there is no object,
-    multiple objects or any other exception, `default` gets returned.
-    """
-    try:
-        # Any model has a dynamic objects attribute at runtime.
-        return getattr(model.objects.get(**{key: value}), field)  # type: ignore
-    except Exception:
-        pass
-    return default
 
 
 def suggest_ip(protocol: Literal[4, 6], network: str, subnet: int) -> str:
