@@ -730,7 +730,10 @@ class MachineAdmin(admin.ModelAdmin):
         (
             "DHCP",
             {
-                "fields": ("dhcp_filename",),
+                "fields": (
+                    "tftp_server",
+                    "dhcp_filename",
+                ),
             },
         ),
     )
