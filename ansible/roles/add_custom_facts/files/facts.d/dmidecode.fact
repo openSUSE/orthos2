@@ -7,7 +7,7 @@ import sys
 
 data = dict()
 
-if platform.machine() in ("i386", "i486", "i586", "i686", "x86_64"):
+if platform.machine() in ("i386", "i486", "i586", "i686", "x86_64", "aarch64", "aarch64_be", "arm64"):
     command = ["dmidecode"]
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     data.update({"noargs":{"stdout":process.stdout.read(), "stderr":process.stderr.read()}})
