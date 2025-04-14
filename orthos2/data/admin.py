@@ -64,6 +64,13 @@ class BMCForm(forms.ModelForm):
         """
         Called during self.clean(). Verifies the given IP address is in the network of the FQDN.
         """
+        bmc_machine = self.cleaned_data.get("machine")
+        if bmc_machine is None:
+            raise ValidationError("No machine for BMC found")
+        if bmc_machine.administrative:
+            # Exclude administrative machines from this check.
+            return
+
         bmc_domain = Domain.objects.get(
             name=get_domain(self.cleaned_data.get("fqdn", ""))
         )
@@ -317,6 +324,9 @@ class NetworkInterfaceForm(forms.ModelForm):
         interface_machine = self.cleaned_data.get("machine")
         if not interface_machine:
             raise forms.ValidationError("Cannot retrieve machine for interface!")
+        if interface_machine.administrative:
+            # Exclude administrative machines from this check
+            return
         machine_domain = Domain.objects.get(name=get_domain(interface_machine.fqdn))
         machine_network_v4 = ipaddress.ip_network(
             f"{machine_domain.ip_v4}/{machine_domain.subnet_mask_v4}"
