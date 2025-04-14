@@ -6,6 +6,7 @@ git stash -u
 git switch master
 python3 manage.py migrate
 if [ -f "dump.json" ]; then
+    python3 manage.py flush --noinput
     python3 manage.py loaddata dump.json
 fi
 git switch "$OLD_BRANCH"
