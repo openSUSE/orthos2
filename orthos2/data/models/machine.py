@@ -706,12 +706,18 @@ class Machine(models.Model):
                 ):
                     # Remotepower updated
                     update_machine = True
-                if hasattr(self.remotepower, "remote_power_device") and any(
-                    [
-                        not hasattr(self._original.remotepower, "remote_power_device"),
-                        self.remotepower.remote_power_device
-                        != self._original.remotepower.remote_power_device,
-                    ]
+                if (
+                    hasattr(self.remotepower, "remote_power_device")
+                    and self._original.has_remotepower()
+                    and any(
+                        [
+                            not hasattr(
+                                self._original.remotepower, "remote_power_device"
+                            ),
+                            self.remotepower.remote_power_device
+                            != self._original.remotepower.remote_power_device,
+                        ]
+                    )
                 ):
                     # Remote power device updated
                     update_machine = True

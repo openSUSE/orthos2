@@ -1,8 +1,12 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
 
-from orthos2.data.models.machine import Machine
 from orthos2.data.validators import validate_mac_address
 from orthos2.utils.remotepowertype import get_remote_power_type_choices
+
+if TYPE_CHECKING:
+    from orthos2.data.models.machine import Machine
 
 
 class BMC(models.Model):
@@ -12,7 +16,7 @@ class BMC(models.Model):
     mac = models.CharField(
         max_length=17, unique=True, validators=[validate_mac_address]
     )
-    machine = models.OneToOneField(Machine, on_delete=models.CASCADE)
+    machine = models.OneToOneField["Machine"]("data.Machine", on_delete=models.CASCADE)  # type: ignore
 
     remotepower_type_choices = get_remote_power_type_choices("bmc")
     fence_name = models.CharField(

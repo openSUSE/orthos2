@@ -14,6 +14,7 @@ from django import forms
 from django.conf import settings
 from netaddr import IPAddress, IPNetwork
 
+from orthos2.data.models.bmc import BMC
 from orthos2.data.models.networkinterface import NetworkInterface
 
 if TYPE_CHECKING:
@@ -324,6 +325,22 @@ def suggest_host_ip(protocol: Literal[4, 6], domain: "Domain") -> str:
         intf_ip_bits = int(intf_ip) >> host_size
         if intf_ip_bits == network_ip_bits:
             used_ips.add(intf_ip)
+
+    bmc_ip = IPAddress(0)
+    for bmc in BMC.objects.all():
+        if protocol == 4:
+            if not bmc.ip_address_v4:
+                continue
+            bmc_ip = IPAddress(bmc.ip_address_v4, 4)
+        if protocol == 6:
+            if not bmc.ip_address_v6:
+                continue
+            bmc_ip = IPAddress(bmc.ip_address_v6, 6)
+
+        # Check if the bit representation of this interface's network address is the same.
+        bmc_ip_bits = int(bmc_ip) >> host_size
+        if bmc_ip_bits == network_ip_bits:
+            used_ips.add(bmc_ip)
 
     idx = 0
     while idx < 2**host_size:
