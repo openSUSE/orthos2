@@ -276,6 +276,9 @@ REMOTEPOWER_TYPES = [
     },
 ]
 
+NETBOX_URL = os.environ.get("ORTHOS_NETBOX_URL", "")
+NETBOX_TOKEN = os.environ.get("ORTHOS_NETBOX_TOKEN", "")
+
 # Check for alternative settings file. If this file exists, we use it and evaluate the code.
 # This is intended to be used for production mode.
 SETTINGS_FILE = "/etc/orthos2/settings"
