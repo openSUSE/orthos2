@@ -53,6 +53,8 @@ Requires:  %{python3_pkgversion}-django-extensions
 Requires:  %{python3_pkgversion}-django-auth-ldap
 Requires:  %{python3_pkgversion}-djangorestframework
 Requires:  %{python3_pkgversion}-netaddr
+Requires:  %{python3_pkgversion}-requests
+Requires:  %{python3_pkgversion}-urllib3
 Requires:  %{python3_pkgversion}-paramiko
 Requires:  %{python3_pkgversion}-psycopg2
 Requires:  %{python3_pkgversion}-ldap
