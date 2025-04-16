@@ -1,0 +1,592 @@
+"""
+Utility module that wraps the functionality that is related to Netbox. This is assuming Netbox version 4.
+"""
+
+import json
+import logging
+import urllib
+from typing import Optional
+
+import requests
+import urllib3
+
+from orthos2 import settings
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+logger = logging.getLogger("utils")
+
+
+class REST:
+    def __init__(self, host, token):
+        self.base_url = "{}/api".format(host)
+
+        # Create HTTP connection pool
+        self.s = requests.Session()
+
+        # SSL verification
+        self.s.verify = False
+
+        # Define REST Headers
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json; indent=4",
+            "Authorization": "Token {0}".format(token),
+        }
+
+        self.s.headers.update(headers)
+
+    def uploader(self, data, url):
+        method = "POST"
+
+        logger.debug("HTTP Request: %s - %s - %s", method, url, data)
+
+        request = requests.Request(method, url, data=json.dumps(data))
+        prepared_request = self.s.prepare_request(request)
+        r = self.s.send(prepared_request)
+        if r.status_code != 201:
+            logger.warning(
+                f"HTTP Response: %s - %s - %s", r.status_code, r.reason, r.text
+            )
+        r.raise_for_status()
+
+        return r.json()
+
+    def patcher(self, data, url):
+        method = "PATCH"
+
+        logger.debug("HTTP Request: %s - %s - %s", method, url, data)
+
+        request = requests.Request(method, url, data=json.dumps(data))
+        prepared_request = self.s.prepare_request(request)
+        r = self.s.send(prepared_request)
+        if r.status_code != 200:
+            logger.warning(
+                f"HTTP Response: %s - %s - %s", r.status_code, r.reason, r.text
+            )
+        r.raise_for_status()
+
+        return r.json()
+
+    def fetcher(self, url):
+        method = "GET"
+
+        logger.debug("HTTP Request: %s - %s", method, url)
+
+        request = requests.Request(method, url)
+        prepared_request = self.s.prepare_request(request)
+        r = self.s.send(prepared_request)
+
+        if r.status_code != 200:
+            logger.warning(
+                f"HTTP Response: %s - %s - %s", r.status_code, r.reason, r.text
+            )
+        r.raise_for_status()
+
+        return r.json()
+
+    def deleter(self, url):
+        method = "DELETE"
+
+        logger.warning("HTTP Request: {} - {}".format(method, url))
+
+        request = requests.Request(method, url)
+        prepared_request = self.s.prepare_request(request)
+        r = self.s.send(prepared_request)
+        if r.status_code != 204:
+            logger.warning(
+                f"HTTP Response: %s - %s - %s", r.status_code, r.reason, r.text
+            )
+        r.raise_for_status()
+
+        return r
+
+
+class Netbox(REST):
+    __object: Optional["Netbox"] = None
+
+    def __init__(self, host, token):
+        super().__init__(host, token)
+
+    @classmethod
+    def get_instance(cls):
+        if cls.__object is None:
+            cls.__object = Netbox(settings.NETBOX_URL, settings.NETBOX_TOKEN)
+        return cls.__object
+
+    def fetch_device_roles(self):
+        url = f"{self.base_url}/dcim/device-roles/"
+        logger.debug(f"Fetching device roles from {url}")
+        data = self.fetcher(url)
+        results = data["results"]
+        url = data["next"]
+        while url:
+            data = self.fetcher(url)
+            for d in data["results"]:
+                results.append(d)
+                url = data["next"]
+        return results
+
+    def fetch_tenancy_users(self):
+        url = f"{self.base_url}/tenancy/contacts/"
+        logger.debug(f"Fetching device roles from {url}")
+        data = self.fetcher(url)
+        results = data["results"]
+        url = data["next"]
+        while url:
+            data = self.fetcher(url)
+            for d in data["results"]:
+                results.append(d)
+                url = data["next"]
+        return results
+
+    def fetch_tenancy_roles(self):
+        url = f"{self.base_url}/tenancy/contact-roles/"
+        logger.debug(f"Fetching contact roles from {url}")
+        data = self.fetcher(url)
+        results = data["results"]
+        url = data["next"]
+        while url:
+            data = self.fetcher(url)
+            for d in data["results"]:
+                results.append(d)
+                url = data["next"]
+        return results
+
+    def fetch_interfaces(self):
+        url = f"{self.base_url}/dcim/interfaces/"
+        logger.debug("Checking MAC address from {}".format(url))
+        data = self.fetcher(url)
+        results = data["results"]
+        return results
+        url = data["next"]
+        while url:
+            data = self.fetcher(url)
+            for d in data["results"]:
+                results.append(d)
+                url = data["next"]
+        return results
+
+    def fetch_interface(self, id):
+        url = f"{self.base_url}/dcim/interfaces/{id}/"
+        logger.debug("Checking MAC address from {}".format(url))
+        data = self.fetcher(url)
+        return data
+
+    def fetch_vm_interface(self, id):
+        url = f"{self.base_url}/virtualization/interfaces/{id}/"
+        logger.debug("Checking MAC address from {}".format(url))
+        data = self.fetcher(url)
+        return data
+
+    def fetch_device_type(self, id):
+        url = f"{self.base_url}/dcim/device-types/{id}/"
+        logger.debug("Fetch device data from {}".format(url))
+        data = self.fetcher(url)
+        return data
+
+    def fetch_device(self, id):
+        url = f"{self.base_url}/dcim/devices/{id}/"
+        logger.debug("Fetch device data from {}".format(url))
+        data = self.fetcher(url)
+        return data
+
+    def fetch_vm(self, id):
+        url = f"{self.base_url}/virtualization/virtual-machines/{id}/"
+        logger.debug(f"Fetch device data from {url}")
+        data = self.fetcher(url)
+        return data
+
+    def check_site(self, site):
+        url = self.base_url + "/dcim/sites/?slug=" + site
+        logger.debug(f"Checking site from {url}")
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_location(self, loc):
+        url = f"{self.base_url}/dcim/locations/?slug={loc}"
+        logger.debug(f"Checking location from {url}")
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_rack(self, loc, rack):
+        url = f"{self.base_url}/dcim/racks/?name={rack}&location={loc}"
+        logger.debug(f"Checking rack from {url}")
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_ip(self, addr):
+        url = f"{self.base_url}/ipam/ip-addresses/?address={addr}"
+        logger.debug("Checking ip address from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_ip_prefix(self, addr):
+        url = f"{self.base_url}/ipam/prefixes/?contains={addr}"
+        logger.debug("Checking ip address from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_prefix(self, prefix):
+        url = f"{self.base_url}/ipam/prefixes/?prefix={prefix}"
+        logger.debug("Checking ip address from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_ip_by_name(self, fqdn):
+        url = f"{self.base_url}/ipam/ip-addresses/?q={fqdn}"
+        logger.debug("Checking ip address from {}".format(url))
+        data = self.fetcher(url)
+        results = data["results"]
+        url = data["next"]
+        while url:
+            data = self.fetcher(url)
+            for d in data["results"]:
+                results.append(d)
+            url = data["next"]
+        return results
+
+    def check_ip_by_id(self, id):
+        url = f"{self.base_url}/ipam/ip-addresses/?device_id={id}"
+        logger.debug("Checking ip address from {}".format(url))
+        data = self.fetcher(url)
+        if not data["results"]:
+            url = f"{self.base_url}/ipam/ip-addresses/?virtual_machine_id={id}"
+            logger.debug("Checking ip address from {}".format(url))
+            data = self.fetcher(url)
+        return data["results"]
+
+    def check_vlan(self, vid):
+        url = f"{self.base_url}/ipam/vlans/?vid={vid}"
+        logger.debug("Checking vlans from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_vlan_group(self, name):
+        url = f"{self.base_url}/ipam/vlan-groups/?name={name}"
+        logger.debug("Checking vlans from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_mac_address(self, mac):
+        url = f"{self.base_url}/dcim/interfaces/?mac_address={mac}"
+        logger.debug("Checking MAC address from {}".format(url))
+        data = self.fetcher(url)
+        results = data["results"]
+        url = f"{self.base_url}/virtualization/interfaces/?mac_address={mac}"
+        data = self.fetcher(url)
+        for d in data["results"]:
+            results.append(d)
+        return results
+
+    def check_vm_mac_address(self, mac):
+        url = f"{self.base_url}/virtualization/interfaces/?mac_address={mac}"
+        logger.debug("Checking MAC address from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_interface(self, id, ifname):
+        safe_ifname = urllib.parse.quote_plus(ifname)
+        url = f"{self.base_url}/dcim/interfaces/?device_id={id}&name={safe_ifname}"
+        logger.debug("Checking MAC address from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_interface_by_id(self, id):
+        url = f"{self.base_url}/dcim/interfaces/?device_id={id}"
+        logger.debug("Checking MAC address from {}".format(url))
+        data = self.fetcher(url)
+        results = data["results"]
+        url = data["next"]
+        while url:
+            data = self.fetcher(url)
+            for d in data["results"]:
+                results.append(d)
+            url = data["next"]
+        return results
+
+    def check_vm_interface(self, id, ifname):
+        safe_ifname = urllib.parse.quote_plus(ifname)
+        url = f"{self.base_url}/virtualization/interfaces/?virtual_machine_id={id}&name={safe_ifname}"
+        logger.debug("Checking MAC address from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_vm_interface_by_id(self, id):
+        url = f"{self.base_url}/virtualization/interfaces/?virtual_machine_id={id}"
+        logger.debug("Checking MAC address from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_power_port(self, id, ifname):
+        safe_ifname = urllib.parse.quote_plus(ifname)
+        url = f"{self.base_url}/dcim/power-ports/?device_id={id}&name={safe_ifname}"
+        logger.debug("Checking power port from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_power_outlet(self, id, ifname):
+        safe_ifname = urllib.parse.quote_plus(ifname)
+        url = f"{self.base_url}/dcim/power-outlets/?device_id={id}&name={safe_ifname}"
+        logger.debug("Checking power outlet from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_console_port(self, id, ifname):
+        safe_ifname = urllib.parse.quote_plus(ifname)
+        url = f"{self.base_url}/dcim/console-ports/?device_id={id}&name={safe_ifname}"
+        logger.debug("Checking console port from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_console_server_port(self, id, ifname):
+        safe_ifname = urllib.parse.quote_plus(ifname)
+        url = f"{self.base_url}/dcim/console-server-ports/?device_id={id}&name={safe_ifname}"
+        logger.debug("Checking console server port from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_orthos_user(self, obj):
+        url = f"{self.base_url}/tenancy/contact-assignments/?object_id={obj}&role=orthos-user"
+        logger.debug("Checking device from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_tenancy_user(self, user):
+        safe_user = urllib.parse.quote_plus(user)
+        url = f"{self.base_url}/tenancy/contacts/?email={safe_user}"
+        logger.debug("Checking tenancy user from {}".format(url))
+        data = self.fetcher(url)
+        if len(data["results"]) > 1:
+            logger.warning(f"Duplicate email {user}")
+            raise ValueError
+        res = None
+        if data["results"]:
+            res = data["results"][0]
+        if not res:
+            url = f"{self.base_url}/tenancy/contacts/?cf_alias={safe_user}"
+            data = self.fetcher(url)
+            if len(data["results"]) > 1:
+                logger.warning(f"Duplicate alias {user}")
+                raise ValueError
+            if data["results"]:
+                res = data["results"][0]
+        if not res and "@" in user:
+            username = user.split("@")[0]
+            url = f"{self.base_url}/tenancy/contacts/?cf_ldap_uid={username}"
+            data = self.fetcher(url)
+            for d in data["results"]:
+                if d["custom_fields"]["ldap_uid"] == username:
+                    if res:
+                        logger.warning(f"Duplicate ldap uid {username}")
+                        raise ValueError
+                    res = d
+        return res
+
+    def check_ldap_user(self, user):
+        url = f"{self.base_url}/tenancy/contacts/?cf_ldap_uid={user}"
+        logger.debug("Checking tenancy user from {}".format(url))
+        data = self.fetcher(url)
+        for res in data["results"]:
+            if res["custom_fields"]["ldap_uid"] == user:
+                return res
+        return {}
+
+    def check_tenants(self, tenant):
+        url = f"{self.base_url}/tenancy/tenants/?q={tenant}"
+        logger.debug("Checking tenancy user from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_tenancy_assignments(self, obj):
+        url = f"{self.base_url}/tenancy/contact-assignments/?object_id={obj}"
+        logger.debug("Checking device from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_contact_assignments(self, obj):
+        url = f"{self.base_url}/tenancy/contact-assignments/?contact_id={obj}"
+        logger.debug("Checking device from {}".format(url))
+        data = self.fetcher(url)
+        results = data["results"]
+        url = data["next"]
+        while url:
+            data = self.fetcher(url)
+            for d in data["results"]:
+                results.append(d)
+            url = data["next"]
+        return results
+
+    def check_platform(self, plat):
+        url = f"{self.base_url}/dcim/platforms/?name={plat}"
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_manufacturer(self, manuf):
+        url = f"{self.base_url}/dcim/manufacturers/?slug={manuf}"
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_hardware(self, hw, manuf_id):
+        url = f"{self.base_url}/dcim/device-types/?slug={hw}&manufacturer_id={manuf_id}"
+        logger.debug(f"Checking hardware from {url}")
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_device(self, dev):
+        url = f"{self.base_url}/dcim/devices/?q={dev}"
+        logger.debug(f"Checking device from {url}")
+        data = self.fetcher(url)
+        results = data["results"]
+        url = f"{self.base_url}/virtualization/virtual-machines/?q={dev}"
+        logger.debug(f"Checking VM from {url}")
+        data = self.fetcher(url)
+        for d in data["results"]:
+            results.append(d)
+        return results
+
+    def check_vm(self, dev):
+        url = f"{self.base_url}/virtualization/virtual-machines/?name={dev}"
+        logger.debug("checking vm from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_vmcluster(self, dev):
+        url = f"{self.base_url}/virtualization/clusters/?name={dev}"
+        logger.debug("checking vmcluster from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_cname(self, dev):
+        url = f"{self.base_url}/dcim/devices/?cf_cname={dev}"
+        logger.debug("Checking device from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_orthos_id(self, id):
+        url = f"{self.base_url}/dcim/devices/?cf_orthos_id={id}"
+        logger.debug(f"Checking device from {url}")
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_vm_orthos_id(self, id):
+        url = f"{self.base_url}/virtualization/virtual-machines/?cf_orthos_id={id}"
+        logger.debug(f"Checking device from {url}")
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_device_by_rt_id(self, id):
+        url = f"{self.base_url}/dcim/devices/?cf_rt_object_id={id}"
+        logger.debug(f"Checking device from {url}")
+        data = self.fetcher(url)
+        if data["results"]:
+            return data["results"]
+        url = f"{self.base_url}/virtualization/virtual-machines/?cf_rt_object_id={id}"
+        logger.debug(f"Checking vm from {url}")
+        data = self.fetcher(url)
+        if data["results"]:
+            return data["results"]
+        url = f"{self.base_url}/virtualization/clusters/?cf_rt_object_id={id}"
+        logger.debug(f"Checking cluster from {url}")
+        data = self.fetcher(url)
+        if data["results"]:
+            return data["results"]
+        url = f"{self.base_url}/dcim/modules/?cf_rt_object_id={id}"
+        logger.debug(f"Checking module from {url}")
+        data = self.fetcher(url)
+        if data["results"]:
+            return data["results"]
+        url = f"{self.base_url}/dcim/virtual-chassis/?cf_rt_object_id={id}"
+        logger.debug(f"Checking virtual chassis from {url}")
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_device_by_uuid(self, uuid):
+        url = f"{self.base_url}/dcim/devices/?cf_uuid={uuid}"
+        logger.debug(f"Checking device from {url}")
+        data = self.fetcher(url)
+        if data["results"]:
+            return data["results"]
+        url = f"{self.base_url}/virtualization/virtual-machines/?cf_uuid={uuid}"
+        logger.debug(f"Checking vm from {url}")
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_device_by_asset(self, asset):
+        url = f"{self.base_url}/dcim/devices/?asset_tag={asset}"
+        logger.debug(f"Checking device from {url}")
+        data = self.fetcher(url)
+        results = data["results"]
+        url = f"{self.base_url}/virtualization/virtual-machines/?cf_asset_tag={asset}"
+        logger.debug(f"Checking vm from {url}")
+        data = self.fetcher(url)
+        for d in data["results"]:
+            results.append(d)
+        url = f"{self.base_url}/virtualization/clusters/?cf_asset_tag={asset}"
+        logger.debug(f"Checking vmcluster from {url}")
+        data = self.fetcher(url)
+        for d in data["results"]:
+            results.append(d)
+        return results
+
+    def check_device_by_location(self, loc):
+        url = f"{self.base_url}/dcim/devices/?location_id={loc}"
+        logger.debug("Checking device from {}".format(url))
+        data = self.fetcher(url)
+        results = data["results"]
+        url = data["next"]
+        while url:
+            logger.debug("Fetching more device from {}".format(url))
+            data = self.fetcher(url)
+            for d in data["results"]:
+                results.append(d)
+            url = data["next"]
+        return results
+
+    def check_device_by_location_and_tag(self, loc, tag):
+        url = f"{self.base_url}/dcim/devices/?location_id={loc}&tag={tag}"
+        logger.warning("Checking device from {}".format(url))
+        data = self.fetcher(url)
+        results = data["results"]
+        url = data["next"]
+        while url:
+            logger.warning("Fetching more device from {}".format(url))
+            data = self.fetcher(url)
+            for d in data["results"]:
+                results.append(d)
+                url = data["next"]
+        return results
+
+    def check_device_by_tag(self, tag):
+        url = f"{self.base_url}/dcim/devices/?tag={tag}"
+        logger.warning("Checking device from {}".format(url))
+        data = self.fetcher(url)
+        results = data["results"]
+        url = data["next"]
+        while url:
+            logger.warning("Fetching more device from {}".format(url))
+            data = self.fetcher(url)
+            for d in data["results"]:
+                results.append(d)
+                url = data["next"]
+        return results
+
+    def check_device_by_type(self, type):
+        url = f"{self.base_url}/dcim/devices/?device_type_id={type}"
+        logger.warning("Checking device from {}".format(url))
+        data = self.fetcher(url)
+        results = data["results"]
+        url = data["next"]
+        while url:
+            logger.warning("Fetching more device from {}".format(url))
+            data = self.fetcher(url)
+            for d in data["results"]:
+                results.append(d)
+                url = data["next"]
+        return results
+
+    def check_cable(self, obj_a, obj_b):
+        url = f"{self.base_url}/dcim/cables/?termination_a_id={obj_a}&termination_b_id={obj_b}"
+        logger.debug(f"Fetching cable from {url}")
+        data = self.fetcher(url)
+        return data["results"]
