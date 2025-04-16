@@ -148,13 +148,6 @@ Here you can enter the Orthos welcome message.
 
 Default: blank
 
-``racktables.url.query``
-########################
-
-Orthos retrieves the location of a machine via Racktables. It is important to have at least set orthos_id#{{ id }} at the end of the call, only then can Racktable find the appropriate machine.
-
-Default: ``https://orthos.arch.suse.de/cgi-bin/get_location_from_racktables.pl?orthos_id#{{ id }}``
-
 ``remotepower.default.password``
 ================================
 
