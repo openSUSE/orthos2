@@ -10,6 +10,8 @@ from typing import Any, Dict, List, Literal, Optional
 import requests
 import urllib3
 
+from orthos2 import settings
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logger = logging.getLogger("utils")
@@ -105,6 +107,12 @@ class Netbox(REST):
 
     def __init__(self, host: str, token: str):
         super().__init__(host, token)
+
+    @classmethod
+    def get_instance(cls):
+        if cls.__object is None:
+            cls.__object = Netbox(settings.NETBOX_URL, settings.NETBOX_TOKEN)
+        return cls.__object
 
     def fetch_device_roles(self) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/dcim/device-roles/"
