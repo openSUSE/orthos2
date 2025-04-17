@@ -149,7 +149,7 @@ DATE_INPUT_FORMATS = [
 # the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
-DEFAULT_LOG = ["console", "file"]
+DEFAULT_LOG = ["console"]
 
 logging.addLevelName(logging.CRITICAL, "CC")
 logging.addLevelName(logging.ERROR, "EE")
@@ -171,12 +171,6 @@ LOGGING = {
             "level": "DEBUG",
             "class": "logging.StreamHandler",
             "formatter": "simple",
-        },
-        "file": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",
-            "formatter": "syslog",
-            "filename": "/var/log/orthos2/default.log",
         },
     },
     "loggers": {
