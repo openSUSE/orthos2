@@ -21,6 +21,7 @@ RUN zypper in -y \
     python311-djangorestframework \
     python311-validators \
     python311-netaddr \
+    python311-psycopg2 \
     python311-pytz \
     python311-django-auth-ldap
 

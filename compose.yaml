@@ -4,34 +4,59 @@ services:
       context: .
       dockerfile: docker/develop-tw.dockerfile
     hostname: orthos2.orthos2.test
+    env_file:
+      - "orthos2.env"
+      - "db.env"
     cap_add:
       - NET_RAW
     volumes:
       - ./:/code
     ports:
       - "8000:8000"
+    depends_on:
+      database:
+        condition: service_healthy
+  orthos2_taskmanager:
+    build:
+      context: .
+      dockerfile: docker/develop-tw.dockerfile
+    environment:
+      ORTHOS2_MODE: "taskmanager"
+    env_file:
+      - "db.env"
+    cap_add:
+      - NET_RAW
+    volumes:
+      - ./:/code
+    depends_on:
+      database:
+        condition: service_healthy
+  database:
+    image: postgres
+    restart: always
+    hostname: database.orthos2.test
+    environment:
+      POSTGRES_USER: orthos
+      POSTGRES_PASSWORD: orthos2
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_USER} -U $${POSTGRES_USER}" ]
+      interval: 1s
+      timeout: 5s
+      retries: 10
   cobbler:
-    image: registry.opensuse.org/systemsmanagement/cobbler/github-ci/containers/cobbler-test-github:release33
     hostname: cobbler.orthos2.test
-    command: >
-      bash -c "zypper --gpg-auto-import-keys ref
-      && zypper in -y cobbler lynx w3m
-      && /usr/bin/ssh-keygen -A
-      && /usr/sbin/sshd
-      && cobblerd
-      && apachectl -D FOREGROUND"
+    build:
+      context: .
+      dockerfile: docker/cobbler.dockerfile
     ports:
       # - "22:22"
       - "80:80"
       - "443:443"
   serial_console:
-    image: registry.opensuse.org/opensuse/tumbleweed:latest
     hostname: sconsole.orthos2.test
-    # https://github.com/openSUSE/cscreen
-    command: >
-      bash -c "zypper in -y cscreen openssh-server
-      && /usr/bin/ssh-keygen -A
-      && /usr/sbin/sshd -D"
+    build:
+      context: .
+      dockerfile: docker/serial-console.dockerfile
     #ports:
     #  - 22:22
   machine_bmc:
