@@ -11,7 +11,8 @@ RUN zypper in -y \
     openldap2-devel \
     cyrus-sasl-devel \
     jq \
-    sudo
+    sudo \
+    git
 
 # Install requirements via zypper
 RUN zypper in -y \
