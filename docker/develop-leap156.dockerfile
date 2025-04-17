@@ -11,7 +11,8 @@ RUN zypper in -y \
     openldap2-devel \
     cyrus-sasl-devel \
     jq \
-    sudo
+    sudo \
+    git
 
 # Install requirements via zypper
 RUN zypper in -y \
@@ -21,6 +22,7 @@ RUN zypper in -y \
     python311-djangorestframework \
     python311-validators \
     python311-netaddr \
+    python311-psycopg2 \
     python311-pytz \
     python311-django-auth-ldap
 

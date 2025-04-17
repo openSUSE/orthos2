@@ -49,12 +49,8 @@ jobs:
           sudo chown -R $CURRENT_USER:$CURRENT_GROUP /var/lib/orthos2
           sudo chown -R $CURRENT_USER:$CURRENT_GROUP /var/log/orthos2
       - name: Run mypy for server
-        env:
-          ORTHOS_USER: runner
         run: mypy orthos2
-      - name: Run mypy for CLI
-        env:
-          ORTHOS_USER: runner
+      - name: Run mypy for CL
         run: mypy --strict cli
   isort:
     name: isort
@@ -171,8 +167,6 @@ jobs:
           sudo chown -R $CURRENT_USER:$CURRENT_GROUP /var/lib/orthos2
           sudo chown -R $CURRENT_USER:$CURRENT_GROUP /var/log/orthos2
       - name: Analysing the code with "django-admin check"
-        env:
-          ORTHOS_USER: runner
         run: |
           python3 manage.py check
   prettier:

@@ -14,7 +14,6 @@ import logging
 import logging.config
 import os
 import sys
-from pwd import getpwuid
 from socket import getfqdn, gethostname
 
 from django.contrib.messages import constants as messages
@@ -88,12 +87,6 @@ DATABASES = {
         "NAME": os.path.join(BASE_DIR, "database", "db.sqlite3"),
     }
 }
-
-RUN_AS_USER = os.environ.get("ORTHOS_USER", "orthos")
-CUR_USER = getpwuid(os.getuid())[0]
-if CUR_USER != RUN_AS_USER:
-    logging.error("You must run as user: %s, not as user: %s", RUN_AS_USER, CUR_USER)
-    exit(1)
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
