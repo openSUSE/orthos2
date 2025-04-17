@@ -35,7 +35,7 @@ class TaskExecuter(Thread):
             Priority.HIGH: Queue(),
             Priority.NORMAL: Queue(),
         }
-        self.concurrency = int(ServerConfig.objects.by_key("tasks.concurrency.max"))  # type: ignore
+        self.concurrency = int(ServerConfig.objects.by_key("tasks.concurrency.max", fallback="4"))  # type: ignore
 
     def get_daily_tasks(self) -> None:
         """Check for daily tasks and store them in the queue for processing."""
