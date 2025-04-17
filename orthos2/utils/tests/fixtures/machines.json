@@ -23,7 +23,7 @@
   },
   {
     "model": "data.serialconsoletype",
-    "pk": null,
+    "pk": 1,
     "fields": {
       "name": "IPMI",
       "command": "ipmitool -I lanplus -H {{ machine.bmc.fqdn }} -U {{ ipmi.user}} -P {{ ipmi.password }} sol activate",
@@ -41,20 +41,20 @@
     }
   },
   {
+    "model": "data.platform",
+    "pk": 1,
+    "fields": {
+      "name": "Other",
+      "vendor": 1
+    }
+  },
+  {
     "model": "data.enclosure",
-    "pk": null,
+    "pk": 1,
     "fields": {
       "name": "test",
       "platform": 1,
       "description": "test enclosure"
-    }
-  },
-  {
-    "model": "data.platform",
-    "pk": null,
-    "fields": {
-      "name": "Other",
-      "vendor": 1
     }
   },
   {
@@ -66,21 +66,13 @@
   },
   {
     "model": "data.remotepowerdevice",
-    "pk": null,
+    "pk": 1,
     "fields": {
       "username": "test",
       "password": "test",
       "fqdn": "bmc.orthos2.test",
       "mac": "AA:BB:CC:DD:EE",
       "url": "https://rpower.orthos2.test"
-    }
-  },
-  {
-    "model": "data.remotepower",
-    "pk": null,
-    "fields": {
-      "fence_name": "ipmilanplus",
-      "remote_power_device": 1
     }
   },
   {
@@ -209,6 +201,15 @@
       "tftp_server": 1,
       "updated": "2017-11-17T15:36:51.499Z",
       "created": "2017-10-24T14:20:37.298Z"
+    }
+  },
+  {
+    "model": "data.remotepower",
+    "pk": null,
+    "fields": {
+      "machine_id": 1,
+      "fence_name": "ipmilanplus",
+      "remote_power_device": 1
     }
   },
   {

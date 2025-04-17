@@ -81,12 +81,28 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "orthos2.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "database", "db.sqlite3"),
+if (
+    os.environ.get("ORTHOS2_DB_ENGINE", "django.db.backends.sqlite3")
+    == "django.db.backends.sqlite3"
+):
+    DATABASES = {
+        "default": {
+            "ENGINE": os.environ.get("ORTHOS2_DB_ENGINE", "django.db.backends.sqlite3"),
+            "NAME": os.path.join(BASE_DIR, "database", "db.sqlite3"),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": os.environ.get(
+                "ORTHOS2_DB_ENGINE", "django.db.backends.postgresql_psycopg2"
+            ),
+            "HOST": os.environ.get("ORTHOS2_POSTGRES_HOST", "database.orthos2.test"),
+            "NAME": os.environ.get("ORTHOS2_POSTGRES_NAME", "orthos"),
+            "USER": os.environ.get("ORTHOS2_POSTGRES_USER", "orthos"),
+            "PASSWORD": os.environ.get("ORTHOS2_POSTGRES_PASSWORD", "orthos2"),
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
