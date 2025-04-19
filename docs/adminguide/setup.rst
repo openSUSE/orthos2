@@ -67,6 +67,9 @@ the manual setup of a cscreen server. Follow these steps to ensure that Orthos c
 1. Install cscreen (openSUSE ``zypper in cscreen``)
 
 2. Install the cscreen sudoers configuration
+   .. code-block::
+
+       %_cscreen ALL= NOPASSWD: /usr/bin/systemctl restart cscreend.service
 
 3. Setup passwordless SSH keys between the ``orthos`` (Orthos server) to the ``_cscreen`` user (console server).
 

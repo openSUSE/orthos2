@@ -117,8 +117,7 @@ rm %{buildroot}/usr/bin/orthos2
 cp -r docs/_build/html/* %{buildroot}%{orthos_web_docs}
 %fdupes %{buildroot}/%{orthos_web_docs}
 %python_expand %fdupes %{buildroot}/%{$python_sitelib}/orthos2/
-
-cp -r ansible %{buildroot}/usr/lib/orthos2/ansible
+%python_exec manage.py setup all --buildroot=%{buildroot}
 
 %pre
 getent group orthos >/dev/null || groupadd -r orthos

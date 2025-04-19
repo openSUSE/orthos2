@@ -37,6 +37,7 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1", gethostname(), getfqdn()]
 INSTALLED_APPS = [
     "orthos2.data.apps.DataConfig",
     "orthos2.frontend.apps.FrontendConfig",
+    "orthos2.meta.apps.MetaConfig",
     "orthos2.taskmanager.apps.TaskManagerConfig",
     "orthos2.utils.apps.UtilsConfig",
     "django.contrib.admin",
