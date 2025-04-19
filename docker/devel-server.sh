@@ -25,6 +25,8 @@ taskmanager_start() {
         echo "Waiting for main application to become available"
         sleep 5
     done
+    # Moves files into place
+    python3 manage.py setup ansible
     # Start server
     python3 manage.py taskmanager --start
 }
