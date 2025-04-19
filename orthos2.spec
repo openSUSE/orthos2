@@ -123,7 +123,7 @@ install -D -m 0644 system-user-orthos.conf %{buildroot}%{_sysusersdir}/system-us
 mkdir -p %{buildroot}%{orthos_web_docs}
 
 # client is built via separate spec file to reduce build dependencies
-rm %{buildroot}/usr/bin/orthos2
+rm %{buildroot}%{_prefix}/bin/orthos2
 
 cp -r docs/_build/html/* %{buildroot}%{orthos_web_docs}
 %fdupes %{buildroot}/%{orthos_web_docs}
@@ -147,37 +147,37 @@ cp -r docs/_build/html/* %{buildroot}%{orthos_web_docs}
 
 
 %files
-%{python_sitelib}/orthos2-*
-%{_unitdir}/orthos2_taskmanager.service
-%{_unitdir}/orthos2.service
+%{python_sitelib}/%{name}-*
+%{_unitdir}/%{name}_taskmanager.service
+%{_unitdir}/%{name}.service
 %{_tmpfilesdir}/orthos2.conf
-%dir %{python_sitelib}/orthos2/
-%{python_sitelib}/orthos2/*
-%dir %{_sysconfdir}/orthos2
-%config %{_sysconfdir}/orthos2/settings
-%config %{_sysconfdir}/logrotate.d/orthos2
+%dir %{python_sitelib}/%{name}/
+%{python_sitelib}/%{name}/*
+%dir %{_sysconfdir}/%{name}
+%config %{_sysconfdir}/%{name}/settings
+%config %{_sysconfdir}/logrotate.d/%{name}
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
-%dir %{_prefix}/lib/orthos2
-%dir %{_prefix}/lib/orthos2/scripts
-%{_prefix}/lib/orthos2/*
+%dir %{_prefix}/lib/%{name}
+%dir %{_prefix}/lib/%{name}/scripts
+%{_prefix}/lib/%{name}/*
 %attr(755,orthos,orthos) %{_bindir}/orthos-admin
-%attr(755,orthos,orthos) %dir /srv/www/orthos2
-%ghost %dir /run/%{name}
-%ghost %dir /run/%{name}/ansible
-%ghost %dir /run/%{name}/ansible_lastrun
-%ghost %dir /run/%{name}/ansible_archive
-%attr(755,orthos,orthos) %dir /var/log/orthos2
-%attr(775,orthos,orthos) %dir /var/lib/orthos2
-%attr(775,orthos,orthos) %dir /var/lib/orthos2/archiv
-%attr(775,orthos,orthos) %dir /var/lib/orthos2/orthos-vm-images
-%attr(775,orthos,orthos) %dir /var/lib/orthos2/database
-%attr(700,orthos,orthos) %dir /var/lib/orthos2/.ssh
+%attr(755,orthos,orthos) %dir /srv/www/%{name}
+%ghost %dir %{_rundir}/%{name}
+%ghost %dir %{_rundir}/%{name}/ansible
+%ghost %dir %{_rundir}/%{name}/ansible_lastrun
+%ghost %dir %{_rundir}/%{name}/ansible_archive
+%attr(755,orthos,orthos) %dir %{_localstatedir}/log/%{name}
+%attr(775,orthos,orthos) %dir %{_sharedstatedir}/%{name}
+%attr(775,orthos,orthos) %dir %{_sharedstatedir}/%{name}/archiv
+%attr(775,orthos,orthos) %dir %{_sharedstatedir}/%{name}/orthos-vm-images
+%attr(775,orthos,orthos) %dir %{_sharedstatedir}/%{name}/database
+%attr(700,orthos,orthos) %dir %{_sharedstatedir}/%{name}/.ssh
 
 # defattr(fileattr, user, group, dirattr)
 # Add whole ansible directory with correct attr for dirs and files
 # Always keep this at the end with defattr
 %defattr(664, orthos, orthos, 775)
-/usr/lib/orthos2/ansible
+%{_prefix}/lib/%{name}/ansible
 
 %files docs
 %dir %{orthos_web_docs}
