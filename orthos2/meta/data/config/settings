@@ -37,6 +37,15 @@ SUPPORT_CONTACT = 'tbd@domain.tld'
 #)
 #####################################################################
 
+# Logging
+LOGGING["handlers"]["file"] = {
+    "level": "DEBUG",
+    "class": "logging.FileHandler",
+    "formatter": "syslog",
+    "filename": "/var/log/orthos2/default.log",
+}
+DEFAULT_LOG.append("file")
+
 #####################################################################
 # FENCE AGENTS
 

@@ -37,6 +37,7 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1", gethostname(), getfqdn()]
 INSTALLED_APPS = [
     "orthos2.data.apps.DataConfig",
     "orthos2.frontend.apps.FrontendConfig",
+    "orthos2.meta.apps.MetaConfig",
     "orthos2.taskmanager.apps.TaskManagerConfig",
     "orthos2.utils.apps.UtilsConfig",
     "django.contrib.admin",
@@ -81,12 +82,28 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "orthos2.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "database", "db.sqlite3"),
+if (
+    os.environ.get("ORTHOS2_DB_ENGINE", "django.db.backends.sqlite3")
+    == "django.db.backends.sqlite3"
+):
+    DATABASES = {
+        "default": {
+            "ENGINE": os.environ.get("ORTHOS2_DB_ENGINE", "django.db.backends.sqlite3"),
+            "NAME": os.path.join(BASE_DIR, "database", "db.sqlite3"),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": os.environ.get(
+                "ORTHOS2_DB_ENGINE", "django.db.backends.postgresql_psycopg2"
+            ),
+            "HOST": os.environ.get("ORTHOS2_POSTGRES_HOST", "database.orthos2.test"),
+            "NAME": os.environ.get("ORTHOS2_POSTGRES_NAME", "orthos"),
+            "USER": os.environ.get("ORTHOS2_POSTGRES_USER", "orthos"),
+            "PASSWORD": os.environ.get("ORTHOS2_POSTGRES_PASSWORD", "orthos2"),
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -133,7 +150,7 @@ DATE_INPUT_FORMATS = [
 # the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
-DEFAULT_LOG = ["console", "file"]
+DEFAULT_LOG = ["console"]
 
 logging.addLevelName(logging.CRITICAL, "CC")
 logging.addLevelName(logging.ERROR, "EE")
@@ -155,12 +172,6 @@ LOGGING = {
             "level": "DEBUG",
             "class": "logging.StreamHandler",
             "formatter": "simple",
-        },
-        "file": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",
-            "formatter": "syslog",
-            "filename": "/var/log/orthos2/default.log",
         },
     },
     "loggers": {

@@ -15,6 +15,7 @@ from orthos2.api.forms import (
     SerialConsoleAPIForm,
     VirtualMachineAPIForm,
 )
+from orthos2.data.models import System
 from orthos2.data.models.machine import Machine
 
 
@@ -41,10 +42,11 @@ class VirtualMachineAPIFormTests(TestCase):
         """Test the virtual machine creation API form"""
         # Arrange & Act
         host = Machine.objects.get_by_natural_key("test.testing.suse.de")
+        system_id = System.objects.get(name="VM KVM").id
         form = VirtualMachineAPIForm(
             {
                 "architecture": "x86_64",
-                "system": "2",
+                "system": system_id,
                 "ram_amount": "2048",
                 "disk_size": "30",
                 "image": "none",

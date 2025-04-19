@@ -569,9 +569,18 @@ class VirtualMachineForm(forms.Form):
 
         super(VirtualMachineForm, self).__init__(*args, **kwargs)
 
+        if settings.DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
+            name_regex = r"\bKVM\b"
+        elif (
+            settings.DATABASES["default"]["ENGINE"]
+            == "django.db.backends.postgresql_psycopg2"
+        ):
+            name_regex = r"\yKVM\y"
+        else:
+            raise ValueError("Unsupported database driver!")
         self.fields["system"].choices = [  # type: ignore
             (system.pk, system.name)
-            for system in System.objects.filter(virtual=True, name__regex=r"\bKVM\b")
+            for system in System.objects.filter(virtual=True, name__regex=name_regex)
         ]
         if virtualization_api is None:
             raise ValueError(

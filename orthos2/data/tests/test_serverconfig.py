@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.test import TestCase
 
 from orthos2.data.models import ServerConfig
@@ -85,12 +87,17 @@ class GeneralManagerTest(TestCase):
 
     def test_get_daily_execution_time(self) -> None:
         """Method should return a valid datetime.time object, None otherwise."""
-        from datetime import datetime
 
-        assert ServerConfig.objects.get_daily_execution_time() is None
+        assert (
+            ServerConfig.objects.get_daily_execution_time()
+            == datetime(1900, 1, 1, 00, 00).time()
+        )
 
         ServerConfig(key=DAILY_EXECUTION_TIME).save()
-        assert ServerConfig.objects.get_daily_execution_time() is None
+        assert (
+            ServerConfig.objects.get_daily_execution_time()
+            == datetime(1900, 1, 1, 00, 00).time()
+        )
         ServerConfig.objects.filter(key=DAILY_EXECUTION_TIME).delete()
 
         ServerConfig(key=DAILY_EXECUTION_TIME, value="foo").save()
