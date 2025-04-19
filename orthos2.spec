@@ -46,6 +46,7 @@ BuildRequires:  %{python_module setuptools}
 BuildRequires:  %{python_module typing_extensions if %python-base < 3.8}
 Requires(post): sudo
 BuildRequires:  python-rpm-macros
+BuildRequires:  sysuser-tools
 
 Requires:  %{python3_pkgversion}-Django >= 4.2
 Requires:  %{python3_pkgversion}-django-extensions
@@ -96,16 +97,26 @@ BuildRequires:  %{python_module Sphinx}
 %description docs
 HTML documentation that can be put into a web servers htdocs directory for publishing.
 
+%package -n system-user-orthos
+Summary:        Orthos user and group
+Group:          System
+%sysusers_requires
+
+%description -n system-user-orthos
+Orthos user and group required by orthos2 package
+
 %prep
 %autosetup
 
 %build
+%sysusers_generate_pre system-user-orthos.conf orthos system-user-orthos.conf
 %python_build
 cd docs
 make html
 
 
 %install
+install -D -m 0644 system-user-orthos.conf %{buildroot}%{_sysusersdir}/system-user-orthos.conf
 %python_install
 
 # docs
@@ -120,11 +131,9 @@ cp -r docs/_build/html/* %{buildroot}%{orthos_web_docs}
 %python_exec manage.py setup all --buildroot=%{buildroot}
 
 %pre
-getent group orthos >/dev/null || groupadd -r orthos
-getent passwd orthos >/dev/null || \
-    useradd -r -g orthos -d /var/lib/orthos2 -s /bin/bash \
-    -c "Useful comment about the purpose of this account" orthos
 %service_add_pre orthos2.service orthos2_taskmanager.service
+
+%pre -n system-user-orthos -f orthos.pre
 
 %post
 %tmpfiles_create %{_tmpfilesdir}/%{name}.conf
@@ -176,6 +185,9 @@ getent passwd orthos >/dev/null || \
 %files docs
 %dir %{orthos_web_docs}
 %{orthos_web_docs}/*
+
+%files -n system-user-orthos
+%{_sysusersdir}/system-user-orthos.conf
 
 %changelog
 * Tue Sep 15 00:26:20 UTC 2020 - Thomas Renninger <trenn@suse.de>
