@@ -135,6 +135,7 @@ class Command(BaseCommand):
             # Create base paths as they don't exist in the case of a buildroot
             dir_unitpath.mkdir(parents=True)
             dir_logrotate_config.mkdir(parents=True)
+            dir_nginx_config.mkdir(parents=True)
         if what == CHOICE_ALL:
             self.install_systemd(dir_unitpath, overwrite=overwrite)
             self.install_ansible(dir_exec, overwrite=overwrite)
