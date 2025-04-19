@@ -20,21 +20,14 @@ Installation/Setup (Production system)
 
     orthos-admin migrate
 
-5. Install fixtures (push data to database):
+5. Install fixtures (push data to database; optional):
 
-   a. In case of a fresh install - Load data from package data:
+   In case you want to load data from another orthos instance where you
+   previously dumped data tables:
 
-    .. code-block::
+   .. code-block::
 
-        orthos-admin loaddata /usr/share/orthos2/fixtures/data/*.json /usr/share/orthos2/fixtures/taskmanager/*.json
-
-
-   b. In case you want to load data from another orthos instance where you
-      previously dumped data tables:
-
-    .. code-block::
-
-        orthos-admin loaddata "dumped_table.json"
+       orthos-admin loaddata "dump.json"
 
 
 6. Create a superuser

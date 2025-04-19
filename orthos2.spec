@@ -157,12 +157,9 @@ cp -r docs/_build/html/* %{buildroot}%{orthos_web_docs}
 %config %{_sysconfdir}/orthos2/settings
 %config %{_sysconfdir}/logrotate.d/orthos2
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
-%dir /usr/lib/orthos2
-%dir /usr/lib/orthos2/scripts
-%dir /usr/share/orthos2
-%dir /usr/share/orthos2/fixtures
-/usr/share/orthos2/fixtures/*
-/usr/lib/orthos2/*
+%dir %{_prefix}/lib/orthos2
+%dir %{_prefix}/lib/orthos2/scripts
+%{_prefix}/lib/orthos2/*
 %attr(755,orthos,orthos) %{_bindir}/orthos-admin
 %attr(755,orthos,orthos) %dir /srv/www/orthos2
 %ghost %dir /run/%{name}
