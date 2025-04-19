@@ -137,6 +137,7 @@ class Command(BaseCommand):
             dir_logrotate_config.mkdir(parents=True)
             dir_nginx_config.mkdir(parents=True)
             dir_tmpfiles.mkdir(parents=True)
+            dir_logs.mkdir(parents=True)
         if what == CHOICE_ALL:
             self.install_systemd(dir_unitpath, overwrite=overwrite)
             self.install_ansible(dir_exec, overwrite=overwrite)
