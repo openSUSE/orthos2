@@ -128,7 +128,7 @@ rm %{buildroot}%{_prefix}/bin/orthos2
 cp -r docs/_build/html/* %{buildroot}%{orthos_web_docs}
 %fdupes %{buildroot}/%{orthos_web_docs}
 %python_expand %fdupes %{buildroot}/%{$python_sitelib}/orthos2/
-%python_exec manage.py setup all --buildroot=%{buildroot}
+%python_exec manage.py setup all --buildroot=%{buildroot} --skip-chown
 
 %pre
 %service_add_pre orthos2.service orthos2_taskmanager.service

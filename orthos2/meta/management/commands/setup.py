@@ -89,6 +89,11 @@ class Command(BaseCommand):
             action="store_true",
             help="Overwrite existing files (default is False)",
         )
+        parser.add_argument(
+            "--skip-chown",
+            action="store_true",
+            help="Skip chown call for files and directories (default is False)",
+        )
 
     def handle(self, *args: Any, **options: Any) -> None:
         """
@@ -102,6 +107,7 @@ class Command(BaseCommand):
             return
         what = options["what"]
         overwrite = options["overwrite"]
+        skip_chown = options["skip_chown"]
         if buildroot is None:
             dir_orthos2_config = options["directory_orthos2_config"]
             dir_logrotate_config = options["directory_logrotate_config"]
@@ -144,7 +150,7 @@ class Command(BaseCommand):
             self.install_orthos2_config(dir_orthos2_config, overwrite=overwrite)
             self.install_nginx_config(dir_nginx_config, overwrite=overwrite)
             self.install_tmpfiles(dir_tmpfiles, overwrite=overwrite)
-            self.install_logs(dir_logs)
+            self.install_logs(dir_logs, skip_chown=skip_chown)
             self.install_orthos2_admin(dir_bindir, overwrite=overwrite)
             self.install_orthos2_data(dir_orthos2_data)
             self.install_orthos2_scripts(dir_exec, overwrite=overwrite)
@@ -161,7 +167,7 @@ class Command(BaseCommand):
         elif what == CHOICE_TMPFILES:
             self.install_tmpfiles(dir_tmpfiles, overwrite=overwrite)
         elif what == CHOICE_LOGS:
-            self.install_logs(dir_logs)
+            self.install_logs(dir_logs, skip_chown=skip_chown)
         elif what == CHOICE_ORTHOS_ADMIN:
             self.install_orthos2_admin(dir_bindir, overwrite=overwrite)
         elif what == CHOICE_ORTHOS_DATADIR:
@@ -280,13 +286,14 @@ class Command(BaseCommand):
         )
         self.__install_single_file(source_file, directory, overwrite=overwrite)
 
-    def install_logs(self, directory: pathlib.Path):
+    def install_logs(self, directory: pathlib.Path, skip_chown: bool = False) -> None:
         """
         This creates the directory for file-based logging in Orthos 2.
         """
         self.stdout.write(f"Creating directory for Orthos 2 logfiles: {directory}")
         directory.mkdir(mode=0o755, exist_ok=True)
-        # shutil.chown(directory, ORTHOS2_USER, ORTHOS2_GROUP)
+        if not skip_chown:
+            shutil.chown(directory, ORTHOS2_USER, ORTHOS2_GROUP)
 
     def __install_directory(
         self,
