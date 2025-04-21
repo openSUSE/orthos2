@@ -98,11 +98,16 @@ class ServerConfigManager(models.Manager["ServerConfig"]):
                     logger.warning(
                         "Daily exection time entry is no valid time string (HH:MM)"
                     )
+                    return None
             else:
-                logger.warning("Daily execution time entry is empty")
+                logger.warning(
+                    "Daily execution time entry is empty, returning default of midnight"
+                )
         except ServerConfig.DoesNotExist:
-            logger.warning("No daily execution time entry found")
-        return None
+            logger.warning(
+                "No daily execution time entry found, returning default of midnight"
+            )
+        return datetime.datetime.strptime("00:00", "%H:%M").time()
 
 
 class ServerConfigSSHManager(ServerConfigManager):

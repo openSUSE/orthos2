@@ -1,1 +1,0 @@
-%_cscreen ALL= NOPASSWD: /usr/bin/systemctl restart cscreend.service

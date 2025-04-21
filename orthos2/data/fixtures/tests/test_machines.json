@@ -10,7 +10,7 @@
   },
   {
     "model": "data.domain",
-    "pk": null,
+    "pk": 1,
     "fields": {
       "name": "example.our-org.tld",
       "ip_v4": "127.0.0.1",
@@ -23,7 +23,7 @@
   },
   {
     "model": "data.platform",
-    "pk": null,
+    "pk": 1,
     "fields": {
       "name": "Other",
       "vendor": 1
@@ -31,7 +31,7 @@
   },
   {
     "model": "data.enclosure",
-    "pk": null,
+    "pk": 1,
     "fields": {
       "name": "test",
       "platform": 1,
@@ -40,7 +40,7 @@
   },
   {
     "model": "data.machine",
-    "pk": null,
+    "pk": 1,
     "fields": {
       "enclosure": 1,
       "fqdn": "test.testing.suse.de",
@@ -75,7 +75,7 @@
   },
   {
     "model": "data.machine",
-    "pk": null,
+    "pk": 2,
     "fields": {
       "enclosure": 1,
       "fqdn": "test-sp.testing.suse.de",
@@ -109,7 +109,7 @@
   },
   {
     "model": "data.networkinterface",
-    "pk": null,
+    "pk": 1,
     "fields": {
       "machine": 1,
       "primary": true,
@@ -123,7 +123,7 @@
   },
   {
     "model": "data.networkinterface",
-    "pk": null,
+    "pk": 2,
     "fields": {
       "machine": 1,
       "primary": false,
@@ -137,7 +137,7 @@
   },
   {
     "model": "data.networkinterface",
-    "pk": null,
+    "pk": 3,
     "fields": {
       "machine": 1,
       "primary": false,
