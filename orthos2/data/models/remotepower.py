@@ -147,7 +147,10 @@ class RemotePower(models.Model):
         if self.fence_name is None:
             return None
         logging.debug("getting fence object for %s", self.fence_name)
-        return str(RemotePowerType.from_fence(self.fence_name).device)  # type: ignore
+        fence = RemotePowerType.from_fence(self.fence_name)
+        if fence is None:
+            return None
+        return str(fence.device)
 
     def power_on(self) -> None:
         """Power on the machine."""

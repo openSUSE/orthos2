@@ -230,7 +230,6 @@ class VirtualMachineListView(MachineListView):
 def machine(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
-        machine.enclosure.fetch_location(machine.pk)
     except Machine.DoesNotExist:
         messages.error(request, "Machine does not exist.")
         return redirect("machines")
@@ -247,7 +246,6 @@ def machine(request: HttpRequest, id: int) -> HttpResponse:
 def machine_fqdn(request: HttpRequest, fqdn: str) -> HttpResponse:
     try:
         machine = Machine.objects.get(fqdn=fqdn)
-        machine.enclosure.fetch_location(machine.pk)
     except Machine.DoesNotExist:
         messages.error(request, "Machine does not exist.")
         return redirect("machines")
@@ -263,7 +261,6 @@ def machine_fqdn(request: HttpRequest, fqdn: str) -> HttpResponse:
 def pci(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
-        machine.enclosure.fetch_location(machine.pk)
         return render(
             request,
             "frontend/machines/detail/pci.html",
@@ -513,6 +510,27 @@ def rescan(request: HttpRequest, id: int) -> HttpResponseRedirect:
             messages.info(request, "Rescanning machine - this can take some seconds...")
         except Exception as exception:
             messages.error(request, exception)  # type: ignore
+
+    return redirect("frontend:detail", id=id)
+
+
+@login_required
+@check_permissions()
+def fetch_netbox(request: HttpRequest, id: int) -> HttpResponseRedirect:
+    try:
+        requested_machine = Machine.objects.get(pk=id)
+    except Machine.DoesNotExist:
+        messages.error(request, "Machine does not exist!")
+        return redirect("frontend:machines")
+
+    try:
+        TaskManager.add(tasks.NetboxFetchFullMachine(requested_machine.pk))
+        messages.info(
+            request,
+            "Fetching data from Netbox for machine - this can take some seconds...",
+        )
+    except Exception as exception:
+        messages.error(request, exception)  # type: ignore
 
     return redirect("frontend:detail", id=id)
 
