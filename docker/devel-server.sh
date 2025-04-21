@@ -26,7 +26,7 @@ taskmanager_start() {
         sleep 5
     done
     # Moves files into place
-    python3 manage.py setup ansible
+    python3 manage.py setup ansible --buildroot="/"
     # Start server
     python3 manage.py taskmanager --start
 }
