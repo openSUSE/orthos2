@@ -33,7 +33,7 @@ class RemotePowerType:
 
     def __init__(self, options: Dict[str, str]) -> None:
         self.fence = options.get("fence")
-        logging.debug("Initialiced RemotePowerType for %s", self.fence)
+        logging.debug("Initialized RemotePowerType for %s", self.fence)
         self.device = options.get("device")
         self.username = options.get("username")
         if "password" in options:
