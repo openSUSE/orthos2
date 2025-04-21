@@ -41,12 +41,12 @@ jobs:
       run: |
         docker compose exec -it orthos2 bash -c 'coverage run --source="." manage.py test orthos2'
         docker compose exec -it orthos2 bash -c 'coverage report'
-    - name: Check coverage goal
-      run: |
-        # Coverage goal is atm 25% or greater
-        docker compose exec -it orthos2 bash -c 'coverage json'
-        coverage_percent=$(jq -r ".totals.percent_covered_display" < coverage.json)
-        [ "$coverage_percent" -gt "25" ]
+        docker compose exec -it orthos2 bash -c 'coverage xml'
+    - name: Upload coverage
+      uses: codacy/codacy-coverage-reporter-action@v1.3.0
+      with:
+        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        coverage-reports: coverage.xml
   integration:
     runs-on: ubuntu-latest
 
