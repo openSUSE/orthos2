@@ -522,6 +522,7 @@ class MachineAdmin(admin.ModelAdmin):
                     "platform",
                     "contact_email",
                     "kernel_options",
+                    "netbox_id",
                 ),
             },
         ),
@@ -721,7 +722,7 @@ admin.site.register(Domain, DomainAdminAdmin)
 
 
 class EnclosureAdmin(admin.ModelAdmin):
-    readonly_fields = ("location_room", "location_rack", "location_rack_position")
+    readonly_fields = ("location_site", "location_room", "location_rack", "location_rack_position")
     list_display = ("name", "machine_count", "platform_name")
     search_fields = ("name",)
 
