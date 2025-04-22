@@ -123,7 +123,7 @@ class NetworkInterface(models.Model):
                 logger.info("Fetching from NetBox failed with status 404.")
                 return
             raise e
-        netbox_interfaces = netbox_api.check_interface_by_id(self.machine.netbox_id)
+        netbox_interfaces = netbox_api.check_interface_no_mgmt_by_id(self.machine.netbox_id)
         netbox_target_interface = {}
         for interface in netbox_interfaces:
             if interface.get("primary_mac_address") is None:
