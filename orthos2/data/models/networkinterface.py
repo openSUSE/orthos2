@@ -142,8 +142,11 @@ class NetworkInterface(models.Model):
         if len(ips) > 2:
             logger.warning("Too many IPs assigned to this interface.")
             return
-        self.ip_address_v4 = ""
-        self.ip_address_v6 = ""
+        # Reset Fields
+        self.ip_address_v4 = None
+        self.ip_address_v6 = None
+        self.primary = False
+        # Set fields
         machine_primary_ipv4 = netbox_machine.get("primary_ip4")
         machine_primary_ipv6 = netbox_machine.get("primary_ip6")
         for ip in ips:

@@ -3,7 +3,6 @@ import logging
 from typing import TYPE_CHECKING
 
 from django.db import models
-from requests import HTTPError
 
 from orthos2.data.validators import validate_mac_address
 from orthos2.utils.netbox import Netbox
@@ -61,16 +60,13 @@ class BMC(models.Model):
             logger.debug("Skipping fetching from NetBox because NetBox ID is 0.")
             return
         netbox_api = Netbox.get_instance()
-        try:
-            netbox_machine = netbox_api.fetch_device(self.machine.netbox_id)
-        except HTTPError as e:
-            if e.response.status_code == 404:
-                logger.info("Fetching from NetBox failed with status 404.")
-                return
-            raise e
         netbox_interfaces = netbox_api.check_interface_mgmt_by_id(
             self.machine.netbox_id
         )
+        # Reset fields
+        self.ip_address_v4 = None
+        self.ip_address_v6 = None
+        # Set fields
         for interface in netbox_interfaces:
             if interface.get("primary_mac_address") is None:
                 continue
@@ -85,20 +81,4 @@ class BMC(models.Model):
                         self.ip_address_v4 = str(ip_obj)
                     if ip_obj.version == 6:
                         self.ip_address_v6 = str(ip_obj)
-                    if netbox_machine.get(
-                        "primary_ip4"
-                    ) is not None and netbox_machine.get("primary_ip4", {}).get(
-                        "id", 0
-                    ) == ip.get(
-                        "id", -1
-                    ):
-                        self.primary = True
-                    if netbox_machine.get(
-                        "primary_ip6"
-                    ) is not None and netbox_machine.get("primary_ip6", {}).get(
-                        "id", 0
-                    ) == ip.get(
-                        "id", -1
-                    ):
-                        self.primary = True
                     self.save()

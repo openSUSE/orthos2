@@ -627,6 +627,10 @@ class Machine(models.Model):
                 logger.info("Fetching from NetBox failed with status 404.")
                 return
             raise e
+        # Reset fields
+        self.comment = ""
+        self.serial_number = ""
+        self.product_code = ""
         # Description
         self.comment = netbox_machine.get("description", "")
         # Serial Number
