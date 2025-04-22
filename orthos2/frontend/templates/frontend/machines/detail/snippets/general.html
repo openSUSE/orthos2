@@ -65,5 +65,15 @@
       <td class="th">ID</td>
       <td>{{ machine.id }}</td>
     </tr>
+    {% if machine.netbox_id > 0 %}
+    <tr>
+      <td class="th">NetBox URL</td>
+      {% if machine.system.virtual %}
+      <td><a href="{{ NETBOX_URL }}/virtualization/virtual-machines/{{ machine.netbox_id }}/">NetBox Virtual Machine {{ machine.netbox_id }}</a></td>
+      {% else %}
+      <td><a href="{{ NETBOX_URL }}/dcim/devices/{{ machine.netbox_id }}/">NetBox Device {{ machine.netbox_id }}</a></td>
+      {% endif %}
+    </tr>
+    {% endif %}
   </tbody>
 </table>
