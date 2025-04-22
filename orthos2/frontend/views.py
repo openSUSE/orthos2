@@ -48,20 +48,23 @@ from orthos2.data.models import (
     ServerConfig,
 )
 from orthos2.frontend.decorators import check_permissions
-from orthos2.frontend.forms import (
-    NewUserForm,
-    PasswordRestoreForm,
-    PreferencesForm,
-    ReserveMachineForm,
-    SearchForm,
-    SetupMachineForm,
-    VirtualMachineForm,
-)
+from orthos2.frontend.forms.addmachine import AddMachineFormView
+from orthos2.frontend.forms.newuser import NewUserForm
+from orthos2.frontend.forms.passwordrestore import PasswordRestoreForm
+from orthos2.frontend.forms.preferences import PreferencesForm
+from orthos2.frontend.forms.reservemachine import ReserveMachineForm
+from orthos2.frontend.forms.search import SearchForm
+from orthos2.frontend.forms.setupmachine import SetupMachineForm
+from orthos2.frontend.forms.virtualmachine import VirtualMachineForm
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.misc import add_offset_to_date
 
 logger = logging.getLogger("views")
+
+
+class AuthenticatedHttpRequest(HttpRequest):
+    user: User
 
 
 class MachineListView(ListView):
@@ -239,6 +242,21 @@ def machine(request: HttpRequest, id: int) -> HttpResponse:
         "frontend/machines/detail/overview.html",
         {"machine": machine, "title": "Machine"},
     )
+
+
+@login_required
+def machine_add(request: AuthenticatedHttpRequest) -> HttpResponse:
+    perm_list = [
+        "data.add_machine",
+        "data.add_bmc",
+        "data.add_remotepower",
+        "data.add_networkinterface",
+    ]
+    if not request.user.has_perms(perm_list):
+        messages.error(request, "Not enough user permissions.")
+        return redirect("machines")
+
+    return AddMachineFormView.as_view()(request)
 
 
 @login_required

@@ -29,7 +29,8 @@ from orthos2.data.models import (
 )
 from orthos2.data.models.domain import validate_domain_ending
 from orthos2.data.validators import validate_mac_address
-from orthos2.frontend.forms import ReserveMachineForm, VirtualMachineForm
+from orthos2.frontend.forms.reservemachine import ReserveMachineForm
+from orthos2.frontend.forms.virtualmachine import VirtualMachineForm
 from orthos2.utils.misc import is_unique_mac_address
 from orthos2.utils.remotepowertype import get_remote_power_type_choices
 
