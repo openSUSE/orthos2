@@ -639,6 +639,25 @@ class Machine(models.Model):
         product_code = netbox_machine.get("custom_fields", {}).get("product_code", "")
         if product_code is not None and product_code != "":
             self.product_code = product_code
+        # Verify all NetworkInterfaces are created
+        device_network_interfaces = netbox_api.check_interface_by_id(self.netbox_id)
+        synced_mac_addresses = set()
+        for interface in device_network_interfaces:
+            primary_mac = interface.get("primary_mac_address")
+            if primary_mac is None:
+                continue
+            # If interface exists with MAC, then sync
+            if primary_mac in synced_mac_addresses:
+                # This is most probably a bonded interface, and we synchronize the first interface.
+                continue
+            synced_mac_addresses.add(primary_mac)
+            try:
+                NetworkInterface.objects.get(mac_address=primary_mac)
+            except ObjectDoesNotExist:
+                # Create Network Interface
+                pass
+            # If on the same machine --> Update
+            # If on different machine --> Remove from machine and assign to this machine --> Update
         self.save()
 
     def bmc_allowed(self) -> bool:
