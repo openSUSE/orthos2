@@ -40,7 +40,8 @@ class AddMachineForm(forms.Form):
     system = forms.ModelChoiceField(
         queryset=System.objects.all(),
         required=True,
-        help_text="The system type the NetBox machine belongs to. In case the given NetBox ID is for an enclosure, this field is ignored.",
+        help_text="The system type the NetBox machine belongs to. In case the given NetBox ID is for an enclosure, "
+        "this field is ignored.",
     )
 
     def clean(self):
@@ -124,7 +125,10 @@ class AddMachineFormView(FormView):
             try:
                 target_arch = Architecture.objects.get(name=machine_arch)
             except ObjectDoesNotExist:
-                form.add_error("netbox_id", "Machine architecture couldn't be found in Orthos 2 or not set in NetBox.")
+                form.add_error(
+                    "netbox_id",
+                    "Machine architecture couldn't be found in Orthos 2 or not set in NetBox.",
+                )
                 return super().form_invalid(form)
             new_machine = Machine()
             new_machine.fqdn = machine_name
