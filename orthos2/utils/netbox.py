@@ -300,15 +300,15 @@ class Netbox(REST):
 
     def check_interface_by_id(self, id):
         url = f"{self.base_url}/dcim/interfaces/?device_id={id}"
-        self.__check_interface(url)
+        return self.__check_interface(url)
 
     def check_interface_no_mgmt_by_id(self, id):
         url = f"{self.base_url}/dcim/interfaces/?device_id={id}&mgmt_only=false"
-        self.__check_interface(url)
+        return self.__check_interface(url)
 
     def check_interface_mgmt_by_id(self, id):
         url = f"{self.base_url}/dcim/interfaces/?device_id={id}&mgmt_only=true"
-        self.__check_interface(url)
+        return self.__check_interface(url)
 
     def __check_interface(self, url: str):
         logger.debug("Checking MAC address from {}".format(url))
