@@ -1,7 +1,8 @@
 from typing import Any, Dict
 
 from django import forms
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.db import IntegrityError
 from django.urls import reverse
 from django.views.generic.edit import FormView
 from requests import HTTPError
@@ -52,8 +53,10 @@ class AddMachineForm(forms.Form):
         if not device_found and not vm_found:
             self.add_error("netbox_id", "Found neither a NetBox Device nor a NetBox VM.")
             return
-        if self.cleaned_data["system"].name == "BareMetal" and (not device_found or vm_found):
-            self.add_error("netbox_id", "NetBox ID matched a virtual machine or didn't match a device.")
+        if self.cleaned_data["system"].name == "BareMetal" and not device_found:
+            self.add_error("netbox_id", "NetBox ID didn't match a device.")
+        if self.cleaned_data["system"].name == "VM KVM" and not vm_found:
+            self.add_error("netbox_id", "NetBox ID didn't match a Virtual Machine.")
 
 
 class AddMachineFormView(FormView):
@@ -102,12 +105,24 @@ class AddMachineFormView(FormView):
             if machine_name is None:
                 form.add_error("netbox_id", "Machine or VM doesn't have a CPU Architecture set in NetBox.")
                 return super().form_invalid(form)
+            try:
+                target_arch = Architecture.objects.get(name=machine_arch)
+            except ObjectDoesNotExist:
+                form.add_error("netbox_id", "Machine architecture couldn't be found in Orthos 2 or not set in NetBox.")
+                return super().form_invalid(form)
             new_machine = Machine()
             new_machine.fqdn = machine_name
-            new_machine.architecture = Architecture.objects.get(name=machine_arch)
-            new_machine.system = form.data["system"]
+            new_machine.architecture = target_arch
+            new_machine.system_id = form.data["system"]
             new_machine.netbox_id = form.data["netbox_id"]
-            new_machine.save()
+            try:
+                new_machine.save()
+            except ValidationError as e:
+                form.add_error("netbox_id", e)
+                return super().form_invalid(form)
+            except IntegrityError as e:
+                form.add_error("netbox_id", e)
+                return super().form_invalid(form)
         return super().form_valid(form)
 
     def get_success_url(self):
