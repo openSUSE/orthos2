@@ -102,6 +102,7 @@ class NetboxFetchFullMachine(Task):
             raise ValueError("Requested machine doesn't exist!") from err
         machine.enclosure.fetch_netbox()
         machine.fetch_netbox()
-        machine.bmc.fetch_netbox()
+        if machine.has_bmc():
+            machine.bmc.fetch_netbox()
         for intf in machine.networkinterfaces.all():
             intf.fetch_netbox()
