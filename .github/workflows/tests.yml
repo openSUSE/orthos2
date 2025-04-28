@@ -33,7 +33,7 @@ jobs:
         docker compose build
     - name: Start Compose Stack
       run: |
-        docker compose up -d
+        docker compose up -d -f compose.yaml -f compose.override.yml
     - name: Wait for Cobbler to run
       run: |
         sleep 60
@@ -61,7 +61,7 @@ jobs:
           docker compose build
       - name: Setup Orthos 2 server
         run: |
-          docker compose up -d
+          docker compose up -d -f compose.yaml -f compose.override.yml
         # TODO: Ensure domain resolves correctly
       - name: Generate Django Token
         # Wait 10 seconds so the container can start
