@@ -5,7 +5,7 @@ Utility module that wraps the functionality that is related to Netbox. This is a
 import json
 import logging
 import urllib
-from typing import Optional
+from typing import Literal, Optional
 
 import requests
 import urllib3
@@ -88,7 +88,7 @@ class REST:
     def deleter(self, url):
         method = "DELETE"
 
-        logger.warning("HTTP Request: {} - {}".format(method, url))
+        logger.warning("HTTP Request: %s - %s", method, url)
 
         request = requests.Request(method, url)
         prepared_request = self.s.prepare_request(request)
@@ -155,7 +155,7 @@ class Netbox(REST):
 
     def fetch_interfaces(self):
         url = f"{self.base_url}/dcim/interfaces/"
-        logger.debug("Checking MAC address from {}".format(url))
+        logger.debug("Checking MAC address from %s", url)
         data = self.fetcher(url)
         results = data["results"]
         return results
@@ -169,25 +169,25 @@ class Netbox(REST):
 
     def fetch_interface(self, id):
         url = f"{self.base_url}/dcim/interfaces/{id}/"
-        logger.debug("Checking MAC address from {}".format(url))
+        logger.debug("Checking MAC address from %s", url)
         data = self.fetcher(url)
         return data
 
     def fetch_vm_interface(self, id):
         url = f"{self.base_url}/virtualization/interfaces/{id}/"
-        logger.debug("Checking MAC address from {}".format(url))
+        logger.debug("Checking MAC address from %s", url)
         data = self.fetcher(url)
         return data
 
     def fetch_device_type(self, id):
         url = f"{self.base_url}/dcim/device-types/{id}/"
-        logger.debug("Fetch device data from {}".format(url))
+        logger.debug("Fetch device data from %s", url)
         data = self.fetcher(url)
         return data
 
     def fetch_device(self, id):
         url = f"{self.base_url}/dcim/devices/{id}/"
-        logger.debug("Fetch device data from {}".format(url))
+        logger.debug("Fetch device data from %s", url)
         data = self.fetcher(url)
         return data
 
@@ -217,25 +217,25 @@ class Netbox(REST):
 
     def check_ip(self, addr):
         url = f"{self.base_url}/ipam/ip-addresses/?address={addr}"
-        logger.debug("Checking ip address from {}".format(url))
+        logger.debug("Checking ip address from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_ip_prefix(self, addr):
         url = f"{self.base_url}/ipam/prefixes/?contains={addr}"
-        logger.debug("Checking ip address from {}".format(url))
+        logger.debug("Checking ip address from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_prefix(self, prefix):
         url = f"{self.base_url}/ipam/prefixes/?prefix={prefix}"
-        logger.debug("Checking ip address from {}".format(url))
+        logger.debug("Checking ip address from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_ip_by_name(self, fqdn):
         url = f"{self.base_url}/ipam/ip-addresses/?q={fqdn}"
-        logger.debug("Checking ip address from {}".format(url))
+        logger.debug("Checking ip address from %s", url)
         data = self.fetcher(url)
         results = data["results"]
         url = data["next"]
@@ -248,35 +248,41 @@ class Netbox(REST):
 
     def check_ip_by_id(self, id):
         url = f"{self.base_url}/ipam/ip-addresses/?device_id={id}"
-        logger.debug("Checking ip address from {}".format(url))
+        logger.debug("Checking ip address from %s", url)
         data = self.fetcher(url)
         if not data["results"]:
             url = f"{self.base_url}/ipam/ip-addresses/?virtual_machine_id={id}"
-            logger.debug("Checking ip address from {}".format(url))
+            logger.debug("Checking ip address from %s", url)
             data = self.fetcher(url)
         return data["results"]
 
     def check_ip_by_interface(self, id):
         url = f"{self.base_url}/ipam/ip-addresses/?interface_id={id}"
-        logger.debug("Checking ip address from {}".format(url))
+        logger.debug("Checking ip address from %s", url)
+        data = self.fetcher(url)
+        return data["results"]
+
+    def check_ip_by_interface_family(self, id, family: Literal[4, 6]):
+        url = f"{self.base_url}/ipam/ip-addresses/?interface_id={id}&family={family}"
+        logger.debug("Checking ip address from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_vlan(self, vid):
         url = f"{self.base_url}/ipam/vlans/?vid={vid}"
-        logger.debug("Checking vlans from {}".format(url))
+        logger.debug("Checking vlans from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_vlan_group(self, name):
         url = f"{self.base_url}/ipam/vlan-groups/?name={name}"
-        logger.debug("Checking vlans from {}".format(url))
+        logger.debug("Checking vlans from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_mac_address(self, mac):
         url = f"{self.base_url}/dcim/interfaces/?mac_address={mac}"
-        logger.debug("Checking MAC address from {}".format(url))
+        logger.debug("Checking MAC address from %s", url)
         data = self.fetcher(url)
         results = data["results"]
         url = f"{self.base_url}/virtualization/interfaces/?mac_address={mac}"
@@ -287,14 +293,14 @@ class Netbox(REST):
 
     def check_vm_mac_address(self, mac):
         url = f"{self.base_url}/virtualization/interfaces/?mac_address={mac}"
-        logger.debug("Checking MAC address from {}".format(url))
+        logger.debug("Checking MAC address from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_interface(self, id, ifname):
         safe_ifname = urllib.parse.quote_plus(ifname)
         url = f"{self.base_url}/dcim/interfaces/?device_id={id}&name={safe_ifname}"
-        logger.debug("Checking MAC address from {}".format(url))
+        logger.debug("Checking MAC address from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
@@ -311,7 +317,7 @@ class Netbox(REST):
         return self.__check_interface(url)
 
     def __check_interface(self, url: str):
-        logger.debug("Checking MAC address from {}".format(url))
+        logger.debug("Checking MAC address from %s", url)
         data = self.fetcher(url)
         results = data["results"]
         url = data["next"]
@@ -325,54 +331,54 @@ class Netbox(REST):
     def check_vm_interface(self, id, ifname):
         safe_ifname = urllib.parse.quote_plus(ifname)
         url = f"{self.base_url}/virtualization/interfaces/?virtual_machine_id={id}&name={safe_ifname}"
-        logger.debug("Checking MAC address from {}".format(url))
+        logger.debug("Checking MAC address from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_vm_interface_by_id(self, id):
         url = f"{self.base_url}/virtualization/interfaces/?virtual_machine_id={id}"
-        logger.debug("Checking MAC address from {}".format(url))
+        logger.debug("Checking MAC address from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_power_port(self, id, ifname):
         safe_ifname = urllib.parse.quote_plus(ifname)
         url = f"{self.base_url}/dcim/power-ports/?device_id={id}&name={safe_ifname}"
-        logger.debug("Checking power port from {}".format(url))
+        logger.debug("Checking power port from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_power_outlet(self, id, ifname):
         safe_ifname = urllib.parse.quote_plus(ifname)
         url = f"{self.base_url}/dcim/power-outlets/?device_id={id}&name={safe_ifname}"
-        logger.debug("Checking power outlet from {}".format(url))
+        logger.debug("Checking power outlet from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_console_port(self, id, ifname):
         safe_ifname = urllib.parse.quote_plus(ifname)
         url = f"{self.base_url}/dcim/console-ports/?device_id={id}&name={safe_ifname}"
-        logger.debug("Checking console port from {}".format(url))
+        logger.debug("Checking console port from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_console_server_port(self, id, ifname):
         safe_ifname = urllib.parse.quote_plus(ifname)
         url = f"{self.base_url}/dcim/console-server-ports/?device_id={id}&name={safe_ifname}"
-        logger.debug("Checking console server port from {}".format(url))
+        logger.debug("Checking console server port from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_orthos_user(self, obj):
         url = f"{self.base_url}/tenancy/contact-assignments/?object_id={obj}&role=orthos-user"
-        logger.debug("Checking device from {}".format(url))
+        logger.debug("Checking device from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_tenancy_user(self, user):
         safe_user = urllib.parse.quote_plus(user)
         url = f"{self.base_url}/tenancy/contacts/?email={safe_user}"
-        logger.debug("Checking tenancy user from {}".format(url))
+        logger.debug("Checking tenancy user from %s", url)
         data = self.fetcher(url)
         if len(data["results"]) > 1:
             logger.warning(f"Duplicate email {user}")
@@ -402,7 +408,7 @@ class Netbox(REST):
 
     def check_ldap_user(self, user):
         url = f"{self.base_url}/tenancy/contacts/?cf_ldap_uid={user}"
-        logger.debug("Checking tenancy user from {}".format(url))
+        logger.debug("Checking tenancy user from %s", url)
         data = self.fetcher(url)
         for res in data["results"]:
             if res["custom_fields"]["ldap_uid"] == user:
@@ -411,19 +417,19 @@ class Netbox(REST):
 
     def check_tenants(self, tenant):
         url = f"{self.base_url}/tenancy/tenants/?q={tenant}"
-        logger.debug("Checking tenancy user from {}".format(url))
+        logger.debug("Checking tenancy user from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_tenancy_assignments(self, obj):
         url = f"{self.base_url}/tenancy/contact-assignments/?object_id={obj}"
-        logger.debug("Checking device from {}".format(url))
+        logger.debug("Checking device from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_contact_assignments(self, obj):
         url = f"{self.base_url}/tenancy/contact-assignments/?contact_id={obj}"
-        logger.debug("Checking device from {}".format(url))
+        logger.debug("Checking device from %s", url)
         data = self.fetcher(url)
         results = data["results"]
         url = data["next"]
@@ -464,19 +470,19 @@ class Netbox(REST):
 
     def check_vm(self, dev):
         url = f"{self.base_url}/virtualization/virtual-machines/?name={dev}"
-        logger.debug("checking vm from {}".format(url))
+        logger.debug("checking vm from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_vmcluster(self, dev):
         url = f"{self.base_url}/virtualization/clusters/?name={dev}"
-        logger.debug("checking vmcluster from {}".format(url))
+        logger.debug("checking vmcluster from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
     def check_cname(self, dev):
         url = f"{self.base_url}/dcim/devices/?cf_cname={dev}"
-        logger.debug("Checking device from {}".format(url))
+        logger.debug("Checking device from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
@@ -548,12 +554,12 @@ class Netbox(REST):
 
     def check_device_by_location(self, loc):
         url = f"{self.base_url}/dcim/devices/?location_id={loc}"
-        logger.debug("Checking device from {}".format(url))
+        logger.debug("Checking device from %s", url)
         data = self.fetcher(url)
         results = data["results"]
         url = data["next"]
         while url:
-            logger.debug("Fetching more device from {}".format(url))
+            logger.debug("Fetching more device from %s", url)
             data = self.fetcher(url)
             for d in data["results"]:
                 results.append(d)
@@ -562,12 +568,12 @@ class Netbox(REST):
 
     def check_device_by_location_and_tag(self, loc, tag):
         url = f"{self.base_url}/dcim/devices/?location_id={loc}&tag={tag}"
-        logger.warning("Checking device from {}".format(url))
+        logger.warning("Checking device from %s", url)
         data = self.fetcher(url)
         results = data["results"]
         url = data["next"]
         while url:
-            logger.warning("Fetching more device from {}".format(url))
+            logger.warning("Fetching more device from %s", url)
             data = self.fetcher(url)
             for d in data["results"]:
                 results.append(d)
@@ -576,12 +582,12 @@ class Netbox(REST):
 
     def check_device_by_tag(self, tag):
         url = f"{self.base_url}/dcim/devices/?tag={tag}"
-        logger.warning("Checking device from {}".format(url))
+        logger.warning("Checking device from %s", url)
         data = self.fetcher(url)
         results = data["results"]
         url = data["next"]
         while url:
-            logger.warning("Fetching more device from {}".format(url))
+            logger.warning("Fetching more device from %s", url)
             data = self.fetcher(url)
             for d in data["results"]:
                 results.append(d)
@@ -590,12 +596,12 @@ class Netbox(REST):
 
     def check_device_by_type(self, type):
         url = f"{self.base_url}/dcim/devices/?device_type_id={type}"
-        logger.warning("Checking device from {}".format(url))
+        logger.warning("Checking device from %s", url)
         data = self.fetcher(url)
         results = data["results"]
         url = data["next"]
         while url:
-            logger.warning("Fetching more device from {}".format(url))
+            logger.warning("Fetching more device from %s", url)
             data = self.fetcher(url)
             for d in data["results"]:
                 results.append(d)
