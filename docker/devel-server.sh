@@ -1,12 +1,8 @@
 #!/usr/bin/bash
 
-setup_netbox() {
-  python3 docker/setup_netbox.py
-}
-
 server_start() {
     # Setup NetBox
-    setup_netbox
+    python3 manage.py shell < /code/docker/setup_netbox.py
     # Setup Orthos 2
     git config --global --add safe.directory /code
     OLD_BRANCH=$(git branch --show-current)

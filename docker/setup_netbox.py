@@ -1,8 +1,5 @@
-import logging
-import sys
 from typing import Any, Dict
 
-sys.path.append("/code/")
 from orthos2.utils.netbox import Netbox
 
 
@@ -670,5 +667,4 @@ def main():
     # Create S390 zVM
 
 
-if __name__ == "__main__":
-    main()
+main()
