@@ -551,6 +551,9 @@ def main():
         device_role_server,
         site_orthos2,
     )
+    netbox.patch_device(
+        device_standalone.get("id"), {"custom_fields": {"arch": "x86_64"}}
+    )
     # Create MAC address
     mac_address_normal = create_mac_address(netbox, "00:00:5E:00:53:01")
     mac_address_dualstack = create_mac_address(netbox, "00:00:5E:00:53:02")
