@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.views.generic.edit import FormView
 from requests import HTTPError
 
-from orthos2.data.models import Enclosure, Machine, System, Architecture
+from orthos2.data.models import Architecture, Enclosure, Machine, System
 from orthos2.utils.netbox import Netbox
 
 
@@ -32,11 +32,16 @@ def safe_fetch_vm(netbox_api: Netbox, netbox_id: str) -> Dict[str, Any]:
 
 
 class AddMachineForm(forms.Form):
-    netbox_id = forms.CharField(required=True, label="NetBox ID", help_text="The ID that NetBox gives to the object.")
+    netbox_id = forms.CharField(
+        required=True,
+        label="NetBox ID",
+        help_text="The ID that NetBox gives to the object.",
+    )
     system = forms.ModelChoiceField(
         queryset=System.objects.all(),
         required=True,
-        help_text="The system type the NetBox machine belongs to. In case the given NetBox ID is for an enclosure, this field is ignored.",
+        help_text="The system type the NetBox machine belongs to. In case the given NetBox ID is for an enclosure, "
+        "this field is ignored.",
     )
 
     def clean(self):
@@ -51,7 +56,9 @@ class AddMachineForm(forms.Form):
         device_found = len(netbox_device) > 0
         vm_found = len(netbox_vm) > 0
         if not device_found and not vm_found:
-            self.add_error("netbox_id", "Found neither a NetBox Device nor a NetBox VM.")
+            self.add_error(
+                "netbox_id", "Found neither a NetBox Device nor a NetBox VM."
+            )
             return
         if self.cleaned_data["system"].name == "BareMetal" and not device_found:
             self.add_error("netbox_id", "NetBox ID didn't match a device.")
@@ -101,14 +108,24 @@ class AddMachineFormView(FormView):
                 pass
             # Create new machine
             machine_name = device_name if device_name else vm_name
-            machine_arch = netbox_device.get("custom_fields", {}).get("arch") if device_name else netbox_vm.get("custom_fields", {}).get("arch")
+            machine_arch = (
+                netbox_device.get("custom_fields", {}).get("arch")
+                if device_name
+                else netbox_vm.get("custom_fields", {}).get("arch")
+            )
             if machine_name is None:
-                form.add_error("netbox_id", "Machine or VM doesn't have a CPU Architecture set in NetBox.")
+                form.add_error(
+                    "netbox_id",
+                    "Machine or VM doesn't have a CPU Architecture set in NetBox.",
+                )
                 return super().form_invalid(form)
             try:
                 target_arch = Architecture.objects.get(name=machine_arch)
             except ObjectDoesNotExist:
-                form.add_error("netbox_id", "Machine architecture couldn't be found in Orthos 2 or not set in NetBox.")
+                form.add_error(
+                    "netbox_id",
+                    "Machine architecture couldn't be found in Orthos 2 or not set in NetBox.",
+                )
                 return super().form_invalid(form)
             new_machine = Machine()
             new_machine.fqdn = machine_name
