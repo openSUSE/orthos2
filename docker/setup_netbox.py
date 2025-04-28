@@ -174,11 +174,6 @@ class NetboxSetup(Netbox):
         print(f"Posting prefix data to {url}")
         return self.uploader(data, url)
 
-    def post_vlan(self, data):
-        url = f"{self.base_url}/ipam/vlans/"
-        print(f"Posting IP data to {url}")
-        return self.uploader(data, url)
-
     def post_device(self, data):
         url = f"{self.base_url}/dcim/devices/"
         print(f"Posting device data to {url}")
@@ -188,16 +183,6 @@ class NetboxSetup(Netbox):
         url = f"{self.base_url}/virtualization/virtual-machines/"
         print(f"Posting VM data to {url}")
         return self.uploader(data, url)
-
-    def post_hardware(self, data):
-        url = f"{self.base_url}/dcim/device-types/"
-        print(f"Posting hardware data {data} to {url}")
-        self.uploader(data, url)
-
-    def post_cable(self, data):
-        url = f"{self.base_url}/dcim/cables/"
-        print(f"Posting cable data {data} to {url}")
-        self.uploader(data, url)
 
     def post_cluster_type(self, data):
         url = f"{self.base_url}/virtualization/cluster-types/"
@@ -213,17 +198,6 @@ class NetboxSetup(Netbox):
         url = f"{self.base_url}/virtualization/virtual-machines/"
         print(f"Posting virtual machine data {data} to {url}")
         return self.uploader(data, url)
-
-    def device_from_nic(self, nic):
-        dev = None
-        if "dcim/interfaces" in nic["url"]:
-            dev = nic["device"]
-        elif "virtualization/interfaces" in nic["url"]:
-            dev = nic["virtual_machine"]
-        else:
-            print(f'{hostname}: invalid type {nic["url"]}')
-            raise ValueError
-        return dev
 
 
 def assign_mac_address_to_interface(
@@ -607,6 +581,12 @@ def main():
     interface_mgmt = create_interface(
         netbox, "example.orthos2.test", "eth2-mgmt", mgmt_only=True
     )
+    try:
+        netbox.patch_interface(
+            interface_mgmt.get("id"), {"custom_fields": {"fence_agent": "ipmilanplus"}}
+        )
+    except:
+        pass
     assign_mac_address_to_interface(netbox, mac_address_mgmt, interface_mgmt)
     # Assign IP Addresses to interfaces
     assign_ip_address_to_interface(netbox, ip_address_v4_primary, interface_normal)
