@@ -92,7 +92,7 @@ services:
       - ./docker/netbox/test_config.py:/etc/netbox/config/test_config.py:z,ro
     healthcheck:
       test: curl -f http://localhost:8080/login/ || exit 1
-      start_period: ${NETBOX_START_PERIOD-120s}
+      start_period: ${NETBOX_START_PERIOD-240s}
       timeout: 3s
       interval: 15s
   netbox-worker:
