@@ -402,6 +402,20 @@ def main():
         )
     except:
         pass
+    # Create Custom Field Choice Set
+    try:
+        netbox.post_custom_field_choice_sets(
+            {
+                "name": "fence agent choices",
+                "extra_choices": [
+                    ["redfish", "redfish"],
+                    ["ipmilanplus", "ipmilanplus"],
+                ],
+                "order_alphabetically": True,
+            }
+        )
+    except:
+        pass
     # Create Custom Field "arch"
     try:
         netbox.post_custom_fields(
@@ -423,6 +437,19 @@ def main():
                 "label": "Product Code",
                 "object_types": ["dcim.device"],
                 "type": "text",
+            }
+        )
+    except:
+        pass
+    # Create Custom Field "fence agent"
+    try:
+        netbox.post_custom_fields(
+            {
+                "name": "fence_agent",
+                "label": "Fence Agent",
+                "object_types": ["dcim.interface"],
+                "type": "select",
+                "choice_set": {"name": "fence agent choices"},
             }
         )
     except:
