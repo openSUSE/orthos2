@@ -85,8 +85,8 @@ class Task:
         """
         Execute the task.
 
-        This wrapper is intented to catch unpredictable exceptions in order to log them in the
-        log file (otherwise, exceptions only occure in terminal).
+        This wrapper is intended to catch unpredictable exceptions in order to log them in the
+        log file (otherwise, exceptions only occurs in terminal).
         """
         try:
             self.execute()

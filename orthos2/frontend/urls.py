@@ -1,5 +1,5 @@
 from django.contrib.auth import views as auth_views
-from django.urls import re_path
+from django.urls import path, re_path
 from django.views.generic import RedirectView
 
 from . import ajax, views
@@ -25,6 +25,7 @@ urlpatterns = [
         name="virtual_machines",
     ),
     re_path(r"^machines/search", views.machine_search, name="advanced_search"),
+    path("machine/add", views.machine_add, name="machine_add"),
     re_path(r"^machine/(?P<id>[0-9]+)/$", views.machine, name="detail"),
     # re_path(r'^(?P<fqdn>[0-9a-zA-Z][0-9a-zA-Z-\.]+)/$', views.machine_fqdn, name='detail'),
     # re_path(r'^machine/(?P<fqdn>[0-9a-zA-Z][0-9a-zA-Z-\.]+)/$', views.machine_fqdn, name='detail'),
@@ -57,6 +58,11 @@ urlpatterns = [
         name="release_machine",
     ),
     re_path(r"^machine/(?P<id>[0-9]+)/rescan$", views.rescan, name="rescan"),
+    re_path(
+        r"^machine/(?P<id>[0-9]+)/fetch-netbox$",
+        views.fetch_netbox,
+        name="netbox_fetch",
+    ),
     re_path(r"^machine/(?P<id>[0-9]+)/setup$", views.setup, name="setup"),
     re_path(
         r"^machine/(?P<id>[0-9]+)/virtualization$",

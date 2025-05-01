@@ -1,0 +1,5 @@
+services:
+  netbox:
+    hostname: netbox.orthos2.test
+    ports:
+      - "8080:8080"
