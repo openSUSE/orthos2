@@ -2,7 +2,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import re_path
 from django.views.generic import RedirectView
 
-from . import ajax, views
+from orthos2.frontend import views
 
 app_name = "orthos2.frontend"
 urlpatterns = [
@@ -26,10 +26,7 @@ urlpatterns = [
     ),
     re_path(r"^machines/search", views.machine_search, name="advanced_search"),
     re_path(r"^machine/(?P<id>[0-9]+)/$", views.machine, name="detail"),
-    # re_path(r'^(?P<fqdn>[0-9a-zA-Z][0-9a-zA-Z-\.]+)/$', views.machine_fqdn, name='detail'),
-    # re_path(r'^machine/(?P<fqdn>[0-9a-zA-Z][0-9a-zA-Z-\.]+)/$', views.machine_fqdn, name='detail'),
     re_path(r"^machine/(?P<id>[0-9]+)/detail$", views.machine, name="detail"),
-    # re_path(r'^machine/(?P<fqdn>[0-9a-zA-Z][0-9a-zA-Z-\.]+)/detail$', views.machine_fqdn, name='detail'),
     re_path(r"^machine/(?P<id>[0-9]+)/cpu$", views.cpu, name="cpu"),
     re_path(
         r"^machine/(?P<id>[0-9]+)/networkinterfaces$",
@@ -81,22 +78,22 @@ urlpatterns = [
     re_path(r"^statistics$", views.statistics, name="statistics"),
     re_path(
         r"^ajax/machine/(?P<machine_id>[0-9]+)/annotation/add",
-        ajax.annotation,
+        views.ajax.annotation,
         name="ajax_annotation",
     ),
     re_path(
         r"^ajax/machine/(?P<machine_id>[0-9]+)/powercycle$",
-        ajax.powercycle,
+        views.ajax.powercycle,
         name="ajax_powercycle",
     ),
     re_path(
         r"^ajax/machine/(?P<host_id>[0-9]+)/virtualization/list$",
-        ajax.virtualization_list,
+        views.ajax.virtualization_list,
         name="ajax_virtualization_list",
     ),
     re_path(
         r"^ajax/machine/(?P<host_id>[0-9]+)/virtualization/delete$",
-        ajax.virtualization_delete,
+        views.ajax.virtualization_delete,
         name="ajax_virtualization_delete",
     ),
 ]
