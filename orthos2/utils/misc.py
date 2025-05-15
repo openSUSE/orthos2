@@ -114,6 +114,11 @@ def send_email(
         if from_addr is None:
             from_addr = ServerConfig.objects.by_key("mail.from.address")
 
+        if from_addr is None:
+            raise ValueError(
+                'Your "From-Address" for sending mail cannot be empty (RFC5322)!'
+            )
+
         msg = MIMEMultipart()
         msg["To"] = to_addr
         msg["X-BeenThere"] = "orthos"
