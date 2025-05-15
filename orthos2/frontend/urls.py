@@ -1,5 +1,5 @@
 from django.contrib.auth import views as auth_views
-from django.urls import re_path
+from django.urls import path, re_path
 from django.views.generic import RedirectView
 
 from orthos2.frontend import views
@@ -95,5 +95,26 @@ urlpatterns = [
         r"^ajax/machine/(?P<host_id>[0-9]+)/virtualization/delete$",
         views.ajax.virtualization_delete,
         name="ajax_virtualization_delete",
+    ),
+    path("regenerate/cobbler", views.regenerate_cobbler, name="regenerate_cobbler"),
+    re_path(
+        r"^regenerate/domain/cscreen/(?P<host_id>[0-9]+)$",
+        views.regenerate.regenerate_domain_cscreen,
+        name="regenerate_domain_cscreen",
+    ),
+    re_path(
+        r"^regenerate/domain/cobbler/(?P<host_id>[0-9]+)$",
+        views.regenerate.regenerate_domain_cobbler,
+        name="regenerate_domain_cobbler",
+    ),
+    re_path(
+        r"^regenerate/machine/cobbler/(?P<host_id>[0-9]+)$",
+        views.regenerate.regenerate_machine_cobbler,
+        name="regenerate_machine_cobbler",
+    ),
+    re_path(
+        r"^regenerate/machine/motd/(?P<host_id>[0-9]+)$",
+        views.regenerate.regenerate_machine_motd,
+        name="regenerate_machine_motd",
     ),
 ]

@@ -42,6 +42,8 @@ from orthos2.utils.misc import (
 )
 
 if TYPE_CHECKING:
+    from django.db.models.fields.related_descriptors import RelatedManager
+
     from orthos2.data.models.bmc import BMC
     from orthos2.data.models.installation import Installation
     from orthos2.data.models.remotepower import RemotePower
@@ -547,7 +549,8 @@ class Machine(models.Model):
 
     networkinterfaces: "NetworkInterface"
     domain_set: "Domain"
-    cobbler_server_for: "Domain"
+    cobbler_server_for: "RelatedManager"
+    cscreen_server_for: "RelatedManager"
     tftp_server_for_domain: "Domain"
     hypervising: "Machine"
     remotepower: "RemotePower"
@@ -817,6 +820,9 @@ class Machine(models.Model):
 
     def is_cobbler_server(self) -> bool:
         return self.cobbler_server_for.exists()  # type: ignore
+
+    def is_cscreen_server(self) -> bool:
+        return self.cscreen_server_for.exists()  # type: ignore
 
     is_cobbler_server.boolean = True  # type: ignore
 
