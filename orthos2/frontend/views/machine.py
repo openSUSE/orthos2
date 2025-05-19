@@ -18,11 +18,9 @@ from django.shortcuts import redirect, render
 
 from orthos2.data.models import Machine, ServerConfig
 from orthos2.frontend.decorators import check_permissions
-from orthos2.frontend.forms import (
-    ReserveMachineForm,
-    SetupMachineForm,
-    VirtualMachineForm,
-)
+from orthos2.frontend.forms.reservemachine import ReserveMachineForm
+from orthos2.frontend.forms.setupmachine import SetupMachineForm
+from orthos2.frontend.forms.virtualmachine import VirtualMachineForm
 from orthos2.utils.misc import add_offset_to_date
 
 logger = logging.getLogger("views")
