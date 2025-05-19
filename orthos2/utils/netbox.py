@@ -256,6 +256,12 @@ class Netbox(REST):
             data = self.fetcher(url)
         return data["results"]
 
+    def check_ip_by_interface(self, id):
+        url = f"{self.base_url}/ipam/ip-addresses/?interface_id={id}"
+        logger.debug("Checking ip address from {}".format(url))
+        data = self.fetcher(url)
+        return data["results"]
+
     def check_vlan(self, vid):
         url = f"{self.base_url}/ipam/vlans/?vid={vid}"
         logger.debug("Checking vlans from {}".format(url))
@@ -294,6 +300,19 @@ class Netbox(REST):
 
     def check_interface_by_id(self, id):
         url = f"{self.base_url}/dcim/interfaces/?device_id={id}"
+        logger.debug("Checking MAC address from {}".format(url))
+        data = self.fetcher(url)
+        results = data["results"]
+        url = data["next"]
+        while url:
+            data = self.fetcher(url)
+            for d in data["results"]:
+                results.append(d)
+            url = data["next"]
+        return results
+
+    def check_interface_mgmt_by_id(self, id):
+        url = f"{self.base_url}/dcim/interfaces/?device_id={id}&mgmt_only=true"
         logger.debug("Checking MAC address from {}".format(url))
         data = self.fetcher(url)
         results = data["results"]

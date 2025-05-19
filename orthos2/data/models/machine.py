@@ -23,6 +23,7 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, Validat
 from django.db import models
 from django.db.models import Q, QuerySet
 from django.utils import timezone
+from requests import HTTPError
 
 from orthos2.data.exceptions import ReleaseException, ReserveException
 from orthos2.data.models.architecture import Architecture
@@ -40,6 +41,7 @@ from orthos2.utils.misc import (
     get_s390_hostname,
     is_dns_resolvable,
 )
+from orthos2.utils.netbox import Netbox
 
 if TYPE_CHECKING:
     from django.db.models.fields.related_descriptors import RelatedManager
@@ -543,6 +545,12 @@ class Machine(models.Model):
         ),
     )
 
+    netbox_id = models.PositiveIntegerField(
+        verbose_name="NetBox ID",
+        help_text="The ID that NetBox gives to the object.",
+        default=0,
+    )
+
     updated = models.DateTimeField("Updated at", auto_now=True)
 
     created = models.DateTimeField("Created at", auto_now_add=True)
@@ -606,6 +614,35 @@ class Machine(models.Model):
         if intf is None:
             return None
         return intf.mac_address
+
+    def fetch_netbox(self) -> None:
+        """
+        TODO
+        """
+        if self.netbox_id == 0:
+            logger.debug("Skipping fetching from NetBox because NetBox ID is 0.")
+            return
+        netbox_api = Netbox.get_instance()
+        try:
+            netbox_machine = netbox_api.fetch_device(self.netbox_id)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                logger.info("Fetching from NetBox failed with status 404.")
+                return
+            raise e
+        # Reset fields
+        self.comment = ""
+        self.serial_number = ""
+        self.product_code = ""
+        # Description
+        self.comment = netbox_machine.get("description", "")
+        # Serial Number
+        self.serial_number = netbox_machine.get("serial", "")
+        # Product Code
+        product_code = netbox_machine.get("custom_fields", {}).get("product_code", "")
+        if product_code is not None and product_code != "":
+            self.product_code = product_code
+        self.save()
 
     def bmc_allowed(self) -> bool:
         return self.system.allowBMC

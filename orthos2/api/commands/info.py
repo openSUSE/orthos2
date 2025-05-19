@@ -54,7 +54,6 @@ Example:
                 return result
             machine = result
 
-            machine.enclosure.fetch_location(machine.pk)
             serialzed_machine = MachineSerializer(machine)
 
             order = [

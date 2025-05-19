@@ -5,6 +5,13 @@ from .daily import (
     DailyMachineChecks,
 )
 from .machinetasks import MachineCheck, RegenerateMOTD
+from .netbox import (
+    NetboxFetchBMC,
+    NetboxFetchEnclosure,
+    NetboxFetchFullMachine,
+    NetboxFetchMachine,
+    NetboxFetchNetworkInterface,
+)
 from .notifications import (
     CheckForPrimaryNetwork,
     CheckMultipleAccounts,
