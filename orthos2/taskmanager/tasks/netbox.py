@@ -6,8 +6,7 @@ import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from orthos2.data.models.enclosure import Enclosure
-from orthos2.data.models.machine import Machine
+from orthos2.data.models import BMC, Enclosure, Machine, NetworkInterface
 from orthos2.taskmanager.models import Task
 
 logger = logging.getLogger("tasks")
@@ -27,6 +26,58 @@ class NetboxFetchEnclosure(Task):
             logger.debug('Fetching enclosure "%s" - Start', enclosure.name)
             enclosure.fetch_netbox()
             logger.debug('Fetching enclosure "%s" - End', enclosure.name)
+
+
+class NetboxFetchMachine(Task):
+    """
+    Iterate over all machines and fetch information from Netbox.
+    """
+
+    def execute(self) -> None:
+        """
+        Executes the task.
+        """
+        logger.info("Fetching information from Netbox API for all machines.")
+        for machine in Machine.objects.all():
+            logger.debug('Fetching machine "%s" - Start', machine.fqdn)
+            machine.fetch_netbox()
+            logger.debug('Fetching machine "%s" - End', machine.fqdn)
+
+
+class NetboxFetchBMC(Task):
+    """
+    Iterate over all BMCs and try to match them to NetBox objects.
+    """
+
+    def execute(self) -> None:
+        """
+        Executes the task.
+        """
+        logger.info("Fetching information from Netbox API for all machines.")
+        for bmc in BMC.objects.all():
+            logger.debug('Fetching bmc "%s" - Start', bmc.mac)
+            bmc.fetch_netbox()
+            logger.debug('Fetching bmc "%s" - End', bmc.mac)
+
+
+class NetboxFetchNetworkInterface(Task):
+    """
+    Iterate over all network interfaces and try to match them to NetBox objects.
+    """
+
+    def execute(self) -> None:
+        """
+        Executes the task.
+        """
+        logger.info("Fetching information from Netbox API for all machines.")
+        for network_interface in NetworkInterface.objects.all():
+            logger.debug(
+                'Fetching network interface "%s" - Start', network_interface.name
+            )
+            network_interface.fetch_netbox()
+            logger.debug(
+                'Fetching network interface "%s" - End', network_interface.name
+            )
 
 
 class NetboxFetchFullMachine(Task):
@@ -50,3 +101,8 @@ class NetboxFetchFullMachine(Task):
         except ObjectDoesNotExist as err:
             raise ValueError("Requested machine doesn't exist!") from err
         machine.enclosure.fetch_netbox()
+        machine.fetch_netbox()
+        if machine.has_bmc():
+            machine.bmc.fetch_netbox()
+        for intf in machine.networkinterfaces.all():
+            intf.fetch_netbox()

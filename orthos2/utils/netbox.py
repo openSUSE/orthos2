@@ -109,7 +109,7 @@ class Netbox(REST):
         super().__init__(host, token)
 
     @classmethod
-    def get_instance(cls):
+    def get_instance(cls) -> "Netbox":
         if cls.__object is None:
             cls.__object = Netbox(settings.NETBOX_URL, settings.NETBOX_TOKEN)
         return cls.__object
