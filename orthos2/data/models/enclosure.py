@@ -83,10 +83,13 @@ class Enclosure(models.Model):
                 return
             raise e
         # Reset fields
+        self.comment = ""
         self.location_site = "unknown"
         self.location_room = "unknown"
         self.location_rack = "unknown"
         self.location_rack_position = "unknown"
+        # Description
+        self.comment = netbox_device.get("description", "")
         # Location
         self.location_site = netbox_device.get("site").get("display")
         location_obj = netbox_device.get("location")
