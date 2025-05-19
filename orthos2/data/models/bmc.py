@@ -1,15 +1,23 @@
+import ipaddress
+import logging
 from typing import TYPE_CHECKING, Optional
 
 from django.db import models
 from django.forms import ValidationError
 
 from orthos2.data.validators import validate_mac_address
+from orthos2.utils.netbox import Netbox
+from orthos2.utils.remotepowertype import get_remote_power_type_choices
 
 if TYPE_CHECKING:
     from orthos2.types import (
         MandatoryMachineOneToOneField,
         MandatoryRemotePowerTypeForeignKey,
     )
+
+logger = logging.getLogger("models")
+
+logger = logging.getLogger("models")
 
 
 class BMC(models.Model):
@@ -67,6 +75,37 @@ class BMC(models.Model):
 
     def __str__(self) -> str:
         return self.fqdn
+
+    def fetch_netbox(self) -> None:
+        """
+        TODO
+        """
+        if self.machine.netbox_id == 0:
+            logger.debug("Skipping fetching from NetBox because NetBox ID is 0.")
+            return
+        netbox_api = Netbox.get_instance()
+        netbox_interfaces = netbox_api.check_interface_mgmt_by_id(
+            self.machine.netbox_id
+        )
+        # Reset fields
+        self.ip_address_v4 = None
+        self.ip_address_v6 = None
+        # Set fields
+        for interface in netbox_interfaces:
+            if interface.get("primary_mac_address") is None:
+                continue
+            if interface.get("primary_mac_address", {}).get("display", "") == self.mac:
+                # FIXME: A single interface can have any number of IPs (both v4 and v6)
+                ips = netbox_api.check_ip_by_interface(interface.get("id"))
+                self.ip_address_v4 = ""
+                self.ip_address_v6 = ""
+                for ip in ips:
+                    ip_obj = ipaddress.ip_network(ip.get("display"))
+                    if ip_obj.version == 4:
+                        self.ip_address_v4 = str(ip_obj)
+                    if ip_obj.version == 6:
+                        self.ip_address_v6 = str(ip_obj)
+                    self.save()
 
     def clean_fence_agent(self) -> None:
         """
