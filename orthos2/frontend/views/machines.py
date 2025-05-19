@@ -15,7 +15,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 
 from orthos2.data.models import Architecture, Domain, Machine, MachineGroup
-from orthos2.frontend.forms import SearchForm
+from orthos2.frontend.forms.search import SearchForm
 
 
 class MachineListView(ListView):

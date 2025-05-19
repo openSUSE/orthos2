@@ -22,7 +22,9 @@ from django.http import (
 from django.shortcuts import redirect, render
 from rest_framework.authtoken.models import Token
 
-from orthos2.frontend.forms import NewUserForm, PasswordRestoreForm, PreferencesForm
+from orthos2.frontend.forms.newuser import NewUserForm
+from orthos2.frontend.forms.passwordrestore import PasswordRestoreForm
+from orthos2.frontend.forms.preferences import PreferencesForm
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 
