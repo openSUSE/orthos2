@@ -12,7 +12,9 @@ RUN zypper in -y \
     cyrus-sasl-devel \
     jq \
     sudo \
-    git
+    git \
+    openssh \
+    ansible
 
 # Install requirements via zypper
 RUN zypper in -y \
@@ -42,12 +44,10 @@ RUN groupadd -r orthos
 RUN useradd -r -u $USER -g orthos -d /var/lib/orthos2 -s /bin/bash -c "orthos account" orthos
 
 # Create required directories
-RUN mkdir -p /var/log/orthos2
-RUN mkdir -p /var/lib/orthos2/database
+RUN mkdir -p /etc/nginx/conf.d /var/lib/orthos2 /var/log/orthos2 /var/lib/orthos2/database /usr/lib/orthos2/ansible /run/orthos2/ansible /run/orthos2/ansible_lastrun /run/orthos2/ansible_archive
 RUN touch /var/log/orthos2/default.log
 RUN chmod o+w /var/log/orthos2/default.log
-RUN chown -R orthos:orthos /var/log/orthos2
-RUN chown -R orthos:orthos /var/lib/orthos2
+RUN chown -R orthos:orthos /var/log/orthos2 /var/lib/orthos2 /usr/lib/orthos2 /usr/lib/orthos2/ansible /run/orthos2 /run/orthos2/ansible /run/orthos2/ansible_lastrun /run/orthos2/ansible_archive
 
 # Setup container for work
 WORKDIR /code

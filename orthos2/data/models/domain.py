@@ -80,7 +80,7 @@ class Domain(models.Model):
     cscreen_server = models.ForeignKey(
         "data.Machine",
         verbose_name="CScreen server",
-        related_name="+",
+        related_name="cscreen_server_for",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

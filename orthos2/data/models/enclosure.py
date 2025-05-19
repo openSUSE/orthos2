@@ -53,7 +53,7 @@ class Enclosure(models.Model):
 
     def get_non_virtual_machines(self) -> QuerySet["Machine"]:
         """
-        Return all non virtual machines (systems) of the enclosure.
+        Return all non-virtual machines (systems) of the enclosure.
 
         The following systems are excluded:
             RemotePower,

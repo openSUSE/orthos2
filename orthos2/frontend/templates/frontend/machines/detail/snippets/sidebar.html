@@ -63,6 +63,16 @@
   {% else %}
   <a class="btn btn-secondary btn-sm disabled" href="#" role="button">Setup Machine</a>
   {% endif %}
+  {% if perms.data.change_machine %}
+  <a class="btn btn-secondary btn-sm regenerate-machine-motd" href="javascript:void(0);" onclick="regenerate_machine_motd()" role="button">Regenerate MOTD</a>
+  <a class="btn btn-secondary btn-sm regenerate-machine-cobbler" href="javascript:void(0);" onclick="regenerate_machine_cobbler()" role="button">Regenerate Cobbler Record</a>
+  {% endif %}
+  {% if machine.is_cscreen_server and perms.data.change_domain %}
+  <a class="btn btn-secondary btn-sm regenerate-domain-cscreen" href="javascript:void(0);" onclick="regenerate_domain_cscreen()" role="button">Regenerate Serial Console Server</a>
+  {% endif %}
+  {% if machine.is_cobbler_server and perms.data.change_domain %}
+  <a class="btn btn-secondary btn-sm regenerate-domain-cobbler" href="javascript:void(0);" onclick="regenerate_domain_cobbler()" role="button">Regenerate Cobbler Server</a>
+  {% endif %}
 </div>
 {% endif %}
 

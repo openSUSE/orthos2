@@ -53,6 +53,58 @@ function powercycle(action) {
       $('.power-btn-group').children().removeClass('disabled');
     },
   });
-};
+}
+
+function regenerate_domain_cscreen() {
+  $.ajax({
+    url: '{% url 'frontend:regenerate_domain_cscreen' machine.id %}',
+    beforeSend: function() {
+      $('.regenerate-domain-cscreen').addClass('disabled')
+    },
+    success: function(data) {
+      showMachineStatusBarMessage(data);
+      $('.regenerate-domain-cscreen').removeClass('disabled')
+    }
+  })
+}
+
+function regenerate_domain_cobbler() {
+  $.ajax({
+    url: '{% url 'frontend:regenerate_domain_cobbler' machine.id %}',
+    beforeSend: function() {
+      $('.regenerate-domain-cobbler').addClass('disabled')
+    },
+    success: function(data) {
+      showMachineStatusBarMessage(data);
+      $('.regenerate-domain-cobbler').removeClass('disabled')
+    }
+  })
+}
+
+function regenerate_machine_motd() {
+  $.ajax({
+    url: '{% url 'frontend:regenerate_machine_motd' machine.id %}',
+    beforeSend: function() {
+      $('.regenerate-machine-motd').addClass('disabled')
+    },
+    success: function(data) {
+      showMachineStatusBarMessage(data);
+      $('.regenerate-machine-motd').removeClass('disabled')
+    }
+  })
+}
+
+function regenerate_machine_cobbler() {
+  $.ajax({
+    url: '{% url 'frontend:regenerate_machine_cobbler' machine.id %}',
+    beforeSend: function() {
+      $('.regenerate-machine-cobbler').addClass('disabled')
+    },
+    success: function(data) {
+      showMachineStatusBarMessage(data);
+      $('.regenerate-machine-cobbler').removeClass('disabled')
+    }
+  })
+}
 </script>
 {% endblock %}

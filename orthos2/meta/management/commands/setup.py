@@ -137,12 +137,12 @@ class Command(BaseCommand):
             dir_unitpath = buildroot / str(options["directory_unitpath"]).lstrip("/")
             dir_bindir = buildroot / str(options["directory_bindir"]).lstrip("/")
             # Create base paths as they don't exist in the case of a buildroot
-            dir_unitpath.mkdir(parents=True)
-            dir_logrotate_config.mkdir(parents=True)
-            dir_nginx_config.mkdir(parents=True)
-            dir_tmpfiles.mkdir(parents=True)
-            dir_logs.mkdir(parents=True)
-            dir_orthos2_data.mkdir(parents=True)
+            dir_unitpath.mkdir(parents=True, exist_ok=True)
+            dir_logrotate_config.mkdir(parents=True, exist_ok=True)
+            dir_nginx_config.mkdir(parents=True, exist_ok=True)
+            dir_tmpfiles.mkdir(parents=True, exist_ok=True)
+            dir_logs.mkdir(parents=True, exist_ok=True)
+            dir_orthos2_data.mkdir(parents=True, exist_ok=True)
         if what == CHOICE_ALL:
             self.install_systemd(dir_unitpath, overwrite=overwrite)
             self.install_ansible(dir_exec, overwrite=overwrite)
