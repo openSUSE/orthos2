@@ -25,6 +25,7 @@ urlpatterns = [
         name="virtual_machines",
     ),
     re_path(r"^machines/search", views.machine_search, name="advanced_search"),
+    path("machine/add", views.machine_add, name="machine_add"),
     re_path(r"^machine/(?P<id>[0-9]+)/$", views.machine, name="detail"),
     re_path(r"^machine/(?P<id>[0-9]+)/detail$", views.machine, name="detail"),
     re_path(r"^machine/(?P<id>[0-9]+)/cpu$", views.cpu, name="cpu"),
