@@ -85,3 +85,5 @@ class DailyNetboxFetch(Task):
 
         TaskManager.add(tasks.NetboxFetchEnclosure())
         TaskManager.add(tasks.NetboxFetchMachine())
+        TaskManager.add(tasks.NetboxFetchNetworkInterface())
+        TaskManager.add(tasks.NetboxFetchBMC())
