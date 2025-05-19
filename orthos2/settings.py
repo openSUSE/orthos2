@@ -75,6 +75,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "orthos2.frontend.context_processors.netbox_url",
             ],
         },
     },
@@ -275,6 +276,9 @@ REMOTEPOWER_TYPES = [
         "system": ["Bare Metal"],
     },
 ]
+
+NETBOX_URL = os.environ.get("ORTHOS_NETBOX_URL", "")
+NETBOX_TOKEN = os.environ.get("ORTHOS_NETBOX_TOKEN", "")
 
 # Check for alternative settings file. If this file exists, we use it and evaluate the code.
 # This is intended to be used for production mode.

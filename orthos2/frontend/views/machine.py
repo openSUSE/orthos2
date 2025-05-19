@@ -7,6 +7,7 @@ from typing import Union
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.http import (
     Http404,
     HttpRequest,
@@ -18,19 +19,25 @@ from django.shortcuts import redirect, render
 
 from orthos2.data.models import Machine, ServerConfig
 from orthos2.frontend.decorators import check_permissions
+from orthos2.frontend.forms.addmachine import AddMachineFormView
 from orthos2.frontend.forms.reservemachine import ReserveMachineForm
 from orthos2.frontend.forms.setupmachine import SetupMachineForm
 from orthos2.frontend.forms.virtualmachine import VirtualMachineForm
+from orthos2.taskmanager import tasks
+from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.misc import add_offset_to_date
 
 logger = logging.getLogger("views")
+
+
+class AuthenticatedHttpRequest(HttpRequest):
+    user: User
 
 
 @login_required
 def pci(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
-        machine.enclosure.fetch_location(machine.pk)
         return render(
             request,
             "frontend/machines/detail/pci.html",
@@ -364,7 +371,6 @@ def console(request: HttpRequest, id: int) -> HttpResponse:
 def machine(request: HttpRequest, id: int) -> HttpResponse:
     try:
         machine = Machine.objects.get(pk=id)
-        machine.enclosure.fetch_location(machine.pk)
     except Machine.DoesNotExist:
         messages.error(request, "Machine does not exist.")
         return redirect("machines")
@@ -374,3 +380,39 @@ def machine(request: HttpRequest, id: int) -> HttpResponse:
         "frontend/machines/detail/overview.html",
         {"machine": machine, "title": "Machine"},
     )
+
+
+@login_required
+@check_permissions()
+def fetch_netbox(request: HttpRequest, id: int) -> HttpResponseRedirect:
+    try:
+        requested_machine = Machine.objects.get(pk=id)
+    except Machine.DoesNotExist:
+        messages.error(request, "Machine does not exist!")
+        return redirect("frontend:machines")
+
+    try:
+        TaskManager.add(tasks.NetboxFetchFullMachine(requested_machine.pk))
+        messages.info(
+            request,
+            "Fetching data from Netbox for machine - this can take some seconds...",
+        )
+    except Exception as exception:
+        messages.error(request, exception)  # type: ignore
+
+    return redirect("frontend:detail", id=id)
+
+
+@login_required
+def machine_add(request: AuthenticatedHttpRequest) -> HttpResponse:
+    perm_list = [
+        "data.add_machine",
+        "data.add_bmc",
+        "data.add_remotepower",
+        "data.add_networkinterface",
+    ]
+    if not request.user.has_perms(perm_list):
+        messages.error(request, "Not enough user permissions.")
+        return redirect("machines")
+
+    return AddMachineFormView.as_view()(request)
