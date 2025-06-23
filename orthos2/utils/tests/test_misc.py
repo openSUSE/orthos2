@@ -84,7 +84,7 @@ class MiscMethodTests(TestCase):
 
 
 class MiscSuggestIpTests(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         ServerConfig(
             key="domain.validendings", value="example.de, example.com, foo.de"
         ).save()
@@ -121,7 +121,7 @@ class MiscSuggestIpTests(TestCase):
                 machine=self.machine,
             ).save()
 
-    def test_suggest_host_ip_v4(self):
+    def test_suggest_host_ip_v4(self) -> None:
         """
         suggest_host_ip() should return a valid IP address.
         """
@@ -130,7 +130,7 @@ class MiscSuggestIpTests(TestCase):
         # Assert
         self.assertEqual(suggested_ip, "192.168.178.5")
 
-    def test_suggest_host_ip_full_network_v4(self):
+    def test_suggest_host_ip_full_network_v4(self) -> None:
         """
         suggest_host_ip() should return the localhost address if the network has no free host addresses.
         """
@@ -145,7 +145,7 @@ class MiscSuggestIpTests(TestCase):
         # Assert
         self.assertEqual(suggested_ip, "127.0.0.1")
 
-    def test_suggest_host_ip_v6(self):
+    def test_suggest_host_ip_v6(self) -> None:
         """
         suggest_host_ip() should return a valid IP address.
         """
@@ -154,7 +154,7 @@ class MiscSuggestIpTests(TestCase):
         # Assert
         self.assertEqual(suggested_ip, "fe80:0:0:1::5")
 
-    def test_suggest_host_ip_full_network_v6(self):
+    def test_suggest_host_ip_full_network_v6(self) -> None:
         """
         suggest_host_ip() should return the localhost address because everything is blocked by the dynamic range.
         """
