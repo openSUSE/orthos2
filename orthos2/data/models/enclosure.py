@@ -1,15 +1,12 @@
-import json
 import logging
-import ssl
-import urllib.request
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING, Tuple
 
 from django.db import models
 from django.db.models import QuerySet
-from django.template import Context, Template
+from requests import HTTPError
 
-from .platform import Platform
-from .serverconfig import ServerConfig
+from orthos2.data.models.platform import Platform
+from orthos2.utils.netbox import Netbox
 
 if TYPE_CHECKING:
     from orthos2.data.models.machine import Machine
@@ -32,11 +29,19 @@ class Enclosure(models.Model):
 
     machine_set: models.Manager["Machine"]
 
-    location_room = "unknown"
+    netbox_id = models.PositiveIntegerField(
+        verbose_name="NetBox ID",
+        help_text="The ID that NetBox gives to the object.",
+        default=0,
+    )
 
-    location_rack = "unknown"
+    location_site = models.CharField(max_length=512, default="unknown")
 
-    location_rack_position = "unknown"
+    location_room = models.CharField(max_length=512, default="unknown")
+
+    location_rack = models.CharField(max_length=512, default="unknown")
+
+    location_rack_position = models.CharField(max_length=512, default="unknown")
 
     def natural_key(self) -> Tuple[str]:
         return (self.name,)
@@ -62,42 +67,38 @@ class Enclosure(models.Model):
         machines = self.get_machines().filter(system__virtual=False)
         return machines
 
-    def fetch_location(self, pk: Optional[int] = None) -> None:
+    def fetch_netbox(self) -> None:
         """
-        Fetch location from RackTables.
-
-        If `pk` is set, use this ID to query API. Otherwise, try the first machine ID belonging to
-        this enclosure.
+        Fetch all information about a machine from NetBox if the NetBox ID is set.
         """
+        if self.netbox_id == 0:
+            logger.debug("Skipping fetching from NetBox because NetBox ID is 0.")
+            return
+        netbox_api = Netbox.get_instance()
         try:
-            if pk is None:
-                pk = self.machine_set.first().pk  # type: ignore
-
-            template = ServerConfig.objects.by_key("racktables.url.query")
-
-            context = Context({"id": pk})
-
-            url = Template(template).render(context)  # type: ignore
-
-            ssl_context = ssl.create_default_context()
-            ssl_context.check_hostname = False
-            ssl_context.verify_mode = ssl.CERT_NONE
-
-            with urllib.request.urlopen(url, context=ssl_context) as result:
-                data = json.loads(result.read().decode())
-
-                if data is None:
-                    return
-
-                room = data[str(pk)]["Location"]
-                rack = data[str(pk)]["Rackname"]
-                rack_position = data[str(pk)]["Position"]
-
-                self.location_room = room
-                self.location_rack = rack
-                self.location_rack_position = rack_position
-
-        except Exception as e:
-            logger.warning(
-                "Couldn't fetch location information for enclosure '%s': %s", self, e
-            )
+            netbox_device = netbox_api.fetch_device(self.netbox_id)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                logger.info("Fetching from NetBox failed with status 404.")
+                return
+            raise e
+        # Reset fields
+        self.location_site = "unknown"
+        self.location_room = "unknown"
+        self.location_rack = "unknown"
+        self.location_rack_position = "unknown"
+        # Location
+        self.location_site = netbox_device.get("site").get("display")
+        location_obj = netbox_device.get("location")
+        if location_obj is None:
+            self.location_room = "unknown"
+        else:
+            self.location_room = location_obj.get("display")
+        rack_obj = netbox_device.get("rack")
+        if rack_obj is None:
+            self.location_rack = "unknown"
+        else:
+            self.location_rack = rack_obj.get("display")
+        # TODO: What if the position is not set.
+        self.location_rack_position = netbox_device.get("position")
+        self.save()

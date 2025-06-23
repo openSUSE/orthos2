@@ -77,3 +77,17 @@ class DailyCheckForPrimaryNetwork(Task):
         for machine in Machine.objects.all():
             task = tasks.CheckForPrimaryNetwork(machine.fqdn)
             TaskManager.add(task)
+
+
+class DailyNetboxFetch(Task):
+    """
+    This daily task is responsible for pulling data from the Netbox API.
+    """
+
+    def execute(self) -> None:
+        """
+        Execute the task.
+        """
+        from orthos2.taskmanager import tasks
+
+        TaskManager.add(tasks.NetboxFetchEnclosure())

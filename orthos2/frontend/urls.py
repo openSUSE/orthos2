@@ -54,6 +54,11 @@ urlpatterns = [
         name="release_machine",
     ),
     re_path(r"^machine/(?P<id>[0-9]+)/rescan$", views.rescan, name="rescan"),
+    re_path(
+        r"^machine/(?P<id>[0-9]+)/fetch-netbox$",
+        views.fetch_netbox,
+        name="netbox_fetch",
+    ),
     re_path(r"^machine/(?P<id>[0-9]+)/setup$", views.setup, name="setup"),
     re_path(
         r"^machine/(?P<id>[0-9]+)/virtualization$",
