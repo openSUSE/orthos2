@@ -156,7 +156,7 @@ class Domain(models.Model):
     def __str__(self) -> str:
         return self.name
 
-    def clean(self):
+    def clean(self) -> None:
         if not self.enable_v4 and not self.enable_v6:
             raise ValidationError(
                 _("Must have at least one of IPv4 and/or IPv6 enabled")
