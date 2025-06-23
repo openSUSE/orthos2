@@ -21,7 +21,7 @@ class InfoTest(APITestCase):
         )
         self.client.force_authenticate(user=self.user)
 
-    def test_info_get_infinite_reservation(self):
+    def test_info_get_infinite_reservation(self) -> None:
         """
         Verify that retrieving a machine with an infinite reservation is possible.
         """
