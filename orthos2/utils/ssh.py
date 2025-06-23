@@ -1,12 +1,11 @@
 import logging
 import os
 import socket
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, TextIO, Tuple, Union
 
 import paramiko
 from django.conf import settings
 from paramiko import SFTPClient
-from paramiko.channel import ChannelFile, ChannelStderrFile
 
 from orthos2.data.models import Machine, ServerConfig
 
@@ -102,7 +101,7 @@ class SSH(object):
         if self._machine and self._machine.ip_address_v4:
             fqdn_or_ipv4 = self._machine.ip_address_v4
 
-        configuration = {
+        configuration: Dict[str, Optional[Union[str, float, int, List[str]]]] = {
             "hostname": fqdn_or_ipv4,
             "port": 22,
             "username": user,
@@ -133,7 +132,7 @@ class SSH(object):
 
     def execute(
         self, command: str, retry: bool = True, timeout: Optional[float] = None
-    ) -> Tuple[Union[Iterable, ChannelFile], Union[Iterable, ChannelStderrFile], int]:
+    ) -> Tuple[Union[Iterable[str], TextIO], Union[Iterable[str], TextIO], int]:
         """
         Execute the given command.
 
@@ -143,8 +142,8 @@ class SSH(object):
         :returns: A tuple containing stdout (list), stderr (list) and exit status (int).
         """
         try:
-            stdout: Union[Iterable, ChannelFile]
-            stderr: Union[Iterable, ChannelStderrFile]
+            stdout: Union[Iterable[str], TextIO]
+            stderr: Union[Iterable[str], TextIO]
             _stdin, stdout, stderr = self._client.exec_command(command, timeout=timeout)
             exitstatus = stdout.channel.recv_exit_status()
 
@@ -165,10 +164,11 @@ class SSH(object):
             else:
                 raise SSH.Exception(str(e))
 
-        except socket.timeout:
-            raise SSH.Exception("Command timed out")
-        except Exception:
-            raise SSH.Exception("Unknown SSH exception")
+        # Ignore the two typing issues since the same issues could happen in the second attempt
+        except socket.timeout as e:  # type: ignore
+            raise SSH.Exception("Command timed out") from e
+        except Exception as e:  # type: ignore
+            raise SSH.Exception("Unknown SSH exception") from e
 
     def read_file(self, filename: str) -> List[str]:
         """Read the given file contents."""
@@ -188,7 +188,9 @@ class SSH(object):
 
     def execute_script_remote(
         self, script: str, arguments: str = ""
-    ) -> Optional[Tuple[str, str, int]]:
+    ) -> Optional[
+        Tuple[Union[Iterable[str], TextIO], Union[Iterable[str], TextIO], int]
+    ]:
         """
         Execute the given script on the remote side.
 
@@ -260,7 +262,7 @@ class SSH(object):
             if not parents:
                 raise e
 
-            directories = directory.lstrip("/").split("/")
+            directories = directory.lstrip("/").split("/")  # type: ignore
 
             for i, _part in enumerate(directories):
                 directory = "/" + "/".join(directories[0 : i + 1])
@@ -285,7 +287,7 @@ class SSH(object):
         :param path: The path to test for.
         :param test: Arguments that are passed to "test".
         """
-        _stdout, _stderr, exitstatus = self.execute('test {} "{}"'.format(test, path))
+        _, _, exitstatus = self.execute('test {} "{}"'.format(test, path))
 
         if exitstatus != 0:
             return False

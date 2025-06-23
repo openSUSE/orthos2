@@ -35,8 +35,6 @@ class RescanTests(OrthosCliTestCase):
         self.process.sendline("rescan <fqdn> all")
 
         # Cleanup
-        if self.process is None:
-            self.fail("CLI process not successfully spawned!")
         self.stop_cli()
 
         # Assert

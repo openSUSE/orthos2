@@ -38,8 +38,8 @@ from orthos2.utils.misc import get_domain, is_unique_mac_address, suggest_host_i
 from orthos2.utils.remotepowertype import RemotePowerType
 
 
-class BMCForm(forms.ModelForm):
-    def clean(self):
+class BMCForm(forms.ModelForm):  # type: ignore
+    def clean(self) -> None:
         """
         Verify that all information inside a form is valid.
         """
@@ -107,14 +107,14 @@ class BMCForm(forms.ModelForm):
                 self.cleaned_data["ip_address_v6"] = suggest_host_ip(6, bmc_domain)
 
 
-class BMCFormInlineFormSet(forms.models.BaseInlineFormSet):
-    def clean(self):
+class BMCFormInlineFormSet(forms.models.BaseInlineFormSet):  # type: ignore
+    def clean(self) -> None:
         if not self.is_valid():
             return
         self.__verify_unique_mac_address()
         self.__verify_unique_ip_address()
 
-    def __verify_unique_mac_address(self):
+    def __verify_unique_mac_address(self) -> None:
         """
         This method is called in clean. It is verifying that all MAC addresses are unique inside the DB.
         """
@@ -128,10 +128,10 @@ class BMCFormInlineFormSet(forms.models.BaseInlineFormSet):
             mac = interface.get("mac_address")
             if mac == "":
                 continue
-            if not is_unique_mac_address(mac, exclude=old_mac_addresses):
+            if not is_unique_mac_address(mac, exclude=old_mac_addresses):  # type: ignore
                 raise ValidationError(f"MAC address {mac} is not unique")
 
-    def __verify_unique_ip_address(self):
+    def __verify_unique_ip_address(self) -> None:
         """
         This method is called in clean. It is verifying if all IPs given are unique.
         """
@@ -519,7 +519,9 @@ class MachineAdminForm(forms.ModelForm):
 
         return cleaned_data
 
-    def __verify_system_information_collection(self, cleaned_data: Dict[str, Any]):
+    def __verify_system_information_collection(
+        self, cleaned_data: Dict[str, Any]
+    ) -> None:
         """
         This method is called in clean. It is verifying that there is no issue when attempting to collect system
         information via Ansible.
@@ -535,7 +537,9 @@ class MachineAdminForm(forms.ModelForm):
                 "collect_system_information", "Connectivity check must set to 'Full'"
             )
 
-    def __verify_hypervisor_allowed_for_machine(self, cleaned_data: Dict[str, Any]):
+    def __verify_hypervisor_allowed_for_machine(
+        self, cleaned_data: Dict[str, Any]
+    ) -> None:
         """
         This method is called in clean. It is verifying that the machine can be a hypervisor.
         """
@@ -589,15 +593,17 @@ class MachineSystemFilter(admin.SimpleListFilter):
 
     parameter_name = "system"
 
-    def lookups(self, request, model_admin):
+    def lookups(
+        self, request: HttpRequest, model_admin: ModelAdmin
+    ) -> List[Tuple[str, str]]:
         systems = System.objects.all()
-        result = []
+        result: List[Tuple[str, str]] = []
 
         result.append(("administrative", "Administrative"))
         result.append(("inactive", "Inactive"))
 
         for system in systems:
-            result.append((system.id, system.name))
+            result.append((str(system.id), system.name))
 
         return result
 
@@ -622,7 +628,10 @@ class MachineDomainFilter(admin.SimpleListFilter):
 
     parameter_name = "domain"
 
-    def lookups(self, request: HttpRequest, model_admin) -> List[Tuple[int, str]]:  # type: ignore
+    # type: ignore
+    def lookups(
+        self, request: HttpRequest, model_admin: ModelAdmin
+    ) -> List[Tuple[int, str]]:
         domains = Domain.objects.all()
         result = []
 

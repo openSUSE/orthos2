@@ -16,7 +16,9 @@ class BMC(models.Model):
     mac = models.CharField(
         max_length=17, unique=True, validators=[validate_mac_address]
     )
-    machine = models.OneToOneField["Machine"]("data.Machine", on_delete=models.CASCADE)  # type: ignore
+    machine = models.OneToOneField["Machine"](  # type: ignore
+        "data.Machine", on_delete=models.CASCADE
+    )
 
     remotepower_type_choices = get_remote_power_type_choices("bmc")
     fence_name = models.CharField(

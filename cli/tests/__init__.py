@@ -2,6 +2,9 @@
 This module contains integration tests for the Python CLI. Unit-Testing doesn't make much sense as there
 is no logic client side for specific endpoints.
 """
+
+# mypy: warn-unused-ignores=False
+
 import pathlib
 import unittest
 from typing import AnyStr, List, Optional
@@ -80,8 +83,8 @@ class OrthosCliTestCase(unittest.TestCase):
         """
         if isinstance(output, bytes):
             result = output.decode("utf-8")
-        elif isinstance(output, str):
+        elif isinstance(output, str):  # type: ignore
             result = output
         else:
-            result = []
+            result = ""
         return result.split("\n")[1:]

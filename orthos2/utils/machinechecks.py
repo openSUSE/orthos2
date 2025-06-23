@@ -229,7 +229,9 @@ def get_status_ip(fqdn: str) -> Optional[Union[bool, Machine]]:
             elif machine.ip_address_v4 not in values["inet"]:  # type: ignore
                 machine_.status_ipv4 = Machine.StatusIP.NO_ADDRESS
                 if [
-                    ipv4 for ipv4 in values["inet"] if not ipv4.startswith("127.0.0.1")  # type: ignore
+                    ipv4
+                    for ipv4 in values["inet"]  # type: ignore
+                    if not ipv4.startswith("127.0.0.1")  # type: ignore
                 ]:
                     machine_.status_ipv4 = Machine.StatusIP.ADDRESS_MISMATCH
             elif machine.ip_address_v4 in values["inet"]:  # type: ignore
@@ -281,10 +283,9 @@ def get_installations(fqdn: str) -> Union[bool, List[Installation]]:
         logger.debug("Collect installations...")
 
         installations: List[Installation] = []
-        output, _stderr, _exitstatus = conn.execute_script_remote(  # type: ignore
-            "machine_get_installations.sh"
-        )
-        if output:
+        script_execution = conn.execute_script_remote("machine_get_installations.sh")
+        if script_execution:
+            output, _, _ = script_execution
             for line in output:
                 if line.startswith("--"):
                     installation = Installation(machine=machine)
@@ -344,7 +345,7 @@ def get_pci_devices(fqdn: str) -> List["PCIDevice"]:
     logger.debug("Collect PCI devices for '%s'...", fqdn)
     pci_devices: List[PCIDevice] = []
     chunk = ""
-    stdout, _stderr, err = ssh_execute("lspci -mmvn")  # type: ignore
+    stdout, _, err = ssh_execute("lspci -mmvn", machine.fqdn)
     if err:
         logger.warning("Machine '%s' could not collect PCI devices", fqdn)
         return None  # type: ignore

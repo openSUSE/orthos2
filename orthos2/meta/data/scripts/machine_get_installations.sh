@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 #
 # Collects installation information.
@@ -123,7 +123,7 @@ ROOT=$(mount | grep ' / ' | cut -d ' ' -f 1)
 # running installation
 echo ----
 echo ARCH=$GLOBAL_ARCH
-echo KERNEL=$(uname -r)
+echo KERNEL="$(uname -r)"
 DIST=$(pretty_os "")
 MILESTONE=$(get_milestone /etc/issue)
 echo DIST=${DIST} ${MILESTONE}

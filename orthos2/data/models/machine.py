@@ -583,22 +583,22 @@ class Machine(models.Model):
         return self.fqdn
 
     @property
-    def ip_address_v4(self):
+    def ip_address_v4(self) -> Optional[str]:
         intf = self.get_primary_networkinterface()
         if intf is None:
             return None
-        return intf.ip_address_v4
+        return intf.ip_address_v4  # type: ignore
 
     @property
-    def ip_address_v6(self):
+    def ip_address_v6(self) -> Optional[str]:
         intf = self.get_primary_networkinterface()
         if intf is None:
             return None
-        return intf.ip_address_v6
+        return intf.ip_address_v6  # type: ignore
 
     @property
     def hostname(self) -> Optional[str]:
-        return get_hostname(self.fqdn)
+        return get_hostname(self.fqdn)  # type: ignore
 
     @property
     def mac_address(self) -> Optional[str]:

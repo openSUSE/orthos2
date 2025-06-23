@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from django import forms
 from django.db import models
-from django.forms import inlineformset_factory
+from django.forms import Field, inlineformset_factory  # type: ignore
 from django.forms.fields import (
     BooleanField,
     CharField,
@@ -39,8 +39,13 @@ logger = logging.getLogger("api")
 
 class BaseAPIForm:
     def form_field_to_dict(
-        self, form_field, name: str, prompt=None, initial=None, required=None
-    ):
+        self,
+        form_field: Field,
+        name: str,
+        prompt: Optional[Any] = None,
+        initial: Optional[str] = None,
+        required: Optional[bool] = None,
+    ) -> Dict[str, Any]:
         """
         Generate and returns a corresponding dictionary for django form fields.
 
@@ -67,7 +72,11 @@ class BaseAPIForm:
         if not required:
             required = form_field.required
 
-        field = {"prompt": prompt, "initial": initial, "required": required}
+        field: Dict[str, Any] = {
+            "prompt": prompt,
+            "initial": initial,
+            "required": required,
+        }
 
         if isinstance(form_field, CharField):
             field["type"] = "STRING"
@@ -87,9 +96,9 @@ class BaseAPIForm:
             field["type"] = "SELECTION"
             field["items"] = []
 
-            for choice in form_field.choices:
+            for choice in form_field.choices:  # type: ignore
                 if isinstance(choice[0], ModelChoiceIteratorValue):
-                    field["items"].append(
+                    field["items"].append(  # type: ignore
                         {
                             slugify(choice[0].value): {  # type: ignore
                                 "label": choice[1],
@@ -98,18 +107,23 @@ class BaseAPIForm:
                         }
                     )
                 else:
-                    field["items"].append(
-                        {slugify(choice[0]): {"label": choice[1], "value": choice[0]}}
+                    field["items"].append(  # type: ignore
+                        {
+                            slugify(choice[0]): {  # type: ignore
+                                "label": choice[1],
+                                "value": choice[0],
+                            }
+                        }
                     )
 
         return field
 
     def as_dict(self) -> Dict[str, Any]:
         """Generate and return form as dictionary."""
-        result = {}
+        result: Dict[str, Any] = {}
 
         for name, field in self.fields.items():  # type: ignore
-            result[name] = self.form_field_to_dict(field, name)
+            result[name] = self.form_field_to_dict(field, name)  # type: ignore
 
         return result
 
@@ -117,7 +131,7 @@ class BaseAPIForm:
 class ReserveMachineAPIForm(ReserveMachineForm, BaseAPIForm):
     def as_dict(self) -> Dict[str, Any]:
         """Generate and return form as dictionary."""
-        result = {}
+        result: Dict[str, Any] = {}
 
         for name, field in self.fields.items():
             result[name] = self.form_field_to_dict(field, name)
@@ -141,7 +155,7 @@ class ReserveMachineAPIForm(ReserveMachineForm, BaseAPIForm):
 class VirtualMachineAPIForm(VirtualMachineForm, BaseAPIForm):
     def as_dict(self, host: Optional[Machine]) -> Dict[str, Any]:  # type: ignore
         """Generate and return form as dictionary."""
-        result = {}
+        result: Dict[str, Any] = {}
 
         for name, field in self.fields.items():
             result[name] = self.form_field_to_dict(field, name)
@@ -213,7 +227,9 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
                 "mac_address",
                 "MAC address '{}' is already used by '{}'!".format(
                     mac_address,
-                    NetworkInterface.objects.get(mac_address=mac_address).machine.fqdn,  # type: ignore
+                    NetworkInterface.objects.get(
+                        mac_address=mac_address
+                    ).machine.fqdn,  # type: ignore
                 ),
             )
         return mac_address
@@ -223,14 +239,14 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         enclosure = self.cleaned_data["enclosure"]
         if not enclosure:
             enclosure = None
-        return enclosure
+        return enclosure  # type: ignore
 
     def clean_group_id(self) -> str:
         """Set `group_id` to None if 'None' is selected."""
         group_id = self.cleaned_data["group_id"]
         if group_id == "none":
             group_id = None
-        return group_id
+        return group_id  # type: ignore
 
     def clean(self) -> Dict[str, Any]:
         """
@@ -392,9 +408,9 @@ class SerialConsoleAPIForm(forms.Form, BaseAPIForm):
         SerialConsoleFormSet = inlineformset_factory(  # type: ignore
             Machine, SerialConsole, fields=self._query_fields, fk_name="machine"
         )
-        formset = SerialConsoleFormSet(instance=machine)
+        formset = SerialConsoleFormSet(instance=machine)  # type: ignore
 
-        self.fields = formset.form().fields
+        self.fields = formset.form().fields  # type: ignore
         self.fields["stype"].empty_label = None  # type: ignore
         self.fields["stype"].choices = self.get_serial_type_choices  # type: ignore
         self.fields["baud_rate"].initial = 5
@@ -515,9 +531,9 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
         RemotePowerFormSet = inlineformset_factory(  # type: ignore
             Machine, RemotePower, fields=self._query_fields, fk_name="machine"
         )
-        formset = RemotePowerFormSet(instance=machine)
+        formset = RemotePowerFormSet(instance=machine)  # type: ignore
 
-        self.fields = formset.form().fields
+        self.fields = formset.form().fields  # type: ignore
         self.fields["remote_power_device"].empty_label = "None"  # type: ignore
         self.fields["fence_name"].required = False
 
@@ -536,7 +552,7 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
         return self._query_fields
 
 
-class RemotePowerDeviceAPIForm(forms.ModelForm, BaseAPIForm):
+class RemotePowerDeviceAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
     class Meta:
         model = RemotePowerDevice
         fields = ["fqdn", "mac", "username", "password", "fence_name", "url"]
@@ -557,7 +573,7 @@ class RemotePowerDeviceAPIForm(forms.ModelForm, BaseAPIForm):
     )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)  # type: ignore
         remote_power_choices = get_remote_power_type_choices("rpower_device")
         self.fields["fence_name"].choices = remote_power_choices  # type: ignore
         # Automatic Widget selection doesn't seem to work in this scenario sadly

@@ -3,7 +3,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
+from django.contrib.auth.models import AbstractBaseUser, AnonymousUser, User
 from django.core.exceptions import FieldDoesNotExist, MultipleObjectsReturned
 from django.db.models import Field, Q
 from django.db.models.functions import Length
@@ -24,7 +24,6 @@ from orthos2.data.models import (
     SerialConsole,
     SerialConsoleType,
     System,
-    User,
     Vendor,
 )
 
@@ -461,7 +460,9 @@ class QueryField:
             field = self.MAPPING[token].field
             self._verbose_name = self.MAPPING[token].verbose_name
             if not self._verbose_name:
-                self._verbose_name = Machine._meta.get_field(field.name).verbose_name  # type: ignore
+                self._verbose_name = Machine._meta.get_field(
+                    field.name
+                ).verbose_name  # type: ignore
             self._related_name = self.MAPPING[token].related_name
             self._pre_function = self.MAPPING[token].pre
             self._post_function = self.MAPPING[token].post
@@ -579,7 +580,7 @@ class QueryField:
         """Check if a `QueryField` object is a datetime field."""
         return "DateTimeField" in self._field.get_internal_type()
 
-    def get_db_function_length(self):
+    def get_db_function_length(self) -> Tuple["QueryField", Dict[str, Length]]:
         """
         Return a tuple with a valid DB field name for querying string length and its corresponding
         DB function.
