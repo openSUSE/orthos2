@@ -6,6 +6,7 @@ from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import URLPattern, re_path, reverse
 from django.utils.html import format_html
+from django.utils.safestring import SafeString
 
 from .models import DailyTask, SingleTask
 
@@ -102,7 +103,7 @@ class DailyTaskAdmin(BaseTaskAdmin):
 
         return redirect("admin:taskmanager_dailytask_changelist")
 
-    def task_actions(self, obj):
+    def task_actions(self, obj: DailyTask) -> SafeString:
         """Add buttons for custom daily task actions."""
         if obj.enabled:
             button = '<a class="button" href="{}?action=disable">Disable Task</a>'

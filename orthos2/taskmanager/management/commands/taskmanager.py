@@ -1,6 +1,7 @@
 import logging
 import signal
-from typing import Any
+from types import FrameType
+from typing import Any, Optional
 
 from django.core.management.base import BaseCommand, CommandParser
 
@@ -10,7 +11,7 @@ logger = logging.getLogger("tasks")
 taskexecuter = TaskExecuter()
 
 
-def handler(signal, frame):
+def handler(signal: int, frame: Optional[FrameType]):
     taskexecuter.finish()
 
 

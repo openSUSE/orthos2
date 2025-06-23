@@ -11,7 +11,7 @@ import os
 import shutil
 import threading
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from django.template.loader import render_to_string
 
@@ -88,12 +88,12 @@ class Ansible(Task):
         shutil.move(Ansible.data_dir, Ansible.data_dir_lastrun)
         os.mkdir(Ansible.data_dir)
 
-    def get_json_filelist(self) -> list:
+    def get_json_filelist(self) -> List[str]:
         """
         Returns the list of machines for which json files have been
         created via ansible scan (.json suffix removed)
         """
-        res_files = []
+        res_files: List[str] = []
         for _subdir, _dirs, files in os.walk(Ansible.data_dir):
             for jfile in files:
                 if jfile.endswith(".json"):
