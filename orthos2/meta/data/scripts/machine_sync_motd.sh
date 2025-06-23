@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This scripts syncs the motd of the current installation with
 # all motds.
