@@ -3,6 +3,7 @@ Tests that are verifying that all functionality that is related to the "config" 
 """
 
 import unittest
+from typing import Dict
 
 from . import OrthosCliTestCase
 
@@ -29,7 +30,7 @@ class ConfigTests(OrthosCliTestCase):
         # Assert
         self.stop_cli()
         self.assertEqual(len(output), 8)
-        configuration = {}
+        configuration: Dict[str, str] = {}
         for _, item in enumerate(output[1:6]):
             tmp = item.strip("\r").split(":")
             configuration[tmp[0]] = tmp[1].strip("\t")
