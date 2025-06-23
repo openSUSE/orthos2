@@ -3,15 +3,17 @@
 import signal
 import socketserver
 import threading
+from types import FrameType
 from typing import Optional
 
-from ipmisim.ipmisim import IpmiServer
+# https://github.com/shapeblue/ipmisim/issues/16
+from ipmisim.ipmisim import IpmiServer  # type: ignore
 
 done_event = threading.Event()
 server: Optional[socketserver.UDPServer] = None
 
 
-def shutdownHandler(msg, evt):
+def shutdownHandler(msg: str, evt: threading.Event):
     global server
 
     if server is not None:
@@ -28,7 +30,7 @@ def shutdownHandler(msg, evt):
     return
 
 
-def terminate(signal, frame):
+def terminate(signal: int, frame: Optional[FrameType]):
     print("terminate handle on thread id:%x" % (id(threading.current_thread())))
     t = threading.Thread(target=shutdownHandler, args=("SIGTERM received", done_event))
     t.start()
