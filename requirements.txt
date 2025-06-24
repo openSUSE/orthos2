@@ -11,3 +11,5 @@ netaddr
 django-auth-ldap
 terminado
 tornado
+requests
+urllib3

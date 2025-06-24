@@ -83,14 +83,6 @@
     "model": "data.serverconfig",
     "pk": null,
     "fields": {
-      "key": "racktables.url.query",
-      "value": "https://racktables.our/domain.de/cgi-bin/get_location_from_racktables.pl?orthos_id={{ id }}"
-    }
-  },
-  {
-    "model": "data.serverconfig",
-    "pk": null,
-    "fields": {
       "key": "orthos.web.welcomemessage",
       "value": ""
     }

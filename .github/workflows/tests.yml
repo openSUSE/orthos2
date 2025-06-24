@@ -26,14 +26,14 @@ jobs:
         chmod g+w,o+w .
     - name: Create env files for testing
       run: |
-        touch orthos2.env
+        printf 'ORTHOS_NETBOX_URL="http://netbox.orthos2.test:8080"\nORTHOS_NETBOX_TOKEN="efa8c297936bd152cde34326e26d6b866de03fad"' > orthos2.env
         printf 'ORTHOS2_DB_ENGINE="django.db.backends.postgresql_psycopg2"\nORTHOS2_POSTGRES_HOST="database.orthos2.test"\nORTHOS2_POSTGRES_NAME="orthos"\nORTHOS2_POSTGRES_USER="orthos"\nORTHOS2_POSTGRES_PASSWORD="orthos2"' > db.env
     - name: Build images
       run: |
         docker compose build
     - name: Start Compose Stack
       run: |
-        docker compose up -d
+        docker compose -f compose.yaml -f compose.override.yml up -d
     - name: Wait for Cobbler to run
       run: |
         sleep 60
@@ -54,14 +54,14 @@ jobs:
       - uses: actions/checkout@v3
       - name: Create env files for testing
         run: |
-          touch orthos2.env
+          printf 'ORTHOS_NETBOX_URL="http://netbox.orthos2.test:8080"\nORTHOS_NETBOX_TOKEN="efa8c297936bd152cde34326e26d6b866de03fad"' > orthos2.env
           printf 'ORTHOS2_DB_ENGINE="django.db.backends.postgresql_psycopg2"\nORTHOS2_POSTGRES_HOST="database.orthos2.test"\nORTHOS2_POSTGRES_NAME="orthos"\nORTHOS2_POSTGRES_USER="orthos"\nORTHOS2_POSTGRES_PASSWORD="orthos2"' > db.env
       - name: Build Orthos 2 development docker images
         run: |
           docker compose build
       - name: Setup Orthos 2 server
         run: |
-          docker compose up -d
+          docker compose -f compose.yaml -f compose.override.yml up -d
         # TODO: Ensure domain resolves correctly
       - name: Generate Django Token
         # Wait 10 seconds so the container can start

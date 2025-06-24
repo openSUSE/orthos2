@@ -25,6 +25,8 @@ RUN zypper in -y \
     python311-validators \
     python311-netaddr \
     python311-psycopg2 \
+    python311-requests \
+    python311-urllib3 \
     python311-pytz \
     python311-django-auth-ldap
 

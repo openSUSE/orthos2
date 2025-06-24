@@ -1,7 +1,9 @@
 #!/usr/bin/bash
 
-
 server_start() {
+    # Setup NetBox
+    python3 manage.py shell < /code/docker/setup_netbox.py
+    # Setup Orthos 2
     git config --global --add safe.directory /code
     OLD_BRANCH=$(git branch --show-current)
     git stash -u
@@ -30,6 +32,7 @@ taskmanager_start() {
     # Start server
     python3 manage.py taskmanager --start
 }
+
 
 if [ "$ORTHOS2_MODE" == "taskmanager" ]; then
     taskmanager_start

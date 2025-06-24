@@ -148,3 +148,7 @@ package-lock.json
 
 # Docker environment files
 *.env
+!docker/netbox/netbox.env
+!docker/netbox/redis.env
+!docker/netbox/redis-cache.env
+!docker/netbox/postgres.env
