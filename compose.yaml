@@ -24,8 +24,7 @@ services:
       dockerfile: docker/develop-tw.dockerfile
     hostname: orthos2.orthos2.test
     env_file:
-      - "orthos2.env"
-      - "db.env"
+      - "docker/orthos/orthos2.env"
     cap_add:
       - NET_RAW
     volumes:
@@ -52,8 +51,7 @@ services:
     environment:
       ORTHOS2_MODE: "taskmanager"
     env_file:
-      - "orthos2.env"
-      - "db.env"
+      - "docker/orthos/orthos2.env"
     cap_add:
       - NET_RAW
     volumes:
@@ -67,9 +65,8 @@ services:
     image: postgres
     restart: always
     hostname: database.orthos2.test
-    environment:
-      POSTGRES_USER: orthos
-      POSTGRES_PASSWORD: orthos2
+    env_file:
+      - "docker/orthos/db.env"
     healthcheck:
       test:
         [

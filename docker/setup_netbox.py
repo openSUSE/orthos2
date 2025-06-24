@@ -3,6 +3,7 @@ from typing import Any, Dict
 
 import requests
 
+from orthos2 import settings
 from orthos2.utils.netbox import Netbox
 
 
@@ -355,8 +356,8 @@ def main():
     # pylint: disable=locally-disabled
     # pylint: disable=unused-variable
     netbox = NetboxSetup(
-        host="http://netbox.orthos2.test:8080",
-        token="efa8c297936bd152cde34326e26d6b866de03fad",
+        host=settings.NETBOX_URL,
+        token=settings.NETBOX_TOKEN,
     )
 
     # Create Custom Field Choice Set
