@@ -1,4 +1,23 @@
+# For the hostnames to work an entry in /etc/hosts is needed:
+# 127.0.0.1 orthos2.orthos2.test cobbler.orthos2.test netbox.orthos2.test
 services:
+  proxy:
+    image: traefik:v3.4
+    container_name: traefik
+    command:
+      - --accesslog=true
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
   orthos2:
     build:
       context: .
@@ -11,18 +30,21 @@ services:
       - NET_RAW
     volumes:
       - ./:/code
-    ports:
-      - "8000:8000"
     depends_on:
       orthos2_database:
         condition: service_healthy
       netbox:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8000" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
       interval: 30s
       timeout: 10s
       retries: 5
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.orthos2.rule=Host(`orthos2.orthos2.test`)"
+      - "traefik.http.routers.orthos2.entrypoints=web,websecure"
+      - "traefik.http.services.orthos2.loadbalancer.server.port=8000"
   orthos2_taskmanager:
     build:
       context: .
@@ -49,7 +71,11 @@ services:
       POSTGRES_USER: orthos
       POSTGRES_PASSWORD: orthos2
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -h 127.0.0.1 -d $${POSTGRES_USER} -U $${POSTGRES_USER}" ]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -h 127.0.0.1 -d $${POSTGRES_USER} -U $${POSTGRES_USER}",
+        ]
       interval: 1s
       timeout: 5s
       retries: 10
@@ -58,10 +84,11 @@ services:
     build:
       context: docker/cobbler
       dockerfile: cobbler.dockerfile
-    ports:
-      # - "22:22"
-      - "80:80"
-      - "443:443"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cobbler.rule=Host(`cobbler.orthos2.test`)"
+      - "traefik.http.routers.cobbler.entrypoints=web,websecure"
+      - "traefik.http.services.cobbler.loadbalancer.server.port=80"
   serial_console:
     hostname: sconsole.orthos2.test
     build:

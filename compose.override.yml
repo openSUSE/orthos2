@@ -1,5 +1,11 @@
 services:
   netbox:
     hostname: netbox.orthos2.test
-    ports:
-      - "8080:8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.netbox.rule=Host(`netbox.orthos2.test`)"
+      - "traefik.http.routers.netbox.entrypoints=web,websecure"
+      - "traefik.http.services.netbox.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.netbox-static-fix.replacepathregex.regex=^/(.*)/static/"
+      - "traefik.http.middlewares.netbox-static-fix.replacepathregex.replacement=/static/"
+      - "traefik.http.routers.netbox.middlewares=netbox-static-fix"
