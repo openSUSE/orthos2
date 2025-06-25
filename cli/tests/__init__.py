@@ -5,6 +5,7 @@ is no logic client side for specific endpoints.
 
 # mypy: warn-unused-ignores=False
 
+import os
 import pathlib
 import unittest
 from typing import AnyStr, List, Optional
@@ -53,7 +54,7 @@ class OrthosCliTestCase(unittest.TestCase):
             raise RuntimeError("CLI process not successfully spawned!")
         self.process.sendline("auth")
         self.process.expect("Orthos password for admin:")
-        self.process.sendline("admin")
+        self.process.sendline(os.environ.get("ORTHOS_SUPERUSER_PASSWORD", "admin"))
         # Check login was successful
         self.process.expect("(orthos 2.3.0:admin)")
 
