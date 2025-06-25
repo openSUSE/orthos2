@@ -844,11 +844,7 @@ class Machine(models.Model):
             raise ValidationError(
                 "{} systems cannot use a BMC".format(self.system.name)
             )
-        # create & assign network domain and ensure that the FQDN always matches the fqdn_domain
-        domain, created = Domain.objects.get_or_create(name=get_domain(self.fqdn))
-        if created:
-            domain.save()
-        self.fqdn_domain = domain
+        self.fqdn_domain = Domain.objects.get(name=get_domain(self.fqdn))
 
         # create & assign enclosure according to naming convention if no enclosure given
         if not hasattr(self, "enclosure"):
