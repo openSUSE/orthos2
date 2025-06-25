@@ -5,7 +5,7 @@ on:
     branches:
       - master
     tags:
-      - 'v*'
+      - "v*"
   pull_request:
     branches:
       - master
@@ -17,52 +17,57 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: ['3.11']
+        python-version: ["3.11"]
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Allow writing from inside the container
-      run: |
-        chmod g+w,o+w .
-    - name: Create env files for testing
-      run: |
-        printf 'ORTHOS_NETBOX_URL="http://netbox.orthos2.test:8080"\nORTHOS_NETBOX_TOKEN="efa8c297936bd152cde34326e26d6b866de03fad"' > orthos2.env
-        printf 'ORTHOS2_DB_ENGINE="django.db.backends.postgresql_psycopg2"\nORTHOS2_POSTGRES_HOST="database.orthos2.test"\nORTHOS2_POSTGRES_NAME="orthos"\nORTHOS2_POSTGRES_USER="orthos"\nORTHOS2_POSTGRES_PASSWORD="orthos2"' > db.env
-    - name: Build images
-      run: |
-        docker compose build
-    - name: Start Compose Stack
-      run: |
-        docker compose -f compose.yaml -f compose.override.yml up -d
-    - name: Wait for Cobbler to run
-      run: |
-        sleep 60
-    - name: Run Tests
-      run: |
-        docker compose exec -it orthos2 bash -c 'coverage run --source="." manage.py test orthos2'
-        docker compose exec -it orthos2 bash -c 'coverage report'
-        docker compose exec -it orthos2 bash -c 'coverage xml'
-    - name: Upload coverage
-      uses: codacy/codacy-coverage-reporter-action@v1.3.0
-      with:
-        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        coverage-reports: coverage.xml
+      - uses: actions/checkout@v3
+      - name: Allow writing from inside the container
+        run: |
+          chmod g+w,o+w .
+      - name: Install Django
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install django>4.2
+      - name: Create env files for testing
+        run: |
+          python3 docker/manage-secrets.py
+      - name: Build images
+        run: |
+          docker compose build
+      - name: Start Compose Stack
+        run: |
+          docker compose -f compose.yaml -f compose.override.yml up -d
+      - name: Wait for Cobbler to run
+        run: |
+          sleep 60
+      - name: Run Tests
+        run: |
+          docker compose exec -it orthos2 bash -c 'coverage run --source="." manage.py test orthos2'
+          docker compose exec -it orthos2 bash -c 'coverage report'
+          docker compose exec -it orthos2 bash -c 'coverage xml'
+      - name: Upload coverage
+        uses: codacy/codacy-coverage-reporter-action@v1.3.0
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: coverage.xml
   integration:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
+      - name: Install Django
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install django>4.2
       - name: Create env files for testing
         run: |
-          printf 'ORTHOS_NETBOX_URL="http://netbox.orthos2.test:8080"\nORTHOS_NETBOX_TOKEN="efa8c297936bd152cde34326e26d6b866de03fad"' > orthos2.env
-          printf 'ORTHOS2_DB_ENGINE="django.db.backends.postgresql_psycopg2"\nORTHOS2_POSTGRES_HOST="database.orthos2.test"\nORTHOS2_POSTGRES_NAME="orthos"\nORTHOS2_POSTGRES_USER="orthos"\nORTHOS2_POSTGRES_PASSWORD="orthos2"' > db.env
+          python3 docker/manage-secrets.py
       - name: Build Orthos 2 development docker images
         run: |
           docker compose build
       - name: Setup Orthos 2 server
         run: |
           docker compose -f compose.yaml -f compose.override.yml up -d
-        # TODO: Ensure domain resolves correctly
       - name: Generate Django Token
         # Wait 10 seconds so the container can start
         run: |

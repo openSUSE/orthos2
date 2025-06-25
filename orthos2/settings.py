@@ -25,7 +25,7 @@ BASE_DIR = os.path.abspath("/var/lib/orthos2")
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "$@c7_nq(oi56nl3*-!_(=&-j_=n3=^2f5dydr4chxlwckg_947"
+SECRET_KEY = os.environ.get("ORTHOS_SECRET_KEY", "")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

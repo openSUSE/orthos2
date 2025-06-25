@@ -2,6 +2,7 @@
 Tests that are verifying that all functionality that is related to the "auth" command is working.
 """
 
+import os
 import unittest
 
 from . import OrthosCliTestCase
@@ -20,7 +21,7 @@ class AuthTests(OrthosCliTestCase):
             self.fail("CLI process not successfully spawned!")
         self.process.sendline("auth")
         self.process.expect("Orthos password for admin:")
-        self.process.sendline("admin")
+        self.process.sendline(os.environ.get("ORTHOS_SUPERUSER_PASSWORD", "admin"))
 
         # Assert
         self.process.expect("(orthos 2.3.0:admin)")
