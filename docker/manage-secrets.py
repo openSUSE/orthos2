@@ -78,7 +78,7 @@ netbox_env_file.write_text("\n".join(netbox_env_vars_new) + "\n")
 # ORTHOS2_POSTGRES_PASSWORD
 
 (script_directory / "orthos" / "db.env").write_text(
-    "POSTGRES_USER: orthos\n" f'POSTGRES_PASSWORD="{orthos_db_password}"\n'
+    "POSTGRES_USER=orthos\n" f'POSTGRES_PASSWORD="{orthos_db_password}"\n'
 )
 
 # orthos2.env
