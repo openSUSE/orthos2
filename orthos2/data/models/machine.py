@@ -1,4 +1,5 @@
 import datetime
+import ipaddress
 import logging
 import re
 from copy import deepcopy
@@ -27,6 +28,7 @@ from requests import HTTPError
 
 from orthos2.data.exceptions import ReleaseException, ReserveException
 from orthos2.data.models.architecture import Architecture
+from orthos2.data.models.bmc import BMC
 from orthos2.data.models.domain import Domain, DomainAdmin, validate_domain_ending
 from orthos2.data.models.enclosure import Enclosure
 from orthos2.data.models.machinegroup import MachineGroup
@@ -642,6 +644,118 @@ class Machine(models.Model):
         product_code = netbox_machine.get("custom_fields", {}).get("product_code", "")
         if product_code is not None and product_code != "":
             self.product_code = product_code
+        # Verify all NetworkInterfaces are created
+        device_network_interfaces = netbox_api.check_interface_no_mgmt_by_id(
+            self.netbox_id
+        )
+        synced_mac_addresses = set()
+        for interface in device_network_interfaces:
+            primary_mac = interface.get("primary_mac_address")
+            if primary_mac is None:
+                continue
+            # If interface exists with MAC, then sync
+            if primary_mac.get("mac_address") in synced_mac_addresses:
+                # This is most probably a bonded interface, and we synchronize the first interface.
+                continue
+            synced_mac_addresses.add(primary_mac.get("mac_address"))
+            ipv4_addresses = netbox_api.check_ip_by_interface_family(
+                interface.get("id"), 4
+            )
+            ipv6_addresses = netbox_api.check_ip_by_interface_family(
+                interface.get("id"), 6
+            )
+            if len(ipv4_addresses) > 1 or len(ipv6_addresses) > 1:
+                # TODO: Handle case
+                continue
+            try:
+                # Use existing interface if possible
+                orthos_network_interface = NetworkInterface.objects.get(
+                    mac_address=primary_mac.get("mac_address")
+                )
+                if orthos_network_interface.machine.id != self.id:
+                    # If on different machine --> Remove from machine and assign to this machine
+                    orthos_network_interface.machine_id = self.id
+            except ObjectDoesNotExist:
+                # Create Network Interface if not mgmt interface
+                orthos_network_interface = NetworkInterface()
+                orthos_network_interface.mac_address = primary_mac.get("mac_address")
+                orthos_network_interface.machine_id = self.id
+            # Update interface information
+            orthos_network_interface.ethernet_type = interface.get("type").get("label")
+            orthos_network_interface.name = interface.get("name")
+            if len(ipv4_addresses) > 0:
+                orthos_network_interface.ip_address_v4 = str(
+                    ipaddress.ip_network(
+                        ipv4_addresses[0].get("address")
+                    ).network_address
+                )
+            if len(ipv6_addresses) > 0:
+                orthos_network_interface.ip_address_v6 = str(
+                    ipaddress.ip_network(
+                        ipv6_addresses[0].get("address")
+                    ).network_address
+                )
+            orthos_network_interface.save()
+        mgmt_interfaces = netbox_api.check_interface_mgmt_by_id(self.netbox_id)
+        if len(mgmt_interfaces) > 1:
+            # Skip multi-mgmt interfaces for now. Feature will be implemented later.
+            logger.warning(
+                "Skipping fetching BMC data from NetBox since there is more then a single network interface."
+            )
+        for mgmt_interface in mgmt_interfaces:
+            primary_mac = mgmt_interface.get("primary_mac_address")
+            # Don't attempt to do things without a MAC address
+            if primary_mac is None:
+                continue
+            ipv4_addresses = netbox_api.check_ip_by_interface_family(
+                mgmt_interface.get("id"), 4
+            )
+            ipv6_addresses = netbox_api.check_ip_by_interface_family(
+                mgmt_interface.get("id"), 6
+            )
+            if len(ipv4_addresses) > 1 or len(ipv6_addresses) > 1:
+                # TODO: Handle case
+                continue
+            if ipv4_addresses[0].get("dns_name") != ipv6_addresses[0].get("dns_name"):
+                logger.warning(
+                    "Skipped updating BMC interface because IPv4 and IPv6 DNS name are different!"
+                )
+                continue
+            fence_name = mgmt_interface.get("custom_fields", {}).get("fence_agent", "")
+            if fence_name == "":
+                logger.warning("Skipped because BMC interface has no fence name set!")
+                continue
+            if self.has_bmc():
+                bmc = BMC.objects.get(mac=primary_mac.get("mac_address"))
+                if bmc.machine_id != self.id:
+                    logger.warning(
+                        'BMC interface with MAC "%s" wasn\'t assigned to current machine %s but to machine %s!',
+                        primary_mac.get("mac_address"),
+                        self.id,
+                        bmc.machine_id,
+                    )
+                    continue
+            else:
+                bmc = BMC()
+                bmc.machine_id = self.id
+            bmc.fqdn = ipv4_addresses[0].get("dns_name")
+            bmc.fence_name = fence_name
+            bmc.mac = primary_mac.get("mac_address")
+            if len(ipv4_addresses) > 0:
+                bmc.ip_address_v4 = str(
+                    ipaddress.ip_network(
+                        ipv4_addresses[0].get("address")
+                    ).network_address
+                )
+            if len(ipv6_addresses) > 0:
+                bmc.ip_address_v6 = str(
+                    ipaddress.ip_network(
+                        ipv6_addresses[0].get("address")
+                    ).network_address
+                )
+            # Username & Password will be pulled from Hashicorp Vault in the future but for
+            # now they have to be manually given.
+            bmc.save()
         self.save()
 
     def bmc_allowed(self) -> bool:
