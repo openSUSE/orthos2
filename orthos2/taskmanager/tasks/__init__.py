@@ -6,6 +6,8 @@ from .daily import (
 )
 from .machinetasks import MachineCheck, RegenerateMOTD
 from .netbox import (
+    NetboxCleanupComparisionResults,
+    NetboxCompareFullMachine,
     NetboxFetchBMC,
     NetboxFetchEnclosure,
     NetboxFetchFullMachine,
@@ -36,6 +38,8 @@ __all__ = [
     "NetboxFetchFullMachine",
     "NetboxFetchMachine",
     "NetboxFetchNetworkInterface",
+    "NetboxCleanupComparisionResults",
+    "NetboxCompareFullMachine",
     "CheckForPrimaryNetwork",
     "CheckMultipleAccounts",
     "CheckReservationExpiration",

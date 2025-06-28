@@ -2,11 +2,13 @@
 This module contains all tasks that need to be performed together with NetBox.
 """
 
+import datetime
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 
 from orthos2.data.models import BMC, Enclosure, Machine, NetworkInterface
+from orthos2.data.models.netboxorthoscomparision import NetboxOrthosComparisionRun
 from orthos2.taskmanager.models import Task
 
 logger = logging.getLogger("tasks")
@@ -106,3 +108,50 @@ class NetboxFetchFullMachine(Task):
             machine.bmc.fetch_netbox()
         for intf in machine.networkinterfaces.all():
             intf.fetch_netbox()
+
+
+class NetboxCompareFullMachine(Task):
+    """
+    Compare a single full machine with its subobjects.
+    """
+
+    def __init__(self, machine_id: int) -> None:
+        """
+        Constructor to initialize the task.
+        """
+        self.machine_pk = machine_id
+
+    def execute(self) -> None:
+        """
+        Executes the task.
+        """
+        logger.info(
+            'Comparing information from Netbox API for machine "%s".', self.machine_pk
+        )
+        try:
+            machine = Machine.objects.get(pk=self.machine_pk)
+        except ObjectDoesNotExist as err:
+            raise ValueError("Requested machine doesn't exist!") from err
+        machine.enclosure.compare_netbox()
+        machine.compare_netbox()
+        if machine.has_bmc():
+            machine.bmc.compare_netbox()
+        for intf in machine.networkinterfaces.all():
+            intf.compare_netbox()
+
+
+class NetboxCleanupComparisionResults(Task):
+    """
+    Cleanup old NetBox comparison results.
+    """
+
+    def execute(self) -> None:
+        """
+        Executes the task.
+        """
+        logger.info("Cleaning up old NetBox comparison results.")
+
+        # Delete all results older than 14 days
+        NetboxOrthosComparisionRun.objects.filter(
+            compare_timestamp__lt=datetime.datetime.now() - datetime.timedelta(days=14)
+        ).delete()

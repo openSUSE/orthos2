@@ -45,6 +45,11 @@ urlpatterns = [
     re_path(r"^machine/(?P<id>[0-9]+)/miscellaneous$", views.misc, name="misc"),
     re_path(r"^machine/(?P<id>[0-9]+)/history$", views.history, name="history"),
     re_path(
+        r"^machine/(?P<id>[0-9]+)/netboxcomparision$",
+        views.machine_netboxcomparision,
+        name="netboxcomparision",
+    ),
+    re_path(
         r"^machine/(?P<id>[0-9]+)/reserve$",
         views.machine_reserve,
         name="reserve_machine",
@@ -59,6 +64,11 @@ urlpatterns = [
         r"^machine/(?P<id>[0-9]+)/fetch-netbox$",
         views.fetch_netbox,
         name="netbox_fetch",
+    ),
+    re_path(
+        r"^machine/(?P<id>[0-9]+)/compare-netbox$",
+        views.compare_netbox,
+        name="netbox_compare",
     ),
     re_path(r"^machine/(?P<id>[0-9]+)/setup$", views.setup, name="setup"),
     re_path(

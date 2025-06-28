@@ -2,6 +2,7 @@ import datetime
 import ipaddress
 import logging
 import re
+import uuid
 from copy import deepcopy
 from decimal import Decimal
 from typing import (
@@ -34,6 +35,10 @@ from orthos2.data.models.bmc import BMC
 from orthos2.data.models.domain import Domain, DomainAdmin, validate_domain_ending
 from orthos2.data.models.enclosure import Enclosure
 from orthos2.data.models.machinegroup import MachineGroup
+from orthos2.data.models.netboxorthoscomparision import (
+    NetboxOrthosComparisionResult,
+    NetboxOrthosComparisionRun,
+)
 from orthos2.data.models.networkinterface import NetworkInterface, validate_mac_address
 from orthos2.data.models.platform import Platform
 from orthos2.data.models.remotepowertype import RemotePowerType
@@ -624,6 +629,7 @@ class Machine(models.Model):
     serialconsole: "SerialConsole"
     annotations: "RelatedManager[Annotation]"
     reservationhistory_set: "RelatedManager[ReservationHistory]"
+    netboxorthoscomparisionruns: "RelatedManager[NetboxOrthosComparisionRun]"
 
     objects = Manager()
     api = RootManager()
@@ -676,6 +682,55 @@ class Machine(models.Model):
         if intf is None:
             return None
         return intf.mac_address
+
+    def compare_netbox(self) -> None:
+        """
+        TODO
+        """
+        if self.netbox_id == 0:
+            logger.debug("Skipping comparision because NetBox ID is 0.")
+            return
+        run_uuid = uuid.uuid4()
+        run_obj = NetboxOrthosComparisionRun(
+            run_id=run_uuid,
+            compare_timestamp=datetime.datetime.now(),
+            object_type=NetboxOrthosComparisionRun.NetboxOrthosComparisionItemTypes.MACHINE,
+            object_machine=self,
+        )
+        run_obj.save()
+
+        netbox_api = Netbox.get_instance()
+        try:
+            netbox_machine = netbox_api.fetch_device(self.netbox_id)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                logger.info("Fetching from NetBox failed with status 404.")
+                return
+            raise e
+        # FQDN
+        # Architecture
+        NetboxOrthosComparisionResult(
+            run_id=run_obj,
+            property_name="architecture",
+            orthos_result=self.architecture.name or "None",
+            netbox_result=netbox_machine.get("custom_fields", {}).get("arch", "None"),
+        ).save()
+        # SystemType
+        # Serial Number
+        # Product Code
+        # Description
+        NetboxOrthosComparisionResult(
+            run_id=run_obj,
+            property_name="description",
+            orthos_result=self.comment or "None",
+            netbox_result=netbox_machine.get("description", "None"),
+        ).save()
+        # CPU Cores, Sockets, Threads
+        # RAM (GB)
+        # dmidecode
+        # lsscsi
+        # lspci
+        # Installation / Platform
 
     def fetch_netbox(self) -> None:
         """

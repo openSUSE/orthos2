@@ -5,6 +5,7 @@ imported with the "TYPE_CHECKING" guard to prevent import issues.
 
 from datetime import date, datetime
 from typing import Optional, Union
+from uuid import UUID
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -12,10 +13,13 @@ from django.db.models.expressions import Combinable
 from django.http import HttpRequest
 
 from orthos2.data.models.architecture import Architecture
+from orthos2.data.models.bmc import BMC
 from orthos2.data.models.domain import Domain
 from orthos2.data.models.enclosure import Enclosure
 from orthos2.data.models.machine import Machine
 from orthos2.data.models.machinegroup import MachineGroup
+from orthos2.data.models.netboxorthoscomparision import NetboxOrthosComparisionRun
+from orthos2.data.models.networkinterface import NetworkInterface
 from orthos2.data.models.platform import Platform
 from orthos2.data.models.remotepowerdevice import RemotePowerDevice
 from orthos2.data.models.remotepowertype import RemotePowerType
@@ -31,6 +35,7 @@ MandatoryDateTimeField = models.DateTimeField[datetime, datetime]
 OptionalDateTimeField = models.DateTimeField[Optional[datetime], Optional[datetime]]
 MandatoryDateField = models.DateField[date, date]
 OptionalDateField = models.DateField[Union[Combinable, date, None], Optional[date]]
+MandatoryCharField = models.CharField[str, str]
 MandatoryMachineForeignKey = models.ForeignKey[Union[Combinable, Machine], Machine]
 OptionalMachineForeignKey = models.ForeignKey[
     Union[Combinable, Machine, None], Optional[Machine]
@@ -51,6 +56,9 @@ OptionalPlatformForeignKey = models.ForeignKey[
 ]
 MandatoryEnclosureForeignKey = models.ForeignKey[
     Union[Combinable, Enclosure], Enclosure
+]
+OptionalEnclosureForeignKey = models.ForeignKey[
+    Union[Combinable, Enclosure, None], Optional[Enclosure]
 ]
 MandatoryArchitectureForeignKey = models.ForeignKey[
     Union[Combinable, Architecture], Architecture
@@ -74,4 +82,12 @@ OptionalRemotePowerTypeForeignKey = models.ForeignKey[
 ]
 MandatoryRemotePowerTypeForeignKey = models.ForeignKey[
     Union[Combinable, RemotePowerType], RemotePowerType
+]
+MandatoryUUIDField = models.UUIDField[Union[str, UUID], UUID]
+OptionalBMCForeignKey = models.ForeignKey[Union[Combinable, BMC, None], Optional[BMC]]
+OptionalNetworkInterfaceForeignKey = models.ForeignKey[
+    Union[Combinable, NetworkInterface, None], Optional[NetworkInterface]
+]
+MandatoryNetboxOrthosComparisionRunForeignKey = models.ForeignKey[
+    Union[Combinable, NetboxOrthosComparisionRun], NetboxOrthosComparisionRun
 ]
