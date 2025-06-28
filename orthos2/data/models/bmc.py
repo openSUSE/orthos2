@@ -1,9 +1,16 @@
+import datetime
 import ipaddress
 import logging
+import uuid
+from pdb import run
 from typing import TYPE_CHECKING
 
 from django.db import models
 
+from orthos2.data.models.netboxorthoscomparision import (
+    NetboxOrthosComparisionResult,
+    NetboxOrthosComparisionRun,
+)
 from orthos2.data.validators import validate_mac_address
 from orthos2.utils.netbox import Netbox
 from orthos2.utils.remotepowertype import get_remote_power_type_choices
@@ -53,6 +60,65 @@ class BMC(models.Model):
 
     def __str__(self) -> str:
         return self.fqdn
+
+    def compare_netbox(self) -> None:
+        """
+        TODO
+        """
+        if self.machine.netbox_id == 0:
+            logger.debug("Skipping comparision because NetBox ID is 0.")
+            return
+
+        run_uuid = uuid.uuid4()
+        run_obj = NetboxOrthosComparisionRun(
+            run_id=run_uuid,
+            compare_timestamp=datetime.datetime.now(),
+            object_type=NetboxOrthosComparisionRun.NetboxOrthosComparisionItemTypes.BMC,
+            object_bmc=self,
+        )
+        run_obj.save()
+        netbox_api = Netbox.get_instance()
+        netbox_interfaces = netbox_api.check_interface_mgmt_by_id(
+            self.machine.netbox_id
+        )
+        for interface in netbox_interfaces:
+            if interface.get("primary_mac_address") is None:
+                continue
+            if interface.get("primary_mac_address", {}).get("display", "") == self.mac:
+                # FIXME: A single interface can have any number of IPs (both v4 and v6)
+                NetboxOrthosComparisionResult(
+                    run_id=run_obj,
+                    property_name="mac_address",
+                    orthos_result=self.mac,
+                    netbox_result=interface.get("primary_mac_address", {}).get(
+                        "display", "None"
+                    ),
+                ).save()
+                ips = netbox_api.check_ip_by_interface(interface.get("id"))
+                for ip in ips:
+                    ip_obj = ipaddress.ip_network(ip.get("display"))
+                    NetboxOrthosComparisionResult(
+                        run_id=run_obj,
+                        property_name="fqdn (IPv%s)" % ip_obj.version,
+                        orthos_result=self.fqdn,
+                        netbox_result=ip.get("dns_name", "None"),
+                    ).save()
+                    if ip_obj.version == 4:
+                        NetboxOrthosComparisionResult(
+                            run_id=run_obj,
+                            property_name="ip_address_v4",
+                            orthos_result=self.ip_address_v4 or "None",
+                            netbox_result=str(ip_obj),
+                        ).save()
+                    if ip_obj.version == 6:
+                        NetboxOrthosComparisionResult(
+                            run_id=run_obj,
+                            property_name="ip_address_v6",
+                            orthos_result=self.ip_address_v6 or "None",
+                            netbox_result=str(ip_obj),
+                        ).save()
+        # TODO: Machine
+        # TODO: Ethernet Type
 
     def fetch_netbox(self) -> None:
         """
