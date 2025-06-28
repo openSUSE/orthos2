@@ -1,10 +1,13 @@
 import re
-from typing import Optional
+from typing import TYPE_CHECKING, Dict, Optional
 
 from django import template
 from django.templatetags.static import static
 from django.utils.html import escape
 from django.utils.safestring import SafeString, mark_safe
+
+if TYPE_CHECKING:
+    from orthos2.data.models.netboxorthoscomparision import NetboxOrthosComparisionRun
 
 register = template.Library()
 
@@ -60,3 +63,20 @@ def pcihooks(lspci: str) -> SafeString:
         str(escape(lspci)),
     )
     return mark_safe(result)
+
+
+@register.filter
+def get_netbox_comparison_result(
+    comparison_results: Dict[str, "NetboxOrthosComparisionRun"], interface_name: str
+) -> Optional["NetboxOrthosComparisionRun"]:
+    """
+    Get the NetBox comparison result for a specific interface name.
+
+    Args:
+        comparison_results: The comparison results dictionary.
+        interface_name: The name of the interface to look for.
+
+    Returns:
+        The comparison result for the specified interface, or None if not found.
+    """
+    return comparison_results.get(interface_name, None)
