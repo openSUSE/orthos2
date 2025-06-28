@@ -85,7 +85,7 @@ netbox_env_file.write_text("\n".join(netbox_env_vars_new) + "\n")
 # ORTHOS_SECRET_KEY, ORTHOS_NETBOX_TOKEN
 
 (script_directory / "orthos" / "orthos2.env").write_text(
-    f'ORTHOS_SECRET_KEY="{orthos2_secret_key}"\n'
+    f"ORTHOS_SECRET_KEY='{orthos2_secret_key}'\n"
     'ORTHOS_NETBOX_URL="http://netbox.orthos2.test:8080"\n'
     f"ORTHOS_NETBOX_TOKEN='{netbox_superuser_api_token}'\n"
     f'ORTHOS_SUPERUSER_PASSWORD="{orthos_superuser_password}"\n'
