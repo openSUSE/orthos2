@@ -1,0 +1,113 @@
+{% extends 'frontend/machines/machine.html' %}
+{% load filters %}
+
+{% block tabcontent %}
+<div style="display: table; width: 100%;">
+<div style="display: table-row;" class="float-right">
+  <a class="text-right btn btn-secondary btn-sm" href="{% url 'frontend:netbox_compare' machine.id %}" role="button">Preview and Compare data with NetBox</a>
+</div>
+</div>
+
+<div class="title">
+  <h5>Enclosure - UUID {{ enclosure_run.run_id }}</h5>
+</div>
+
+<p>Data fetched at: {{ enclosure_run.compare_timestamp }}</p>
+
+<table class="table table-bordered small table-hover">
+  <thead class="thead-default">
+    <th>Property Name</th>
+    <th>Orthos</th>
+    <th>NetBox</th>
+  </thead>
+  <tbody>
+    {% for result in enclosure_run.results.all %}
+    <tr class="clickable-row" data-href="#{{ result.id }}">
+        <td>{{ result.property_name }}</td>
+        <td>{{ result.orthos_result }}</td>
+        <td>{{ result.netbox_result }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="title">
+  <h5>Machine - UUID {{ machine_run.run_id }}</h5>
+</div>
+
+<p>Data fetched at: {{ machine_run.compare_timestamp }}</p>
+
+<table class="table table-bordered small table-hover">
+  <thead class="thead-default">
+    <th>Property Name</th>
+    <th>Orthos</th>
+    <th>NetBox</th>
+  </thead>
+  <tbody>
+    {% for result in machine_run.results.all %}
+    <tr class="clickable-row" data-href="#{{ result.id }}">
+        <td>{{ result.property_name }}</td>
+        <td>{{ result.orthos_result }}</td>
+        <td>{{ result.netbox_result }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if machine.has_bmc %}
+<div class="title">
+  <h5>BMC - UUID {{ bmc_run.run_id }}</h5>
+</div>
+
+<p>Data fetched at: {{ bmc_run.compare_timestamp }}</p>
+
+<table class="table table-bordered small table-hover">
+  <thead class="thead-default">
+    <th>Property Name</th>
+    <th>Orthos</th>
+    <th>NetBox</th>
+  </thead>
+  <tbody>
+    {% for result in bmc_run.results.all %}
+    <tr class="clickable-row" data-href="#{{ result.id }}">
+        <td>{{ result.property_name }}</td>
+        <td>{{ result.orthos_result }}</td>
+        <td>{{ result.netbox_result }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<div class="title">
+  <h5>Network Interfaces</h5>
+</div>
+
+{% for intf in machine.networkinterfaces.all %}
+{% with network_interface_run_intf=network_interface_run|get_netbox_comparison_result:intf.name %}
+<div class="title">
+  <h6>Network Interface {{ intf.name }} - UUID {{ network_interface_run_intf.run_id }}</h6>
+</div>
+
+<p>Data fetched at: {{ network_interface_run_intf.compare_timestamp }}</p>
+
+<table class="table table-bordered small table-hover">
+  <thead class="thead-default">
+    <th>Property Name</th>
+    <th>Orthos</th>
+    <th>NetBox</th>
+  </thead>
+  <tbody>
+    {% for result in network_interface_run_intf.results.all %}
+    <tr class="clickable-row" data-href="#{{ result.id }}">
+        <td>{{ result.property_name }}</td>
+        <td>{{ result.orthos_result }}</td>
+        <td>{{ result.netbox_result }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endwith %}
+{% endfor %}
+
+{% endblock %}

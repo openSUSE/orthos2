@@ -3,21 +3,25 @@ All views that are related to "/machine".
 """
 
 import logging
-from typing import Union
+from typing import Dict, Union
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.http import (
     Http404,
     HttpRequest,
     HttpResponse,
+    HttpResponseBase,
     HttpResponsePermanentRedirect,
     HttpResponseRedirect,
 )
 from django.shortcuts import redirect, render
 
 from orthos2.data.models import Machine, ServerConfig
+from orthos2.data.models.netboxorthoscomparision import NetboxOrthosComparisionRun
 from orthos2.frontend.decorators import check_permissions
+from orthos2.frontend.forms.addmachine import AddMachineFormView
 from orthos2.frontend.forms.reservemachine import ReserveMachineForm
 from orthos2.frontend.forms.setupmachine import SetupMachineForm
 from orthos2.frontend.forms.virtualmachine import VirtualMachineForm
@@ -26,6 +30,10 @@ from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.misc import add_offset_to_date
 
 logger = logging.getLogger("views")
+
+
+class AuthenticatedHttpRequest(HttpRequest):
+    user: User
 
 
 @login_required
@@ -377,6 +385,57 @@ def machine(request: HttpRequest, id: int) -> HttpResponse:
 
 
 @login_required
+def machine_netboxcomparision(
+    request: AuthenticatedHttpRequest, id: int
+) -> HttpResponseBase:
+    perm_list = [
+        "data.view_machine",
+    ]
+    if not request.user.has_perms(perm_list):
+        messages.error(request, "Not enough user permissions.")
+        return redirect("machines")
+
+    try:
+        machine = Machine.objects.get(pk=id)
+    except Machine.DoesNotExist:
+        messages.error(request, "Machine does not exist.")
+        return redirect("machines")
+
+    if machine.enclosure.netboxorthoscomparisionruns.count() > 0:
+        enclosure_run = machine.enclosure.netboxorthoscomparisionruns.latest(
+            "compare_timestamp"
+        )
+    else:
+        enclosure_run = None
+    if machine.netboxorthoscomparisionruns.count() > 0:
+        machine_run = machine.netboxorthoscomparisionruns.latest("compare_timestamp")
+    else:
+        machine_run = None
+    if machine.has_bmc() and machine.bmc.netboxorthoscomparisionruns.count() > 0:
+        bmc_run = machine.bmc.netboxorthoscomparisionruns.latest("compare_timestamp")
+    else:
+        bmc_run = None
+    network_interface_run: Dict[str, NetboxOrthosComparisionRun] = {}
+    for intf in machine.networkinterfaces.all():
+        network_interface_run[intf.name] = NetboxOrthosComparisionRun.objects.filter(
+            object_network_interface=intf
+        ).latest("compare_timestamp")
+
+    return render(
+        request,
+        "frontend/machines/detail/netboxcomparison.html",
+        {
+            "machine": machine,
+            "title": "Netbox Comparison",
+            "enclosure_run": enclosure_run,
+            "bmc_run": bmc_run if machine.has_bmc() else None,
+            "network_interface_run": network_interface_run,
+            "machine_run": machine_run,
+        },
+    )
+
+
+@login_required
 @check_permissions()
 def fetch_netbox(request: HttpRequest, id: int) -> HttpResponseRedirect:
     try:
@@ -395,3 +454,39 @@ def fetch_netbox(request: HttpRequest, id: int) -> HttpResponseRedirect:
         messages.error(request, exception)  # type: ignore
 
     return redirect("frontend:detail", id=id)
+
+
+@login_required
+@check_permissions()
+def compare_netbox(request: HttpRequest, id: int) -> HttpResponseRedirect:
+    try:
+        requested_machine = Machine.objects.get(pk=id)
+    except Machine.DoesNotExist:
+        messages.error(request, "Machine does not exist!")
+        return redirect("frontend:machines")
+
+    try:
+        TaskManager.add(tasks.NetboxCompareFullMachine(requested_machine.pk))
+        messages.info(
+            request,
+            "Comparing data with Netbox - this can take some seconds...",
+        )
+    except Exception as exception:
+        messages.error(request, exception)  # type: ignore
+
+    return redirect("frontend:detail", id=id)
+
+
+@login_required
+def machine_add(request: AuthenticatedHttpRequest) -> HttpResponseBase:
+    perm_list = [
+        "data.add_machine",
+        "data.add_bmc",
+        "data.add_remotepower",
+        "data.add_networkinterface",
+    ]
+    if not request.user.has_perms(perm_list):
+        messages.error(request, "Not enough user permissions.")
+        return redirect("machines")
+
+    return AddMachineFormView.as_view()(request)
