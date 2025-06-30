@@ -83,22 +83,19 @@ class Enclosure(models.Model):
                 return
             raise e
         # Reset fields
+        self.comment = ""
         self.location_site = "unknown"
         self.location_room = "unknown"
         self.location_rack = "unknown"
         self.location_rack_position = "unknown"
+        # Description
+        self.comment = netbox_device.get("description", "")
         # Location
-        self.location_site = netbox_device.get("site").get("display")
-        location_obj = netbox_device.get("location")
-        if location_obj is None:
-            self.location_room = "unknown"
-        else:
-            self.location_room = location_obj.get("display")
-        rack_obj = netbox_device.get("rack")
-        if rack_obj is None:
-            self.location_rack = "unknown"
-        else:
-            self.location_rack = rack_obj.get("display")
+        self.location_site = netbox_device.get("site", {}).get("display", "unknown")
+        location_obj = netbox_device.get("location", {})
+        self.location_room = location_obj.get("display", "unknown")
+        rack_obj = netbox_device.get("rack", {})
+        self.location_rack = rack_obj.get("display", "unknown")
         # TODO: What if the position is not set.
-        self.location_rack_position = netbox_device.get("position")
+        self.location_rack_position = netbox_device.get("position", "unknown")
         self.save()
