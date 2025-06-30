@@ -6,8 +6,7 @@ import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from orthos2.data.models.enclosure import Enclosure
-from orthos2.data.models.machine import Machine
+from orthos2.data.models import Enclosure, Machine
 from orthos2.taskmanager.models import Task
 
 logger = logging.getLogger("tasks")
@@ -27,6 +26,22 @@ class NetboxFetchEnclosure(Task):
             logger.debug('Fetching enclosure "%s" - Start', enclosure.name)
             enclosure.fetch_netbox()
             logger.debug('Fetching enclosure "%s" - End', enclosure.name)
+
+
+class NetboxFetchMachine(Task):
+    """
+    Iterate over all machines and fetch information from Netbox.
+    """
+
+    def execute(self) -> None:
+        """
+        Executes the task.
+        """
+        logger.info("Fetching information from Netbox API for all machines.")
+        for machine in Machine.objects.all():
+            logger.debug('Fetching machine "%s" - Start', machine.fqdn)
+            machine.fetch_netbox()
+            logger.debug('Fetching machine "%s" - End', machine.fqdn)
 
 
 class NetboxFetchFullMachine(Task):
@@ -50,3 +65,4 @@ class NetboxFetchFullMachine(Task):
         except ObjectDoesNotExist as err:
             raise ValueError("Requested machine doesn't exist!") from err
         machine.enclosure.fetch_netbox()
+        machine.fetch_netbox()

@@ -713,6 +713,7 @@ class MachineAdmin(admin.ModelAdmin):
                     "platform",
                     "contact_email",
                     "kernel_options",
+                    "netbox_id",
                 ),
             },
         ),
