@@ -7,10 +7,12 @@ from typing import Union
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.http import (
     Http404,
     HttpRequest,
     HttpResponse,
+    HttpResponseBase,
     HttpResponsePermanentRedirect,
     HttpResponseRedirect,
 )
@@ -18,6 +20,7 @@ from django.shortcuts import redirect, render
 
 from orthos2.data.models import Machine, ServerConfig
 from orthos2.frontend.decorators import check_permissions
+from orthos2.frontend.forms.addmachine import AddMachineFormView
 from orthos2.frontend.forms.reservemachine import ReserveMachineForm
 from orthos2.frontend.forms.setupmachine import SetupMachineForm
 from orthos2.frontend.forms.virtualmachine import VirtualMachineForm
@@ -26,6 +29,10 @@ from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.misc import add_offset_to_date
 
 logger = logging.getLogger("views")
+
+
+class AuthenticatedHttpRequest(HttpRequest):
+    user: User
 
 
 @login_required
@@ -395,3 +402,18 @@ def fetch_netbox(request: HttpRequest, id: int) -> HttpResponseRedirect:
         messages.error(request, exception)  # type: ignore
 
     return redirect("frontend:detail", id=id)
+
+
+@login_required
+def machine_add(request: AuthenticatedHttpRequest) -> HttpResponseBase:
+    perm_list = [
+        "data.add_machine",
+        "data.add_bmc",
+        "data.add_remotepower",
+        "data.add_networkinterface",
+    ]
+    if not request.user.has_perms(perm_list):
+        messages.error(request, "Insufficient user permissions.")
+        return redirect("machines")
+
+    return AddMachineFormView.as_view()(request)

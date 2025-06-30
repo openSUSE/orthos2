@@ -1,0 +1,49 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+{% load tags %}
+{% load filters %}
+
+{% block navbar %}
+{% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+    <form class="form-machine-add" action="{% url 'frontend:machine_add' %}" method="post">
+        {% csrf_token %}
+
+        {{ form.netbox_id.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.netbox_id.id_for_label }}">{{ form.netbox_id.label }}:</label>
+          </div>
+          <div class="col-9">
+            {{ form.netbox_id }}
+            <small class="form-text text-muted">{{ form.netbox_id.help_text }}</small>
+          </div>
+        </div>
+
+        {{ form.system.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.system.id_for_label }}">{{ form.system.label }}:</label>
+          </div>
+          <div class="col-9">
+            {{ form.system }}
+            <small class="form-text text-muted">{{ form.system.help_text }}</small>
+          </div>
+        </div>
+
+        {{ form.netbox_object_type.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.netbox_object_type.id_for_label }}">{{ form.netbox_object_type.label }}:</label>
+          </div>
+          <div class="col-9">
+            {{ form.netbox_object_type }}
+            <small class="form-text text-muted">{{ form.netbox_object_type.help_text }}</small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm btn-block">Submit</button>
+    </form>
+{% endblock %}
