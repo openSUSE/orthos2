@@ -10,8 +10,9 @@ isort==5.12.0  # See .pre-commit-config.yaml
 pytest
 mock
 django-webtest
-djangorestframework-stubs[compatible-mypy]
-django-stubs[compatible-mypy]
+mypy
+djangorestframework-stubs[compatible-mypy]~=3.14
+django-stubs[compatible-mypy]~=4.2
 types-netaddr
 types-pytz
 types-pexpect

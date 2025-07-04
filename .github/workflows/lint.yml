@@ -15,7 +15,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [ '3.11' ]
+        python-version: ["3.11"]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -33,7 +33,6 @@ jobs:
           sudo apt-get install python3-setuptools libldap2-dev libsasl2-dev
           python -m pip install --upgrade pip
           pip install -r requirements-devel.txt
-          pip install mypy django-stubs[compatible-mypy]~=4.2
       - name: Create required directories
         run: |
           sudo mkdir -p /var/log/orthos2
@@ -80,61 +79,61 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: ['3.11']
+        python-version: ["3.11"]
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    - uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-devel.txt', '**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pylint
-    - name: Analysing the code with pylint (server)
-      run: |
-        pylint --rcfile=.pylintrc --fail-under=10 orthos2
-    - name: Analysing the code with pylint (CLI)
-      run: |
-        pylint --rcfile=.pylintrc --fail-under=10 cli/orthos2
-        pylint --rcfile=.pylintrc --fail-under=10 cli/tests
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-devel.txt', '**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pylint
+      - name: Analysing the code with pylint (server)
+        run: |
+          pylint --rcfile=.pylintrc --fail-under=10 orthos2
+      - name: Analysing the code with pylint (CLI)
+        run: |
+          pylint --rcfile=.pylintrc --fail-under=10 cli/orthos2
+          pylint --rcfile=.pylintrc --fail-under=10 cli/tests
   pycodingstyle:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
       matrix:
-        python-version: ['3.11']
+        python-version: ["3.11"]
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    - uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-devel.txt', '**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install pycodestyle
-    - name: Analysing the code with pycodestyle
-      run: |
-        pycodestyle .
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-devel.txt', '**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pycodestyle
+      - name: Analysing the code with pycodestyle
+        run: |
+          pycodestyle .
   django-admin:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [ '3.11' ]
+        python-version: ["3.11"]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
