@@ -1,4 +1,5 @@
 import logging
+from typing import List, TextIO
 
 from orthos2.data.models import Domain, ServerConfig
 from orthos2.taskmanager.models import Task
@@ -17,7 +18,9 @@ class RegenerateSerialConsole(Task):
         """Execute the task."""
         from orthos2.data.models import Machine
 
-        if not ServerConfig.objects.bool_by_key("orthos.debug.serialconsole.write"):
+        if not ServerConfig.get_server_config_manager().bool_by_key(
+            "orthos.debug.serialconsole.write"
+        ):
             logger.warning("Disabled: set 'orthos.debug.serialconsole.write' to 'true'")
             return
 
@@ -34,7 +37,7 @@ class RegenerateSerialConsole(Task):
             new_content = ""
             # domains served by this cscreen server:
             domains = Domain.objects.filter(cscreen_server__fqdn=self.fqdn)
-            machines = []  # type: ignore
+            machines: List[Machine] = []
             for domain in domains:
                 machines += domain.machine_set.all()
 
@@ -50,17 +53,20 @@ class RegenerateSerialConsole(Task):
 
             screenrc_file = "/etc/cscreenrc"
 
-            orthos_inline_begin = ServerConfig.objects.by_key(
+            orthos_inline_begin = ServerConfig.get_server_config_manager().by_key(
                 "orthos.configuration.inline.begin"
             )
-            orthos_inline_end = ServerConfig.objects.by_key(
+            orthos_inline_end = ServerConfig.get_server_config_manager().by_key(
                 "orthos.configuration.inline.end"
             )
+
+            if orthos_inline_begin is None or orthos_inline_end is None:
+                raise ValueError("CScreen Inline Start and End cannot be None!")
 
             buffer = ""
             file_found = True
             try:
-                cscreen = conn.get_file(screenrc_file, "r")
+                cscreen: TextIO = conn.get_file(screenrc_file, "r")  # type: ignore
                 in_replace = False
                 marker_found = False
 
@@ -78,7 +84,7 @@ class RegenerateSerialConsole(Task):
                 if marker_found is False:
                     logging.info("CSCREEN: Orthos marker not found, adding...")
                     buffer += (
-                        orthos_inline_begin + "\n" + new_content + orthos_inline_end  # type: ignore
+                        orthos_inline_begin + "\n" + new_content + orthos_inline_end
                     )
 
                 cscreen.close()
@@ -97,12 +103,12 @@ class RegenerateSerialConsole(Task):
             # Create an empty file with just markers, this will get the .old file
             # to diff against for new entries via cscreen -u
             if not file_found:
-                buffer = orthos_inline_begin + "\n" + orthos_inline_end  # type: ignore
-                cscreen = conn.get_file(screenrc_file, "w")
+                buffer = orthos_inline_begin + "\n" + orthos_inline_end
+                cscreen = conn.get_file(screenrc_file, "w")  # type: ignore
                 buffer = buffer.strip("\n")
                 print(buffer, file=cscreen)
                 cscreen.close()
-                buffer = orthos_inline_begin + "\n" + new_content + orthos_inline_end  # type: ignore
+                buffer = orthos_inline_begin + "\n" + new_content + orthos_inline_end
 
             # Save backup file which is used later by an invoked script
             # to determine the changes and update the running screen
@@ -111,7 +117,7 @@ class RegenerateSerialConsole(Task):
                 "cp {} {}.old".format(screenrc_file, screenrc_file)
             )
 
-            cscreen = conn.get_file(screenrc_file, "w")
+            cscreen = conn.get_file(screenrc_file, "w")  # type: ignore
             buffer = buffer.strip("\n")
             print(buffer, file=cscreen)
             cscreen.close()

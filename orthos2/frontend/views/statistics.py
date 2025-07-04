@@ -69,7 +69,7 @@ def statistics(request: HttpRequest) -> HttpResponse:
         infinite = timezone.datetime.combine(  # type: ignore
             datetime.date.max, timezone.datetime.min.time()  # type: ignore
         )
-        infinite = timezone.make_aware(infinite, tz.utc)
+        infinite = timezone.make_aware(infinite, tz.utc)  # type: ignore
         matrix[3].append(
             architecture.machine_set.filter(reserved_until=infinite).count()
         )

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING, Tuple, Union
 
 from django.contrib import admin
 from django.db import models
@@ -6,24 +6,32 @@ from django.db import models
 from .vendor import Vendor
 
 if TYPE_CHECKING:
+    from django.db.models.expressions import Combinable
+
     from orthos2.data.models.enclosure import Enclosure
 
 
 class Platform(models.Model):
-    class Meta:
+    class Meta:  # type: ignore
         ordering = ["vendor", "name"]
 
     id: int
 
-    name = models.CharField(max_length=200, blank=False)
+    name: "models.CharField[str, str]" = models.CharField(max_length=200, blank=False)
 
-    vendor = models.ForeignKey(
+    vendor: "models.ForeignKey[Union[Combinable, Vendor], Vendor]" = models.ForeignKey(
         Vendor, blank=False, null=False, on_delete=models.CASCADE
     )
 
-    is_cartridge = models.BooleanField("Cartridge/Blade", default=False)
+    is_cartridge: "models.BooleanField[bool, bool]" = models.BooleanField(
+        "Cartridge/Blade",
+        default=False,
+    )
 
-    description = models.CharField(max_length=512, blank=True)
+    description: "models.CharField[str, str]" = models.CharField(
+        max_length=512,
+        blank=True,
+    )
 
     enclosure_set: models.Manager["Enclosure"]
 

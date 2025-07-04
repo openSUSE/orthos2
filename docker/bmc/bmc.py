@@ -40,7 +40,7 @@ def main(address: str = "0.0.0.0", port: int = 9001):
     global server
     print("main thread id:%x" % (id(threading.current_thread())))
     signal.signal(signal.SIGTERM, terminate)
-    server = socketserver.UDPServer((address, port), IpmiServer)
+    server = socketserver.UDPServer((address, port), IpmiServer)  # type: ignore
     server.serve_forever()
     done_event.wait()
 

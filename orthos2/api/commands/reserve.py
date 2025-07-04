@@ -74,7 +74,7 @@ Example:
             return AuthRequiredSerializer().as_json
 
         form = ReserveMachineAPIForm(
-            username=request.user.username, reason=machine.reserved_reason
+            username=request.user.username, reason=machine.reserved_reason  # type: ignore
         )
 
         input = InputSerializer(
@@ -94,7 +94,7 @@ Example:
         try:
             data = json.loads(request.body.decode("utf-8"))["form"]
 
-            if data["until"] == 0 and request.user.is_superuser:
+            if data["until"] == 0 and request.user.is_superuser:  # type: ignore
                 # set to 'infinite'
                 data["until"] = datetime.date.max
             else:
@@ -116,7 +116,12 @@ Example:
                 return ErrorMessage("User doesn't exist!").as_json
 
             try:
-                machine.reserve(reason, until, user=request.user, reserve_for_user=user)  # type: ignore
+                machine.reserve(
+                    reason,
+                    until,
+                    user=request.user,  # type: ignore
+                    reserve_for_user=user,
+                )
                 return Message("OK.").as_json
 
             except Exception as e:

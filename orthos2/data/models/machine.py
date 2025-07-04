@@ -9,6 +9,7 @@ from typing import (
     Callable,
     Concatenate,
     Dict,
+    List,
     Optional,
     ParamSpec,
     Tuple,
@@ -46,10 +47,25 @@ from orthos2.utils.netbox import Netbox
 if TYPE_CHECKING:
     from django.db.models.fields.related_descriptors import RelatedManager
 
+    from orthos2.data.models.annotation import Annotation
     from orthos2.data.models.bmc import BMC
     from orthos2.data.models.installation import Installation
     from orthos2.data.models.remotepower import RemotePower
+    from orthos2.data.models.reservationhistory import ReservationHistory
     from orthos2.data.models.serialconsole import SerialConsole
+    from orthos2.types import (
+        MandatoryArchitectureForeignKey,
+        MandatoryDomainForeignKey,
+        MandatoryEnclosureForeignKey,
+        MandatorySystemForeignKey,
+        OptionalDateField,
+        OptionalDateTimeField,
+        OptionalMachineForeignKey,
+        OptionalMachineGroupForeignKey,
+        OptionalPlatformForeignKey,
+        OptionalSmallIntegerField,
+        OptionalUserForeignKey,
+    )
 
 logger = logging.getLogger("models")
 P = ParamSpec("P")
@@ -151,7 +167,7 @@ class ViewManager(RootManager):
         """Exclude administrative machines/systems from all view requested by non-superusers."""
         queryset = super(ViewManager, self).get_queryset()
 
-        if (not user) or (not user.is_superuser):
+        if (not user) or (not user.is_superuser):  # type: ignore
             queryset = queryset.exclude(administrative=True)
             queryset = queryset.exclude(system__administrative=True)
 
@@ -195,7 +211,7 @@ class Machine(models.Model):
         def get_by_natural_key(self, fqdn: str) -> "Machine":
             return self.get(fqdn=fqdn)
 
-    class Meta:
+    class Meta:  # type: ignore
         ordering = ["fqdn"]
 
     class Connectivity:
@@ -230,14 +246,17 @@ class Machine(models.Model):
         (Connectivity.ALL, "Full (includes Ping+SSH+Login)"),
     )
 
-    enclosure = models.ForeignKey(
+    # Annotate to allow type checking of autofield
+    id: int
+
+    enclosure: "MandatoryEnclosureForeignKey" = models.ForeignKey(
         Enclosure,
         blank=True,
         on_delete=models.CASCADE,
         help_text="Enclosure/chassis of one or more machines",
     )
 
-    fqdn = models.CharField(
+    fqdn: "models.CharField[str, str]" = models.CharField(
         "FQDN",
         max_length=200,
         blank=False,
@@ -247,131 +266,156 @@ class Machine(models.Model):
         help_text="The Fully Qualified Domain Name of the main network interface of the machine",
     )
 
-    system = models.ForeignKey(System, on_delete=models.CASCADE)
+    system: "MandatorySystemForeignKey" = models.ForeignKey(
+        System,
+        on_delete=models.CASCADE,
+    )
+    system_id: int
 
-    comment = models.CharField(
+    comment: "models.CharField[str, str]" = models.CharField(
         max_length=512,
         blank=True,
         help_text="Machine specific problems or extras you want to tell others?",
     )
 
-    serial_number = models.CharField(
+    serial_number: "models.CharField[str, str]" = models.CharField(
         max_length=200,
         blank=True,
         help_text="The serial number can be read from a sticker on the machine's chassis (e.g. GPDRDP5022003)",
     )
 
-    product_code = models.CharField(
+    product_code: "models.CharField[str, str]" = models.CharField(
         max_length=200,
         blank=True,
         help_text="The product code can be read from a sticker on the machine's chassis (e.g. S1DL1SEXA)",
     )
 
-    architecture = models.ForeignKey(Architecture, on_delete=models.CASCADE)
+    architecture: "MandatoryArchitectureForeignKey" = models.ForeignKey(
+        Architecture,
+        on_delete=models.CASCADE,
+    )
+    architecture_id: int
 
-    fqdn_domain = models.ForeignKey(
-        Domain, on_delete=models.CASCADE, help_text="The domain name of the primary NIC"
+    fqdn_domain: "MandatoryDomainForeignKey" = models.ForeignKey(
+        Domain,
+        on_delete=models.CASCADE,
+        help_text="The domain name of the primary NIC",
     )
 
-    cpu_model = models.CharField(
+    cpu_model: "models.CharField[str, str]" = models.CharField(
         "CPU model",
         max_length=200,
         blank=True,
         help_text="The domain name of the primary NIC",
     )
 
-    cpu_flags = models.TextField(
+    cpu_flags: "models.TextField[str, str]" = models.TextField(
         "CPU flags",
         blank=True,
         help_text="CPU feature/bug flags as exported from the kernel (/proc/cpuinfo)",
     )
 
-    cpu_physical = models.IntegerField("CPU sockets", default=1)
-
-    cpu_cores = models.IntegerField(
-        "CPU cores", default=1, help_text="Amount of CPU cores"
+    cpu_physical: "models.IntegerField[int, int]" = models.IntegerField(
+        "CPU sockets",
+        default=1,
     )
 
-    cpu_threads = models.IntegerField(
-        "CPU threads", default=1, help_text="Amount of CPU threads"
+    cpu_cores: "models.IntegerField[int, int]" = models.IntegerField(
+        "CPU cores",
+        default=1,
+        help_text="Amount of CPU cores",
     )
 
-    cpu_speed = models.DecimalField(
-        "CPU speed (MHz)", default=Decimal(0), max_digits=10, decimal_places=2
+    cpu_threads: "models.IntegerField[int, int]" = models.IntegerField(
+        "CPU threads",
+        default=1,
+        help_text="Amount of CPU threads",
     )
 
-    cpu_id = models.CharField(
+    cpu_speed: "models.DecimalField[Decimal, Decimal]" = models.DecimalField(
+        "CPU speed (MHz)",
+        default=Decimal(0),
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    cpu_id: "models.CharField[str, str]" = models.CharField(
         "CPU ID",
         max_length=200,
         blank=True,
         help_text="X86 cpuid value which identifies the CPU family/model/stepping and features",
     )
 
-    ram_amount = models.IntegerField("RAM amount (MB)", default=0)
+    ram_amount: "models.IntegerField[int, int]" = models.IntegerField(
+        "RAM amount (MB)",
+        default=0,
+    )
 
-    efi = models.BooleanField(
+    efi: "models.BooleanField[bool, bool]" = models.BooleanField(
         "EFI boot", default=False, help_text="Installed in EFI (aarch64/x86) mode?"
     )
 
-    nda = models.BooleanField(
+    nda: "models.BooleanField[bool, bool]" = models.BooleanField(
         "NDA hardware",
         default=False,
         help_text="This machine is under NDA and has secret (early development HW?) partner information,"
         " do not share any data to the outside world",
     )
 
-    ipmi = models.BooleanField(
+    ipmi: "models.BooleanField[bool, bool]" = models.BooleanField(
         "IPMI capability",
         default=False,
         help_text="IPMI service processor (BMC) detected",
     )
 
-    vm_capable = models.BooleanField(
+    vm_capable: "models.BooleanField[bool, bool]" = models.BooleanField(
         "VM capable",
         default=False,
         help_text="Do the CPUs support native virtualization (KVM). This field is deprecated",
     )
 
-    vm_max = models.IntegerField(
+    vm_max: "models.IntegerField[int, int]" = models.IntegerField(
         "Max. VMs",
         default=6,
         help_text="Maximum amount of virtual hosts allowed to be spawned on this virtual server (ToDo: don't use yet)",
     )
 
-    vm_dedicated_host = models.BooleanField(
+    vm_dedicated_host: "models.BooleanField[bool, bool]" = models.BooleanField(
         "Dedicated VM host",
         default=False,
         help_text="Dedicated to serve as physical host for virtual machines (users cannot reserve this machine)",
     )
 
-    vm_auto_delete = models.BooleanField(
+    vm_auto_delete: "models.BooleanField[bool, bool]" = models.BooleanField(
         "Delete automatically",
         default=False,
         help_text="Release and destroy virtual machine instances, once people have released"
         "(do not reserve anymore) them",
     )
 
-    virt_api_int = models.SmallIntegerField(
-        "Virtualization API",
-        choices=VirtualizationAPI.TYPE_CHOICES,
-        blank=True,
-        null=True,
-        help_text="Only supported API currently is libvirt",
+    virt_api_int: "models.SmallIntegerField[Optional[int], Optional[int]]" = (
+        models.SmallIntegerField(
+            "Virtualization API",
+            choices=VirtualizationAPI.TYPE_CHOICES,
+            blank=True,
+            null=True,
+            help_text="Only supported API currently is libvirt",
+        )
     )
 
-    reserved_by = models.ForeignKey(
+    reserved_by: "OptionalUserForeignKey" = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True
     )
 
-    reserved_at = models.DateTimeField(blank=True, null=True)
+    reserved_at: "OptionalDateTimeField" = models.DateTimeField(blank=True, null=True)
 
-    reserved_until = models.DateTimeField(
+    reserved_until: "OptionalDateTimeField" = models.DateTimeField(
         blank=True,
         null=True,
         help_text="Reservation expires at xx.yy.zzzz (max 90 days)",
     )
 
-    reserved_reason = models.CharField(
+    reserved_reason: "models.CharField[Optional[str], Optional[str]]" = models.CharField(
         "Reservation reason",
         max_length=512,
         blank=True,
@@ -379,17 +423,17 @@ class Machine(models.Model):
         help_text="Why do you need this machine (bug no, jira feature, what do you test/work on)?",
     )
 
-    platform = models.ForeignKey(
+    platform: "OptionalPlatformForeignKey" = models.ForeignKey(
         Platform, blank=True, null=True, on_delete=models.SET_NULL
     )
 
-    bios_version = models.CharField(
+    bios_version: "models.CharField[str, str]" = models.CharField(
         max_length=200,
         blank=True,
         help_text="The firmware BIOS is from ... (on x86 as retrieved from dmidecode -s bios-version",
     )
 
-    bios_date = models.DateField(
+    bios_date: "OptionalDateField" = models.DateField(
         editable=False,
         blank=True,
         null=True,
@@ -397,29 +441,34 @@ class Machine(models.Model):
         help_text="The firmware BIOS is from ... (on x86 as retrieved from dmidecode -s bios-version",
     )
 
-    disk_primary_size = models.SmallIntegerField(
-        "Disk primary size (GB)", null=True, blank=True
+    disk_primary_size: "OptionalSmallIntegerField" = models.SmallIntegerField(
+        "Disk primary size (GB)",
+        null=True,
+        blank=True,
     )
 
-    disk_type = models.CharField(max_length=100, blank=True)
+    disk_type: "models.CharField[str, str]" = models.CharField(
+        max_length=100,
+        blank=True,
+    )
 
-    lsmod = models.TextField(blank=True)
+    lsmod: "models.TextField[str, str]" = models.TextField(blank=True)
 
-    last = models.CharField(max_length=100, blank=True)
+    last: "models.CharField[str, str]" = models.CharField(max_length=100, blank=True)
 
-    hwinfo = models.TextField(blank=True)
+    hwinfo: "models.TextField[str, str]" = models.TextField(blank=True)
 
-    dmidecode = models.TextField(blank=True)
+    dmidecode: "models.TextField[str, str]" = models.TextField(blank=True)
 
-    dmesg = models.TextField(blank=True)
+    dmesg: "models.TextField[str, str]" = models.TextField(blank=True)
 
-    lsscsi = models.TextField(blank=True)
+    lsscsi: "models.TextField[str, str]" = models.TextField(blank=True)
 
-    lsusb = models.TextField(blank=True)
+    lsusb: "models.TextField[str, str]" = models.TextField(blank=True)
 
-    lspci = models.TextField(blank=True)
+    lspci: "models.TextField[str, str]" = models.TextField(blank=True)
 
-    status_ipv4 = models.SmallIntegerField(
+    status_ipv4: "models.SmallIntegerField[int, int]" = models.SmallIntegerField(
         "Status IPv4",
         choices=StatusIP.CHOICE,
         editable=False,
@@ -427,7 +476,7 @@ class Machine(models.Model):
         help_text="Does this IPv4 address respond to ping?",
     )
 
-    status_ipv6 = models.SmallIntegerField(
+    status_ipv6: "models.SmallIntegerField[int, int]" = models.SmallIntegerField(
         "Status IPv6",
         choices=StatusIP.CHOICE,
         editable=False,
@@ -435,21 +484,21 @@ class Machine(models.Model):
         help_text="Does this IPv6 address respond to ping?",
     )
 
-    status_ssh = models.BooleanField(
+    status_ssh: "models.BooleanField[bool, bool]" = models.BooleanField(
         "SSH",
         editable=False,
         default=False,
         help_text="Is the ssh port (22) on this host address open?",
     )
 
-    status_login = models.BooleanField(
+    status_login: "models.BooleanField[bool, bool]" = models.BooleanField(
         "Login",
         editable=False,
         default=False,
         help_text="Can orthos log into this host via ssh key (if not scanned data might be outdated)?",
     )
 
-    autoreinstall = models.BooleanField(
+    autoreinstall: "models.BooleanField[bool, bool]" = models.BooleanField(
         "Auto re-install machine",
         editable=True,
         default=True,
@@ -457,14 +506,14 @@ class Machine(models.Model):
         "The last installation that has been triggered will be used for auto re-installation.",
     )
 
-    administrative = models.BooleanField(
+    administrative: "models.BooleanField[bool, bool]" = models.BooleanField(
         "Administrative machine",
         editable=True,
         default=False,
         help_text="Administrative machines cannot be reserved",
     )
 
-    check_connectivity = models.SmallIntegerField(
+    check_connectivity: "models.SmallIntegerField[int, int]" = models.SmallIntegerField(
         choices=CONNECTIVITY_CHOICE,
         default=Connectivity.ALL,
         blank=False,
@@ -472,13 +521,13 @@ class Machine(models.Model):
         "log in via ssh key. Can be triggered manually via command line client: `rescan [fqdn] status`",
     )
 
-    collect_system_information = models.BooleanField(
+    collect_system_information: "models.BooleanField[bool, bool]" = models.BooleanField(
         default=True,
         help_text="Shall the system be scanned every night? This only works if the proper ssh key is in place in"
         " authorized_keys and can be triggered manually via command line client: `rescan [fqdn]`",
     )
 
-    dhcp_filename = models.CharField(
+    dhcp_filename: "models.CharField[Optional[str], Optional[str]]" = models.CharField(
         "DHCP filename",
         max_length=64,
         null=True,
@@ -487,7 +536,7 @@ class Machine(models.Model):
         " ISC dhcpd.conf variable)",
     )
 
-    tftp_server = models.ForeignKey(
+    tftp_server: "OptionalMachineForeignKey" = models.ForeignKey(
         "data.Machine",
         related_name="tftp_server_for",
         verbose_name="TFTP server",
@@ -499,7 +548,7 @@ class Machine(models.Model):
         " dhcpd.conf variable)",
     )
 
-    hypervisor = models.ForeignKey(
+    hypervisor: "OptionalMachineForeignKey" = models.ForeignKey(
         "data.Machine",
         related_name="hypervising",
         null=True,
@@ -511,60 +560,68 @@ class Machine(models.Model):
     # Runtime object created on virt_api_int in init()
     virtualization_api = None
 
-    active = models.BooleanField(
+    active: "models.BooleanField[bool, bool]" = models.BooleanField(
         default=True,
         help_text="Machine vanishes from most lists. This is intendend as kind of maintenance/repair state",
     )
 
-    group = models.ForeignKey(
+    group: "OptionalMachineGroupForeignKey" = models.ForeignKey(
         MachineGroup, on_delete=models.SET_NULL, blank=True, null=True
     )
 
-    contact_email = models.EmailField(
+    contact_email: "models.EmailField[str, str]" = models.EmailField(
         blank=True,
         help_text="Override contact email address to whom is in charge for this machine",
     )
 
-    kernel_options = models.CharField(
+    kernel_options: "models.CharField[str, str]" = models.CharField(
         max_length=4096,
         blank=True,
         help_text="Additional kernel command line parameters to pass",
     )
 
-    last_check = models.DateTimeField(
-        "Checked at",
-        editable=False,
-        default=datetime.datetime(
-            year=2016,
-            month=1,
-            day=1,
-            hour=10,
-            minute=0,
-            second=00,
-            tzinfo=datetime.timezone.utc,
-        ),
+    last_check: "models.DateTimeField[datetime.datetime, datetime.datetime]" = (
+        models.DateTimeField(
+            "Checked at",
+            editable=False,
+            default=datetime.datetime(
+                year=2016,
+                month=1,
+                day=1,
+                hour=10,
+                minute=0,
+                second=00,
+                tzinfo=datetime.timezone.utc,
+            ),
+        )
     )
 
-    netbox_id = models.PositiveIntegerField(
+    netbox_id: "models.PositiveIntegerField[int, int]" = models.PositiveIntegerField(
         verbose_name="NetBox ID",
         help_text="The ID that NetBox gives to the object.",
         default=0,
     )
 
-    updated = models.DateTimeField("Updated at", auto_now=True)
+    updated: "models.DateTimeField[datetime.datetime, datetime.datetime]" = (
+        models.DateTimeField("Updated at", auto_now=True)
+    )
 
-    created = models.DateTimeField("Created at", auto_now_add=True)
+    created: "models.DateTimeField[datetime.datetime, datetime.datetime]" = (
+        models.DateTimeField("Created at", auto_now_add=True)
+    )
 
-    networkinterfaces: "NetworkInterface"
+    networkinterfaces: "RelatedManager[NetworkInterface]"
     domain_set: "Domain"
-    cobbler_server_for: "RelatedManager"
-    cscreen_server_for: "RelatedManager"
+    cobbler_server_for: "RelatedManager[Machine]"
+    cscreen_server_for: "RelatedManager[Machine]"
     tftp_server_for_domain: "Domain"
-    hypervising: "Machine"
+    hypervising: "RelatedManager[Machine]"
     remotepower: "RemotePower"
     bmc: "BMC"
     installations: "Installation"
     serialconsole: "SerialConsole"
+    annotations: "RelatedManager[Annotation]"
+    reservationhistory_set: "RelatedManager[ReservationHistory]"
 
     objects = Manager()
     api = RootManager()
@@ -793,14 +850,14 @@ class Machine(models.Model):
                 new_domain_id = self.fqdn_domain.pk
                 from orthos2.data.signals import signal_cobbler_machine_update
 
-                signal_cobbler_machine_update.send(
+                signal_cobbler_machine_update.send(  # type: ignore
                     sender=self.__class__, machine_id=self.pk, domain_id=new_domain_id
                 )
 
                 # Sync DHCP on the new domain
                 from orthos2.data.signals import signal_cobbler_sync_dhcp
 
-                signal_cobbler_sync_dhcp.send(
+                signal_cobbler_sync_dhcp.send(  # type: ignore
                     sender=self.__class__, domain_id=new_domain_id
                 )
                 return
@@ -811,7 +868,7 @@ class Machine(models.Model):
             logger.debug("Update machine initiated [%s]", self.fqdn)
             domain_id = self.fqdn_domain.pk
             machine_id = self.pk
-            signal_cobbler_machine_update.send(
+            signal_cobbler_machine_update.send(  # type: ignore
                 sender=self.__class__, domain_id=domain_id, machine_id=machine_id
             )
         if sync_dhcp:
@@ -819,7 +876,10 @@ class Machine(models.Model):
 
             # regenerate DHCP on all domains (deletion/registration) if domain changed
             domain_id = self.fqdn_domain.pk
-            signal_cobbler_sync_dhcp.send(sender=self.__class__, domain_id=domain_id)
+            signal_cobbler_sync_dhcp.send(  # type: ignore
+                sender=self.__class__,
+                domain_id=domain_id,
+            )
             self.scan("networkinterfaces")
         if update_sconsole:
             from orthos2.data.signals import signal_serialconsole_regenerate
@@ -828,8 +888,8 @@ class Machine(models.Model):
                 hasattr(self.fqdn_domain, "cscreen_server")
                 and self.fqdn_domain.cscreen_server is not None
             ):
-                cscreen_server_fqdn = self.fqdn_domain.cscreen_server.fqdn  # type: ignore
-                signal_serialconsole_regenerate.send(
+                cscreen_server_fqdn = self.fqdn_domain.cscreen_server.fqdn
+                signal_serialconsole_regenerate.send(  # type: ignore
                     sender=self.__class__, cscreen_server_fqdn=cscreen_server_fqdn
                 )
 
@@ -910,12 +970,12 @@ class Machine(models.Model):
 
     def get_virtual_machines(self) -> Optional[QuerySet["Machine"]]:
         if not self.is_virtual_machine():
-            return self.hypervising.all()  # type: ignore
+            return self.hypervising.all()
         return None
 
     def get_kernel_options(self) -> Dict[str, Optional[str]]:
         """Return kernel options as dict."""
-        kernel_options = {}
+        kernel_options: Dict[str, Optional[str]] = {}
 
         if not self.kernel_options.strip().startswith("+"):
             for kernel_option in self.kernel_options.strip().split():
@@ -928,7 +988,7 @@ class Machine(models.Model):
 
     def get_kernel_options_append(self) -> Dict[str, Optional[str]]:
         """Return kernel options append as dict."""
-        kernel_options = {}
+        kernel_options: Dict[str, Optional[str]] = {}
 
         if self.kernel_options.strip().startswith("+"):
             for kernel_option in self.kernel_options.strip()[1:].split():
@@ -1029,7 +1089,7 @@ class Machine(models.Model):
             until = timezone.make_aware(until, timezone.utc)  # type: ignore
         else:
             until = timezone.datetime.combine(until, timezone.datetime.max.time())  # type: ignore
-            until = timezone.make_aware(until, timezone.get_default_timezone())
+            until = timezone.make_aware(until, timezone.get_default_timezone())  # type: ignore
 
         self.reserved_until = until
         self.save()
@@ -1251,15 +1311,14 @@ class Machine(models.Model):
 
         # ToDo: Better wait until individual machine scans finished
         if action == "all":
-            task = Ansible([self.fqdn])  # type: ignore
-            TaskManager.add(task)
+            TaskManager.add(Ansible([self.fqdn]))
 
     @check_permission
     def update_motd(self, user: Any = None) -> None:
         """Call respective signal."""
         from orthos2.data.signals import signal_motd_regenerate
 
-        signal_motd_regenerate.send(sender=self.__class__, fqdn=self.fqdn)
+        signal_motd_regenerate.send(sender=self.__class__, fqdn=self.fqdn)  # type: ignore
 
     @check_permission
     def regenerate_serialconsole_record(self, user: Any = None) -> None:
@@ -1267,7 +1326,7 @@ class Machine(models.Model):
         from orthos2.data.signals import signal_serialconsole_regenerate
 
         if self.has_serialconsole():
-            signal_serialconsole_regenerate.send(
+            signal_serialconsole_regenerate.send(  # type: ignore
                 sender=self.__class__,
                 cscreen_server_fqdn=self.fqdn_domain.cscreen_server.fqdn,  # type: ignore
             )
@@ -1277,7 +1336,7 @@ class Machine(models.Model):
         """Call respective signal."""
         from orthos2.data.signals import signal_cobbler_regenerate
 
-        signal_cobbler_regenerate.send(
+        signal_cobbler_regenerate.send(  # type: ignore
             sender=self.__class__, domain_id=self.fqdn_domain.pk
         )
 
@@ -1315,7 +1374,7 @@ class Machine(models.Model):
 
         querysets = [
             [self],
-            self.networkinterfaces.all(),  # type: ignore
+            self.networkinterfaces.all(),
             [self.remotepower] if self.has_remotepower() else None,
             [self.serialconsole] if self.has_serialconsole() else None,
             self.annotations.all(),
@@ -1323,7 +1382,7 @@ class Machine(models.Model):
         ]
 
         serializer = serializers.get_serializer(output_format)()
-        chunks = []
+        chunks: List[str] = []
 
         for _i, queryset in enumerate(querysets):
 

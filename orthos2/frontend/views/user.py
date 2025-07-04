@@ -19,7 +19,7 @@ from django.http import (
     HttpResponsePermanentRedirect,
     HttpResponseRedirect,
 )
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render  # type: ignore
 from rest_framework.authtoken.models import Token
 
 from orthos2.frontend.forms.newuser import NewUserForm
@@ -75,7 +75,7 @@ def users_password_restore(
         if user_id is not None:
             try:
                 user = User.objects.get(pk=user_id)
-                username = user.username
+                username = user.username  # type: ignore
             except Exception:
                 pass
 
@@ -95,11 +95,11 @@ def users_password_restore(
                 return redirect("frontend:password_restore")
 
             alphabet = string.ascii_letters + string.digits
-            password = "".join(secrets.choice(alphabet) for i in range(10))
+            password = "".join(secrets.choice(alphabet) for i in range(10))  # type: ignore
             user.set_password(password)
             user.save()
 
-            task = tasks.SendRestoredPassword(user.id, password)
+            task = tasks.SendRestoredPassword(user.id, password)  # type: ignore
             TaskManager.add(task)
 
             # check for multiple accounts from deprecated Orthos
@@ -152,7 +152,7 @@ def users_preferences(
             user_obj.save()
 
             authenticated_user = authenticate(
-                username=request.user.username, password=new_password
+                username=request.user.username, password=new_password  # type: ignore
             )
 
             if authenticated_user is not None:

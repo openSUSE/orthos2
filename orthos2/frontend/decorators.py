@@ -42,7 +42,7 @@ def check_permissions(
                 raise Http404("Machine does not exist!")
 
             if machine.administrative or machine.system.administrative:
-                if not request.user.is_superuser:
+                if not request.user.is_superuser:  # type: ignore
                     raise PermissionDenied("Machine is administrative!")
             return function(request, *args, **kwargs)
 

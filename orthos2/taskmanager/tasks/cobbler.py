@@ -35,7 +35,7 @@ class RegenerateCobbler(Task):
         Executes the task.
         """
 
-        if settings.DEBUG and not ServerConfig.objects.bool_by_key(
+        if settings.DEBUG and not ServerConfig.get_server_config_manager().bool_by_key(
             "orthos.debug.dhcp.write"
         ):
             logger.warning("Disabled: set 'orthos.debug.dhcp.write' to 'true'")

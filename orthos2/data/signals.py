@@ -80,10 +80,14 @@ def machine_pre_delete(
     if instance.is_vm_managed():
         instance.hypervisor.virtualization_api.remove(instance)  # type: ignore
 
-    if not ServerConfig.objects.bool_by_key("serialization.execute"):
+    if not ServerConfig.get_server_config_manager().bool_by_key(
+        "serialization.execute"
+    ):
         return
 
-    output_format = ServerConfig.objects.by_key("serialization.output.format")
+    output_format = ServerConfig.get_server_config_manager().by_key(
+        "serialization.output.format"
+    )
 
     if output_format is None:
         logger.warning(
@@ -91,7 +95,9 @@ def machine_pre_delete(
         )
         output_format = Serializer.Format.JSON
 
-    output_directory = ServerConfig.objects.by_key("serialization.output.directory")
+    output_directory = ServerConfig.get_server_config_manager().by_key(
+        "serialization.output.directory"
+    )
 
     if output_directory is None:
         logger.warning(
@@ -124,7 +130,7 @@ def serialconsole_post_save(
     """Regenerate cscreen server configs if a serial console info got changed"""
     if not instance.machine.fqdn_domain.cscreen_server:
         return
-    signal_serialconsole_regenerate.send(
+    signal_serialconsole_regenerate.send(  # type: ignore
         sender=SerialConsole,
         cscreen_server_fqdn=instance.machine.fqdn_domain.cscreen_server.fqdn,
     )
@@ -137,7 +143,7 @@ def serialconsole_post_delete(
     """Regenerate cscreen server configs if a serial console got deleted"""
     if not instance.machine.fqdn_domain.cscreen_server:
         return
-    signal_serialconsole_regenerate.send(
+    signal_serialconsole_regenerate.send(  # type: ignore
         sender=SerialConsole,
         cscreen_server_fqdn=instance.machine.fqdn_domain.cscreen_server.fqdn,
     )

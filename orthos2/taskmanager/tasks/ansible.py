@@ -29,7 +29,7 @@ class Ansible(Task):
     data_dir_archive = "/run/orthos2/ansible_archive"
     facts_dir = "/usr/lib/orthos2/ansible"
 
-    def __init__(self, machines: dict) -> None:
+    def __init__(self, machines: List[str]) -> None:
         """
         param machines: List of machines (strings) to scan via ansible
         """
@@ -68,8 +68,8 @@ class Ansible(Task):
                 self.machines,
                 Ansible.data_dir,
             )
-        success = []
-        fail = []
+        success: List[str] = []
+        fail: List[str] = []
         for fqdn in files:
             try:
                 Ansible.store_machine_info(fqdn)
@@ -291,7 +291,7 @@ class Ansible(Task):
                 bios_date = None
             if bios_date:
                 # Django date fields must be in "%Y-%m-%d" format
-                db_machine.bios_date = datetime.strptime(
+                db_machine.bios_date = datetime.strptime(  # type: ignore
                     bios_date, "%m/%d/%Y"
                 ).strftime("%Y-%m-%d")
         except (ValueError, TypeError):

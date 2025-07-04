@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from django.db import models
 
@@ -183,16 +183,25 @@ class ServerConfigSSHManager(ServerConfigManager):
 
 
 class ServerConfig(models.Model):
-    class Meta:
+    class Meta:  # type: ignore
         ordering = ["key"]
         verbose_name = "Server Configuration"
 
-    key = models.CharField(max_length=100, unique=True)
+    key: "models.CharField[str, str]" = models.CharField(max_length=100, unique=True)
 
-    value = models.CharField(max_length=512, blank=True)
+    value: "models.CharField[str, str]" = models.CharField(max_length=512, blank=True)
 
     objects = ServerConfigManager()
     ssh = ServerConfigSSHManager()
 
     def __str__(self) -> str:
         return self.key
+
+    @classmethod
+    def get_server_config_manager(cls) -> ServerConfigManager:
+        """
+        Return the server config manager.
+
+        This is useful to avoid type errors when using the custom manager methods.
+        """
+        return cast(ServerConfigManager, ServerConfig.objects)

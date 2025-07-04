@@ -8,7 +8,7 @@ from datetime import date, datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
-from typing import TYPE_CHECKING, List, Literal, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Iterable, List, Literal, Optional, Tuple, Union
 
 from django import forms
 from django.conf import settings
@@ -106,13 +106,17 @@ def send_email(
     """Send an email."""
     from orthos2.data.models import ServerConfig
 
-    if not ServerConfig.objects.bool_by_key("orthos.debug.mail.send"):
+    if not ServerConfig.get_server_config_manager().bool_by_key(
+        "orthos.debug.mail.send"
+    ):
         logger.warning("Disabled: set 'orthos.debug.mail.send' to 'true'")
         return
 
     try:
         if from_addr is None:
-            from_addr = ServerConfig.objects.by_key("mail.from.address")
+            from_addr = ServerConfig.get_server_config_manager().by_key(
+                "mail.from.address"
+            )
 
         if from_addr is None:
             raise ValueError(
@@ -123,7 +127,9 @@ def send_email(
         msg["To"] = to_addr
         msg["X-BeenThere"] = "orthos"
         msg["From"] = from_addr
-        subject_prefix = ServerConfig.objects.by_key("mail.subject.prefix")
+        subject_prefix = ServerConfig.get_server_config_manager().by_key(
+            "mail.subject.prefix"
+        )
         if subject_prefix:
             msg["Subject"] = subject_prefix + subject
         else:
@@ -133,7 +139,9 @@ def send_email(
         msg["Date"] = formatdate(localtime=True)
         msg.attach(text)
 
-        relay_fqdn = ServerConfig.objects.by_key("mail.smtprelay.fqdn")
+        relay_fqdn = ServerConfig.get_server_config_manager().by_key(
+            "mail.smtprelay.fqdn"
+        )
         if relay_fqdn is None:
             raise ValueError(
                 'Please configure your SMTP relay via the ServerConfig key "mail.smtprelay.fqdn"!'
@@ -178,7 +186,7 @@ def get_s390_hostname(hostname: str, use_uppercase: bool = True) -> Optional[str
     else:
         linux = "linux"
 
-    if not isinstance(hostname, str) or len(hostname) < 10:
+    if not isinstance(hostname, str) or len(hostname) < 10:  # type: ignore
         logger.error("Invalid s390 name: %s", hostname)
         return None
     else:
@@ -373,7 +381,7 @@ def suggest_host_ip(protocol: Literal[4, 6], domain: "Domain") -> str:
 
 
 def is_unique_mac_address(
-    mac_address: str, exclude: Optional[List[str]] = None
+    mac_address: str, exclude: Optional[Iterable[str]] = None
 ) -> bool:
     """
     Check if `mac_address` does already exists.

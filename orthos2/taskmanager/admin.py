@@ -3,15 +3,15 @@ from typing import Any, List
 
 from django.contrib import admin, messages
 from django.http import HttpRequest, HttpResponseRedirect
-from django.shortcuts import redirect
-from django.urls import URLPattern, re_path, reverse
+from django.shortcuts import redirect  # type: ignore
+from django.urls import URLPattern, re_path, reverse  # type: ignore
 from django.utils.html import format_html
 from django.utils.safestring import SafeString
 
 from .models import DailyTask, SingleTask
 
 
-class BaseTaskAdmin(admin.ModelAdmin):
+class BaseTaskAdmin(admin.ModelAdmin):  # type: ignore
     readonly_fields = ("hash", "running", "created")
     list_display = (
         "name",
@@ -21,7 +21,7 @@ class BaseTaskAdmin(admin.ModelAdmin):
     )
 
 
-admin.site.register(SingleTask, BaseTaskAdmin)
+admin.site.register(SingleTask, BaseTaskAdmin)  # type: ignore
 
 
 class DailyTaskAdmin(BaseTaskAdmin):
@@ -38,12 +38,12 @@ class DailyTaskAdmin(BaseTaskAdmin):
         custom_urls = [
             re_path(
                 r"^(?P<dailytask_id>.+)/execute/$",
-                self.admin_site.admin_view(self.process_execute),
+                self.admin_site.admin_view(self.process_execute),  # type: ignore
                 name="dailytask_execute",
             ),
             re_path(
                 r"^(?P<dailytask_id>.+)/switch$",
-                self.admin_site.admin_view(self.process_task_switch),
+                self.admin_site.admin_view(self.process_task_switch),  # type: ignore
                 name="dailytask_switch",
             ),
         ]
@@ -59,7 +59,7 @@ class DailyTaskAdmin(BaseTaskAdmin):
                 if task.running:
                     messages.warning(request, "Task is already running!")
                 else:
-                    task.executed_at = datetime.date.today() - datetime.timedelta(
+                    task.executed_at = datetime.date.today() - datetime.timedelta(  # type: ignore
                         days=1
                     )
                     task.save()
@@ -117,4 +117,4 @@ class DailyTaskAdmin(BaseTaskAdmin):
         )
 
 
-admin.site.register(DailyTask, DailyTaskAdmin)
+admin.site.register(DailyTask, DailyTaskAdmin)  # type: ignore

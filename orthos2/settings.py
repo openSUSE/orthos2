@@ -94,7 +94,7 @@ if (
         }
     }
 else:
-    DATABASES = {
+    DATABASES = {  # type: ignore
         "default": {
             "ENGINE": os.environ.get(
                 "ORTHOS2_DB_ENGINE", "django.db.backends.postgresql_psycopg2"

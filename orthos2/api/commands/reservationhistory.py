@@ -1,4 +1,4 @@
-from typing import Any, List, Union
+from typing import Any, Dict, List, Union
 
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import URLPattern, re_path
@@ -65,10 +65,13 @@ Example:
             {"until": "Reserved until"},
             {"reason": "Reason"},
         ]
-        response = {"header": {"type": "TABLE", "theader": theader}, "data": []}
+        response: Dict[str, Any] = {
+            "header": {"type": "TABLE", "theader": theader},
+            "data": [],
+        }
 
         for item in history:
-            response["data"].append(  # type: ignore
+            response["data"].append(
                 {
                     "user": item.reserved_by,
                     "at": item.reserved_at,

@@ -41,7 +41,7 @@ class VirtualMachineAPIFormTests(TestCase):
     def test_form(self) -> None:
         """Test the virtual machine creation API form"""
         # Arrange & Act
-        host = Machine.objects.get_by_natural_key("test.testing.suse.de")
+        host = Machine.objects.get_by_natural_key("test.testing.suse.de")  # type: ignore
         system_id = System.objects.get(name="VM KVM").id
         form = VirtualMachineAPIForm(
             {
@@ -52,7 +52,7 @@ class VirtualMachineAPIFormTests(TestCase):
                 "image": "none",
                 "networkinterfaces": "2",
             },
-            **{"virtualization_api": host.virtualization_api}
+            **{"virtualization_api": host.virtualization_api}  # type: ignore
         )
 
         # Assert
