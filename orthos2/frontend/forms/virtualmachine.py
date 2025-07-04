@@ -2,7 +2,7 @@
 This module contains all code to create a new virtual machine.
 """
 
-from typing import Any
+from typing import Any, Dict
 
 from django import forms
 from django.conf import settings
@@ -42,9 +42,11 @@ class VirtualMachineForm(forms.Form):
         self.fields["architecture"].choices = [(architectures[0], architectures[0])]  # type: ignore
         self.fields["image"].choices = [("none", "None")] + image_list  # type: ignore
 
-    def clean(self):
+    def clean(self) -> Dict[str, Any] | None:
         """Set `image` to None; cast `decimal.Decimal()` to `int`."""
         cleaned_data = super(VirtualMachineForm, self).clean()
+        if cleaned_data is None:
+            return None
 
         if cleaned_data["image"] == "none":
             cleaned_data["image"] = None

@@ -22,7 +22,7 @@ def regenerate_cobbler(request: HttpRequest) -> JsonResponse:
 
     This regenerates all machine entries on all Cobbler servers.
     """
-    signal_cobbler_regenerate.send(sender=None, domain_id=None)
+    signal_cobbler_regenerate.send(sender=None, domain_id=None)  # type: ignore
     return JsonResponse(
         {"type": "status", "cls": "success", "message": "Regeneration started"}
     )
@@ -52,7 +52,10 @@ def regenerate_domain_cscreen(request: HttpRequest, host_id: int) -> JsonRespons
             },
             status=400,
         )
-    signal_serialconsole_regenerate.send(sender=None, cscreen_server_fqdn=machine.fqdn)
+    signal_serialconsole_regenerate.send(  # type: ignore
+        sender=None,
+        cscreen_server_fqdn=machine.fqdn,
+    )
     return JsonResponse(
         {"type": "status", "cls": "success", "message": "Regeneration started"}
     )
@@ -85,7 +88,7 @@ def regenerate_domain_cobbler(request: HttpRequest, host_id: int) -> JsonRespons
     target_domains = machine.cobbler_server_for.all()
     # One Cobbler server might manage multiple domains
     for domain in target_domains:
-        signal_cobbler_regenerate.send(sender=None, domain_id=domain.id)
+        signal_cobbler_regenerate.send(sender=None, domain_id=domain.id)  # type: ignore
     return JsonResponse(
         {"type": "status", "cls": "success", "message": "Regeneration started"}
     )
@@ -127,8 +130,10 @@ def regenerate_machine_cobbler(request: HttpRequest, host_id: int) -> JsonRespon
             {"type": "status", "cls": "danger", "message": "Machine does not exist"},
             status=404,
         )
-    signal_cobbler_machine_update.send(
-        sender=None, domain_id=machine.fqdn_domain.id, machine_id=machine.id
+    signal_cobbler_machine_update.send(  # type: ignore
+        sender=None,
+        domain_id=machine.fqdn_domain.id,
+        machine_id=machine.id,
     )
     return JsonResponse(
         {"type": "status", "cls": "success", "message": "Regeneration started"}

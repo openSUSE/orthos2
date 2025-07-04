@@ -77,7 +77,7 @@ class QueryFieldMappingItem:
     A dataclass to allow safe & typed access to the common datastructures that the mapping is made from.
     """
 
-    field: Field
+    field: Field  # type: ignore
     related_name: str = ""
     verbose_name: str = ""
     pre: Optional[Callable[[Any], Any]] = None
@@ -91,7 +91,7 @@ class QueryFieldDynamicMappingItem:
     """
 
     verbose_name: str
-    function: Callable[[Any], Any]
+    function: Callable[[int], Union[bool, str, None]]
 
 
 class QueryField:
@@ -114,44 +114,44 @@ class QueryField:
     MAPPING: Dict[str, QueryFieldMappingItem] = {
         # Aliases
         "architecture": QueryFieldMappingItem(
-            field=Architecture._meta.get_field("name"),
+            field=Architecture._meta.get_field("name"),  # type: ignore
             related_name="architecture",
             verbose_name="Architecture",
         ),
         "name": QueryFieldMappingItem(
-            field=Machine._meta.get_field("fqdn"),
+            field=Machine._meta.get_field("fqdn"),  # type: ignore
         ),
         "domain": QueryFieldMappingItem(
-            field=Domain._meta.get_field("name"),
+            field=Domain._meta.get_field("name"),  # type: ignore
             related_name="fqdn_domain",
             verbose_name="Domain",
         ),
         "enclosure": QueryFieldMappingItem(
-            field=Machine._meta.get_field("enclosure"),
+            field=Machine._meta.get_field("enclosure"),  # type: ignore
             pre=lambda x: (
                 Enclosure.objects.get(name__iexact=x) if isinstance(x, str) else x
             ),
             post=lambda x: Enclosure.objects.get(pk=x).name,
         ),
         "group": QueryFieldMappingItem(
-            field=Machine._meta.get_field("group"),
+            field=Machine._meta.get_field("group"),  # type: ignore
             pre=lambda x: (
                 MachineGroup.objects.get(name__iexact=x) if isinstance(x, str) else x
             ),
             post=lambda x: MachineGroup.objects.get(pk=x).name,
         ),
         "system": QueryFieldMappingItem(
-            field=System._meta.get_field("name"),
+            field=System._meta.get_field("name"),  # type: ignore
             related_name="system",
             verbose_name="System",
             pre=lambda x: x,
             post=lambda x: x,
         ),
         "ram": QueryFieldMappingItem(
-            field=Machine._meta.get_field("ram_amount"),
+            field=Machine._meta.get_field("ram_amount"),  # type: ignore
         ),
         "cobbler_server": QueryFieldMappingItem(
-            field=Domain._meta.get_field("cobbler_server"),
+            field=Domain._meta.get_field("cobbler_server"),  # type: ignore
             related_name="fqdn_domain",
             verbose_name="Cobbler server",
             pre=lambda x: (
@@ -160,26 +160,26 @@ class QueryField:
             post=lambda x: Machine.objects.get(pk=x).fqdn,
         ),
         "reserved_by": QueryFieldMappingItem(
-            field=Machine._meta.get_field("reserved_by"),
+            field=Machine._meta.get_field("reserved_by"),  # type: ignore
             pre=lambda x: (
                 HelperFunctions.username_to_id(x) if isinstance(x, str) else x
             ),
-            post=lambda x: User.objects.get(pk=x).username,
+            post=lambda x: User.objects.get(pk=x).username,  # type: ignore
         ),
         "res_by": QueryFieldMappingItem(
-            field=Machine._meta.get_field("reserved_by"),
+            field=Machine._meta.get_field("reserved_by"),  # type: ignore
             pre=lambda x: (
                 HelperFunctions.username_to_id(x) if isinstance(x, str) else x
             ),
-            post=lambda x: User.objects.get(pk=x).username,
+            post=lambda x: User.objects.get(pk=x).username,  # type: ignore
         ),
         "reserved_by_email": QueryFieldMappingItem(
-            field=User._meta.get_field("email"),
+            field=User._meta.get_field("email"),  # type: ignore
             related_name="reserved_by",
             verbose_name="Email",
         ),
         "status_ipv4": QueryFieldMappingItem(
-            field=Machine._meta.get_field("status_ipv4"),
+            field=Machine._meta.get_field("status_ipv4"),  # type: ignore
             pre=lambda x: (
                 dict(
                     {value: key for key, value in dict(Machine.StatusIP.CHOICE).items()}
@@ -190,7 +190,7 @@ class QueryField:
             post=lambda x: dict(Machine.StatusIP.CHOICE).get(x),
         ),
         "status_ipv6": QueryFieldMappingItem(
-            field=Machine._meta.get_field("status_ipv6"),
+            field=Machine._meta.get_field("status_ipv6"),  # type: ignore
             pre=lambda x: (
                 dict(
                     {value: key for key, value in dict(Machine.StatusIP.CHOICE).items()}
@@ -202,7 +202,7 @@ class QueryField:
         ),
         # SerialConsole
         "serial_console_server": QueryFieldMappingItem(
-            field=SerialConsole._meta.get_field("console_server"),
+            field=SerialConsole._meta.get_field("console_server"),  # type: ignore
             related_name="serialconsole",
             verbose_name="Console server",
             pre=lambda x: (
@@ -211,51 +211,51 @@ class QueryField:
             post=lambda x: Machine.objects.get(pk=x).fqdn,
         ),
         "serial_type": QueryFieldMappingItem(
-            field=SerialConsole._meta.get_field("stype"),
+            field=SerialConsole._meta.get_field("stype"),  # type: ignore
             related_name="serialconsole",
             verbose_name="Serial console",
             pre=lambda x: SerialConsoleType.Type.to_int(x) if isinstance(x, str) else x,
             post=lambda x: SerialConsoleType.Type.to_str(x),
         ),
         "sconsole": QueryFieldMappingItem(
-            field=SerialConsole._meta.get_field("stype"),
+            field=SerialConsole._meta.get_field("stype"),  # type: ignore
             related_name="serialconsole",
             verbose_name="Serial console",
             pre=lambda x: SerialConsoleType.Type.to_int(x) if isinstance(x, str) else x,
             post=lambda x: SerialConsoleType.Type.to_str(x),
         ),
         "serial_baud": QueryFieldMappingItem(
-            field=SerialConsole._meta.get_field("baud_rate"),
+            field=SerialConsole._meta.get_field("baud_rate"),  # type: ignore
             related_name="serialconsole",
             verbose_name="Baud rate",
         ),
         "serial_command": QueryFieldMappingItem(
-            field=SerialConsole._meta.get_field("command"),
+            field=SerialConsole._meta.get_field("command"),  # type: ignore
             related_name="serialconsole",
             verbose_name="Command",
         ),
         "serial_kernel_device": QueryFieldMappingItem(
-            field=SerialConsole._meta.get_field("kernel_device"),
+            field=SerialConsole._meta.get_field("kernel_device"),  # type: ignore
             related_name="serialconsole",
             verbose_name="Kernel Device",
         ),
         "serial_kernel_device_num": QueryFieldMappingItem(
-            field=SerialConsole._meta.get_field("kernel_device_num"),
+            field=SerialConsole._meta.get_field("kernel_device_num"),  # type: ignore
             related_name="serialconsole",
             verbose_name="Kernel Device number",
         ),
         "serial_port": QueryFieldMappingItem(
-            field=SerialConsole._meta.get_field("port"),
+            field=SerialConsole._meta.get_field("port"),  # type: ignore
             related_name="serialconsole",
             verbose_name="Port",
         ),
         "serial_comment": QueryFieldMappingItem(
-            field=SerialConsole._meta.get_field("comment"),
+            field=SerialConsole._meta.get_field("comment"),  # type: ignore
             related_name="serialconsole",
             verbose_name="Comment",
         ),
         "rpower_device": QueryFieldMappingItem(
-            field=RemotePower._meta.get_field("remote_power_device"),
+            field=RemotePower._meta.get_field("remote_power_device"),  # type: ignore
             related_name="remotepower",
             verbose_name="Remote power device",
             pre=lambda x: (
@@ -264,167 +264,167 @@ class QueryField:
             post=lambda x: Machine.objects.get(pk=x).fqdn,
         ),
         "rpower_port": QueryFieldMappingItem(
-            field=RemotePower._meta.get_field("port"),
+            field=RemotePower._meta.get_field("port"),  # type: ignore
             related_name="remotepower",
             verbose_name="Port",
         ),
         # TODO: adapt this to new implementation
         "rpower_type": QueryFieldMappingItem(
-            field=RemotePower._meta.get_field("fence_name"),
+            field=RemotePower._meta.get_field("fence_name"),  # type: ignore
             related_name="remotepower",
             verbose_name="Remotepower type",
         ),
         # Installation
         "inst_active": QueryFieldMappingItem(
-            field=Installation._meta.get_field("active"),
+            field=Installation._meta.get_field("active"),  # type: ignore
             related_name="installations",
             verbose_name="Active inst.",
         ),
         "inst_arch": QueryFieldMappingItem(
-            field=Installation._meta.get_field("architecture"),
+            field=Installation._meta.get_field("architecture"),  # type: ignore
             related_name="installations",
             verbose_name="Inst. architecture",
         ),
         "inst_dist": QueryFieldMappingItem(
-            field=Installation._meta.get_field("distribution"),
+            field=Installation._meta.get_field("distribution"),  # type: ignore
             related_name="installations",
             verbose_name="Distribution",
         ),
         "inst_kernel": QueryFieldMappingItem(
-            field=Installation._meta.get_field("kernelversion"),
+            field=Installation._meta.get_field("kernelversion"),  # type: ignore
             related_name="installations",
             verbose_name="Kernel version",
         ),
         "inst_partition": QueryFieldMappingItem(
-            field=Installation._meta.get_field("partition"),
+            field=Installation._meta.get_field("partition"),  # type: ignore
             related_name="installations",
             verbose_name="Partition",
         ),
         # NetworkInterface
         "iface_driver_module": QueryFieldMappingItem(
-            field=NetworkInterface._meta.get_field("driver_module"),
+            field=NetworkInterface._meta.get_field("driver_module"),  # type: ignore
             related_name="networkinterfaces",
             verbose_name="IF driver module",
         ),
         "iface_ethernet_type": QueryFieldMappingItem(
-            field=NetworkInterface._meta.get_field("ethernet_type"),
+            field=NetworkInterface._meta.get_field("ethernet_type"),  # type: ignore
             related_name="networkinterfaces",
             verbose_name="IF ethernet type",
         ),
         "iface_mac_address": QueryFieldMappingItem(
-            field=NetworkInterface._meta.get_field("mac_address"),
+            field=NetworkInterface._meta.get_field("mac_address"),  # type: ignore
             related_name="networkinterfaces",
             verbose_name="IF MAC address",
         ),
         "iface_name": QueryFieldMappingItem(
-            field=NetworkInterface._meta.get_field("name"),
+            field=NetworkInterface._meta.get_field("name"),  # type: ignore
             related_name="networkinterfaces",
             verbose_name="IF name",
         ),
         "iface_primary": QueryFieldMappingItem(
-            field=NetworkInterface._meta.get_field("primary"),
+            field=NetworkInterface._meta.get_field("primary"),  # type: ignore
             related_name="networkinterfaces",
             verbose_name="IF primary",
         ),
         # PCIDevice
         "pci_slot": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("slot"),
+            field=PCIDevice._meta.get_field("slot"),  # type: ignore
             related_name="pcidevice",
             verbose_name="Slot",
         ),
         "pci_vendorid": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("vendor_id"),
+            field=PCIDevice._meta.get_field("vendor_id"),  # type: ignore
             related_name="pcidevice",
             verbose_name="Vendor ID",
         ),
         "pci_vendor": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("vendor"),
+            field=PCIDevice._meta.get_field("vendor"),  # type: ignore
             related_name="pcidevice",
             verbose_name="Vendor",
         ),
         "pci_deviceid": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("device_id"),
+            field=PCIDevice._meta.get_field("device_id"),  # type: ignore
             related_name="pcidevice",
             verbose_name="Device ID",
         ),
         "pci_device": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("device"),
+            field=PCIDevice._meta.get_field("device"),  # type: ignore
             related_name="pcidevice",
             verbose_name="Device",
         ),
         "pci_classid": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("class_id"),
+            field=PCIDevice._meta.get_field("class_id"),  # type: ignore
             related_name="pcidevice",
             verbose_name="Class ID",
         ),
         "pci_classname": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("classname"),
+            field=PCIDevice._meta.get_field("classname"),  # type: ignore
             related_name="pcidevice",
             verbose_name="Class name",
         ),
         "pci_svendorid": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("subvendor_id"),
+            field=PCIDevice._meta.get_field("subvendor_id"),  # type: ignore
             related_name="pcidevice",
             verbose_name="Subvendor ID",
         ),
         "pci_svendorname": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("subvendor"),
+            field=PCIDevice._meta.get_field("subvendor"),  # type: ignore
             related_name="pcidevice",
             verbose_name="Subvendor",
         ),
         "pci_sdeviceid": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("subdevice_id"),
+            field=PCIDevice._meta.get_field("subdevice_id"),  # type: ignore
             related_name="pcidevice",
             verbose_name="Subdevice ID",
         ),
         "pci_sdevicename": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("subdevice"),
+            field=PCIDevice._meta.get_field("subdevice"),  # type: ignore
             related_name="pcidevice",
             verbose_name="Subdevice",
         ),
         "pci_revision": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("revision"),
+            field=PCIDevice._meta.get_field("revision"),  # type: ignore
             related_name="pcidevice",
             verbose_name="Revision",
         ),
         "pci_driver": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("drivermodule"),
+            field=PCIDevice._meta.get_field("drivermodule"),  # type: ignore
             related_name="pcidevice",
             verbose_name="Drivermodule",
         ),
         # Platform
         "platform": QueryFieldMappingItem(
-            field=Platform._meta.get_field("name"),
+            field=Platform._meta.get_field("name"),  # type: ignore
             related_name="platform",
             verbose_name="Platform",
         ),
         "platform_vendor": QueryFieldMappingItem(
-            field=Vendor._meta.get_field("name"),
+            field=Vendor._meta.get_field("name"),  # type: ignore
             related_name="platform__vendor",
             verbose_name="Vendor",
         ),
         "platform_description": QueryFieldMappingItem(
-            field=Platform._meta.get_field("description"),
+            field=Platform._meta.get_field("description"),  # type: ignore
             related_name="platform",
             verbose_name="Platform description",
         ),
         # Annotation
         "annotation_text": QueryFieldMappingItem(
-            field=Annotation._meta.get_field("text"),
+            field=Annotation._meta.get_field("text"),  # type: ignore
             related_name="annotations",
             verbose_name="Annotation",
         ),
         "annotation_reporter": QueryFieldMappingItem(
-            field=Annotation._meta.get_field("reporter"),
+            field=Annotation._meta.get_field("reporter"),  # type: ignore
             related_name="annotations",
             verbose_name="Reporter",
             pre=lambda x: (
                 HelperFunctions.username_to_id(x) if isinstance(x, str) else x
             ),
-            post=lambda x: User.objects.get(pk=x).username,
+            post=lambda x: User.objects.get(pk=x).username,  # type: ignore
         ),
         "annotation_created": QueryFieldMappingItem(
-            field=Annotation._meta.get_field("created"),
+            field=Annotation._meta.get_field("created"),  # type: ignore
             related_name="annotations",
             verbose_name="Created",
         ),
@@ -457,11 +457,11 @@ class QueryField:
             self._annotation = None
 
         try:
-            field = self.MAPPING[token].field
+            field = self.MAPPING[token].field  # type: ignore
             self._verbose_name = self.MAPPING[token].verbose_name
             if not self._verbose_name:
-                self._verbose_name = Machine._meta.get_field(
-                    field.name
+                self._verbose_name = Machine._meta.get_field(  # type: ignore
+                    field.name  # type: ignore
                 ).verbose_name  # type: ignore
             self._related_name = self.MAPPING[token].related_name
             self._pre_function = self.MAPPING[token].pre
@@ -470,7 +470,7 @@ class QueryField:
             pass
 
         if not field and (token in self.DYNAMIC_FIELDS):
-            field = Field(name=token)
+            field = Field(name=token)  # type: ignore
             self._verbose_name = self.DYNAMIC_FIELDS[field.name].verbose_name
             self._dynamic_field_function = self.DYNAMIC_FIELDS[field.name].function
             self._dynamic = True
@@ -489,8 +489,8 @@ class QueryField:
             if related_name:
                 for token, values in self.MAPPING.items():
                     if related_name == values.related_name:
-                        if field_name == values.field.name:
-                            field = self.MAPPING[token].field
+                        if field_name == values.field.name:  # type: ignore
+                            field = self.MAPPING[token].field  # type: ignore
                             self._related_name = related_name
                             self._verbose_name = self.MAPPING[token].verbose_name
                             self._pre_function = self.MAPPING[token].pre
@@ -498,7 +498,7 @@ class QueryField:
 
         if not field:
             raise ValueError("Unknown field '{}'!".format(token))
-        self._field = field
+        self._field = field  # type: ignore
 
     def __str__(self) -> str:
         return self.db_field_name
@@ -525,14 +525,14 @@ class QueryField:
     def db_field_name(self) -> str:
         """Return a valid field name for querying the DB."""
         if self._related_name:
-            field_name = "{}__{}".format(self._related_name, self._field.name)
+            field_name = "{}__{}".format(self._related_name, self._field.name)  # type: ignore
         else:
-            field_name = self._field.name
+            field_name = self._field.name  # type: ignore
 
         if self._annotation is not None:
-            field_name += self._annotation
+            field_name += self._annotation  # type: ignore
 
-        return field_name
+        return field_name  # type: ignore
 
     @property
     def related_name(self) -> str:
@@ -549,7 +549,7 @@ class QueryField:
     @property
     def null(self) -> bool:
         """Return if a `QueryField` object can be `NULL` in the DB."""
-        return self._field.null
+        return self._field.null  # type: ignore
 
     @property
     def is_dynamic(self) -> bool:
@@ -558,27 +558,27 @@ class QueryField:
 
     def is_BooleanField(self) -> bool:
         """Check if a `QueryField` object is a boolean field."""
-        return "BooleanField" in self._field.get_internal_type()
+        return "BooleanField" in self._field.get_internal_type()  # type: ignore
 
     def is_CharField(self) -> bool:
         """Check if a `QueryField` object is a character field."""
-        return "CharField" in self._field.get_internal_type()
+        return "CharField" in self._field.get_internal_type()  # type: ignore
 
     def is_TextField(self) -> bool:
         """Check if a `QueryField` object is a character field."""
-        return "TextField" in self._field.get_internal_type()
+        return "TextField" in self._field.get_internal_type()  # type: ignore
 
     def is_ForeignKey(self) -> bool:
         """Check if a `QueryField` object is a foreign key."""
-        return "ForeignKey" in self._field.get_internal_type()
+        return "ForeignKey" in self._field.get_internal_type()  # type: ignore
 
     def is_DateField(self) -> bool:
         """Check if a `QueryField` object is a date field."""
-        return "DateField" in self._field.get_internal_type()
+        return "DateField" in self._field.get_internal_type()  # type: ignore
 
     def is_DateTimeField(self) -> bool:
         """Check if a `QueryField` object is a datetime field."""
-        return "DateTimeField" in self._field.get_internal_type()
+        return "DateTimeField" in self._field.get_internal_type()  # type: ignore
 
     def get_db_function_length(self) -> Tuple["QueryField", Dict[str, Length]]:
         """
@@ -594,22 +594,22 @@ class QueryField:
     @property
     def type(self) -> str:
         """Return fields type as string."""
-        return self._field.get_internal_type()
+        return self._field.get_internal_type()  # type: ignore
 
     @property
-    def dynamic_field_function(self):
+    def dynamic_field_function(self):  # type: ignore
         """
         Return a optional function for processing dynamic fields (non-database fields).
 
         If no dynamic function is defined, a simple lambda function is returned which simply
         returns the input value.
         """
-        if self._dynamic_field_function:
+        if self._dynamic_field_function:  # type: ignore
             return self._dynamic_field_function
-        return lambda x: x
+        return lambda x: x  # type: ignore
 
     @property
-    def pre_function(self):
+    def pre_function(self):  # type: ignore
         """
         Return a optional pre-function.
 
@@ -618,10 +618,10 @@ class QueryField:
         """
         if self._pre_function:
             return self._pre_function
-        return lambda x: x
+        return lambda x: x  # type: ignore
 
     @property
-    def post_function(self):
+    def post_function(self):  # type: ignore
         """
         Return a optional post-function.
 
@@ -630,7 +630,7 @@ class QueryField:
         """
         if self._post_function:
             return self._post_function
-        return lambda x: x
+        return lambda x: x  # type: ignore
 
 
 class APIQuery:
@@ -715,7 +715,7 @@ class APIQuery:
 
     def _prepare_fields(self, fields_str: str) -> List[str]:
         """Strip query string in query fields."""
-        fields = []
+        fields: List[str] = []
 
         for token in fields_str.split(","):
             field = QueryField(token.strip())
@@ -953,7 +953,7 @@ class APIQuery:
             for dynamic_field, _values in QueryField.DYNAMIC_FIELDS.items():
                 field = QueryField(dynamic_field)
                 if field.db_field_name in self._fields:
-                    machine[field.db_field_name] = field.dynamic_field_function(
+                    machine[field.db_field_name] = field.dynamic_field_function(  # type: ignore
                         machine["pk"]
                     )
 
@@ -982,7 +982,7 @@ class APIQuery:
             self._conditions[i] = (
                 condition[0],
                 condition[1],
-                field.pre_function(value),
+                field.pre_function(value),  # type: ignore
             )
 
     def _apply_post_functions(self, rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -992,7 +992,7 @@ class APIQuery:
                 if value is None:
                     continue
                 qfield = QueryField(field)
-                row[qfield.db_field_name] = qfield.post_function(value)
+                row[qfield.db_field_name] = qfield.post_function(value)  # type: ignore
 
         return rows
 

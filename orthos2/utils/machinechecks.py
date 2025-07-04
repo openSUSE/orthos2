@@ -2,7 +2,7 @@ import logging
 import re
 import socket
 import threading
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from orthos2.data.models import Installation, Machine, NetworkInterface
 from orthos2.utils.misc import execute
@@ -134,7 +134,7 @@ def get_networkinterfaces(fqdn: str) -> Optional[Union[bool, List[NetworkInterfa
         arp_type, _stderr, err = ssh_execute("cat {}".format(path), fqdn)
         logger.warning("Machine '%s' type: '%s'", fqdn, arp_type)
 
-        if arp_type == ARPHRD_IEEE80211:
+        if arp_type == ARPHRD_IEEE80211:  # type: ignore
             continue
 
         stdout, _stderr, err = ssh_execute("ethtool {}".format(interface.name), fqdn)
@@ -170,17 +170,12 @@ def get_status_ip(fqdn: str) -> Optional[Union[bool, Machine]]:
     if err:
         logger.warning("Machine '%s' could not check IP", fqdn)
         return None
-    """
-    conn = SSH(machine.fqdn)
-    conn.connect()
-    stdout, _stderr, _exitstatus = conn.execute('/sbin/ip a')
-    """
     _file = open("/tmp/orthos_t", "w")
     print(stdout, file=_file)
     _file.close()
     devices: Dict[str, Optional[Union[List[str], str]]] = {}
     current_device = None
-    addresses = {"inet": [], "inet6": []}  # type: ignore
+    addresses: Dict[str, List[Any]] = {"inet": [], "inet6": []}
 
     for line in stdout:
         match = re.match(r"^\d+:\s+([a-zA-Z0-9]+):\s+<.*>\s(.*)", line)
@@ -243,7 +238,12 @@ def get_status_ip(fqdn: str) -> Optional[Union[bool, Machine]]:
                 machine_.status_ipv6 = Machine.StatusIP.AF_DISABLED
             elif machine.ip_address_v6 not in values["inet6"]:  # type: ignore
                 machine_.status_ipv6 = Machine.StatusIP.NO_ADDRESS
-                if [ipv6 for ipv6 in values["inet6"] if not ipv6.startswith("fe80::")]:  # type: ignore
+                ipv6_ips: List[str] = [
+                    ipv6
+                    for ipv6 in values["inet6"]  # type: ignore
+                    if not ipv6.startswith("fe80::")  # type: ignore
+                ]
+                if ipv6_ips:
                     machine_.status_ipv6 = Machine.StatusIP.ADDRESS_MISMATCH
             elif machine.ip_address_v6 in values["inet6"]:  # type: ignore
                 machine_.status_ipv6 = Machine.StatusIP.CONFIRMED
@@ -291,15 +291,15 @@ def get_installations(fqdn: str) -> Union[bool, List[Installation]]:
                     installation = Installation(machine=machine)
                     installations.append(installation)
                 elif line.startswith("ARCH="):
-                    installation.architecture = line.split("=")[1].strip()
+                    installation.architecture = line.split("=")[1].strip()  # type: ignore
                 elif line.startswith("KERNEL="):
-                    installation.kernelversion = line.split("=")[1].strip()
+                    installation.kernelversion = line.split("=")[1].strip()  # type: ignore
                 elif line.startswith("RUNNING="):
-                    installation.active = line.startswith("RUNNING=1")
+                    installation.active = line.startswith("RUNNING=1")  # type: ignore
                 elif line.startswith("DIST="):
-                    installation.distribution = line.split("=")[1].strip()
+                    installation.distribution = line.split("=")[1].strip()  # type: ignore
                 elif line.startswith("PART="):
-                    installation.partition = line.split("=")[1].strip()
+                    installation.partition = line.split("=")[1].strip()  # type: ignore
 
         return installations
 

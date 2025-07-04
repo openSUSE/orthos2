@@ -1,4 +1,4 @@
-from django.urls import reverse
+from django.urls import reverse  # type: ignore
 from django_webtest import WebTest  # type: ignore
 
 
@@ -14,14 +14,14 @@ class Logout(WebTest):
     def test_successful_logout(self) -> None:
         """Test if a user can log out successfully."""
         # Arrange
-        page = self.app.get(reverse("frontend:free_machines"), user="user")
+        page = self.app.get(reverse("frontend:free_machines"), user="user")  # type: ignore
 
         # Assert user is logged in
-        self.assertEqual(page.context["user"].username, "user")
+        self.assertEqual(page.context["user"].username, "user")  # type: ignore
 
         # Act
-        logout_form = page.forms[0]
-        res = logout_form.submit("Logout").maybe_follow()
+        logout_form = page.forms[0]  # type: ignore
+        res = logout_form.submit("Logout").maybe_follow()  # type: ignore
 
         # Assert
-        self.assertContains(res, "Login")
+        self.assertContains(res, "Login")  # type: ignore

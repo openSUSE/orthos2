@@ -58,7 +58,9 @@ class NewUserForm(forms.Form):
             )
 
         if email:
-            valid_domains = ServerConfig.objects.list_by_key("mail.validdomains")
+            valid_domains = ServerConfig.get_server_config_manager().list_by_key(
+                "mail.validdomains"
+            )
 
             if valid_domains is None:
                 self.add_error(

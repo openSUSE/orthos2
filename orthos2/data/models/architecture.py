@@ -1,5 +1,6 @@
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Optional, Tuple
+from datetime import datetime
+from typing import TYPE_CHECKING, Any, Optional, Tuple, cast
 
 from django.contrib import admin
 from django.db import models
@@ -8,29 +9,53 @@ if TYPE_CHECKING:
     from orthos2.data.models.machine import Machine
 
 
+class ArchitectureManager(models.Manager["Architecture"]):
+    def get_by_natural_key(self, name: str) -> "Architecture":
+        return self.get(name=name)
+
+
 class Architecture(models.Model):
-    class Manager(models.Manager["Architecture"]):
-        def get_by_natural_key(self, name: str) -> Optional["Architecture"]:
-            return self.get(name=name)
 
-    name = models.CharField(max_length=200, blank=False, unique=True)
+    # Annotate to allow type checking of autofield
+    id: int
 
-    dhcp_filename = models.CharField(
-        "DHCP filename", max_length=64, null=True, blank=True
+    name: "models.CharField[str, str]" = models.CharField(
+        max_length=200,
+        blank=False,
+        unique=True,
     )
 
-    contact_email = models.EmailField(blank=True)
+    dhcp_filename: "models.CharField[Optional[str], Optional[str]]" = models.CharField(
+        "DHCP filename",
+        max_length=64,
+        null=True,
+        blank=True,
+    )
 
-    updated = models.DateTimeField("Updated at", auto_now=True)
+    contact_email: "models.EmailField[str, str]" = models.EmailField(blank=True)
 
-    created = models.DateTimeField("Created at", auto_now_add=True)
-    default_profile = models.CharField(
-        "Default profile", max_length=128, null=True, blank=True
+    updated: "models.DateTimeField[datetime, datetime]" = models.DateTimeField(
+        "Updated at",
+        auto_now=True,
+    )
+
+    created: "models.DateTimeField[datetime, datetime]" = models.DateTimeField(
+        "Created at",
+        auto_now_add=True,
+    )
+
+    default_profile: "models.CharField[Optional[str], Optional[str]]" = (
+        models.CharField(
+            "Default profile",
+            max_length=128,
+            null=True,
+            blank=True,
+        )
     )
 
     machine_set: models.Manager["Machine"]
 
-    objects = Manager()
+    objects = ArchitectureManager()
 
     def natural_key(self) -> Tuple[str]:
         return (self.name,)
@@ -57,7 +82,7 @@ class Architecture(models.Model):
                 from orthos2.data.signals import signal_cobbler_sync_dhcp
 
                 # FIXME: domain_id cannot be None
-                signal_cobbler_sync_dhcp.send(sender=self.__class__, domain_id=None)
+                signal_cobbler_sync_dhcp.send(sender=self.__class__, domain_id=None)  # type: ignore
 
     @admin.display(description="Machines")
     def get_machine_count(self) -> int:
@@ -69,3 +94,10 @@ class Architecture(models.Model):
             return self.contact_email
 
         return None
+
+    @classmethod
+    def get_architecture_manager(cls) -> ArchitectureManager:
+        """
+        Return the architecture manager.
+        """
+        return cast(ArchitectureManager, cls.objects)

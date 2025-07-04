@@ -1,10 +1,10 @@
-from typing import Tuple
+from typing import Optional, Tuple
 
 from django.db import models
 
 
 class SerialConsoleType(models.Model):
-    class Meta:
+    class Meta:  # type: ignore
         verbose_name = "Serial Console Type"
 
     class Type:
@@ -26,11 +26,24 @@ class SerialConsoleType(models.Model):
                     return type_tuple[0]
             raise Exception("Serial console type '{}' not found!".format(name))
 
-    name = models.CharField(max_length=100, null=False, blank=False, unique=True)
+    name: "models.CharField[str, str]" = models.CharField(
+        max_length=100,
+        null=False,
+        blank=False,
+        unique=True,
+    )
 
-    command = models.CharField(max_length=512, null=True, blank=True)
+    command: "models.CharField[Optional[str], Optional[str]]" = models.CharField(
+        max_length=512,
+        null=True,
+        blank=True,
+    )
 
-    comment = models.CharField(max_length=200, null=True, blank=True)
+    comment: "models.CharField[Optional[str], Optional[str]]" = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True,
+    )
 
     def natural_key(self) -> Tuple[str]:
         return (self.name,)

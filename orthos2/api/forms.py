@@ -553,7 +553,7 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
 
 
 class RemotePowerDeviceAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
-    class Meta:
+    class Meta:  # type: ignore
         model = RemotePowerDevice
         fields = ["fqdn", "mac", "username", "password", "fence_name", "url"]
 

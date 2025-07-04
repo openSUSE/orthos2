@@ -3,9 +3,9 @@ from typing import Any, Optional
 
 try:
     from ptyprocess import PtyProcessUnicode  # type: ignore
-    from terminado import TermSocket, UniqueTermManager
+    from terminado import TermSocket, UniqueTermManager  # type: ignore
     from terminado.management import MaxTerminalsReached, PtyWithClients
-    from terminado.websocket import _cast_unicode
+    from terminado.websocket import _cast_unicode  # type: ignore
 except ImportError:
     print("'terminado' module needed! Run 'pip install terminado'...")
     sys.exit(1)
@@ -36,11 +36,14 @@ class TermSocketHandler(TermSocket):
 
         url_component = _cast_unicode(url_component)
         self.term_name = url_component or "tty"
-        self.terminal = self.term_manager.get_terminal(url_component, hostname=hostname)  # type: ignore
+        self.terminal = self.term_manager.get_terminal(
+            url_component,
+            hostname=hostname,  # type: ignore
+        )
 
-        for s in self.terminal.read_buffer:
-            self.on_pty_read(s)
-        self.terminal.clients.append(self)
+        for s in self.terminal.read_buffer:  # type: ignore
+            self.on_pty_read(s)  # type: ignore
+        self.terminal.clients.append(self)  # type: ignore
 
         self.send_json_message(["setup", {}])
         self._logger.info("TermSocket.open: Opened %s", self.term_name)
@@ -59,12 +62,12 @@ class SerialConsoleTermManager(UniqueTermManager):
         """
         hostname = kwargs.pop("hostname", "")
 
-        options = self.term_settings.copy()
+        options = self.term_settings.copy()  # type: ignore
         options["shell_command"] = self.shell_command + hostname
-        options.update(kwargs)
-        argv = options["shell_command"]
-        env = self.make_term_env(**options)
-        pty = PtyProcessUnicode.spawn(argv, env=env, cwd=options.get("cwd", None))
+        options.update(kwargs)  # type: ignore
+        argv = options["shell_command"]  # type: ignore
+        env = self.make_term_env(**options)  # type: ignore
+        pty = PtyProcessUnicode.spawn(argv, env=env, cwd=options.get("cwd", None))  # type: ignore
         return PtyWithClients(pty)
 
     def get_terminal(
@@ -125,8 +128,11 @@ class Command(BaseCommand):
                 ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
                 ssl_ctx.load_cert_chain(crt, key)
 
-            port = int(ServerConfig.objects.by_key("websocket.cscreen.port", "8010"))  # type: ignore
-            shell_command: str = ServerConfig.objects.by_key(  # type: ignore
+            config_port: str = ServerConfig.get_server_config_manager().by_key(  # type: ignore
+                "websocket.cscreen.port", "8010"
+            )
+            port = int(config_port)
+            shell_command: str = ServerConfig.get_server_config_manager().by_key(  # type: ignore
                 "websocket.cscreen.command", "/usr/bin/screen"
             )
 

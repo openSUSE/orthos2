@@ -11,37 +11,73 @@ logger = logging.getLogger("models")
 
 class PCIDevice(Component):
 
-    slot = models.TextField(null=True, default=None)
+    # Annotate to allow type checking of autofield
+    id: int
 
-    vendor_id = models.TextField(null=True, default=None)
-
-    vendor = models.TextField(null=True, default=None)
-
-    device_id = models.TextField(
+    slot: "models.TextField[Optional[str], Optional[str]]" = models.TextField(
         null=True,
         default=None,
     )
 
-    device = models.TextField(null=True, default=None)
-
-    class_id = models.TextField(
+    vendor_id: "models.TextField[Optional[str], Optional[str]]" = models.TextField(
         null=True,
         default=None,
     )
 
-    classname = models.TextField(null=True, default=None)
+    vendor: "models.TextField[Optional[str], Optional[str]]" = models.TextField(
+        null=True,
+        default=None,
+    )
 
-    subvendor_id = models.TextField(null=True, default=None)
+    device_id: "models.TextField[Optional[str], Optional[str]]" = models.TextField(
+        null=True,
+        default=None,
+    )
 
-    subvendor = models.TextField(null=True, default=None)
+    device: "models.TextField[Optional[str], Optional[str]]" = models.TextField(
+        null=True,
+        default=None,
+    )
 
-    subdevice_id = models.TextField(null=True, default=None)
+    class_id: "models.TextField[Optional[str], Optional[str]]" = models.TextField(
+        null=True,
+        default=None,
+    )
 
-    subdevice = models.TextField(null=True, default=None)
+    classname: "models.TextField[Optional[str], Optional[str]]" = models.TextField(
+        null=True,
+        default=None,
+    )
 
-    revision = models.TextField(null=True, default=None)
+    subvendor_id: "models.TextField[Optional[str], Optional[str]]" = models.TextField(
+        null=True,
+        default=None,
+    )
 
-    drivermodule = models.TextField(null=True, default=None)
+    subvendor: "models.TextField[Optional[str], Optional[str]]" = models.TextField(
+        null=True,
+        default=None,
+    )
+
+    subdevice_id: "models.TextField[Optional[str], Optional[str]]" = models.TextField(
+        null=True,
+        default=None,
+    )
+
+    subdevice: "models.TextField[Optional[str], Optional[str]]" = models.TextField(
+        null=True,
+        default=None,
+    )
+
+    revision: "models.TextField[Optional[str], Optional[str]]" = models.TextField(
+        null=True,
+        default=None,
+    )
+
+    drivermodule: "models.TextField[Optional[str], Optional[str]]" = models.TextField(
+        null=True,
+        default=None,
+    )
 
     @staticmethod
     def from_lspci_mmnv(text: Union[str, List[str]]) -> "PCIDevice":

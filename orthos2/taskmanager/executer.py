@@ -35,7 +35,12 @@ class TaskExecuter(Thread):
             Priority.HIGH: Queue(),
             Priority.NORMAL: Queue(),
         }
-        self.concurrency = int(ServerConfig.objects.by_key("tasks.concurrency.max", fallback="4"))  # type: ignore
+        self.concurrency = int(
+            ServerConfig.get_server_config_manager().by_key(  # type: ignore
+                "tasks.concurrency.max",
+                fallback="4",
+            )
+        )
 
     def get_daily_tasks(self) -> None:
         """Check for daily tasks and store them in the queue for processing."""
@@ -43,9 +48,15 @@ class TaskExecuter(Thread):
         today = timezone.localdate()
 
         dailytasks = DailyTask.objects.filter(enabled=True).order_by("priority")
+        daily_execution_time = (
+            ServerConfig.get_server_config_manager().get_daily_execution_time()
+        )
+        if daily_execution_time is None:
+            logger.error("Daily Task execution time not set!")
+            return
         for dailytask in dailytasks:
             if timezone.localdate(dailytask.executed_at) < today:
-                if now.time() > ServerConfig.objects.get_daily_execution_time():  # type: ignore
+                if now.time() > daily_execution_time:
                     dailytask.executed_at = timezone.localtime()
                     dailytask.running = True
                     dailytask.save()

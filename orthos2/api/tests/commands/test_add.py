@@ -5,7 +5,7 @@ import json
 
 from django.contrib.auth.models import User
 from django.test import override_settings
-from django.urls import reverse
+from django.urls import reverse  # type: ignore
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -80,4 +80,4 @@ class AddBMCTest(APITestCase):
 
         # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(BMC.objects.count(), 1)  # type: ignore
+        self.assertEqual(BMC.objects.count(), 1)

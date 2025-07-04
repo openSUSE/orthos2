@@ -97,7 +97,7 @@ Example:
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
-        if not request.user.is_superuser:
+        if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
@@ -140,12 +140,12 @@ Example:
                     o_machine.fqdn_domain,
                     domain_id,
                 )
-                signal_cobbler_machine_update.send(
+                signal_cobbler_machine_update.send(  # type: ignore
                     sender=None, domain_id=domain_id, machine_id=machine_id
                 )
                 return Message("Regenerate Cobbler entry for" + msg).as_json
             else:
-                signal_cobbler_regenerate.send(sender=None, domain_id=None)
+                signal_cobbler_regenerate.send(sender=None, domain_id=None)  # type: ignore
                 return Message("Regenerate Cobbler entries for all domains").as_json
 
         if service.lower() == RegenerateCommand.COBBLER_D:
@@ -169,7 +169,7 @@ Example:
                     "Could not find id for orthos domain: " + domain
                 ).as_json
             msg = "domain " + domain
-            signal_cobbler_regenerate.send(sender=None, domain_id=domain_id)
+            signal_cobbler_regenerate.send(sender=None, domain_id=domain_id)  # type: ignore
             return Message("Regenerate Cobbler entries for " + msg).as_json
 
         # regenerate serial console entries iterating over all cscreen servers
@@ -179,7 +179,7 @@ Example:
             )
             if fqdn:
                 if fqdn in machines.distinct():
-                    signal_serialconsole_regenerate.send(
+                    signal_serialconsole_regenerate.send(  # type: ignore
                         sender=None, cscreen_server_fqdn=fqdn
                     )
                     msg = fqdn
@@ -188,7 +188,7 @@ Example:
             else:
                 msg = ""
                 for fqdn in machines.distinct():
-                    signal_serialconsole_regenerate.send(
+                    signal_serialconsole_regenerate.send(  # type: ignore
                         sender=None, cscreen_server_fqdn=fqdn
                     )
                     msg += " " + fqdn

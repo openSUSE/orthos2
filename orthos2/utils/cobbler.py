@@ -11,6 +11,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
+    Concatenate,
     Dict,
     Iterable,
     List,
@@ -100,17 +101,23 @@ P = ParamSpec("P")
 R = TypeVar("R")
 
 
-def login_required(func: Callable[P, R]) -> Callable[P, R]:
+def login_required(
+    func: Callable[Concatenate["CobblerServer", P], R]
+) -> Callable[Concatenate["CobblerServer", P], R]:
     """
     Decorator to ensure that the user is logged in. This only works for "CobblerServer".
     """
 
     # noinspection PyProtectedMember
-    def wrapper(*args, **kwargs):
-        if not (args[0]._token or args[0]._xmlrpc_server.token_check(args[0]._token)):
+    def wrapper(self: "CobblerServer", *args: P.args, **kwargs: P.kwargs) -> R:
+        # type checkers don't support block level disable comments
+        if not (
+            self._token  # type: ignore[reportPrivateUsage]
+            or self._xmlrpc_server.token_check(self._token)  # type: ignore[reportPrivateUsage]
+        ):
             # Empty or invalid token.
-            args[0]._login()
-        return func(*args, **kwargs)
+            self._login()  # type: ignore[reportPrivateUsage]
+        return func(self, *args, **kwargs)
 
     return wrapper
 
