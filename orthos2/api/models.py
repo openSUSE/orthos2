@@ -270,7 +270,7 @@ class QueryField:
         ),
         # TODO: adapt this to new implementation
         "rpower_type": QueryFieldMappingItem(
-            field=RemotePower._meta.get_field("fence_name"),  # type: ignore
+            field=RemotePower._meta.get_field("fence_agent"),  # type: ignore
             related_name="remotepower",
             verbose_name="Remotepower type",
         ),

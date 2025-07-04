@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Tuple, Union
+from typing import TYPE_CHECKING, Tuple, Union, cast
 
 from django.contrib import admin
 from django.db import models
@@ -9,6 +9,11 @@ if TYPE_CHECKING:
     from django.db.models.expressions import Combinable
 
     from orthos2.data.models.enclosure import Enclosure
+
+
+class PlatformManager(models.Manager["Platform"]):
+    def get_by_natural_key(self, name: str) -> "Platform":
+        return self.get(name=name)
 
 
 class Platform(models.Model):
@@ -35,6 +40,8 @@ class Platform(models.Model):
 
     enclosure_set: models.Manager["Enclosure"]
 
+    objects = PlatformManager()
+
     def natural_key(self) -> Tuple[str]:
         return (self.name,)
 
@@ -50,3 +57,10 @@ class Platform(models.Model):
     @admin.display(description="Enclosures")
     def get_enclosure_count(self) -> int:
         return self.enclosure_set.count()
+
+    @classmethod
+    def get_platform_manager(cls) -> PlatformManager:
+        """
+        Return the enclosure manager.
+        """
+        return cast(PlatformManager, cls.objects)

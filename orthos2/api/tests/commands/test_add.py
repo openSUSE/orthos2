@@ -4,31 +4,21 @@ This test module verifies the functionality of "/<model>/add/".
 import json
 
 from django.contrib.auth.models import User
-from django.test import override_settings
 from django.urls import reverse  # type: ignore
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from orthos2.data.models import BMC
+from orthos2.data.models.remotepowertype import RemotePowerType
 
 
 class AddBMCTest(APITestCase):
     """Test all routes that add instances of a BMC to the database."""
 
     fixtures = [
+        "orthos2/api/fixtures/commands/add_bmc_post.json",
         "orthos2/data/fixtures/systems.json",
         "orthos2/data/fixtures/tests/test_machines.json",
-    ]
-
-    remote_power_types = [
-        {
-            "fence": "ipmilanplus",
-            "device": "bmc",
-            "username": "xxx",
-            "password": "XXX",
-            "arch": ["x86_64", "aarch64"],
-            "system": ["Bare Metal"],
-        },
     ]
 
     def setUp(self) -> None:
@@ -43,7 +33,7 @@ class AddBMCTest(APITestCase):
         url += "/test"
         data = {
             "fqdn": "test.testing.suse.de",
-            "mac": "DabApps",
+            "mac": "aa:bb:cc:dd:ee:ff",
             "username": "",
             "password": "",
             "fence_name": "",
@@ -58,19 +48,19 @@ class AddBMCTest(APITestCase):
         self.assertTrue(isinstance(json_response.get("header"), dict))
         self.assertEqual(json_response.get("header").get("type"), "INPUT")
 
-    @override_settings(REMOTEPOWER_TYPES=remote_power_types)
     def test_add_bmc_post(self) -> None:
         """Test the route /bmc/add/{fqdn}"""
         # Arrange
+        agent = RemotePowerType.objects.get(name="ipmilanplus")
         url = reverse("api:bmc_add")
         url += "/test%2Etesting%2Esuse%2Ede"
         data = {
             "form": {
                 "fqdn": "test.testing.suse.de",
-                "mac": "DabApps",
+                "mac": "aa:bb:cc:dd:ee:ff",
                 "username": "",
                 "password": "",
-                "fence_name": "ipmilanplus",
+                "fence_agent": agent.id,
             }
         }
 

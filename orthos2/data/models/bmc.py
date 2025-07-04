@@ -1,12 +1,15 @@
 from typing import TYPE_CHECKING, Optional
 
 from django.db import models
+from django.forms import ValidationError
 
 from orthos2.data.validators import validate_mac_address
-from orthos2.utils.remotepowertype import get_remote_power_type_choices
 
 if TYPE_CHECKING:
-    from orthos2.types import MandatoryMachineOneToOneField
+    from orthos2.types import (
+        MandatoryMachineOneToOneField,
+        MandatoryRemotePowerTypeForeignKey,
+    )
 
 
 class BMC(models.Model):
@@ -29,11 +32,12 @@ class BMC(models.Model):
         on_delete=models.CASCADE,
     )
 
-    remotepower_type_choices = get_remote_power_type_choices("bmc")
-    fence_name: "models.CharField[str, str]" = models.CharField(
-        choices=remotepower_type_choices,
-        max_length=255,
+    fence_agent: "MandatoryRemotePowerTypeForeignKey" = models.ForeignKey(
+        "data.RemotePowerType",
+        on_delete=models.CASCADE,
         verbose_name="Fence agent",
+        help_text="Fence agent for remote power control",
+        limit_choices_to={"device": "bmc"},
     )
 
     ip_address_v4: "models.GenericIPAddressField[Optional[str], Optional[str]]" = (
@@ -63,3 +67,16 @@ class BMC(models.Model):
 
     def __str__(self) -> str:
         return self.fqdn
+
+    def clean_fence_agent(self) -> None:
+        """
+        Validate the fence_agent field to ensure it is of type "hypervisor".
+        This method is called automatically by Django's validation system.
+        """
+        if not self.fence_agent:
+            raise ValidationError("Fence name cannot be empty.")
+        if self.fence_agent.device != "bmc":  # type: ignore
+            raise ValidationError(
+                "The fence agent must be of type 'hypervisor'. "
+                "Please select a valid fence agent."
+            )

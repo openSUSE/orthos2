@@ -1,6 +1,6 @@
 """Test module to ensure the functionality of the API forms."""
 
-from django.test import TestCase, override_settings
+from django.test import TestCase
 
 from orthos2.api.forms import (
     AnnotationAPIForm,
@@ -17,6 +17,7 @@ from orthos2.api.forms import (
 )
 from orthos2.data.models import System
 from orthos2.data.models.machine import Machine
+from orthos2.data.models.remotepowertype import RemotePowerType
 
 
 class ReserveMachineAPIFormTests(TestCase):
@@ -132,26 +133,19 @@ class AnnotationAPIFormTests(TestCase):
 
 
 class BMCAPIFormTests(TestCase):
-    remote_power_types = [
-        {
-            "fence": "ipmilanplus",
-            "device": "bmc",
-            "username": "xxx",
-            "password": "XXX",
-            "arch": ["x86_64", "aarch64"],
-            "system": ["Bare Metal"],
-        },
+    fixtures = [
+        "orthos2/api/fixtures/forms/create_bmc_api_form.json",
     ]
 
-    @override_settings(REMOTEPOWER_TYPES=remote_power_types)
     def test_form(self) -> None:
         """Test the BMC creation API form"""
         # Arrange & Act
+        agent = RemotePowerType.objects.get(name="ipmilanplus")
         form = BMCAPIForm(
             {
                 "fqdn": "test.foo.de",
                 "mac": "AA:BB:CC:DD:EE",
-                "fence_name": "ipmilanplus",
+                "fence_agent": agent.id,
             }
         )
 
@@ -160,11 +154,15 @@ class BMCAPIFormTests(TestCase):
 
 
 class RemotePowerAPIFormTests(TestCase):
+    fixtures = [
+        "orthos2/api/fixtures/forms/create_remote_power_api_form.json",
+    ]
+
     def test_form(self) -> None:
         """Test the remote power creation API form"""
         # Arrange & Act
         form = RemotePowerAPIForm(
-            {"fence_name": "", "remote_power_device": "", "port": ""}
+            {"fence_agent": "", "remote_power_device": "", "port": ""}
         )
 
         # Assert
@@ -172,28 +170,21 @@ class RemotePowerAPIFormTests(TestCase):
 
 
 class RemotePowerDeviceAPIFormTests(TestCase):
-    remote_power_types = [
-        {
-            "fence": "apc",
-            "device": "rpower_device",
-            "username": "xxx",
-            "password": "XXX",
-            "port": True,
-            "system": ["Bare Metal"],
-        },
+    fixtures = [
+        "orthos2/api/fixtures/forms/create_remote_power_device_api_form.json",
     ]
 
-    @override_settings(REMOTEPOWER_TYPES=remote_power_types)
     def test_form(self) -> None:
         """Test the remote power device creation API form"""
         # Arrange & Act
+        agent = RemotePowerType.objects.get(name="apc")
         form = RemotePowerDeviceAPIForm(
             {
                 "fqdn": "TODO",
                 "password": "test",
-                "mac": "AA:BB:CC:DD:EE",
+                "mac": "AA:BB:CC:DD:EE:FF",
                 "username": "TODO",
-                "fence_name": "apc",
+                "fence_agent": agent.id,
             }
         )
 

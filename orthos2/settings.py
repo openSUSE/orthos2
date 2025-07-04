@@ -248,35 +248,6 @@ AUTH_ALLOW_USER_CREATION = False
 # HINT: Configure the DEFAULT_AUTO_FIELD setting ...
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-# Cobbler has a recommends on `fence_agents` if that is installed these defaults should work out of the box.
-REMOTEPOWER_TYPES = [
-    {
-        "fence": "redfish",
-        "device": "bmc",
-        "username": "root",
-        "identity_file": "/root/.ssh/master",
-        "use_hostname_as_port": True,
-        "arch": ["x86_64", "aarch64"],
-        "system": ["KVM VM"],
-    },
-    {
-        "fence": "ipmilanplus",
-        "device": "bmc",
-        "username": "xxx",
-        "password": "XXX",
-        "arch": ["x86_64", "aarch64"],
-        "system": ["Bare Metal"],
-    },
-    {
-        "fence": "apc",
-        "device": "rpower_device",
-        "username": "xxx",
-        "password": "XXX",
-        "port": True,
-        "system": ["Bare Metal"],
-    },
-]
-
 NETBOX_URL = os.environ.get("ORTHOS_NETBOX_URL", "")
 NETBOX_TOKEN = os.environ.get("ORTHOS_NETBOX_TOKEN", "")
 

@@ -19,6 +19,7 @@ from typing import (
 
 from paramiko.channel import ChannelFile, ChannelStderrFile
 
+from orthos2.data.models.remotepowertype import RemotePowerType
 from orthos2.utils.misc import get_random_mac_address
 
 if TYPE_CHECKING:
@@ -159,7 +160,14 @@ class VirtualizationAPI:
         for networkinterface in vm.unsaved_networkinterfaces[1:]:  # type: ignore
             networkinterface.machine = vm
             networkinterface.save()  # type: ignore
-        vm.remotepower = RemotePower(fence_name="virsh")
+        try:
+            fence_agent = RemotePowerType.objects.get(name="virsh")
+            vm.remotepower = RemotePower(fence_agent=fence_agent)
+        except RemotePowerType.DoesNotExist:
+            logger.warning(
+                "RemotePowerType 'virsh' not found. Please add remotepower for VM %s manually!",
+                vm.hostname,
+            )
         vm.remotepower.save()
 
         if self.host.has_serialconsole():

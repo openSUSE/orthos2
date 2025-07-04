@@ -796,8 +796,8 @@ class Machine(models.Model):
                     update_machine = True
                 if hasattr(self._original, "remotepower") and any(
                     [
-                        self.remotepower.fence_name
-                        != self._original.remotepower.fence_name,
+                        self.remotepower.fence_agent
+                        != self._original.remotepower.fence_agent,
                         self.remotepower.options != self._original.remotepower.options,
                     ]
                 ):

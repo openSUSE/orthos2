@@ -5,12 +5,13 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from orthos2.data.models.serverconfig import ServerConfig
-from orthos2.utils.remotepowertype import RemotePowerType, get_remote_power_type_choices
 
 if TYPE_CHECKING:
+    from orthos2.data.models.remotepowertype import RemotePowerType
     from orthos2.types import (
         MandatoryMachineOneToOneField,
         OptionalRemotePowerDeviceForeignKey,
+        OptionalRemotePowerTypeForeignKey,
     )
 
 
@@ -55,12 +56,11 @@ class RemotePower(models.Model):
                 cls.PAUSED: "paused",
             }.get(index, "undefined")
 
-    remotepower_type_choices = get_remote_power_type_choices("hypervisor")
-
-    fence_name: "models.CharField[str, str]" = models.CharField(
-        choices=remotepower_type_choices,
-        max_length=255,
+    fence_agent: "OptionalRemotePowerTypeForeignKey" = models.ForeignKey(
+        "data.RemotePowerType",
+        on_delete=models.CASCADE,
         verbose_name="Fence Agent",
+        null=True,
     )
 
     machine: "MandatoryMachineOneToOneField" = models.OneToOneField(
@@ -95,35 +95,46 @@ class RemotePower(models.Model):
         E. g. "managed=<management LPAR> for lpar""",
     )
 
+    def clean_fence_agent(self) -> None:
+        """
+        Validate the fence_agent field to ensure it is of type "hypervisor".
+        This method is called automatically by Django's validation system.
+        """
+        if not self.fence_agent:
+            raise ValidationError("Fence name cannot be empty.")
+        if self.fence_agent.device != "hypervisor":
+            raise ValidationError(
+                "The fence agent must be of type 'hypervisor'. "
+                "Please select a valid fence agent."
+            )
+
     def save(self, *args: Any, **kwargs: Any) -> None:
         """Check values before saving the remote power object. Do only save if type is set."""
 
         errors: List[ValidationError] = []
-        self.fence_name = self._get_remotepower_fence_name()
-        logging.debug("getting fence object for %s", self.fence_name)
-        fence = RemotePowerType.from_fence(self.fence_name)
-        if fence.device == "rpower_device":  # type: ignore
-            if fence.use_port:  # type: ignore
+        fence = self.get_remotepower_fence()
+        if fence.device == "rpower_device":
+            if fence.use_port:
                 if self.port is None:  # test for None, as port may be 0
                     errors.append(ValidationError("Please provide a port!"))
-            elif fence.use_hostname_as_port:  # type: ignore
+            elif fence.use_hostname_as_port:
                 self.port = self.machine.hostname
             else:
                 self.port = None
             if self.remote_power_device:
-                self.fence_name = self.remote_power_device.fence_name
+                self.fence_agent = self.remote_power_device.fence_agent
             else:
                 errors.append(ValidationError("Please provide a remote power device!"))
-        elif fence.device == "bmc":  # type: ignore
+        elif fence.device == "bmc":
             if self.machine.bmc:
-                self.fence_name = self.machine.bmc.fence_name
+                self.fence_agent = self.machine.bmc.fence_agent
                 self.remote_power_device = None
             else:
                 errors.append(
                     ValidationError("The machine needs to have an associated BMC")
                 )
 
-        elif fence.device == "hypervisor":  # type: ignore
+        elif fence.device == "hypervisor":
             if self.machine.hypervisor:
                 self.remote_power_device = None
             else:
@@ -142,26 +153,32 @@ class RemotePower(models.Model):
             raise ValidationError(errors)
 
         # check for `None` explicitly because type 0 results in false
-        if self.fence_name is not None:  # type: ignore
+        if self.fence_agent is not None:  # type: ignore
             super(RemotePower, self).save(*args, **kwargs)
         else:
             raise ValidationError("No remote power type set!")
 
-    def _get_remotepower_fence_name(self) -> str:  # type: ignore
-        if self.fence_name:
-            return self.fence_name
+    def get_remotepower_fence(self) -> "RemotePowerType":
+        """
+        Get the fence agent for the remote power object. This is giving you either the directly set fence agent, the
+        remote power device fence agent or the BMC fence agent.
+
+        :returns: The fence agent for the remote power object
+        :raises ValueError: If no fence agent is set for the remote power object
+        """
+        if self.fence_agent:
+            return self.fence_agent
         if self.remote_power_device:
-            return self.remote_power_device.fence_name
+            return self.remote_power_device.fence_agent
         if self.machine.bmc:
-            return self.machine.bmc.fence_name
+            return self.machine.bmc.fence_agent
+        raise ValueError("No fence agent set for remote power object. Invalid state!")
 
     @property
     def name(self) -> Optional[str]:
-        logging.debug("getting fence object for %s", self.fence_name)
-        fence = RemotePowerType.from_fence(self.fence_name)
-        if fence is None:
+        if self.fence_agent is None:
             return None
-        return str(fence.device)
+        return self.fence_agent.device
 
     def power_on(self) -> None:
         """Power on the machine."""
@@ -216,13 +233,17 @@ class RemotePower(models.Model):
         """
         password = None
         username = None
-        fence = RemotePowerType.from_fence(self.fence_name)
-        if fence.device == "bmc":  # type: ignore
+        fence = self.fence_agent
+        if not fence:
+            raise ValueError("No fence agent set for remote power object")
+        if fence.device == "bmc":
             username = self.machine.bmc.username
             password = self.machine.bmc.password
-        elif fence.device == "rpower_device":  # type: ignore
-            username = self.remote_power_device.username  # type: ignore
-            password = self.remote_power_device.password  # type: ignore
+        elif fence.device == "rpower_device":
+            if self.remote_power_device is None:
+                raise ValueError("No remote power device set for this machine")
+            username = self.remote_power_device.username
+            password = self.remote_power_device.password
 
         if not username:
             username = ServerConfig.get_server_config_manager().by_key(
@@ -242,21 +263,20 @@ class RemotePower(models.Model):
         return username, password
 
     def get_power_address(self) -> Optional[str]:
-        logging.debug(
-            "getting fence object for %s in get_power_adress", self.fence_name
-        )
-        fence = RemotePowerType.from_fence(self.fence_name)
-        if fence is None:
-            return None
+        fence = self.get_remotepower_fence()
         if fence.device == "bmc":
             return self.machine.bmc.fqdn
         if fence.device == "rpower_device":
-            return self.remote_power_device.fqdn  # type: ignore
+            if self.remote_power_device is None:
+                raise ValueError("No remote power device set for this machine")
+            return self.remote_power_device.fqdn
         if fence.device == "hypervisor":
-            return self.machine.hypervisor.fqdn  # type: ignore
+            if self.machine.hypervisor is None:
+                raise ValueError("No hypervisor set for this machine")
+            return self.machine.hypervisor.fqdn
         return None
 
     def __str__(self) -> str:
-        logging.debug("getting fence object for %s in __str___", self.fence_name)
-        fence = RemotePowerType.from_fence(self.fence_name)
-        return fence.fence + "@" + fence.device  # type: ignore
+        logging.debug("getting fence object for %s in __str___", self.machine.fqdn)
+        fence = self.get_remotepower_fence()
+        return fence.name + "@" + fence.device

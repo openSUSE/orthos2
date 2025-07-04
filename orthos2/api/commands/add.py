@@ -31,15 +31,9 @@ from orthos2.api.serializers.misc import (
     Message,
     Serializer,
 )
-from orthos2.data.models import (
-    BMC,
-    Annotation,
-    Machine,
-    RemotePower,
-    RemotePowerDevice,
-    SerialConsole,
-)
+from orthos2.data.models import BMC, Annotation, Machine, RemotePower, SerialConsole
 from orthos2.data.models.networkinterface import NetworkInterface
+from orthos2.data.models.remotepowertype import RemotePowerType
 from orthos2.utils.misc import (
     add_offset_to_date,
     format_cli_form_errors,
@@ -443,13 +437,23 @@ class AddBMCCommand(BaseAPIView):
         if form.is_valid():
             try:
                 cleaned_data = form.cleaned_data
+                try:
+                    fence_agent = RemotePowerType.objects.get(
+                        name=cleaned_data["fence_agent"]
+                    )
+                except RemotePowerType.DoesNotExist:
+                    return ErrorMessage(
+                        "Remote power type '{}' does not exist!".format(
+                            cleaned_data["fence_agent"]
+                        )
+                    ).as_json
                 bmc = BMC(
                     machine=machine,
                     fqdn=cleaned_data["fqdn"],
                     mac=cleaned_data["mac"],
                     username=cleaned_data["username"],
                     password=cleaned_data["password"],
-                    fence_name=cleaned_data["fence_name"],
+                    fence_agent=fence_agent,
                 )
                 bmc.save()
             except Exception as e:
@@ -775,18 +779,8 @@ class AddRemotePowerDeviceCommand(BaseAPIView):
         form = RemotePowerDeviceAPIForm(data)
 
         if form.is_valid():
-
-            cleaned_data = form.cleaned_data
-            new_device = RemotePowerDevice(
-                username=cleaned_data["username"],
-                password=cleaned_data["password"],
-                mac=cleaned_data["mac"],
-                fqdn=cleaned_data["fqdn"],
-                fence_name=cleaned_data["fence_name"],
-            )
-
             try:
-                new_device.save()
+                form.save()
             except Exception as e:
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json

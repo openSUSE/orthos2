@@ -1,8 +1,17 @@
 [
   {
+    "model": "data.remotepowertype",
+    "pk": null,
+    "fields": {
+      "name": "apc",
+      "device": "rpowerdevice"
+    }
+  },
+  {
     "model": "data.remotepowerdevice",
     "pk": null,
     "fields": {
+      "fence_agent": ["apc"],
       "username": "test",
       "password": "test",
       "fqdn": "rpower.foo.de",

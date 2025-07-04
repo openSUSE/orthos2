@@ -1,0 +1,14 @@
+[
+  {
+    "model": "data.remotepowertype",
+    "pk": 1,
+    "fields": {
+      "name": "ipmilanplus",
+      "device": "bmc",
+      "username": "xxx",
+      "password": "XXX",
+      "architectures": [["x86_64"], ["aarch64"]],
+      "systems": [["BareMetal"]]
+    }
+  }
+]
