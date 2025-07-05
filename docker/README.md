@@ -29,5 +29,4 @@ python3 manage.py loaddata orthos2/data/fixtures/architectures.json
 python3 manage.py loaddata orthos2/data/fixtures/platforms.json
 python3 manage.py loaddata orthos2/data/fixtures/serialconsoletypes.json
 python3 manage.py loaddata orthos2/data/fixtures/systems.json
-python3 manage.py loaddata orthos2/data/fixtures/vendors.json
 ```

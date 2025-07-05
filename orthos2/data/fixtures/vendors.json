@@ -1,9 +1,0 @@
-[
-  {
-    "model": "data.vendor",
-    "pk": null,
-    "fields": {
-      "name": "Other"
-    }
-  }
-]
