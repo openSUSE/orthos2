@@ -11,7 +11,6 @@ class InfoTest(APITestCase):
 
     fixtures = [
         "orthos2/data/fixtures/systems.json",
-        "orthos2/data/fixtures/vendors.json",
         "orthos2/api/fixtures/serializers/machines.json",
     ]
 
