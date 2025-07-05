@@ -3,11 +3,10 @@ All views that are related to "/machine".
 """
 
 import logging
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.http import (
     Http404,
     HttpRequest,
@@ -16,7 +15,7 @@ from django.http import (
     HttpResponsePermanentRedirect,
     HttpResponseRedirect,
 )
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render  # type: ignore
 
 from orthos2.data.models import Machine, ServerConfig
 from orthos2.frontend.decorators import check_permissions
@@ -28,11 +27,10 @@ from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.misc import add_offset_to_date
 
+if TYPE_CHECKING:
+    from orthos2.types import AuthenticatedHttpRequest
+
 logger = logging.getLogger("views")
-
-
-class AuthenticatedHttpRequest(HttpRequest):
-    user: User
 
 
 @login_required
@@ -359,7 +357,9 @@ def console(request: HttpRequest, id: int) -> HttpResponse:
             "frontend/machines/detail/console.html",
             {
                 "machine": machine,
-                "port": ServerConfig.objects.by_key("websocket.cscreen.port"),
+                "port": ServerConfig.get_server_config_manager().by_key(
+                    "websocket.cscreen.port"
+                ),
                 "title": "Serial Console",
             },
         )
@@ -405,7 +405,7 @@ def fetch_netbox(request: HttpRequest, id: int) -> HttpResponseRedirect:
 
 
 @login_required
-def machine_add(request: AuthenticatedHttpRequest) -> HttpResponseBase:
+def machine_add(request: "AuthenticatedHttpRequest") -> HttpResponseBase:
     perm_list = [
         "data.add_machine",
         "data.add_bmc",

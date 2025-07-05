@@ -48,7 +48,7 @@ class MiscMethodTests(TestCase):
         assert get_hostname(fqdn) == "foo"
 
     @mock.patch("orthos2.utils.misc.socket.gethostbyname")
-    def test_is_dns_resolvable(self, mocked_gethostbyname) -> None:
+    def test_is_dns_resolvable(self, mocked_gethostbyname: mock.MagicMock) -> None:
         """is_dns_resolvable() should return True if a FQDN is resolvable, False otherwise."""
         import socket
 
@@ -172,7 +172,7 @@ class MiscSuggestIpTests(TestCase):
 
 class ChecksMethodTests(TestCase):
     @mock.patch("orthos2.utils.misc.subprocess.Popen")
-    def test_ping_check(self, mocked_popen):
+    def test_ping_check(self, mocked_popen: mock.MagicMock):
         """ping_check() should return True if a FQDN is pingable, False otherwise."""
         fqdn = "foo.bar.suse.de"
         mocked_popen.return_value.returncode = 0
@@ -183,7 +183,11 @@ class ChecksMethodTests(TestCase):
 
     @mock.patch("orthos2.utils.machinechecks.socket.socket.connect")
     @mock.patch("orthos2.utils.machinechecks.ping_check")
-    def test_nmap_check(self, mocked_ping_check, mocked_connect):
+    def test_nmap_check(
+        self,
+        mocked_ping_check: mock.MagicMock,
+        mocked_connect: mock.MagicMock,
+    ):
         """nmap_check() should return True if a host runs SSH, False otherwise."""
         import socket
 

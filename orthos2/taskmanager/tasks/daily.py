@@ -33,14 +33,7 @@ class DailyMachineChecks(Task):
                 machine.fqdn, tasks.MachineCheck.Scan.to_int(action)
             )
             TaskManager.add(task)
-        """
-        for machine in Machine.objects.all():
-            if machine.administrative or machine.system.administrative:
-                continue
-            ansible_scan.append(machine.fqdn)
-        """
-        task = Ansible(ansible_scan)  # type: ignore
-        TaskManager.add(task)
+        TaskManager.add(Ansible(ansible_scan))
         DailyMachineChecks.is_running = False
 
     def execute(self) -> None:

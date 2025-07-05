@@ -4,9 +4,12 @@ This module contains all logic to set up a new machine via PXE.
 
 import collections
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from django import forms
+
+if TYPE_CHECKING:
+    from orthos2.data.models.machine import Machine
 
 logger = logging.getLogger("views")
 
@@ -17,7 +20,7 @@ class SetupMachineForm(forms.Form):
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        machine = kwargs.pop("machine", None)
+        machine: "Machine" = kwargs.pop("machine", None)
         domain = machine.fqdn_domain
 
         architecture = machine.architecture.name
@@ -61,9 +64,9 @@ class SetupMachineForm(forms.Form):
             self.fields["setup"].choices,  # type: ignore
         )
 
-    def get_setup_select_choices(self, records):
-        setup_records = []
-        groups = collections.OrderedDict()
+    def get_setup_select_choices(self, records: Dict[str, List[str]]):
+        setup_records: List[Tuple[Optional[str], str]] = []
+        groups: Dict[str, Tuple[Tuple[str, str], ...]] = collections.OrderedDict()
 
         if isinstance(records, list):
             for record in records:
@@ -81,7 +84,7 @@ class SetupMachineForm(forms.Form):
                         groups[distribution] += ((value, option),)
 
             for distribution, record_group in groups.items():
-                setup_records.append((distribution, record_group))
+                setup_records.append((distribution, record_group))  # type: ignore
 
         if not setup_records:
             setup_records.append((None, "no setup records available"))

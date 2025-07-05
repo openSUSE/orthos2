@@ -11,7 +11,10 @@ from .serialconsoletype import SerialConsoleType
 from .serverconfig import ServerConfig
 
 if TYPE_CHECKING:
-    from orthos2.data.models.machine import Machine
+    from orthos2.types import (
+        MandatoryMachineOneToOneField,
+        MandatorySerialConsoleTypeForeignKey,
+    )
 
 logger = logging.getLogger("models")
 
@@ -37,14 +40,14 @@ class SerialConsole(models.Model):
         ("None", "None"),
     )
 
-    class Meta:
+    class Meta:  # type: ignore
         verbose_name = "Serial Console"
 
-    machine = models.OneToOneField["Machine"](  # type: ignore
+    machine: "MandatoryMachineOneToOneField" = models.OneToOneField(
         "data.Machine", on_delete=models.CASCADE, primary_key=True
     )
 
-    console_server = models.CharField(
+    console_server: "models.CharField[Optional[str], Optional[str]]" = models.CharField(
         max_length=1024,
         verbose_name="Dedicated console server",
         blank=True,
@@ -52,7 +55,7 @@ class SerialConsole(models.Model):
         help_text="DNS resolvable hostname (FQDN) to serial console server",
     )
 
-    stype = models.ForeignKey(
+    stype: "MandatorySerialConsoleTypeForeignKey" = models.ForeignKey(
         SerialConsoleType,
         verbose_name="Serial Console Type",
         on_delete=models.CASCADE,
@@ -61,20 +64,20 @@ class SerialConsole(models.Model):
         help_text="Mechanism how to set up and retrieve serial console data",
     )
 
-    port = models.SmallIntegerField(
+    port: "models.SmallIntegerField[Optional[int], Optional[int]]" = models.SmallIntegerField(
         null=True,
         blank=True,
         help_text="On which physical port of the Dedicated Console Server is this machine connected?",
     )
 
-    command = models.CharField(
+    command: "models.CharField[Optional[str], Optional[str]]" = models.CharField(
         max_length=200,
         null=True,
         blank=True,
         help_text="Use this with the 'command' type. Template matching applies.",
     )
 
-    rendered_command = models.CharField(
+    rendered_command: "models.CharField[Optional[str], Optional[str]]" = models.CharField(
         max_length=1024,
         null=True,
         blank=True,
@@ -82,11 +85,18 @@ class SerialConsole(models.Model):
         " /etc/cscreenrc config",
     )
 
-    comment = models.CharField(max_length=200, null=True, blank=True)
+    comment: "models.CharField[Optional[str], Optional[str]]" = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True,
+    )
 
-    baud_rate = models.IntegerField(choices=BAUD_RATE_CHOICES, default=57600)
+    baud_rate: "models.IntegerField[int, int]" = models.IntegerField(
+        choices=BAUD_RATE_CHOICES,
+        default=57600,
+    )
 
-    kernel_device = models.CharField(
+    kernel_device: "models.CharField[str, str]" = models.CharField(
         choices=TTY_CHOICES,
         verbose_name="Kernel Device",
         max_length=64,
@@ -96,7 +106,7 @@ class SerialConsole(models.Model):
         ' "None" will remove console= kernel paramter',
     )
 
-    kernel_device_num = models.PositiveSmallIntegerField(
+    kernel_device_num: "models.PositiveSmallIntegerField[int, int]" = models.PositiveSmallIntegerField(
         null=False,
         validators=[MaxValueValidator(1024)],
         default=0,
@@ -104,8 +114,6 @@ class SerialConsole(models.Model):
         help_text="""The kernel device number is concatenated to the kernel device string (see above).
 A value of 1 might end up in console=ttyS1 kernel command line paramter.""",
     )
-
-    objects = models.Manager()
 
     def __str__(self) -> str:
         return self.stype.name
@@ -197,16 +205,25 @@ A value of 1 might end up in console=ttyS1 kernel command line paramter.""",
         if errors:
             raise ValidationError(errors)
 
-    def get_command_record(self) -> Optional[SafeString]:
+    def get_command_record(self) -> SafeString:
         """Return cscreen record for serial console."""
         prefix = 'screen -t {{ machine.hostname|ljust:"20" }} -L '
         template = self.stype.command
 
-        username = ServerConfig.objects.by_key("serialconsole.ipmi.username", "")
-        password = ServerConfig.objects.by_key("serialconsole.ipmi.password", "")
+        if template is None:
+            raise ValueError("Template for serial console type not set!")
+
+        username = ServerConfig.get_server_config_manager().by_key(
+            "serialconsole.ipmi.username", ""
+        )
+        password = ServerConfig.get_server_config_manager().by_key(
+            "serialconsole.ipmi.password", ""
+        )
 
         if username is None or password is None:
-            return None
+            raise ValueError(
+                "Username or Password cannot be None to render serial command record!"
+            )
 
         ipmi: Dict[str, str] = {"user": username, "password": password}
 
@@ -233,7 +250,7 @@ A value of 1 might end up in console=ttyS1 kernel command line paramter.""",
         )
         # Render the template twice, to support templates in the command string, which
         # is a template argument itself
-        return Template(Template(prefix + template).render(context)).render(context)  # type: ignore
+        return Template(Template(prefix + template).render(context)).render(context)
 
     def get_comment_record(self) -> SafeString:
         """Return cscreen comment for serial console."""

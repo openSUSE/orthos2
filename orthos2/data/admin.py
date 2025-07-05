@@ -1,5 +1,5 @@
 import ipaddress
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 from django import forms
 from django.contrib import admin, messages
@@ -8,9 +8,9 @@ from django.contrib.admin.templatetags.admin_list import _boolean_icon  # type: 
 from django.core.exceptions import ValidationError
 from django.db.models import Q, QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
-from django.shortcuts import redirect
+from django.shortcuts import redirect  # type: ignore
 from django.template.response import TemplateResponse
-from django.urls import URLPattern, re_path, reverse
+from django.urls import URLPattern, re_path, reverse  # type: ignore
 from django.utils.html import format_html
 
 from orthos2.api.forms import RemotePowerDeviceAPIForm
@@ -36,6 +36,9 @@ from orthos2.data.models import (
 )
 from orthos2.utils.misc import get_domain, is_unique_mac_address, suggest_host_ip
 from orthos2.utils.remotepowertype import RemotePowerType
+
+if TYPE_CHECKING:
+    from django.contrib.auth.models import User
 
 
 class BMCForm(forms.ModelForm):  # type: ignore
@@ -118,6 +121,7 @@ class BMCFormInlineFormSet(forms.models.BaseInlineFormSet):  # type: ignore
         """
         This method is called in clean. It is verifying that all MAC addresses are unique inside the DB.
         """
+        self.instance: "Machine"
         old_mac_addresses = list(
             self.instance.networkinterfaces.all().values_list("mac_address", flat=True)
         )
@@ -154,22 +158,22 @@ class BMCFormInlineFormSet(forms.models.BaseInlineFormSet):  # type: ignore
                 )
 
 
-class BMCInline(admin.StackedInline):
+class BMCInline(admin.StackedInline):  # type: ignore
     model = BMC
     extra = 0
     formset = BMCFormInlineFormSet
     form = BMCForm
 
-    def get_formset(
+    def get_formset(  # type: ignore
         self, request: HttpRequest, obj: Optional["Machine"] = None, **kwargs: Any
     ):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
-        formset = super(BMCInline, self).get_formset(request, obj, **kwargs)
-        return formset
+        formset = super(BMCInline, self).get_formset(request, obj, **kwargs)  # type: ignore
+        return formset  # type: ignore
 
 
-class SerialConsoleInline(admin.StackedInline):
+class SerialConsoleInline(admin.StackedInline):  # type: ignore
     model = SerialConsole
     extra = 0
     fk_name = "machine"
@@ -188,15 +192,15 @@ class SerialConsoleInline(admin.StackedInline):
     )
     readonly_fields = ("rendered_command",)
 
-    def get_formset(
+    def get_formset(  # type: ignore
         self, request: HttpRequest, obj: Optional["Machine"] = None, **kwargs: Any
     ):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
-        return super(SerialConsoleInline, self).get_formset(request, obj, **kwargs)
+        return super(SerialConsoleInline, self).get_formset(request, obj, **kwargs)  # type: ignore
 
 
-class RemotePowerInlineFormset(forms.models.BaseInlineFormSet):
+class RemotePowerInlineFormset(forms.models.BaseInlineFormSet):  # type: ignore
     def clean(self) -> None:
         if not self.cleaned_data:
             return
@@ -239,7 +243,7 @@ class RemotePowerInlineFormset(forms.models.BaseInlineFormSet):
                 )
 
 
-class RemotePowerInlineRpower(admin.StackedInline):
+class RemotePowerInlineRpower(admin.StackedInline):  # type: ignore
     model = RemotePower
     formset = RemotePowerInlineFormset
     extra = 0
@@ -248,15 +252,15 @@ class RemotePowerInlineRpower(admin.StackedInline):
     verbose_name_plural = "Remote Power via PowerSwitch Device"
     fields = ["port", "remote_power_device", "options"]
 
-    def get_formset(
+    def get_formset(  # type: ignore
         self, request: HttpRequest, obj: Optional["Machine"] = None, **kwargs: Any
     ):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
-        return super(RemotePowerInlineRpower, self).get_formset(request, obj, **kwargs)
+        return super(RemotePowerInlineRpower, self).get_formset(request, obj, **kwargs)  # type: ignore
 
 
-class RemotePowerInlineBMC(admin.StackedInline):
+class RemotePowerInlineBMC(admin.StackedInline):  # type: ignore
     model = RemotePower
     extra = 0
     fk_name = "machine"
@@ -264,13 +268,18 @@ class RemotePowerInlineBMC(admin.StackedInline):
     verbose_name_plural = "Remote Power via BMC"
     fields = ["options"]
 
-    def get_formset(self, request, obj=None, **kwargs):
+    def get_formset(  # type: ignore
+        self,
+        request: HttpRequest,
+        obj: Optional["Machine"] = None,
+        **kwargs: Any,
+    ):
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
-        return super(RemotePowerInlineBMC, self).get_formset(request, obj, **kwargs)
+        return super(RemotePowerInlineBMC, self).get_formset(request, obj, **kwargs)  # type: ignore
 
 
-class RemotePowerInlineHypervisor(admin.StackedInline):
+class RemotePowerInlineHypervisor(admin.StackedInline):  # type: ignore
     model = RemotePower
     extra = 0
     fk_name = "machine"
@@ -278,16 +287,16 @@ class RemotePowerInlineHypervisor(admin.StackedInline):
     verbose_name_plural = "Remote Power via Hypervisor"
     fields = ["fence_name", "options"]
 
-    def get_formset(self, request: HttpRequest, obj: Any = None, **kwargs: Any):
+    def get_formset(self, request: HttpRequest, obj: Any = None, **kwargs: Any):  # type: ignore
         """Set machine object for `formfield_for_foreignkey` method."""
         self.machine = obj
-        return super(RemotePowerInlineHypervisor, self).get_formset(
+        return super(RemotePowerInlineHypervisor, self).get_formset(  # type: ignore
             request, obj, **kwargs
         )
 
 
-class NetworkInterfaceForm(forms.ModelForm):
-    def clean(self):
+class NetworkInterfaceForm(forms.ModelForm):  # type: ignore
+    def clean(self) -> None:
         """
         Verifies that the data for a single network interface is valid.
         """
@@ -317,7 +326,7 @@ class NetworkInterfaceForm(forms.ModelForm):
             if ip_address_v6 == "::1":
                 self.cleaned_data["ip_address_v6"] = suggest_host_ip(6, machine_domain)
 
-    def __verify_ip_address_in_network(self):
+    def __verify_ip_address_in_network(self) -> None:
         """
         This method is called in clean. It is verifying that the chosen IP is inside the configured network.
         """
@@ -349,7 +358,7 @@ class NetworkInterfaceForm(forms.ModelForm):
             raise ValidationError("IPv4 address is not in the chosen network!")
 
 
-class NetworkInterfaceInlineFormset(forms.models.BaseInlineFormSet):
+class NetworkInterfaceInlineFormset(forms.models.BaseInlineFormSet):  # type: ignore
     def clean(self) -> None:
         """
         Verifies that the data for all network interfaces is valid if viewed at together.
@@ -360,7 +369,7 @@ class NetworkInterfaceInlineFormset(forms.models.BaseInlineFormSet):
         self.__verify_unique_mac_address()
         self.__verify_unique_ip_address()
 
-    def __verify_single_primary_interface(self):
+    def __verify_single_primary_interface(self) -> None:
         """
         This method is called in clean. It is verifying if there is only a single interface is marked as primary.
         """
@@ -377,10 +386,11 @@ class NetworkInterfaceInlineFormset(forms.models.BaseInlineFormSet):
                 "You need exactly one primary interface if you have one or more interfaces!"
             )
 
-    def __verify_unique_mac_address(self):
+    def __verify_unique_mac_address(self) -> None:
         """
         This method is called in clean. It is verifying that all MAC addresses are unique inside the DB.
         """
+        self.instance: "Machine"
         old_mac_addresses = list(
             self.instance.networkinterfaces.all().values_list("mac_address", flat=True)
         )
@@ -394,7 +404,7 @@ class NetworkInterfaceInlineFormset(forms.models.BaseInlineFormSet):
             raise ValidationError("Duplicate MAC address detected!")
 
         for interface in self.cleaned_data:
-            mac = interface.get("mac_address")
+            mac = interface.get("mac_address", "")
             if mac == "":
                 continue
             if not is_unique_mac_address(mac, exclude=old_mac_addresses):
@@ -405,16 +415,16 @@ class NetworkInterfaceInlineFormset(forms.models.BaseInlineFormSet):
                     ),
                 )
 
-    def __verify_unique_ip_address(self):
+    def __verify_unique_ip_address(self) -> None:
         """
         This method is called in clean. It is verifying if all IPs given are unique.
         """
-        new_ip_addresses_4 = []
+        new_ip_addresses_4: List[Any] = []
         for interface in self.cleaned_data:
             address = interface.get("ip_address_v4")
             if address != "":
                 new_ip_addresses_4.append(address)
-        new_ip_addresses_6 = []
+        new_ip_addresses_6: List[Any] = []
         for interface in self.cleaned_data:
             address = interface.get("ip_address_v6")
             if address != "":
@@ -438,13 +448,17 @@ class NetworkInterfaceInlineFormset(forms.models.BaseInlineFormSet):
             bmc_interface_v6 = BMC.objects.filter(ip_address_v6=ip_address_v6)
             if interface.get("id") is not None:
                 network_interface_v4 = network_interface_v4.exclude(
-                    id=interface.get("id").id
+                    id=interface.get("id").id  # type: ignore
                 )
                 network_interface_v6 = network_interface_v6.exclude(
-                    id=interface.get("id").id
+                    id=interface.get("id").id  # type: ignore
                 )
-                bmc_interface_v4 = bmc_interface_v4.exclude(id=interface.get("id").id)
-                bmc_interface_v6 = bmc_interface_v6.exclude(id=interface.get("id").id)
+                bmc_interface_v4 = bmc_interface_v4.exclude(
+                    id=interface.get("id").id  # type: ignore
+                )
+                bmc_interface_v6 = bmc_interface_v6.exclude(
+                    id=interface.get("id").id  # type: ignore
+                )
             if network_interface_v4.count() > 0 or bmc_interface_v4.count() > 0:
                 raise ValidationError(
                     "IPv4 address already in use, please choose another one!"
@@ -455,7 +469,7 @@ class NetworkInterfaceInlineFormset(forms.models.BaseInlineFormSet):
                 )
 
 
-class NetworkInterfaceInline(admin.TabularInline):
+class NetworkInterfaceInline(admin.TabularInline):  # type: ignore
     model = NetworkInterface
     extra = 0
     fk_name = "machine"
@@ -468,27 +482,27 @@ class NetworkInterfaceInline(admin.TabularInline):
     form = NetworkInterfaceForm
 
 
-class AnnotationInline(admin.TabularInline):
+class AnnotationInline(admin.TabularInline):  # type: ignore
     model = Annotation
     extra = 0
     fk_name = "machine"
     readonly_fields = ("text", "reporter", "created")
 
-    def has_add_permission(self, request, obj=None):
+    def has_add_permission(self, request: HttpRequest, obj=None):  # type: ignore
         """Annotations are added at machine detail view."""
         return False
 
 
-class MachineAdminForm(forms.ModelForm):
-    class Meta:
+class MachineAdminForm(forms.ModelForm):  # type: ignore
+    class Meta:  # type: ignore
         model = Machine
         fields = "__all__"
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Set primary MAC address and virtualization API type in the form fields."""
         instance = kwargs.get("instance", None)
 
-        super(MachineAdminForm, self).__init__(*args, **kwargs)
+        super(MachineAdminForm, self).__init__(*args, **kwargs)  # type: ignore
 
         if instance:
             self.machine = instance
@@ -573,7 +587,7 @@ class MachineArchitectureFilter(admin.SimpleListFilter):
 
     def lookups(self, request: HttpRequest, model_admin) -> List[Tuple[int, str]]:  # type: ignore
         architectures = Architecture.objects.all()
-        result = []
+        result: List[Tuple[int, str]] = []
 
         for architecture in architectures:
             result.append((architecture.id, architecture.name))
@@ -594,7 +608,7 @@ class MachineSystemFilter(admin.SimpleListFilter):
     parameter_name = "system"
 
     def lookups(
-        self, request: HttpRequest, model_admin: ModelAdmin
+        self, request: HttpRequest, model_admin: "ModelAdmin[System]"
     ) -> List[Tuple[str, str]]:
         systems = System.objects.all()
         result: List[Tuple[str, str]] = []
@@ -628,12 +642,13 @@ class MachineDomainFilter(admin.SimpleListFilter):
 
     parameter_name = "domain"
 
-    # type: ignore
-    def lookups(
-        self, request: HttpRequest, model_admin: ModelAdmin
+    def lookups(  # type: ignore
+        self,
+        request: HttpRequest,
+        model_admin: "ModelAdmin[Domain]",
     ) -> List[Tuple[int, str]]:
         domains = Domain.objects.all()
-        result = []
+        result: List[Tuple[int, str]] = []
 
         for domain in domains:
             result.append((domain.id, domain.name))
@@ -655,10 +670,10 @@ class MachineGroupFilter(admin.SimpleListFilter):
     parameter_name = "machinegroup"
 
     def lookups(  # type: ignore
-        self, request: HttpRequest, model_admin: ModelAdmin
+        self, request: HttpRequest, model_admin: "ModelAdmin[MachineGroup]"
     ) -> List[Tuple[int, str]]:
         machinegroups = MachineGroup.objects.all()
-        result = []
+        result: List[Tuple[int, str]] = []
 
         for group in machinegroups:
             result.append((group.id, group.name))
@@ -674,7 +689,7 @@ class MachineGroupFilter(admin.SimpleListFilter):
         return None
 
 
-class MachineAdmin(admin.ModelAdmin):
+class MachineAdmin(admin.ModelAdmin):  # type: ignore
     class Media:
         js = ("js/machine_admin.js",)
 
@@ -759,26 +774,28 @@ class MachineAdmin(admin.ModelAdmin):
     )
     autocomplete_fields = ["hypervisor"]
 
-    def get_queryset(self, request):
+    def get_queryset(self, request: HttpRequest) -> "QuerySet[Machine]":
         """
         Filter machine list. A superuser is authorized to see/edit all machines. If a user is
         authorized to change machine models and is privileged in any machine group, then all
         machines belonging to the respective machine group(s) get listed.
         """
-        queryset = super(MachineAdmin, self).get_queryset(request)
-        user = request.user
+        queryset: "QuerySet[Machine]" = super(  # type: ignore
+            MachineAdmin, self
+        ).get_queryset(request)
+        user: "User" = request.user  # type: ignore
 
-        if user.is_superuser:
+        if user.is_superuser:  # type: ignore
             return queryset
 
         query = None
 
-        for membership in user.memberships.all():
-            if membership.is_privileged:
+        for membership in user.memberships.all():  # type: ignore
+            if membership.is_privileged:  # type: ignore
                 if query:
-                    query = query | Q(group_id=membership.group_id)
+                    query = query | Q(group_id=membership.group_id)  # type: ignore
                 else:
-                    query = Q(group_id=membership.group_id)
+                    query = Q(group_id=membership.group_id)  # type: ignore
 
         if query:
             queryset = queryset.filter(query)
@@ -787,17 +804,22 @@ class MachineAdmin(admin.ModelAdmin):
 
         return queryset
 
-    def add_view(self, request, form_url="", extra_context=None):
+    def add_view(
+        self,
+        request: HttpRequest,
+        form_url: str = "",
+        extra_context: Optional[Dict[str, Any]] = None,
+    ):
         """
         Return view for 'Add machine' and do not show inlines. This is due the fact that these
         objects need a related machine object (which doesn't exist yet) for several checks.
         """
-        self.inlines = ()
+        MachineAdmin.inlines = ()
         return super(MachineAdmin, self).add_view(request, form_url, extra_context)
 
     def get_fieldsets(self, request: HttpRequest, obj: Optional[Machine] = None):
         """Do not show 'VIRTUALIZATION' client/server forms if not appropriate"""
-        fieldsets = super().get_fieldsets(request)
+        fieldsets = super().get_fieldsets(request)  # type: ignore
         if obj:
             fieldsets_ = ()
             for fieldset in fieldsets:
@@ -815,7 +837,7 @@ class MachineAdmin(admin.ModelAdmin):
         self,
         request: HttpRequest,
         object_id: str,
-        form_url="",
+        form_url: str = "",
         extra_context: Optional[Dict[str, Any]] = None,
     ) -> Union[HttpResponseRedirect, TemplateResponse, HttpResponse]:
         """Return changes view with inlines for non-administrative systems."""
@@ -832,29 +854,35 @@ class MachineAdmin(admin.ModelAdmin):
                 extra_tags="error",
             )
 
-        self.inlines = (NetworkInterfaceInline, SerialConsoleInline)
+        MachineAdmin.inlines = (NetworkInterfaceInline, SerialConsoleInline)
 
         if machine.bmc_allowed():
-            self.inlines += (BMCInline,)
+            MachineAdmin.inlines += (BMCInline,)
             if hasattr(machine, "bmc"):
                 if not fence or fence.device == "bmc":
-                    self.inlines += (RemotePowerInlineBMC,)
+                    MachineAdmin.inlines += (RemotePowerInlineBMC,)
         if machine.is_virtual_machine():
-            self.inlines += (RemotePowerInlineHypervisor,)
+            MachineAdmin.inlines += (RemotePowerInlineHypervisor,)
         else:
             # Only show rpower device to add/modify if we do not
             # have one yet or if it's a rpower_device already
             if not fence or fence.device == "rpower_device":
-                self.inlines += (RemotePowerInlineRpower,)
+                MachineAdmin.inlines += (RemotePowerInlineRpower,)
 
         if not machine.system.administrative:
-            self.inlines += (AnnotationInline,)
+            MachineAdmin.inlines += (AnnotationInline,)
 
         return super(MachineAdmin, self).change_view(
             request, object_id, form_url, extra_context
         )
 
-    def save_formset(self, request: HttpRequest, form, formset, change) -> None:
+    def save_formset(
+        self,
+        request: HttpRequest,
+        form: Any,
+        formset: Any,
+        change: Any,
+    ) -> None:
         formset.save()
         machine = form.save(commit=False)
         if (
@@ -870,10 +898,10 @@ class MachineAdmin(admin.ModelAdmin):
             machine.save()
 
 
-admin.site.register(Machine, MachineAdmin)
+admin.site.register(Machine, MachineAdmin)  # type: ignore
 
 
-class ArchsInline(admin.TabularInline):
+class ArchsInline(admin.TabularInline):  # type: ignore
     model = DomainAdmin
     fields = (
         "arch",
@@ -881,7 +909,7 @@ class ArchsInline(admin.TabularInline):
     )
 
 
-class DomainAdminAdmin(admin.ModelAdmin):
+class DomainAdminAdmin(admin.ModelAdmin):  # type: ignore
     list_display = ("name", "cobbler_server_list", "tftp_server", "cscreen_server")
     inlines = (ArchsInline,)
 
@@ -906,13 +934,13 @@ class DomainAdminAdmin(admin.ModelAdmin):
     ) -> bool:
         if obj is not None and obj.machine_set.count() > 0:
             return False
-        return super().has_delete_permission(request, obj=obj)
+        return super().has_delete_permission(request, obj=obj)  # type: ignore
 
 
-admin.site.register(Domain, DomainAdminAdmin)
+admin.site.register(Domain, DomainAdminAdmin)  # type: ignore
 
 
-class EnclosureAdmin(admin.ModelAdmin):
+class EnclosureAdmin(admin.ModelAdmin):  # type: ignore
     readonly_fields = (
         "location_site",
         "location_room",
@@ -934,18 +962,18 @@ class EnclosureAdmin(admin.ModelAdmin):
         return None
 
 
-admin.site.register(Enclosure, EnclosureAdmin)
+admin.site.register(Enclosure, EnclosureAdmin)  # type: ignore
 
 
-class RemotePowerDeviceAdmin(admin.ModelAdmin):
+class RemotePowerDeviceAdmin(admin.ModelAdmin):  # type: ignore
     form = RemotePowerDeviceAPIForm
-    list_display = ["fqdn", "fence_name"]
+    list_display = ["fqdn", "fence_name"]  # type: ignore
 
 
-admin.site.register(RemotePowerDevice, RemotePowerDeviceAdmin)
+admin.site.register(RemotePowerDevice, RemotePowerDeviceAdmin)  # type: ignore
 
 
-class ServerConfigAdmin(admin.ModelAdmin):
+class ServerConfigAdmin(admin.ModelAdmin):  # type: ignore
     list_display = ("key", "augmented_value")
     search_fields = ("key", "value")
 
@@ -956,7 +984,7 @@ class ServerConfigAdmin(admin.ModelAdmin):
         custom_urls = [
             re_path(
                 r"^(?P<serverconfig_id>.+)/switch/$",
-                self.admin_site.admin_view(self.process_boolean_switch),
+                self.admin_site.admin_view(self.process_boolean_switch),  # type: ignore
                 name="boolean_switch",
             ),
         ]
@@ -987,28 +1015,34 @@ class ServerConfigAdmin(admin.ModelAdmin):
 
         return redirect("admin:data_serverconfig_changelist")
 
-    def augmented_value(self, obj):
+    def augmented_value(self, obj: "ServerConfig"):
         """Add buttons for boolean values ('bool:true' or 'bool:false')."""
         if obj.value.lower() == "bool:false":
-            button = _boolean_icon(False)
-            button += (
+            button = _boolean_icon(False)  # type: ignore
+            button += (  # type: ignore
                 ' <span class="help">(<a href="{}?action=enable">Enable</a>)</span>'
             )
-            return format_html(button, reverse("admin:boolean_switch", args=[obj.pk]))
+            return format_html(
+                button,  # type: ignore
+                reverse("admin:boolean_switch", args=[obj.pk]),
+            )
         elif obj.value.lower() == "bool:true":
-            button = _boolean_icon(True)
-            button += (
+            button = _boolean_icon(True)  # type: ignore
+            button += (  # type: ignore
                 ' <span class="help">(<a href="{}?action=disable">Disable</a>)</span>'
             )
-            return format_html(button, reverse("admin:boolean_switch", args=[obj.pk]))
+            return format_html(
+                button,  # type: ignore
+                reverse("admin:boolean_switch", args=[obj.pk]),
+            )
 
         return obj.value
 
 
-admin.site.register(ServerConfig, ServerConfigAdmin)
+admin.site.register(ServerConfig, ServerConfigAdmin)  # type: ignore
 
 
-class PlatformAdmin(admin.ModelAdmin):
+class PlatformAdmin(admin.ModelAdmin):  # type: ignore
     list_display = ("name", "get_vendor", "get_enclosure_count", "is_cartridge")
     list_per_page = 50
     search_fields = ("name",)
@@ -1016,10 +1050,10 @@ class PlatformAdmin(admin.ModelAdmin):
     list_max_show_all = 1000
 
 
-admin.site.register(Platform, PlatformAdmin)
+admin.site.register(Platform, PlatformAdmin)  # type: ignore
 
 
-class ArchitectureAdmin(admin.ModelAdmin):
+class ArchitectureAdmin(admin.ModelAdmin):  # type: ignore
     list_display = ("name", "get_machine_count", "dhcp_filename")
 
     def delete_model(
@@ -1036,32 +1070,32 @@ class ArchitectureAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request: HttpRequest, obj: Any = None) -> bool:
         if obj is not None and obj.machine_set.count() > 0:
             return False
-        return super(ArchitectureAdmin, self).has_delete_permission(request, obj=obj)
+        return super(ArchitectureAdmin, self).has_delete_permission(request, obj=obj)  # type: ignore
 
 
-admin.site.register(Architecture, ArchitectureAdmin)
+admin.site.register(Architecture, ArchitectureAdmin)  # type: ignore
 
 
-class SerialConsoleTypeAdmin(admin.ModelAdmin):
+class SerialConsoleTypeAdmin(admin.ModelAdmin):  # type: ignore
     list_display = ("name", "command")
 
 
-admin.site.register(SerialConsoleType, SerialConsoleTypeAdmin)
+admin.site.register(SerialConsoleType, SerialConsoleTypeAdmin)  # type: ignore
 
 
-class SystemAdmin(admin.ModelAdmin):
+class SystemAdmin(admin.ModelAdmin):  # type: ignore
     list_display = ("name", "virtual", "administrative")
 
 
-admin.site.register(System, SystemAdmin)
+admin.site.register(System, SystemAdmin)  # type: ignore
 
 
-class MachineGroupMembershipInline(admin.TabularInline):
+class MachineGroupMembershipInline(admin.TabularInline):  # type: ignore
     model = MachineGroupMembership
     extra = 0
 
 
-class MachinesInline(admin.TabularInline):
+class MachinesInline(admin.TabularInline):  # type: ignore
     model = Machine
     fields = ("fqdn",)
     readonly_fields = ("fqdn",)
@@ -1073,7 +1107,7 @@ class MachinesInline(admin.TabularInline):
         return False
 
 
-class MachineGroupAdmin(admin.ModelAdmin):
+class MachineGroupAdmin(admin.ModelAdmin):  # type: ignore
     list_display = ("name", "machines", "dhcp_filename")
     inlines = (MachinesInline, MachineGroupMembershipInline)
 
@@ -1083,5 +1117,5 @@ class MachineGroupAdmin(admin.ModelAdmin):
         return output
 
 
-admin.site.register(MachineGroup, MachineGroupAdmin)
-admin.site.register(Vendor)
+admin.site.register(MachineGroup, MachineGroupAdmin)  # type: ignore
+admin.site.register(Vendor)  # type: ignore

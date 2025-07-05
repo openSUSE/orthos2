@@ -1,22 +1,34 @@
-from typing import Optional, Tuple
+from typing import Tuple, cast
 
 from django.db import models
 
 
-class Vendor(models.Model):
-    class Manager(models.Manager["Vendor"]):
-        def get_by_natural_key(self, name: str) -> Optional["Vendor"]:
-            return self.get(name=name)
+class VendorManager(models.Manager["Vendor"]):
+    def get_by_natural_key(self, name: str) -> "Vendor":
+        return self.get(name=name)
 
-    class Meta:
+
+class Vendor(models.Model):
+    class Meta:  # type: ignore
         ordering = ["name"]
 
-    name = models.CharField(max_length=100, blank=False, unique=True)
+    name: "models.CharField[str, str]" = models.CharField(
+        max_length=100,
+        blank=False,
+        unique=True,
+    )
 
-    objects = Manager()
+    objects = VendorManager()
 
     def natural_key(self) -> Tuple[str]:
         return (self.name,)
 
     def __str__(self) -> str:
         return self.name
+
+    @classmethod
+    def get_vendor_manager(cls) -> VendorManager:
+        """
+        Return the vendor manager.
+        """
+        return cast(VendorManager, cls.objects)

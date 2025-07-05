@@ -5,7 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import IntegrityError
 from django.forms import BaseForm
 from django.http import HttpResponse
-from django.urls import reverse
+from django.urls import reverse  # type: ignore
 from django.views.generic.edit import FormView
 from requests import HTTPError
 
@@ -77,15 +77,15 @@ class AddMachineForm(forms.Form):
                 return
 
 
-class AddMachineFormView(FormView):
+class AddMachineFormView(FormView):  # type: ignore
     template_name = "frontend/machines/add.html"
     form_class = AddMachineForm
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super(AddMachineFormView, self).__init__(**kwargs)
         self.__machine_pk = 0
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any):
         context = super(AddMachineFormView, self).get_context_data(**kwargs)
         context["title"] = "Add Machine"
         return context
@@ -101,7 +101,7 @@ class AddMachineFormView(FormView):
                 existing_enclosure = Enclosure.objects.get(name=object_name)
                 existing_enclosure.netbox_id = form.data["netbox_id"]
                 existing_enclosure.save()
-                return super().form_valid(form)
+                return super().form_valid(form)  # type: ignore
             except ObjectDoesNotExist:
                 # Try next objects type
                 pass
@@ -114,7 +114,7 @@ class AddMachineFormView(FormView):
             existing_machine.netbox_id = form.data["netbox_id"]
             existing_machine.save()
             self.__machine_pk = existing_machine.pk
-            return super().form_valid(form)
+            return super().form_valid(form)  # type: ignore
         except ObjectDoesNotExist:
             # Try next object type
             pass
@@ -125,7 +125,7 @@ class AddMachineFormView(FormView):
                 "netbox_id",
                 "Machine or VM doesn't have a CPU Architecture set in NetBox.",
             )
-            return super().form_invalid(form)
+            return super().form_invalid(form)  # type: ignore
         try:
             target_arch = Architecture.objects.get(name=machine_arch)
         except ObjectDoesNotExist:
@@ -133,7 +133,7 @@ class AddMachineFormView(FormView):
                 "netbox_id",
                 "Machine architecture couldn't be found in Orthos 2 or not set in NetBox.",
             )
-            return super().form_invalid(form)
+            return super().form_invalid(form)  # type: ignore
         new_machine = Machine()
         new_machine.fqdn = object_name
         new_machine.architecture = target_arch
@@ -143,11 +143,11 @@ class AddMachineFormView(FormView):
             new_machine.save()
         except ValidationError as e:
             form.add_error("netbox_id", e)
-            return super().form_invalid(form)
+            return super().form_invalid(form)  # type: ignore
         except IntegrityError as e:
             form.add_error("netbox_id", str(e))
-            return super().form_invalid(form)
-        return super().form_valid(form)
+            return super().form_invalid(form)  # type: ignore
+        return super().form_valid(form)  # type: ignore
 
     def get_success_url(self):
         if self.__machine_pk > 0:

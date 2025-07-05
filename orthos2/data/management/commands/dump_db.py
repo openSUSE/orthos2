@@ -6,7 +6,6 @@ from typing import Any, List
 from django.apps import apps
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import models
-from django.db.models import QuerySet
 
 from orthos2.data.models.domain import Domain, DomainAdmin
 from orthos2.data.models.machine import Enclosure, Machine, NetworkInterface
@@ -57,7 +56,7 @@ Modules["domain"] = ("Domain", "Domainadmin")  # type: ignore
 
 # Modules['remote' ] = ( "Remotepower", "Bmc", "Remotepowerdevice", "Serialconsole", "Serialconsoletype" )
 
-added_machines = []
+added_machines: List[str] = []
 domains = [
     "test-100.arch.suse.de",
     "test-10.arch.suse.de",
@@ -71,13 +70,14 @@ domains = [
 def show_help() -> None:
     print("Use --script-args to specify what you want to dump:")
     print("")
-    print("\tgeneral \t-- Dump general DB data [ %s ] " % ", ".join(Modules["general"]))
+    modules = ", ".join(Modules["general"])  # type: ignore
+    print("\tgeneral \t-- Dump general DB data [ %s ] " % modules)
     print("")
     # print("\tremote  \t-- Dump remote management HW DB data [ %s ] " % ", ".join(Modules['remote']))
     # print("")
     print(
         "\t<domain>\t-- Dump data of a specific domain [ %s ] "
-        % ", ".join(Modules["domain"])
+        % ", ".join(Modules["domain"])  # type: ignore
     )
     print()
     print(USAGE)
@@ -200,13 +200,13 @@ class Command(BaseCommand):
         self.general = options["general"]
 
         if self.general:
-            tables = Modules.get("general")
+            tables = Modules.get("general")  # type: ignore
             self.add_arch_relations()
             query = DailyTask.objects.all()
             if query:
                 self.queries.extend(query)
             for table in tables:  # type: ignore
-                print(".. dump table %s" % table)
+                print(".. dump table %s" % table)  # type: ignore
                 model = self.config.get_model(table).objects.all()  # type: ignore
                 self.queries.extend(model)
 

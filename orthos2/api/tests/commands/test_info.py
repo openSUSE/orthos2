@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.urls import reverse
+from django.urls import reverse  # type: ignore
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -11,7 +11,6 @@ class InfoTest(APITestCase):
 
     fixtures = [
         "orthos2/data/fixtures/systems.json",
-        "orthos2/data/fixtures/vendors.json",
         "orthos2/api/fixtures/serializers/machines.json",
     ]
 

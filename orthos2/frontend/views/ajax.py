@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING, Any, Dict, List
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, JsonResponse
@@ -8,20 +9,25 @@ from orthos2.data.models import Annotation, Machine, RemotePower
 from orthos2.frontend.decorators import check_permissions
 from orthos2.frontend.templatetags.tags import vm_record
 
+if TYPE_CHECKING:
+    from orthos2.types import AuthenticatedHttpRequest
+
 logger = logging.getLogger("views")
 
 
 @login_required
-def annotation(request: HttpRequest, machine_id: int) -> JsonResponse:
-    text = request.GET.get("text", None)
+def annotation(request: "AuthenticatedHttpRequest", machine_id: int) -> JsonResponse:
+    text = request.GET.get("text", "")
 
-    target_annotation = Annotation.objects.create(  # type: ignore
-        machine_id=machine_id, reporter=request.user, text=text
+    target_annotation = Annotation.objects.create(
+        machine_id=machine_id,
+        reporter=request.user,
+        text=text,
     )
 
-    data = {
+    data: Dict[str, Any] = {
         "text": urlize(target_annotation.text),
-        "reporter": target_annotation.reporter.username
+        "reporter": target_annotation.reporter.username  # type: ignore
         if target_annotation.reporter
         else "",
         "date": "{:%Y-%m-%d}".format(target_annotation.created),
@@ -103,10 +109,12 @@ def virtualization_delete(request: HttpRequest, host_id: int) -> JsonResponse:
         if host.virtualization_api.remove(vm):
             vm.delete()
 
-        vm_list = []
+        vm_list: List[str] = []
 
-        for vm in host.get_virtual_machines():  # type: ignore
-            vm_list.append(vm_record(request, vm))
+        vms = host.get_virtual_machines()
+        if vms is not None:
+            for vm in vms:
+                vm_list.append(vm_record(request, vm))
 
         return JsonResponse(
             {

@@ -1,25 +1,30 @@
-from typing import Optional
+from typing import Any, Dict, Iterable, List, Optional, TypeVar
 
-from django.db.models import QuerySet
+from django.db import models
 from django.http import JsonResponse
+
+T = TypeVar("T", bound=models.Model)
 
 
 class Serializer:
+    def __init__(self) -> None:
+        self._response: Dict[str, Any] = {}
+
     @property
     def as_json(self) -> JsonResponse:
         return JsonResponse(self.data)
 
     @property
-    def data(self):
+    def data(self) -> Dict[str, Any]:
         return self._response
 
 
 class SelectSerializer(Serializer):
-    def __init__(self, queryset: QuerySet, title: str) -> None:
+    def __init__(self, queryset: "List[T]", title: str) -> None:
         self._response = {"header": {"type": "SELECT", "title": title}, "data": []}
 
         for item in queryset:
-            self._response["data"].append(  # type: ignore
+            self._response["data"].append(
                 {
                     "value": str(item),
                     "url": "/{}/{}".format(item.__class__.__name__.lower(), item.pk),
@@ -56,7 +61,7 @@ class ErrorMessage(MessageSerializer):
 
 
 class RootSerializer(Serializer):
-    def __init__(self, data) -> None:
+    def __init__(self, data: Dict[str, Any]) -> None:
         self._response = {"header": {"type": "ROOT"}, "data": data}
 
 
@@ -66,7 +71,12 @@ class AuthRequiredSerializer(Serializer):
 
 
 class InputSerializer(Serializer):
-    def __init__(self, data, target_url, order) -> None:
+    def __init__(
+        self,
+        data: Dict[str, Any],
+        target_url: str,
+        order: Iterable[str],
+    ) -> None:
         self._response = {
             "header": {"type": "INPUT", "target": target_url, "order": order},
             "data": data,

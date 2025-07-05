@@ -8,7 +8,10 @@ from orthos2.data.models.serverconfig import ServerConfig
 from orthos2.utils.remotepowertype import RemotePowerType, get_remote_power_type_choices
 
 if TYPE_CHECKING:
-    from orthos2.data.models.machine import Machine
+    from orthos2.types import (
+        MandatoryMachineOneToOneField,
+        OptionalRemotePowerDeviceForeignKey,
+    )
 
 
 class RemotePower(models.Model):
@@ -54,15 +57,17 @@ class RemotePower(models.Model):
 
     remotepower_type_choices = get_remote_power_type_choices("hypervisor")
 
-    fence_name = models.CharField(
-        choices=remotepower_type_choices, max_length=255, verbose_name="Fence Agent"
+    fence_name: "models.CharField[str, str]" = models.CharField(
+        choices=remotepower_type_choices,
+        max_length=255,
+        verbose_name="Fence Agent",
     )
 
-    machine = models.OneToOneField["Machine"](  # type: ignore
+    machine: "MandatoryMachineOneToOneField" = models.OneToOneField(
         "data.Machine", on_delete=models.CASCADE, primary_key=True
     )
 
-    remote_power_device = models.ForeignKey(
+    remote_power_device: "OptionalRemotePowerDeviceForeignKey" = models.ForeignKey(
         "data.RemotePowerDevice",
         related_name="+",
         null=True,
@@ -70,11 +75,19 @@ class RemotePower(models.Model):
         on_delete=models.CASCADE,
     )
 
-    port = models.CharField(max_length=255, null=True, blank=True)
+    port: "models.CharField[Optional[str], Optional[str]]" = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+    )
 
-    comment = models.CharField(max_length=200, null=True, blank=True)
+    comment: "models.CharField[Optional[str], Optional[str]]" = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True,
+    )
 
-    options = models.CharField(
+    options: "models.CharField[str, str]" = models.CharField(
         max_length=1024,
         blank=True,
         default="",
@@ -129,7 +142,7 @@ class RemotePower(models.Model):
             raise ValidationError(errors)
 
         # check for `None` explicitly because type 0 results in false
-        if self.fence_name is not None:
+        if self.fence_name is not None:  # type: ignore
             super(RemotePower, self).save(*args, **kwargs)
         else:
             raise ValidationError("No remote power type set!")
@@ -144,8 +157,6 @@ class RemotePower(models.Model):
 
     @property
     def name(self) -> Optional[str]:
-        if self.fence_name is None:
-            return None
         logging.debug("getting fence object for %s", self.fence_name)
         fence = RemotePowerType.from_fence(self.fence_name)
         if fence is None:
@@ -214,9 +225,13 @@ class RemotePower(models.Model):
             password = self.remote_power_device.password  # type: ignore
 
         if not username:
-            username = ServerConfig.objects.by_key("remotepower.default.username")
+            username = ServerConfig.get_server_config_manager().by_key(
+                "remotepower.default.username"
+            )
         if not password:
-            password = ServerConfig.objects.by_key("remotepower.default.password")
+            password = ServerConfig.get_server_config_manager().by_key(
+                "remotepower.default.password"
+            )
 
         if not username:
             raise ValueError("Username not available")

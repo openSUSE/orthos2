@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Any, List, Union
+from typing import Any, Dict, List, Union
 
 from django.contrib.auth.models import AnonymousUser
 from django.http import (
@@ -8,8 +8,8 @@ from django.http import (
     HttpResponseRedirect,
     JsonResponse,
 )
-from django.shortcuts import redirect
-from django.urls import URLPattern, re_path, reverse
+from django.shortcuts import redirect  # type: ignore
+from django.urls import URLPattern, re_path, reverse  # type: ignore
 from rest_framework.request import Request
 
 from orthos2.api.commands.base import BaseAPIView
@@ -142,7 +142,7 @@ class DeleteMachineCommand(BaseAPIView):
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
-        if not request.user.is_superuser:
+        if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
@@ -154,7 +154,7 @@ class DeleteMachineCommand(BaseAPIView):
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
         """Delete machine."""
-        if not request.user.is_superuser:
+        if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
@@ -181,7 +181,7 @@ class DeleteMachineCommand(BaseAPIView):
                     {"count": "#"},
                 ]
 
-                response = {
+                response: Dict[str, Any] = {
                     "header": {"type": "TABLE", "theader": theader},
                     "data": [],
                 }
@@ -217,7 +217,7 @@ class DeleteSerialConsoleCommand(BaseAPIView):
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
-        if not request.user.is_superuser:
+        if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
@@ -229,7 +229,7 @@ class DeleteSerialConsoleCommand(BaseAPIView):
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
         """Delete serial console."""
-        if not request.user.is_superuser:
+        if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
@@ -254,7 +254,7 @@ class DeleteSerialConsoleCommand(BaseAPIView):
                     {"count": "#"},
                 ]
 
-                response = {
+                response: Dict[str, Any] = {
                     "header": {"type": "TABLE", "theader": theader},
                     "data": [],
                 }
@@ -290,7 +290,7 @@ class DeleteRemotePowerCommand(BaseAPIView):
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
-        if not request.user.is_superuser:
+        if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
@@ -302,7 +302,7 @@ class DeleteRemotePowerCommand(BaseAPIView):
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
         """Delete remote power."""
-        if not request.user.is_superuser:
+        if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
@@ -327,7 +327,7 @@ class DeleteRemotePowerCommand(BaseAPIView):
                     {"count": "#"},
                 ]
 
-                response = {
+                response: Dict[str, Any] = {
                     "header": {"type": "TABLE", "theader": theader},
                     "data": [],
                 }
@@ -363,7 +363,7 @@ class DeleteRemotePowerDeviceCommand(BaseAPIView):
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
-        if not request.user.is_superuser:
+        if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
@@ -375,7 +375,7 @@ class DeleteRemotePowerDeviceCommand(BaseAPIView):
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
         """Delete remote power."""
-        if not request.user.is_superuser:
+        if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
@@ -399,7 +399,7 @@ class DeleteRemotePowerDeviceCommand(BaseAPIView):
                     {"count": "#"},
                 ]
 
-                response = {
+                response: Dict[str, Any] = {
                     "header": {"type": "TABLE", "theader": theader},
                     "data": [],
                 }

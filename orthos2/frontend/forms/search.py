@@ -24,43 +24,47 @@ def get_platforms() -> List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]]
     for platform in Platform.objects.all():
         platform_id = platform.id
         name = platform.name
-        vendor = platform.vendor
+        platform_vendor = platform.vendor
 
         if platform.is_cartridge:
             continue
 
-        if vendor.name in groups.keys():
-            groups[vendor.name] += ((platform_id, name),)
+        if platform_vendor.name in groups.keys():
+            groups[platform_vendor.name] += ((platform_id, name),)
         else:
-            groups[vendor.name] = ((platform_id, name),)
-
-    for vendor, platforms_ in groups.items():  # type: ignore
-        platforms.append((vendor, platforms_))  # type: ignore
-    return platforms
-
-
-def get_cartridge_platforms():
-    platforms = [("", "--all--")]
-    groups = {}
-    for platform in Platform.objects.all():
-        id = platform.id
-        name = platform.name
-        vendor = platform.vendor
-
-        if not platform.is_cartridge:
-            continue
-
-        if vendor.name in groups.keys():
-            groups[vendor.name] += ((id, name),)
-        else:
-            groups[vendor.name] = ((id, name),)
+            groups[platform_vendor.name] = ((platform_id, name),)
 
     for vendor, platforms_ in groups.items():
         platforms.append((vendor, platforms_))
     return platforms
 
 
-def get_distributions():
+def get_cartridge_platforms() -> List[
+    Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]
+]:
+    platforms: List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]] = [
+        ("", "--all--")
+    ]
+    groups: Dict[str, Tuple[Tuple[int, str], ...]] = {}
+    for platform in Platform.objects.all():
+        id = platform.id
+        name = platform.name
+        platform_vendor = platform.vendor
+
+        if not platform.is_cartridge:
+            continue
+
+        if platform_vendor.name in groups.keys():
+            groups[platform_vendor.name] += ((id, name),)
+        else:
+            groups[platform_vendor.name] = ((id, name),)
+
+    for vendor, platforms_ in groups.items():
+        platforms.append((vendor, platforms_))
+    return platforms
+
+
+def get_distributions() -> List[Tuple[str, str]]:
     installations = [("", "--all--")]
     for installation in Installation.objects.all().values("distribution").distinct():
         installations.append(
@@ -69,14 +73,14 @@ def get_distributions():
     return installations
 
 
-def get_systems():
+def get_systems() -> List[Tuple[str, str]]:
     """Return system choices."""
-    return Machine._meta.get_field("system").get_choices(blank_choice=[("", "--all--")])
+    return Machine._meta.get_field("system").get_choices(blank_choice=[("", "--all--")])  # type: ignore
 
 
-def get_architectures():
+def get_architectures() -> List[Tuple[str, str]]:
     """Return architecture choices."""
-    return Machine._meta.get_field("architecture").get_choices(
+    return Machine._meta.get_field("architecture").get_choices(  # type: ignore
         blank_choice=[("", "--all--")]
     )
 
@@ -274,7 +278,7 @@ class SearchForm(forms.Form):
 
     status_ipv4 = forms.ChoiceField(
         required=False,
-        choices=Machine._meta.get_field("status_ipv4").get_choices(
+        choices=Machine._meta.get_field("status_ipv4").get_choices(  # type: ignore
             blank_choice=[("", "Not relevant")]
         ),
         widget=forms.Select(attrs={"class": "custom-select form-control"}),
@@ -282,7 +286,7 @@ class SearchForm(forms.Form):
 
     status_ipv6 = forms.ChoiceField(
         required=False,
-        choices=Machine._meta.get_field("status_ipv6").get_choices(
+        choices=Machine._meta.get_field("status_ipv6").get_choices(  # type: ignore
             blank_choice=[("", "Not relevant")]
         ),
         widget=forms.Select(attrs={"class": "custom-select form-control"}),
