@@ -2,7 +2,7 @@
 # pip install -r requirements.txt
 #
 
-django~=4.2.9
+django~=4.2.11
 django-extensions
 paramiko
 djangorestframework
