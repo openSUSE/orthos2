@@ -2,7 +2,7 @@ import linecache
 import sys
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from django.shortcuts import redirect
+from django.shortcuts import redirect  # type: ignore
 from django.urls import URLPattern
 from rest_framework.views import APIView
 
@@ -57,7 +57,7 @@ def get_machine(
     if len(machines) == 1:
         machine = machines[0]
     elif machines:
-        selection = SelectSerializer(machines, "Please specify:")  # type: ignore
+        selection = SelectSerializer(machines, "Please specify:")
         return selection  # type: ignore
     else:
         raise Exception("Machine '{}' does not exist!".format(fqdn))
@@ -66,10 +66,10 @@ def get_machine(
         response = redirect(redirect_to)
 
         if data:
-            if redirect_key_replace is not None:
+            if redirect_key_replace is not None:  # type: ignore
                 data = data.copy()
-                data.__setitem__(redirect_key_replace, machine.fqdn)
-            response["Location"] += "?{}".format(data.urlencode())
+                data.__setitem__(redirect_key_replace, machine.fqdn)  # type: ignore
+            response["Location"] += "?{}".format(data.urlencode())  # type: ignore
 
         return response  # type: ignore
 

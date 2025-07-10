@@ -5,14 +5,21 @@ from django.contrib.auth.models import User
 from django.db import models
 
 if TYPE_CHECKING:
-    from orthos2.data.models.machine import Machine
+    from orthos2.types import (
+        MandatoryDateTimeField,
+        MandatoryMachineForeignKey,
+        OptionalUserForeignKey,
+    )
 
 
 class Annotation(models.Model):
-    class Meta:
+    class Meta:  # type: ignore
         ordering = ["-created"]
 
-    machine = models.ForeignKey["Machine"](  # type: ignore
+    # Annotate to allow type checking of autofield
+    id: int
+
+    machine: "MandatoryMachineForeignKey" = models.ForeignKey(
         "data.Machine",
         related_name="annotations",
         editable=False,
@@ -20,16 +27,19 @@ class Annotation(models.Model):
         on_delete=models.CASCADE,
     )
 
-    text = models.CharField(max_length=1024, blank=False)
+    text: "models.CharField[str, str]" = models.CharField(max_length=1024, blank=False)
 
-    reporter = models.ForeignKey(
+    reporter: "OptionalUserForeignKey" = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=False, editable=False
     )
 
-    created = models.DateTimeField("Created at", auto_now_add=True)
+    created: "MandatoryDateTimeField" = models.DateTimeField(
+        "Created at",
+        auto_now_add=True,
+    )
 
     def natural_key(self) -> Tuple[str, datetime.date]:
-        return self.machine.fqdn, self.created  # type: ignore
+        return self.machine.fqdn, self.created
 
     def __str__(self) -> str:
-        return self.machine.fqdn  # type: ignore
+        return self.machine.fqdn

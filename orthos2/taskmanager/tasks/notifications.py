@@ -34,10 +34,10 @@ Your Orthos password has been restored.
 
 Regards,
 Orthos""".format(
-                username=user.username, password=self.new_password
+                username=user.username, password=self.new_password  # type: ignore
             )
 
-            send_email(user.email, subject, message)
+            send_email(user.email, subject, message)  # type: ignore
 
         except User.DoesNotExist:
             logger.error("User not found: id=%s", self.user_id)
@@ -66,7 +66,7 @@ The machine {fqdn} was just reserved for you.
 To login, just SSH to {fqdn} or {ip}.
 
 If you have any problems, contact <{support_contact}>.""".format(
-                username=user.username,
+                username=user.username,  # type: ignore
                 fqdn=machine.fqdn,
                 ip=machine.ip_address_v4,
                 support_contact=machine.get_support_contact(),
@@ -107,7 +107,7 @@ Orthos""".format(
                 reserved_until=machine.reserved_until
             )
 
-            send_email(user.email, subject, message)
+            send_email(user.email, subject, message)  # type: ignore
 
         except User.DoesNotExist:
             logger.error("User not found: id=%s", self.user_id)
@@ -143,7 +143,7 @@ class CheckReservationExpiration(Task):
 
             if delta.days > 5 or delta.days in {4, 3}:
                 logger.debug(
-                    "%sd left for %s@%s", delta.days, user.username, machine.fqdn
+                    "%sd left for %s@%s", delta.days, user.username, machine.fqdn  # type: ignore
                 )
                 return
 
@@ -181,14 +181,14 @@ If you have any problems, contact <{support_contact}>.
 
 Regards,
 Orthos""".format(
-                username=user.username,
+                username=user.username,  # type: ignore
                 fqdn=machine.fqdn,
                 reserved_until=machine.reserved_until,
                 url=settings.BASE_URL + "/machine/" + str(machine.pk),
                 support_contact=machine.get_support_contact(),
             )
 
-            send_email(user.email, subject, message)
+            send_email(user.email, subject, message)  # type: ignore
 
         except User.DoesNotExist:
             logger.error("User not found: id=%s", self.user_id)  # type: ignore
@@ -215,7 +215,7 @@ class CheckMultipleAccounts(Task):
         try:
             user = User.objects.get(pk=self.user_id)
 
-            prefix = user.email.split("@")[0] + "@"
+            prefix = user.email.split("@")[0] + "@"  # type: ignore
             usernames = list(
                 User.objects.filter(email__startswith=prefix).values(
                     "username", "email"
@@ -240,7 +240,7 @@ This information is needed in order to make Orthos great again!
 
 Regards,
 Orthos""".format(
-                username=user.username,
+                username=user.username,  # type: ignore
                 usernames="\n".join(
                     [
                         "  {} ({})".format(user_["username"], user_["email"])
@@ -250,7 +250,7 @@ Orthos""".format(
                 contact=settings.CONTACT,
             )
 
-            send_email(user.email, subject, message)
+            send_email(user.email, subject, message)  # type: ignore
 
         except User.DoesNotExist:
             logger.error("User not found: id={}", self.user_id)

@@ -2,7 +2,7 @@ from typing import Any, Optional
 
 from django import template
 from django.http import HttpRequest
-from django.urls import resolve, reverse
+from django.urls import resolve, reverse  # type: ignore
 from django.utils.safestring import SafeString, mark_safe
 
 from orthos2.data.models import Machine, ServerConfig
@@ -56,7 +56,7 @@ def disabled(request: HttpRequest, name: str) -> Optional[str]:
 @register.simple_tag
 def get_bugreport_url() -> str:
     """Return bugreport URL for templates."""
-    url = ServerConfig.objects.by_key("orthos.bugreport.url")
+    url = ServerConfig.get_server_config_manager().by_key("orthos.bugreport.url")
     if not url:
         url = "#"
     return url
@@ -65,7 +65,7 @@ def get_bugreport_url() -> str:
 @register.simple_tag
 def get_documentation_url() -> str:
     """Return documentation URL for templates."""
-    url = ServerConfig.objects.by_key("orthos.documentation.url")
+    url = ServerConfig.get_server_config_manager().by_key("orthos.documentation.url")
     if not url:
         url = "#"
     return url
@@ -74,7 +74,7 @@ def get_documentation_url() -> str:
 @register.simple_tag
 def get_enhancement_url() -> str:
     """Return enhancement URL for emplates."""
-    url = ServerConfig.objects.by_key("orthos.enhancement.url")
+    url = ServerConfig.get_server_config_manager().by_key("orthos.enhancement.url")
     if not url:
         url = "#"
     return url
@@ -101,7 +101,7 @@ def get_current_machinegroup_filter(request: HttpRequest) -> str:
 @register.simple_tag
 def get_cli_url() -> str:
     """Return the URL to the Orthos command line client (CLI)."""
-    url = ServerConfig.objects.by_key("orthos.cli.url")
+    url = ServerConfig.get_server_config_manager().by_key("orthos.cli.url")
     if not url:
         url = "#"
     return url
@@ -208,7 +208,7 @@ def order_list(request: HttpRequest, field: str) -> SafeString:
 @register.simple_tag
 def vm_record(request: HttpRequest, vm: Machine) -> SafeString:
     """Return HTML table row for a single virtual machine."""
-    if request.user.is_superuser or (
+    if request.user.is_superuser or (  # type: ignore
         request.user == vm.reserved_by
         and vm.hypervisor
         and vm.hypervisor.vm_auto_delete

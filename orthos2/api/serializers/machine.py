@@ -1,5 +1,5 @@
 import datetime
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, List
 
 from django.utils import timezone
 from rest_framework import serializers
@@ -21,9 +21,9 @@ class NetworkInterfaceListingField(NetworkInterfaceSerializer):
     def to_representation(
         self, instance: "NetworkInterface"
     ) -> Dict[str, Dict[str, Any]]:
-        result = {}
+        result: Dict[str, Dict[str, Any]] = {}
 
-        for name, field in self.fields.items():
+        for name, field in self.fields.items():  # type: ignore
             value = getattr(instance, name)
             result[name] = {"label": field.label, "value": value}
 
@@ -32,9 +32,9 @@ class NetworkInterfaceListingField(NetworkInterfaceSerializer):
 
 class InstallationListingField(InstallationSerializer):
     def to_representation(self, instance: "Installation") -> Dict[str, Dict[str, Any]]:
-        result = {}
+        result: Dict[str, Dict[str, Any]] = {}
 
-        for name, field in self.fields.items():
+        for name, field in self.fields.items():  # type: ignore
             value = getattr(instance, name)
             result[name] = {"label": field.label, "value": value}
 
@@ -43,9 +43,9 @@ class InstallationListingField(InstallationSerializer):
 
 class AnnotationListingField(AnnotationSerializer):
     def to_representation(self, instance: "Annotation") -> Dict[str, Dict[str, Any]]:
-        result = {}
+        result: Dict[str, Dict[str, Any]] = {}
 
-        for name, field in self.fields.items():
+        for name, field in self.fields.items():  # type: ignore
             value = getattr(instance, str(name))
             if name == "reporter":
                 if value:
@@ -59,9 +59,9 @@ class AnnotationListingField(AnnotationSerializer):
 
 class BMCListingField(BMCSerializer):
     def to_representation(self, instance: "BMC") -> Dict[str, Dict[str, Any]]:
-        result = {}
+        result: Dict[str, Dict[str, Any]] = {}
 
-        for name, field in self.fields.items():
+        for name, field in self.fields.items():  # type: ignore
             value = getattr(instance, str(name))
             result[name] = {"label": field.label, "value": value}
         return result
@@ -201,17 +201,17 @@ class MachineSerializer(serializers.ModelSerializer[Machine]):
     def __init__(self, machine: Machine, *args: Any, **kwargs: Any) -> None:
         super(MachineSerializer, self).__init__(machine, *args, **kwargs)
         if not hasattr(machine, "group") or not machine.group:
-            self.fields.pop("group")
+            self.fields.pop("group")  # type: ignore
 
     @property
     def data_info(self) -> Dict[str, Dict[str, str]]:
-        result = {}
+        result: Dict[str, Dict[str, str]] = {}
 
         # copy dictionary for further manipulation
-        data = self.data
+        data = self.data  # type: ignore
 
         # add keys to exclude list which shouldn't be displayed if value is empty...
-        exclude = []
+        exclude: List[str] = []
         for key in self.fields.keys():
             if key.startswith("serial_") or key.startswith("power_"):
                 exclude.append(key)
@@ -219,7 +219,7 @@ class MachineSerializer(serializers.ModelSerializer[Machine]):
         exclude.remove("serial_type")
         exclude.remove("power_type")
 
-        for name, field in self.fields.items():
+        for name, field in self.fields.items():  # type: ignore
             if name == "ip_address_v4":
                 field.label = "IPv4"
             if name == "ip_address_v6":
@@ -235,7 +235,7 @@ class MachineSerializer(serializers.ModelSerializer[Machine]):
             if (name in exclude) and (data[name] is None):
                 continue
 
-            result[name] = {"label": field.label, "value": data[name]}
+            result[name] = {"label": field.label, "value": data[name]}  # type: ignore
 
         return result
 
@@ -247,7 +247,7 @@ class MachineSerializer(serializers.ModelSerializer[Machine]):
         :returns: The string representation of the enum value.
         """
         # get_FOO_display() is a magic method of choice model fields.
-        return obj.get_status_ipv4_display()
+        return obj.get_status_ipv4_display()  # type: ignore
 
     def get_status_ipv6(self, obj: "Machine") -> str:
         """
@@ -257,4 +257,4 @@ class MachineSerializer(serializers.ModelSerializer[Machine]):
         :returns: The string representation of the enum value.
         """
         # get_FOO_display() is a magic method of choice model fields.
-        return obj.get_status_ipv6_display()
+        return obj.get_status_ipv6_display()  # type: ignore

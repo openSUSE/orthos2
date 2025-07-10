@@ -201,39 +201,39 @@ class Netbox(REST):
         url = self.base_url + "/dcim/sites/?slug=" + site
         logger.debug(f"Checking site from {url}")
         data = self.fetcher(url)
-        return data["results"]
+        return data["results"]  # type: ignore
 
-    def check_location(self, loc: str):
+    def check_location(self, loc: str) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/dcim/locations/?slug={loc}"
         logger.debug(f"Checking location from {url}")
         data = self.fetcher(url)
-        return data["results"]
+        return data["results"]  # type: ignore
 
-    def check_rack(self, loc: str, rack: str):
+    def check_rack(self, loc: str, rack: str) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/dcim/racks/?name={rack}&location={loc}"
         logger.debug(f"Checking rack from {url}")
         data = self.fetcher(url)
-        return data["results"]
+        return data["results"]  # type: ignore
 
-    def check_ip(self, addr: str):
+    def check_ip(self, addr: str) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/ipam/ip-addresses/?address={addr}"
         logger.debug("Checking ip address from %s", url)
         data = self.fetcher(url)
-        return data["results"]
+        return data["results"]  # type: ignore
 
-    def check_ip_prefix(self, addr: str):
+    def check_ip_prefix(self, addr: str) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/ipam/prefixes/?contains={addr}"
         logger.debug("Checking ip address from %s", url)
         data = self.fetcher(url)
-        return data["results"]
+        return data["results"]  # type: ignore
 
-    def check_prefix(self, prefix: str):
+    def check_prefix(self, prefix: str) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/ipam/prefixes/?prefix={prefix}"
         logger.debug("Checking ip address from %s", url)
         data = self.fetcher(url)
-        return data["results"]
+        return data["results"]  # type: ignore
 
-    def check_ip_by_name(self, fqdn: str):
+    def check_ip_by_name(self, fqdn: str) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/ipam/ip-addresses/?q={fqdn}"
         logger.debug("Checking ip address from %s", url)
         data = self.fetcher(url)
@@ -244,9 +244,9 @@ class Netbox(REST):
             for d in data["results"]:
                 results.append(d)
             url = data["next"]
-        return results
+        return results  # type: ignore
 
-    def check_ip_by_id(self, id: int):
+    def check_ip_by_id(self, id: int) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/ipam/ip-addresses/?device_id={id}"
         logger.debug("Checking ip address from %s", url)
         data = self.fetcher(url)
@@ -254,33 +254,37 @@ class Netbox(REST):
             url = f"{self.base_url}/ipam/ip-addresses/?virtual_machine_id={id}"
             logger.debug("Checking ip address from %s", url)
             data = self.fetcher(url)
-        return data["results"]
+        return data["results"]  # type: ignore
 
-    def check_ip_by_interface(self, id: int):
+    def check_ip_by_interface(self, id: int) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/ipam/ip-addresses/?interface_id={id}"
         logger.debug("Checking ip address from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
-    def check_ip_by_interface_family(self, id: int, family: Literal[4, 6]):
+    def check_ip_by_interface_family(
+        self,
+        id: int,
+        family: Literal[4, 6],
+    ) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/ipam/ip-addresses/?interface_id={id}&family={family}"
         logger.debug("Checking ip address from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
-    def check_vlan(self, vid: int):
+    def check_vlan(self, vid: int) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/ipam/vlans/?vid={vid}"
         logger.debug("Checking vlans from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
-    def check_vlan_group(self, name: str):
+    def check_vlan_group(self, name: str) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/ipam/vlan-groups/?name={name}"
         logger.debug("Checking vlans from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
-    def check_mac_address(self, mac: str):
+    def check_mac_address(self, mac: str) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/dcim/interfaces/?mac_address={mac}"
         logger.debug("Checking MAC address from %s", url)
         data = self.fetcher(url)
@@ -291,32 +295,32 @@ class Netbox(REST):
             results.append(d)
         return results
 
-    def check_vm_mac_address(self, mac: str):
+    def check_vm_mac_address(self, mac: str) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/virtualization/interfaces/?mac_address={mac}"
         logger.debug("Checking MAC address from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
-    def check_interface(self, id: int, ifname: str):
+    def check_interface(self, id: int, ifname: str) -> List[Dict[str, Any]]:
         safe_ifname: str = urllib.parse.quote_plus(ifname)  # type: ignore
         url = f"{self.base_url}/dcim/interfaces/?device_id={id}&name={safe_ifname}"
         logger.debug("Checking MAC address from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
-    def check_interface_by_id(self, id: int):
+    def check_interface_by_id(self, id: int) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/dcim/interfaces/?device_id={id}"
         return self.__check_interface(url)
 
-    def check_interface_no_mgmt_by_id(self, id: int):
+    def check_interface_no_mgmt_by_id(self, id: int) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/dcim/interfaces/?device_id={id}&mgmt_only=false"
         return self.__check_interface(url)
 
-    def check_interface_mgmt_by_id(self, id: int):
+    def check_interface_mgmt_by_id(self, id: int) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/dcim/interfaces/?device_id={id}&mgmt_only=true"
         return self.__check_interface(url)
 
-    def __check_interface(self, url: str):
+    def __check_interface(self, url: str) -> List[Dict[str, Any]]:
         logger.debug("Checking MAC address from %s", url)
         data = self.fetcher(url)
         results = data["results"]
@@ -328,54 +332,54 @@ class Netbox(REST):
             url = data["next"]
         return results
 
-    def check_vm_interface(self, id: int, ifname: str):
+    def check_vm_interface(self, id: int, ifname: str) -> List[Dict[str, Any]]:
         safe_ifname: str = urllib.parse.quote_plus(ifname)  # type: ignore
         url = f"{self.base_url}/virtualization/interfaces/?virtual_machine_id={id}&name={safe_ifname}"
         logger.debug("Checking MAC address from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
-    def check_vm_interface_by_id(self, id: int):
+    def check_vm_interface_by_id(self, id: int) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/virtualization/interfaces/?virtual_machine_id={id}"
         logger.debug("Checking MAC address from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
-    def check_power_port(self, id: int, ifname: str):
+    def check_power_port(self, id: int, ifname: str) -> List[Dict[str, Any]]:
         safe_ifname: str = urllib.parse.quote_plus(ifname)  # type: ignore
         url = f"{self.base_url}/dcim/power-ports/?device_id={id}&name={safe_ifname}"
         logger.debug("Checking power port from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
-    def check_power_outlet(self, id: int, ifname: str):
+    def check_power_outlet(self, id: int, ifname: str) -> List[Dict[str, Any]]:
         safe_ifname: str = urllib.parse.quote_plus(ifname)  # type: ignore
         url = f"{self.base_url}/dcim/power-outlets/?device_id={id}&name={safe_ifname}"
         logger.debug("Checking power outlet from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
-    def check_console_port(self, id: int, ifname: str):
+    def check_console_port(self, id: int, ifname: str) -> List[Dict[str, Any]]:
         safe_ifname: str = urllib.parse.quote_plus(ifname)  # type: ignore
         url = f"{self.base_url}/dcim/console-ports/?device_id={id}&name={safe_ifname}"
         logger.debug("Checking console port from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
-    def check_console_server_port(self, id: int, ifname: str):
+    def check_console_server_port(self, id: int, ifname: str) -> List[Dict[str, Any]]:
         safe_ifname: str = urllib.parse.quote_plus(ifname)  # type: ignore
         url = f"{self.base_url}/dcim/console-server-ports/?device_id={id}&name={safe_ifname}"
         logger.debug("Checking console server port from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
-    def check_orthos_user(self, obj: int):
+    def check_orthos_user(self, obj: int) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/tenancy/contact-assignments/?object_id={obj}&role=orthos-user"
         logger.debug("Checking device from %s", url)
         data = self.fetcher(url)
         return data["results"]
 
-    def check_tenancy_user(self, user: str):
+    def check_tenancy_user(self, user: str) -> Optional[List[Dict[str, Any]]]:
         safe_user: str = urllib.parse.quote_plus(user)  # type: ignore
         url = f"{self.base_url}/tenancy/contacts/?email={safe_user}"
         logger.debug("Checking tenancy user from %s", url)

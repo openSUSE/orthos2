@@ -1,28 +1,47 @@
 from copy import deepcopy
-from typing import Any, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Optional, Tuple
 
 from django.contrib.auth.models import User
 from django.db import models
 
+if TYPE_CHECKING:
+    from orthos2.types import (
+        MandatoryMachineGroupForeignKey,
+        MandatoryUserForeignKey,
+        OptionalMachineForeignKey,
+    )
+
 
 class MachineGroup(models.Model):
-    class Meta:
+    class Meta:  # type: ignore
         ordering = ["-name"]
         verbose_name = "Machine Group"
 
-    name = models.CharField(max_length=100, blank=False, unique=True)
+    # Annotate to allow type checking of autofield
+    id: int
 
-    members = models.ManyToManyField(User, through="MachineGroupMembership")  # type: ignore
-
-    comment = models.CharField(max_length=512, blank=True)
-
-    contact_email = models.EmailField(blank=True)
-
-    dhcp_filename = models.CharField(
-        "DHCP filename", max_length=64, null=True, blank=True
+    name: "models.CharField[str, str]" = models.CharField(
+        max_length=100,
+        blank=False,
+        unique=True,
     )
 
-    tftp_server = models.ForeignKey(
+    members: "models.ManyToManyField[User, MachineGroupMembership]" = (
+        models.ManyToManyField(User, through="MachineGroupMembership")
+    )
+
+    comment: "models.CharField[str, str]" = models.CharField(max_length=512, blank=True)
+
+    contact_email: "models.EmailField[str, str]" = models.EmailField(blank=True)
+
+    dhcp_filename: "models.CharField[Optional[str], Optional[str]]" = models.CharField(
+        "DHCP filename",
+        max_length=64,
+        null=True,
+        blank=True,
+    )
+
+    tftp_server: "OptionalMachineForeignKey" = models.ForeignKey(
         "data.Machine",
         related_name="tftp_server_for_group",
         verbose_name="TFTP server",
@@ -32,8 +51,9 @@ class MachineGroup(models.Model):
         limit_choices_to={"administrative": True},
     )
 
-    setup_use_architecture = models.BooleanField(
-        "Use machines architecture for setup", default=False
+    setup_use_architecture: "models.BooleanField[bool, bool]" = models.BooleanField(
+        "Use machines architecture for setup",
+        default=False,
     )
 
     def natural_key(self) -> Tuple[str]:
@@ -61,7 +81,7 @@ class MachineGroup(models.Model):
                 from orthos2.data.signals import signal_cobbler_sync_dhcp
 
                 # FIXME: domain_id cannot be None
-                signal_cobbler_sync_dhcp.send(sender=self.__class__, domain_id=None)
+                signal_cobbler_sync_dhcp.send(sender=self.__class__, domain_id=None)  # type: ignore
 
     def clean(self) -> None:
         """
@@ -86,11 +106,21 @@ class MachineGroup(models.Model):
 
 
 class MachineGroupMembership(models.Model):
-    user = models.ForeignKey(User, related_name="memberships", on_delete=models.CASCADE)
+    user: "MandatoryUserForeignKey" = models.ForeignKey(
+        User,
+        related_name="memberships",
+        on_delete=models.CASCADE,
+    )
 
-    group = models.ForeignKey(MachineGroup, on_delete=models.CASCADE)
+    group: "MandatoryMachineGroupForeignKey" = models.ForeignKey(
+        MachineGroup,
+        on_delete=models.CASCADE,
+    )
 
-    is_privileged = models.BooleanField(default=False, null=False)
+    is_privileged: "models.BooleanField[bool, bool]" = models.BooleanField(
+        default=False,
+        null=False,
+    )
 
     def __str__(self) -> str:
         return "{} | {}".format(self.user, self.group)

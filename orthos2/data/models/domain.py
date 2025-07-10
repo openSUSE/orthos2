@@ -15,12 +15,19 @@ from orthos2.utils.misc import has_valid_domain_ending
 
 if TYPE_CHECKING:
     from orthos2.data.models.machine import Machine
+    from orthos2.types import (
+        MandatoryArchitectureForeignKey,
+        MandatoryDomainForeignKey,
+        OptionalMachineForeignKey,
+    )
 
 logger = logging.getLogger("models")
 
 
 def validate_domain_ending(value: str) -> None:
-    valid_domain_endings = ServerConfig.objects.get_valid_domain_endings()
+    valid_domain_endings = (
+        ServerConfig.get_server_config_manager().get_valid_domain_endings()
+    )
     if valid_domain_endings is None:
         raise ValidationError(
             "Valid domain endings could not be retrieved from settings."
@@ -39,11 +46,14 @@ class Domain(models.Model):
         def get_by_natural_key(self, name: str) -> Optional["Domain"]:
             return self.get(name=name)
 
-    name = models.CharField(
+    name: "models.CharField[str, str]" = models.CharField(
         max_length=200, blank=False, unique=True, validators=[validate_domain_ending]
     )
 
-    cobbler_server = models.ForeignKey(
+    # Annotate to allow type checking of autofield
+    id: int
+
+    cobbler_server: "OptionalMachineForeignKey" = models.ForeignKey(
         "data.Machine",
         related_name="cobbler_server_for",
         verbose_name="Cobbler server",
@@ -53,21 +63,21 @@ class Domain(models.Model):
         limit_choices_to={"administrative": True},
     )
 
-    cobbler_server_username = models.CharField(
+    cobbler_server_username: "models.CharField[str, str]" = models.CharField(
         default="cobbler",
         help_text="The username to login to Cobbler via XML-RPC.",
         verbose_name="Cobbler server username",
         max_length=255,
     )
 
-    cobbler_server_password = models.CharField(
+    cobbler_server_password: "models.CharField[str, str]" = models.CharField(
         default="cobbler",
         help_text="The password to login to Cobbler via XML-RPC.",
         verbose_name="Cobbler server password",
         max_length=255,
     )
 
-    tftp_server = models.ForeignKey(
+    tftp_server: "OptionalMachineForeignKey" = models.ForeignKey(
         "data.Machine",
         related_name="tftp_server_for_domain",
         verbose_name="TFTP server",
@@ -77,7 +87,7 @@ class Domain(models.Model):
         limit_choices_to={"administrative": True},
     )
 
-    cscreen_server = models.ForeignKey(
+    cscreen_server: "OptionalMachineForeignKey" = models.ForeignKey(
         "data.Machine",
         verbose_name="CScreen server",
         related_name="cscreen_server_for",
@@ -87,63 +97,83 @@ class Domain(models.Model):
         limit_choices_to={"administrative": True},
     )
 
-    supported_architectures = models.ManyToManyField(  # type: ignore
-        "data.Architecture",
-        related_name="supported_domains",
-        verbose_name="Supported architectures",
-        through="DomainAdmin",
-        blank=False,
+    supported_architectures: "models.ManyToManyField[Architecture, DomainAdmin]" = (
+        models.ManyToManyField(
+            "data.Architecture",
+            related_name="supported_domains",
+            verbose_name="Supported architectures",
+            through="DomainAdmin",
+            blank=False,
+        )
     )
 
-    ip_v4 = models.GenericIPAddressField(
+    ip_v4: "models.GenericIPAddressField[str, str]" = models.GenericIPAddressField(
         verbose_name=_("IPv4 address"),
         protocol="IPv4",
         help_text=_("The IPv4 address of the network."),
     )
 
-    ip_v6 = models.GenericIPAddressField(
+    ip_v6: "models.GenericIPAddressField[str, str]" = models.GenericIPAddressField(
         verbose_name=_("IPv6 address"),
         protocol="IPv6",
         help_text=_("The IPv6 address of the network."),
     )
 
-    subnet_mask_v4 = models.PositiveIntegerField(
-        verbose_name=_("IPv4 subnet mask"),
-        default=24,
-        validators=[validators.MinValueValidator(1), validators.MaxValueValidator(31)],
-        help_text=_("The IPv4 subnet mask of the network."),
+    subnet_mask_v4: "models.PositiveIntegerField[int, int]" = (
+        models.PositiveIntegerField(
+            verbose_name=_("IPv4 subnet mask"),
+            default=24,
+            validators=[
+                validators.MinValueValidator(1),
+                validators.MaxValueValidator(31),
+            ],
+            help_text=_("The IPv4 subnet mask of the network."),
+        )
     )
 
-    subnet_mask_v6 = models.PositiveIntegerField(
-        verbose_name=_("IPv6 subnet mask"),
-        default=64,
-        validators=[validators.MinValueValidator(1), validators.MaxValueValidator(127)],
-        help_text=_("The IPv6 subnet mask of the network."),
+    subnet_mask_v6: "models.PositiveIntegerField[int, int]" = (
+        models.PositiveIntegerField(
+            verbose_name=_("IPv6 subnet mask"),
+            default=64,
+            validators=[
+                validators.MinValueValidator(1),
+                validators.MaxValueValidator(127),
+            ],
+            help_text=_("The IPv6 subnet mask of the network."),
+        )
     )
 
-    enable_v4 = models.BooleanField(
+    enable_v4: "models.BooleanField[bool, bool]" = models.BooleanField(
         verbose_name=_("Enable IPv4 addresses"),
         default=True,
         help_text=_("If IPv4 addresses should be enabled for the network."),
     )
-    enable_v6 = models.BooleanField(
+    enable_v6: "models.BooleanField[bool, bool]" = models.BooleanField(
         verbose_name=_("Enable IPv6 addresses"),
         default=True,
         help_text=_("If IPv6 addresses should be enabled for the network."),
     )
 
-    dynamic_range_v4_start = models.GenericIPAddressField(
-        protocol="IPv4", help_text=_("The start of the range.")
+    dynamic_range_v4_start: "models.GenericIPAddressField[str, str]" = (
+        models.GenericIPAddressField(
+            protocol="IPv4", help_text=_("The start of the range.")
+        )
     )
-    dynamic_range_v4_end = models.GenericIPAddressField(
-        protocol="IPv4", help_text=_("The end of the range.")
+    dynamic_range_v4_end: "models.GenericIPAddressField[str, str]" = (
+        models.GenericIPAddressField(
+            protocol="IPv4", help_text=_("The end of the range.")
+        )
     )
 
-    dynamic_range_v6_start = models.GenericIPAddressField(
-        protocol="IPv6", help_text=_("The start of the range.")
+    dynamic_range_v6_start: "models.GenericIPAddressField[str, str]" = (
+        models.GenericIPAddressField(
+            protocol="IPv6", help_text=_("The start of the range.")
+        )
     )
-    dynamic_range_v6_end = models.GenericIPAddressField(
-        protocol="IPv6", help_text=_("The end of the range.")
+    dynamic_range_v6_end: "models.GenericIPAddressField[str, str]" = (
+        models.GenericIPAddressField(
+            protocol="IPv6", help_text=_("The end of the range.")
+        )
     )
 
     machine_set: models.Manager["Machine"]
@@ -252,10 +282,18 @@ class Domain(models.Model):
 
 class DomainAdmin(models.Model):
 
-    domain = models.ForeignKey(Domain, on_delete=models.CASCADE, blank=False)
-    arch = models.ForeignKey(Architecture, on_delete=models.CASCADE, blank=False)
+    domain: "MandatoryDomainForeignKey" = models.ForeignKey(
+        Domain,
+        on_delete=models.CASCADE,
+        blank=False,
+    )
+    arch: "MandatoryArchitectureForeignKey" = models.ForeignKey(
+        Architecture,
+        on_delete=models.CASCADE,
+        blank=False,
+    )
 
-    contact_email = models.EmailField(blank=False)
+    contact_email: "models.EmailField[str, str]" = models.EmailField(blank=False)
 
     def natural_key(self) -> Tuple[str, str]:
         return self.domain.name, self.arch.name

@@ -18,7 +18,7 @@ class SetupMachine(Task):
 
     def execute(self) -> None:
         """Execute the task."""
-        if not ServerConfig.objects.bool_by_key(
+        if not ServerConfig.get_server_config_manager().bool_by_key(
             "orthos.debug.setup.execute", fallback=True
         ):
             logger.warning("Disabled: set 'orthos.debug.setup.execute' to 'true'")

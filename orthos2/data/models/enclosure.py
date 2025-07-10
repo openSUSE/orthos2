@@ -10,14 +10,19 @@ from orthos2.utils.netbox import Netbox
 
 if TYPE_CHECKING:
     from orthos2.data.models.machine import Machine
+    from orthos2.types import OptionalPlatformForeignKey
 
 logger = logging.getLogger("models")
 
 
 class Enclosure(models.Model):
-    name = models.CharField(max_length=200, blank=False, unique=True)
+    name: "models.CharField[str, str]" = models.CharField(
+        max_length=200,
+        blank=False,
+        unique=True,
+    )
 
-    platform = models.ForeignKey(
+    platform: "OptionalPlatformForeignKey" = models.ForeignKey(
         Platform,
         null=True,
         blank=True,
@@ -25,23 +30,38 @@ class Enclosure(models.Model):
         limit_choices_to={"is_cartridge": False},
     )
 
-    description = models.CharField(max_length=512, blank=True)
+    description: "models.CharField[str, str]" = models.CharField(
+        max_length=512,
+        blank=True,
+    )
 
     machine_set: models.Manager["Machine"]
 
-    netbox_id = models.PositiveIntegerField(
+    netbox_id: "models.PositiveIntegerField[int, int]" = models.PositiveIntegerField(
         verbose_name="NetBox ID",
         help_text="The ID that NetBox gives to the object.",
         default=0,
     )
 
-    location_site = models.CharField(max_length=512, default="unknown")
+    location_site: "models.CharField[str, str]" = models.CharField(
+        max_length=512,
+        default="unknown",
+    )
 
-    location_room = models.CharField(max_length=512, default="unknown")
+    location_room: "models.CharField[str, str]" = models.CharField(
+        max_length=512,
+        default="unknown",
+    )
 
-    location_rack = models.CharField(max_length=512, default="unknown")
+    location_rack: "models.CharField[str, str]" = models.CharField(
+        max_length=512,
+        default="unknown",
+    )
 
-    location_rack_position = models.CharField(max_length=512, default="unknown")
+    location_rack_position: "models.CharField[str, str]" = models.CharField(
+        max_length=512,
+        default="unknown",
+    )
 
     def natural_key(self) -> Tuple[str]:
         return (self.name,)

@@ -8,8 +8,8 @@ from django.http import (
     HttpResponseRedirect,
     JsonResponse,
 )
-from django.shortcuts import redirect
-from django.urls import URLPattern, re_path, reverse
+from django.shortcuts import redirect  # type: ignore
+from django.urls import URLPattern, re_path, reverse  # type: ignore
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
@@ -321,7 +321,7 @@ class AddMachineCommand(BaseAPIView):
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
-        if not request.user.is_superuser:
+        if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
@@ -333,7 +333,7 @@ class AddMachineCommand(BaseAPIView):
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
         """Add machine."""
-        if not request.user.is_superuser:
+        if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
@@ -500,7 +500,7 @@ class AddSerialConsoleCommand(BaseAPIView):
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
-        if not request.user.is_superuser:
+        if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
@@ -519,7 +519,7 @@ class AddSerialConsoleCommand(BaseAPIView):
         self, request: Request, fqdn: str, *args: Any, **kwargs: Any
     ) -> Union[JsonResponse, HttpResponseRedirect]:
         """Add serial console to machine."""
-        if not request.user.is_superuser:
+        if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
@@ -679,7 +679,7 @@ class AddRemotePowerCommand(BaseAPIView):
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
-        if not request.user.is_superuser:
+        if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
@@ -698,7 +698,7 @@ class AddRemotePowerCommand(BaseAPIView):
         self, request: Request, *args: Any, **kwargs: Any
     ) -> Union[JsonResponse, HttpResponseRedirect]:
         """Add remote power to machine."""
-        if not request.user.is_superuser:
+        if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
@@ -754,7 +754,7 @@ class AddRemotePowerDeviceCommand(BaseAPIView):
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
-        if not request.user.is_superuser:
+        if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
@@ -766,7 +766,7 @@ class AddRemotePowerDeviceCommand(BaseAPIView):
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
         """Add remotepowerdevice."""
-        if not request.user.is_superuser:
+        if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json

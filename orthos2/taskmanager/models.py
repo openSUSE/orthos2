@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import datetime
 from hashlib import sha1
 from typing import Any
 
@@ -16,27 +17,38 @@ class BaseTask(models.Model):
         SINGLE = 0
         DAILY = 1
 
-    class Meta:
+    class Meta:  # type: ignore
         # pyright disable in inherited Tasks due to https://github.com/microsoft/pylance-release/issues/3814
         abstract = True
 
-    name = models.CharField(max_length=200, blank=False)
+    name: "models.CharField[str, str]" = models.CharField(max_length=200, blank=False)
 
-    module = models.CharField(max_length=200, blank=False)
+    module: "models.CharField[str, str]" = models.CharField(max_length=200, blank=False)
 
-    arguments = models.TextField(default="[[], {}]")
+    arguments: "models.TextField[str, str]" = models.TextField(default="[[], {}]")
 
-    hash = models.CharField(max_length=40, unique=True)
+    hash: "models.CharField[str, str]" = models.CharField(max_length=40, unique=True)
 
-    priority = models.SmallIntegerField(
-        choices=Priority.CHOICES, default=Priority.NORMAL, blank=False
+    priority: "models.SmallIntegerField[int, int]" = models.SmallIntegerField(
+        choices=Priority.CHOICES,
+        default=Priority.NORMAL,
+        blank=False,
     )
 
-    running = models.BooleanField(null=False, default=False)
+    running: "models.BooleanField[bool, bool]" = models.BooleanField(
+        null=False,
+        default=False,
+    )
 
-    updated = models.DateTimeField("Updated at", auto_now=True)
+    updated: "models.DateTimeField[datetime, datetime]" = models.DateTimeField(
+        "Updated at",
+        auto_now=True,
+    )
 
-    created = models.DateTimeField("Created at", auto_now_add=True)
+    created: "models.DateTimeField[datetime, datetime]" = models.DateTimeField(
+        "Created at",
+        auto_now_add=True,
+    )
 
     def generate_hash(self) -> str:
         """Generate hash from name, module and arguments."""
@@ -56,18 +68,21 @@ class BaseTask(models.Model):
 
 
 class DailyTask(BaseTask):
-    class Meta:
+    class Meta:  # type: ignore
         verbose_name = "Daily Task"
 
-    executed_at = models.DateTimeField(default=timezone.now, editable=False)
+    executed_at: "models.DateTimeField[datetime, datetime]" = models.DateTimeField(
+        default=timezone.now,
+        editable=False,
+    )
 
-    enabled = models.BooleanField(default=True)
+    enabled: "models.BooleanField[bool, bool]" = models.BooleanField(default=True)
 
     type = BaseTask.Type.DAILY
 
 
 class SingleTask(BaseTask):
-    class Meta:
+    class Meta:  # type: ignore
         verbose_name = "Single Task"
 
     type = BaseTask.Type.SINGLE

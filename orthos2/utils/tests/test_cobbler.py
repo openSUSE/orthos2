@@ -1,4 +1,5 @@
 import logging
+from typing import Any, List
 from unittest import mock
 
 from django.test import TestCase
@@ -73,7 +74,7 @@ class CobblerMethodTests(TestCase):
             server.deploy(machines)
 
             # Assert
-            expected = []  # type: ignore
+            expected: List[Any] = []
             for exp in expected:
                 self.assertIn(exp, mocked_update_or_add.mock_calls)
 
@@ -88,13 +89,13 @@ class CobblerMethodTests(TestCase):
         with mock.patch(
             "orthos2.utils.cobbler.get_default_profile", return_value="default_profile"
         ) as mock_default_profile, mock.patch.object(
-            server._xmlrpc_server, "has_item", return_value=True
+            server._xmlrpc_server, "has_item", return_value=True  # type: ignore
         ) as mock_has_item, mock.patch.object(
-            server._xmlrpc_server, "modify_system"
+            server._xmlrpc_server, "modify_system"  # type: ignore
         ) as mock_system_modify, mock.patch.object(
-            server._xmlrpc_server, "save_system"
+            server._xmlrpc_server, "save_system"  # type: ignore
         ) as mock_system_save, mock.patch.object(
-            server._xmlrpc_server,
+            server._xmlrpc_server,  # type: ignore
             "new_system",
             return_value="system::testsys.orthos2.test",
         ) as mock_system_new, mock.patch.object(
@@ -129,7 +130,7 @@ class CobblerMethodTests(TestCase):
 
         # Act
         with mock.patch.object(
-            server._xmlrpc_server, "modify_system"
+            server._xmlrpc_server, "modify_system"  # type: ignore
         ) as mock_system_modify:
             server.add_network_interfaces(testsys, object_id)
 
@@ -145,7 +146,7 @@ class CobblerMethodTests(TestCase):
 
         # Act
         with mock.patch.object(
-            server._xmlrpc_server, "modify_system"
+            server._xmlrpc_server, "modify_system"  # type: ignore
         ) as mock_system_modify:
             server.add_bmc(testsys, "system::testsys.orthos2.test")
 
@@ -161,7 +162,7 @@ class CobblerMethodTests(TestCase):
 
         # Act
         with mock.patch.object(
-            server._xmlrpc_server, "modify_system"
+            server._xmlrpc_server, "modify_system"  # type: ignore
         ) as mock_system_modify:
             server.add_serial_console(testsys, "system::testsys.orthos2.test")
 
@@ -178,7 +179,7 @@ class CobblerMethodTests(TestCase):
 
         # Act
         with mock.patch.object(
-            server._xmlrpc_server, "modify_system"
+            server._xmlrpc_server, "modify_system"  # type: ignore
         ) as mock_system_modify:
             server.add_power_options(testsys, object_id)
 
@@ -194,12 +195,12 @@ class CobblerMethodTests(TestCase):
 
         # Act
         with mock.patch.object(
-            server._xmlrpc_server,
+            server._xmlrpc_server,  # type: ignore
             "get_system_handle",
             return_value="system::testsys.orthos2.test",
         ) as mock_system_handle:
             with mock.patch.object(
-                server._xmlrpc_server, "modify_system"
+                server._xmlrpc_server, "modify_system"  # type: ignore
             ) as mock_system_modify:
                 server.set_netboot_state(testsys, True)
 
@@ -246,7 +247,7 @@ class CobblerMethodTests(TestCase):
 
         # Act
         with mock.patch.object(
-            server._xmlrpc_server, "remove_system"
+            server._xmlrpc_server, "remove_system"  # type: ignore
         ) as mock_system_remove:
             server.remove(testsys)
 
@@ -261,7 +262,7 @@ class CobblerMethodTests(TestCase):
 
         # Act
         with mock.patch.object(
-            server._xmlrpc_server, "modify_system"
+            server._xmlrpc_server, "modify_system"  # type: ignore
         ) as mock_system_modify:
             server.remove_bmc("system::testsys.orthos2.test")
 
@@ -276,7 +277,7 @@ class CobblerMethodTests(TestCase):
 
         # Act
         with mock.patch.object(
-            server._xmlrpc_server, "modify_system"
+            server._xmlrpc_server, "modify_system"  # type: ignore
         ) as mock_system_modify:
             server.remove_serial_console("system::testsys.orthos2.test")
 
@@ -291,7 +292,7 @@ class CobblerMethodTests(TestCase):
 
         # Act
         with mock.patch.object(
-            server._xmlrpc_server, "modify_system"
+            server._xmlrpc_server, "modify_system"  # type: ignore
         ) as mock_system_modify:
             server.remove_power_options("system::testsys.orthos2.test")
 
@@ -305,7 +306,7 @@ class CobblerMethodTests(TestCase):
         server = cobbler.CobblerServer(domain)
 
         # Act
-        with mock.patch.object(server._xmlrpc_server, "sync_dhcp") as mock_sync_dhcp:
+        with mock.patch.object(server._xmlrpc_server, "sync_dhcp") as mock_sync_dhcp:  # type: ignore
             server.sync_dhcp()
 
             # Assert
@@ -333,7 +334,7 @@ class CobblerMethodTests(TestCase):
         profiles = server.get_profiles("x86_64")
 
         # Assert
-        self.assertTrue(isinstance(profiles, list))
+        self.assertTrue(isinstance(profiles, list))  # type: ignore
         self.assertEqual(len(profiles), 0)
 
     def test_cobbler_get_machines(self) -> None:

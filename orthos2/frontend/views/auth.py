@@ -4,7 +4,7 @@ All views that are related to built-in authentication.
 
 import functools
 import warnings
-from typing import Any, Callable, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 from django.conf import settings
 from django.contrib import messages
@@ -14,9 +14,9 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpRequest, HttpResponsePermanentRedirect, HttpResponseRedirect
-from django.shortcuts import redirect, resolve_url
+from django.shortcuts import redirect, resolve_url  # type: ignore
 from django.template.response import TemplateResponse
-from django.urls import reverse
+from django.urls import reverse  # type: ignore
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.safestring import mark_safe
 from django.views.decorators.cache import never_cache
@@ -61,8 +61,8 @@ def login(
     request: HttpRequest,
     template_name: str = "frontend/registration/login.html",
     redirect_field_name: str = REDIRECT_FIELD_NAME,
-    authentication_form=AuthenticationForm,
-    extra_context=None,
+    authentication_form=AuthenticationForm,  # type: ignore
+    extra_context: Optional[Dict[str, Any]] = None,
     redirect_authenticated_user: bool = False,
 ) -> Union[HttpResponseRedirect, HttpResponsePermanentRedirect, TemplateResponse]:
     """Display the login form and handles the login action."""
@@ -91,7 +91,7 @@ def login(
             if settings.AUTH_ALLOW_USER_CREATION:
                 try:
                     user = User.objects.get(username=request.POST["username"])
-                    if user.is_active and not user.password:
+                    if user.is_active and not user.password:  # type: ignore
                         messages.info(request, "Please receive your initial password.")
                         url = reverse("frontend:password_restore")
                         return redirect("{}?user_id={}".format(url, user.pk))
@@ -105,17 +105,17 @@ def login(
 
     current_site = get_current_site(request)
 
-    context = {
+    context: Dict[str, Any] = {
         "form": form,
         redirect_field_name: redirect_to,
         "site": current_site,
-        "site_name": current_site.name,
+        "site_name": current_site.name,  # type: ignore
         "title": "Login",
         "account_creation": settings.AUTH_ALLOW_USER_CREATION,
     }
     context.update(extra_context)
 
-    welcome_message = ServerConfig.objects.by_key(
+    welcome_message = ServerConfig.get_server_config_manager().by_key(
         "orthos.web.welcomemessage", "Come in, reserve and play..."
     )
 

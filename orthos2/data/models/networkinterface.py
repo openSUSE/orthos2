@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Tuple
+from datetime import datetime
+from typing import TYPE_CHECKING, Any, Iterable, Optional, Tuple
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -7,24 +8,28 @@ from orthos2.data.validators import validate_mac_address
 from orthos2.utils import misc
 
 if TYPE_CHECKING:
-    from orthos2.data.models.machine import Machine
+    from orthos2.types import MandatoryMachineForeignKey
 
 
 class NetworkInterface(models.Model):
-    class Meta:
+    class Meta:  # type: ignore
         verbose_name = "Network Interface"
         ordering = ("-primary",)
 
-    machine = models.ForeignKey["Machine"](  # type: ignore
+    machine: "MandatoryMachineForeignKey" = models.ForeignKey(
         "data.Machine",
         related_name="networkinterfaces",
         editable=False,
         on_delete=models.CASCADE,
     )
 
-    primary = models.BooleanField("Primary", blank=False, default=False)
+    primary: "models.BooleanField[bool, bool]" = models.BooleanField(
+        "Primary",
+        blank=False,
+        default=False,
+    )
 
-    mac_address = models.CharField(
+    mac_address: "models.CharField[str, str]" = models.CharField(
         "MAC address",
         max_length=20,
         blank=False,
@@ -32,39 +37,53 @@ class NetworkInterface(models.Model):
         validators=[validate_mac_address],
     )
 
-    ip_address_v4 = models.GenericIPAddressField(
-        protocol="IPv4",
-        unique=True,
-        null=True,
-        blank=True,
-        verbose_name="IPv4 address",
-        help_text="IPv4 address",
+    ip_address_v4: "models.GenericIPAddressField[Optional[str], Optional[str]]" = (
+        models.GenericIPAddressField(
+            protocol="IPv4",
+            unique=True,
+            null=True,
+            blank=True,
+            verbose_name="IPv4 address",
+            help_text="IPv4 address",
+        )
     )
 
-    ip_address_v6 = models.GenericIPAddressField(
-        protocol="IPv6",
-        unique=True,
-        null=True,
-        blank=True,
-        verbose_name="IPv6 address",
-        help_text="IPv6 address",
+    ip_address_v6: "models.GenericIPAddressField[Optional[str], Optional[str]]" = (
+        models.GenericIPAddressField(
+            protocol="IPv6",
+            unique=True,
+            null=True,
+            blank=True,
+            verbose_name="IPv6 address",
+            help_text="IPv6 address",
+        )
     )
 
-    ethernet_type = models.CharField(
+    ethernet_type: "models.CharField[str, str]" = models.CharField(
         max_length=100,
         blank=True,
     )
 
-    driver_module = models.CharField(
+    driver_module: "models.CharField[str, str]" = models.CharField(
         max_length=100,
         blank=True,
     )
 
-    name = models.CharField(max_length=20, blank=False, default="unknown")
+    name: "models.CharField[str, str]" = models.CharField(
+        max_length=20,
+        blank=False,
+        default="unknown",
+    )
 
-    updated = models.DateTimeField("Updated at", auto_now=True)
+    updated: "models.DateTimeField[datetime, datetime]" = models.DateTimeField(
+        "Updated at",
+        auto_now=True,
+    )
 
-    created = models.DateTimeField("Created at", auto_now_add=True)
+    created: "models.DateTimeField[datetime, datetime]" = models.DateTimeField(
+        "Created at",
+        auto_now_add=True,
+    )
 
     def natural_key(self) -> Tuple[str]:
         return (self.mac_address,)
@@ -83,17 +102,16 @@ class NetworkInterface(models.Model):
         self.mac_address = self.mac_address.upper()
         validate_mac_address(self.mac_address)
 
+        exclude: Iterable[str] = []
         if hasattr(self, "machine"):
-            exclude = self.machine.networkinterfaces.all().values_list(  # type: ignore
+            exclude = self.machine.networkinterfaces.all().values_list(
                 "mac_address", flat=True
             )
-        else:
-            exclude = []
 
         if not misc.is_unique_mac_address(self.mac_address, exclude=exclude):
             violate_net = NetworkInterface.objects.get(mac_address=self.mac_address)
             if hasattr(violate_net, "machine"):
-                violate_machine = violate_net.machine.fqdn  # type: ignore
+                violate_machine = violate_net.machine.fqdn
             else:
                 violate_machine = "networkinterface not assigned to a machine"
             raise ValidationError(

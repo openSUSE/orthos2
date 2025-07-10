@@ -2,7 +2,20 @@ import logging
 import os
 from abc import abstractmethod
 from datetime import date
-from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Concatenate,
+    Iterable,
+    List,
+    Optional,
+    ParamSpec,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 from paramiko.channel import ChannelFile, ChannelStderrFile
 
@@ -13,6 +26,24 @@ if TYPE_CHECKING:
     from orthos2.utils.ssh import SSH
 
 logger = logging.getLogger("models")
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+def connect(
+    function: Callable[Concatenate["Libvirt", P], R]
+) -> Callable[Concatenate["Libvirt", P], R]:
+    """Create SSH connection if needed."""
+
+    def decorator(self: "Libvirt", *args: P.args, **kwargs: P.kwargs) -> R:
+        from orthos2.utils.ssh import SSH
+
+        if not self.conn:
+            self.conn = SSH(self.host.fqdn)
+            self.conn.connect()
+        return function(self, *args, **kwargs)
+
+    return decorator
 
 
 class VirtualizationAPI:
@@ -49,9 +80,10 @@ class VirtualizationAPI:
             sub.__name__.replace(self.__class__.__name__, "").lower(): sub
             for sub in self.__class__.__subclasses__()
         }
-        self._virtualizationapis = dict(
-            map(
-                lambda x: (
+        # No idea how to type hint this correctly, works in production atm.
+        self._virtualizationapis = dict(  # type: ignore
+            map(  # type: ignore
+                lambda x: (  # type: ignore
                     x[0],
                     {
                         "class": subclasses[
@@ -126,7 +158,7 @@ class VirtualizationAPI:
 
         for networkinterface in vm.unsaved_networkinterfaces[1:]:  # type: ignore
             networkinterface.machine = vm
-            networkinterface.save()
+            networkinterface.save()  # type: ignore
         vm.remotepower = RemotePower(fence_name="virsh")
         vm.remotepower.save()
 
@@ -184,10 +216,10 @@ class Libvirt(VirtualizationAPI):
         from orthos2.data.models import ServerConfig
 
         architectures = [self.host.architecture.name]
-        image_directory = ServerConfig.objects.by_key(
+        image_directory = ServerConfig.get_server_config_manager().by_key(
             "virtualization.libvirt.images.directory", "/var/lib/libvirt/images"
         )
-        image_list = []
+        image_list: List[Tuple[str, str]] = []
         if image_directory is None:
             raise ValueError(
                 'ServerConfig key "virtualization.libvirt.images.directory" cannot be None'
@@ -219,37 +251,26 @@ class Libvirt(VirtualizationAPI):
 
         return architectures, image_list
 
-    def connect(function) -> Callable[["Libvirt", Any, Any], Any]:
-        """Create SSH connection if needed."""
-
-        def decorator(self: "Libvirt", *args: Any, **kwargs: Any) -> Any:
-            from orthos2.utils.ssh import SSH
-
-            if not self.conn:
-                self.conn = SSH(self.host.fqdn)
-                self.conn.connect()
-            return function(self, *args, **kwargs)  # type: ignore
-
-        return decorator
-
-    @connect  # type: ignore
+    @connect
     def _execute(
         self, command: str
-    ) -> Tuple[Union[Iterable, ChannelFile], Union[Iterable, ChannelStderrFile], int]:
+    ) -> Tuple[
+        Union[Iterable[str], ChannelFile], Union[Iterable[str], ChannelStderrFile], int
+    ]:
         if self.conn is None:
             raise Exception("Connection not established")
         return self.conn.execute(command)
 
     def check_connection(self) -> bool:
         """Check libvirt connection (running libvirt)."""
-        _stdout, _stderr, exitstatus = self._execute("{} version".format(self.VIRSH))  # type: ignore
+        _stdout, _stderr, exitstatus = self._execute("{} version".format(self.VIRSH))
         if exitstatus == 0:
             return True
         return False
 
     def get_list(self, parameters: str = "--all") -> str:
         """Return `virsh list` output."""
-        stdout, stderr, exitstatus = self._execute(  # type: ignore
+        stdout, stderr, exitstatus = self._execute(
             "{} list {}".format(self.VIRSH, parameters)
         )
 
@@ -266,7 +287,11 @@ class Libvirt(VirtualizationAPI):
         if self.conn is None:
             raise Exception("Connection not established")
 
-        stdout, stderr, exitstatus = self.conn.execute_script_remote("create_bridge.sh")  # type: ignore
+        script_result = self.conn.execute_script_remote("create_bridge.sh")
+
+        if script_result is None:
+            raise Exception("No script result retrieved!")
+        stdout, stderr, exitstatus = script_result
 
         if exitstatus != 0:
             raise Exception("".join(stderr))
@@ -280,7 +305,7 @@ class Libvirt(VirtualizationAPI):
             if line.startswith(bridge):
                 return True
 
-        raise False  # type: ignore
+        return False
 
     def generate_hostname(self) -> Optional[str]:
         """
@@ -289,7 +314,10 @@ class Libvirt(VirtualizationAPI):
         Check hostnames against Orthos machines and libvirt `virsh list`.
         """
         hostname = None
-        occupied_hostnames = {vm.hostname for vm in self.host.get_virtual_machines()}  # type: ignore
+        occupied_hostnames: Set[Optional[str]] = set()
+        virtual_machines = self.host.get_virtual_machines()
+        if virtual_machines is not None:
+            occupied_hostnames = {vm.hostname for vm in virtual_machines}
 
         libvirt_list = self.get_list()
         for line in libvirt_list.split("\n")[2:]:
@@ -315,7 +343,7 @@ class Libvirt(VirtualizationAPI):
         """Generate networkinterfaces."""
         from orthos2.data.models import NetworkInterface
 
-        networkinterfaces = []
+        networkinterfaces: List[NetworkInterface] = []
         for _i in range(amount):
             mac_address = get_random_mac_address()
             while NetworkInterface.objects.filter(mac_address=mac_address).count() != 0:
@@ -374,10 +402,10 @@ class Libvirt(VirtualizationAPI):
         vcpu = 1
 
         host_cpu_cores = self.host.cpu_cores
-        if host_cpu_cores is not None:
-            vcpu = int((host_cpu_cores - 2) / self.host.vm_max)
-            if vcpu == 0:
-                vcpu = 1
+
+        vcpu = int((host_cpu_cores - 2) / self.host.vm_max)
+        if vcpu == 0:
+            vcpu = 1
 
         return vcpu
 
@@ -468,15 +496,19 @@ class Libvirt(VirtualizationAPI):
         if self.conn is None:
             raise Exception("Connection not established")
 
-        bridge = ServerConfig.objects.by_key("virtualization.libvirt.bridge")
-        image_directory = ServerConfig.objects.by_key(
+        bridge = ServerConfig.get_server_config_manager().by_key(
+            "virtualization.libvirt.bridge"
+        )
+        image_directory = ServerConfig.get_server_config_manager().by_key(
             "virtualization.libvirt.images.directory"
         )
-        disk_image_directory = ServerConfig.objects.by_key(
+        disk_image_directory = ServerConfig.get_server_config_manager().by_key(
             "virtualization.libvirt.images.install_directory"
         )
         disk_image = "{}/{}.qcow2".format(disk_image_directory.rstrip("/"), "{}")  # type: ignore
-        ovmf = ServerConfig.objects.by_key("virtualization.libvirt.ovmf.path")
+        ovmf = ServerConfig.get_server_config_manager().by_key(
+            "virtualization.libvirt.ovmf.path"
+        )
 
         image_directory = "{}/{}/".format(
             image_directory.rstrip("/"), kwargs["architecture"]  # type: ignore
@@ -496,7 +528,7 @@ class Libvirt(VirtualizationAPI):
                 raise Exception("Image source directory missing on host system!")
 
         if not self.conn.check_path(disk_image_directory, "-w"):  # type: ignore
-            _stdout, stderr, exitstatus = self._execute(  # type: ignore
+            _stdout, stderr, exitstatus = self._execute(
                 "mkdir -p {}".format(disk_image_directory)
             )
             if exitstatus != 0:

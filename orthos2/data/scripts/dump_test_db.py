@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import os
-from typing import Any
+from typing import Any, List
 
 from django.apps import apps
 
@@ -57,7 +57,7 @@ Modules["domain"] = ("Domain", "Domainadmin")  # type: ignore
 
 queries = []  # type: ignore
 
-added_machines = []
+added_machines: List[str] = []
 
 config = apps.get_app_config("data")
 
@@ -65,20 +65,21 @@ config = apps.get_app_config("data")
 def show_help() -> None:
     print("Use --script-args to specify what you want to dump:")
     print("")
-    print("\tgeneral \t-- Dump general DB data [ %s ] " % ", ".join(Modules["general"]))
+    modules = ", ".join(Modules["general"])  # type: ignore
+    print("\tgeneral \t-- Dump general DB data [ %s ] " % modules)
     print("")
     # print("\tremote  \t-- Dump remote management HW DB data [ %s ] " % ", ".join(Modules['remote']))
     # print("")
     print(
         "\t<domain>\t-- Dump data of a specific domain [ %s ] "
-        % ", ".join(Modules["domain"])
+        % ", ".join(Modules["domain"])  # type: ignore
     )
     print()
     print(USAGE)
     exit(1)
 
 
-def add_machine(fqdn: str, queries: list):
+def add_machine(fqdn: str, queries: List[Any]):
 
     if fqdn in added_machines:
         # already added
@@ -86,10 +87,8 @@ def add_machine(fqdn: str, queries: list):
         return
     try:
         machine = Machine.objects.get(fqdn=fqdn)
-        query = Enclosure.objects.filter(pk=machine.enclosure.pk)
-        queries.extend(query)
-        query = Machine.objects.filter(fqdn=fqdn)  # type: ignore
-        queries.extend(query)
+        queries.extend(Enclosure.objects.filter(pk=machine.enclosure.pk))
+        queries.extend(Machine.objects.filter(fqdn=fqdn))
         if machine.hypervisor:
             add_machine(machine.hypervisor.fqdn, queries)
     except Machine.DoesNotExist:
@@ -98,7 +97,7 @@ def add_machine(fqdn: str, queries: list):
     added_machines.append(fqdn)
 
 
-def add_domain(domain: str, queries: list):
+def add_domain(domain: str, queries: List[Any]) -> None:
 
     try:
         """
@@ -114,16 +113,14 @@ def add_domain(domain: str, queries: list):
         if d_obj.cobbler_server:
             add_machine(d_obj.cobbler_server.fqdn, queries)
 
-        query = Domain.objects.filter(name=d_obj)
-        queries.extend(query)
-        query = DomainAdmin.objects.filter(domain=d_obj)  # type: ignore
-        queries.extend(query)
+        queries.extend(Domain.objects.filter(name=d_obj))
+        queries.extend(DomainAdmin.objects.filter(domain=d_obj))
     except Domain.DoesNotExist:
         print("%s - Domain does not exist" % domain)
         show_help()
 
 
-def add_arch_relations(queries: list):
+def add_arch_relations(queries: List[Any]):
     """
     We always need arch.suse.de domain and markeb.arch.suse.de
     We delete unneeded machine references
@@ -162,20 +159,20 @@ def run(*args: Any):
         else:
             show_help()
 
-    param = args[0]
-    tables = Modules.get(param)
+    param = args[0]  # type: ignore
+    tables = Modules.get(param)  # type: ignore
 
     if not tables:
-        add_domain(param, queries)
+        add_domain(param, queries)  # type: ignore
     else:
-        add_arch_relations(queries)
+        add_arch_relations(queries)  # type: ignore
         query = DailyTask.objects.all()
         if query:
-            queries.extend(query)
-        for table in tables:
-            print(".. dump table %s" % table)
+            queries.extend(query)  # type: ignore
+        for table in tables:  # type: ignore
+            print(".. dump table %s" % table)  # type: ignore
             model = config.get_model(table).objects.all()  # type: ignore
-            queries.extend(model)
+            queries.extend(model)  # type: ignore
 
     file = param + ".json"
     # print(queries)
@@ -184,7 +181,7 @@ def run(*args: Any):
 
         serializers.serialize(
             "json",
-            queries,
+            queries,  # type: ignore
             indent=2,
             stream=out,
             use_natural_foreign_keys=natural,

@@ -151,8 +151,8 @@ class MachineCheck(Task):
 
         networkinterfaces_ = get_networkinterfaces(self.fqdn)
 
-        if not networkinterfaces_:
-            return None
+        if isinstance(networkinterfaces_, bool) or not networkinterfaces_:
+            return
 
         for interface in networkinterfaces_:
             networkinterface, _created = NetworkInterface.objects.get_or_create(
@@ -187,6 +187,8 @@ class MachineCheck(Task):
             return
 
         machine_ = get_status_ip(self.fqdn)
+        if isinstance(machine_, bool) or not machine_:
+            return
 
         if machine_:
             sync(self.machine, machine_)
@@ -206,13 +208,13 @@ class MachineCheck(Task):
 
         installations_ = get_installations(self.fqdn)
 
-        if not installations_:
+        if isinstance(installations_, bool) or not installations_:
             return
 
         logger.debug("Drop installations for '%s'...", self.fqdn)
         self.machine.installations.all().delete()  # type: ignore
 
-        for installation in installations_:  # type: ignore
+        for installation in installations_:
             installation.save()
 
     def execute(self) -> None:
@@ -244,9 +246,11 @@ class RegenerateMOTD(Task):
         """
         Executes the task.
         """
-        if not ServerConfig.objects.bool_by_key("orthos.debug.motd.write"):
+        if not ServerConfig.get_server_config_manager().bool_by_key(
+            "orthos.debug.motd.write"
+        ):
             logger.warning("Disabled: set 'orthos.debug.motd.write' to 'true'")
-            return  # type: ignore
+            return None
 
         BEGIN = "-" * 69 + " Orthos{ --"
         LINE = "-" * 80
@@ -256,7 +260,7 @@ class RegenerateMOTD(Task):
             machine = Machine.objects.get(fqdn=self.fqdn)
         except Machine.DoesNotExist:
             logger.error("Machine does not exist: fqdn=%s", self.fqdn)
-            return  # type: ignore
+            return None
 
         conn = None
         try:
@@ -296,9 +300,12 @@ class RegenerateMOTD(Task):
                 print(wrap80(machine.reserved_reason), file=motd)  # type: ignore
             print(END, file=motd)
             motd.close()
-            _stdout, stderr, exitstatus = conn.execute_script_remote(  # type: ignore
-                "machine_sync_motd.sh"
-            )
+            script_result = conn.execute_script_remote("machine_sync_motd.sh")
+            if script_result is None:
+                raise RuntimeError(
+                    "Script result for machine_sync_motd.sh wasn't available"
+                )
+            _stdout, stderr, exitstatus = script_result
 
             if exitstatus != 0:
                 logger.exception("(%s) %s", machine.fqdn, stderr)
