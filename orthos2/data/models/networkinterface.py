@@ -1,3 +1,7 @@
+"""
+TODO
+"""
+
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Iterable, Optional, Tuple
 
@@ -23,47 +27,12 @@ class NetworkInterface(models.Model):
         on_delete=models.CASCADE,
     )
 
-    primary: "models.BooleanField[bool, bool]" = models.BooleanField(
-        "Primary",
-        blank=False,
-        default=False,
-    )
-
-    mac_address: "models.CharField[str, str]" = models.CharField(
-        "MAC address",
-        max_length=20,
-        blank=False,
-        unique=True,
-        validators=[validate_mac_address],
-    )
-
-    ip_address_v4: "models.GenericIPAddressField[Optional[str], Optional[str]]" = (
-        models.GenericIPAddressField(
-            protocol="IPv4",
-            unique=True,
-            null=True,
-            blank=True,
-            verbose_name="IPv4 address",
-            help_text="IPv4 address",
-        )
-    )
-
-    ip_address_v6: "models.GenericIPAddressField[Optional[str], Optional[str]]" = (
-        models.GenericIPAddressField(
-            protocol="IPv6",
-            unique=True,
-            null=True,
-            blank=True,
-            verbose_name="IPv6 address",
-            help_text="IPv6 address",
-        )
-    )
-
     ethernet_type: "models.CharField[str, str]" = models.CharField(
         max_length=100,
         blank=True,
     )
 
+    # Leave here but retrieve via Module --> Module Type ==> Create UI cue that this is not in NetBox
     driver_module: "models.CharField[str, str]" = models.CharField(
         max_length=100,
         blank=True,
