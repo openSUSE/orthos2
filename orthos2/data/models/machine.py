@@ -620,6 +620,8 @@ class Machine(models.Model):
     serialconsole: "SerialConsole"
     annotations: "RelatedManager[Annotation]"
     reservationhistory_set: "RelatedManager[ReservationHistory]"
+    # TODO: Primary IPv4 & Primary IPv6 address
+    # TODO: Primary OOB IP
 
     objects = Manager()
     api = RootManager()
