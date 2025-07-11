@@ -2,7 +2,7 @@
 
 server_start() {
     # Setup NetBox
-    python3 manage.py shell < /code/docker/setup_netbox.py
+    python3 manage.py shell </code/docker/setup_netbox.py
     # Setup Orthos 2
     git config --global --add safe.directory /code
     OLD_BRANCH=$(git branch --show-current)
@@ -17,7 +17,7 @@ server_start() {
     git stash pop
     python3 manage.py migrate
     DJANGO_SUPERUSER_PASSWORD="$ORTHOS_SUPERUSER_PASSWORD" python3 manage.py createsuperuser --noinput --username admin --email admin@example.com
-    python3 manage.py shell < /code/docker/django-generate-admin-token
+    python3 manage.py shell </code/docker/django-generate-admin-token
     python3 manage.py runserver 0.0.0.0:8000
 }
 
@@ -32,7 +32,6 @@ taskmanager_start() {
     # Start server
     python3 manage.py taskmanager --start
 }
-
 
 if [ "$ORTHOS2_MODE" == "taskmanager" ]; then
     taskmanager_start
