@@ -31,10 +31,11 @@ from orthos2.data.models.architecture import Architecture
 from orthos2.data.models.domain import Domain, DomainAdmin, validate_domain_ending
 from orthos2.data.models.enclosure import Enclosure
 from orthos2.data.models.machinegroup import MachineGroup
-from orthos2.data.models.networkinterface import NetworkInterface, validate_mac_address
+from orthos2.data.models.networkinterface import NetworkInterface
 from orthos2.data.models.platform import Platform
 from orthos2.data.models.system import System
 from orthos2.data.models.virtualizationapi import VirtualizationAPI
+from orthos2.data.validators import validate_mac_address
 from orthos2.utils.misc import (
     Serializer,
     get_domain,
@@ -622,6 +623,8 @@ class Machine(models.Model):
     serialconsole: "SerialConsole"
     annotations: "RelatedManager[Annotation]"
     reservationhistory_set: "RelatedManager[ReservationHistory]"
+    # TODO: Primary IPv4 & Primary IPv6 address
+    # TODO: Primary OOB IP
 
     objects = Manager()
     api = RootManager()
@@ -663,7 +666,7 @@ class Machine(models.Model):
 
     @property
     def hostname(self) -> Optional[str]:
-        return get_hostname(self.fqdn)  # type: ignore
+        return get_hostname(self.fqdn)
 
     @property
     def mac_address(self) -> Optional[str]:
@@ -959,7 +962,7 @@ class Machine(models.Model):
 
     def get_primary_networkinterface(self) -> Optional[NetworkInterface]:
         try:
-            interface = self.networkinterfaces.get(primary=True)  # type: ignore
+            interface = self.networkinterfaces.get(primary=True)
         except NetworkInterface.DoesNotExist:
             logger.debug(
                 "In 'get_primary_networkinterface': Machine %s has no networkinterfce",

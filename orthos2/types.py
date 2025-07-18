@@ -16,6 +16,8 @@ from orthos2.data.models.domain import Domain
 from orthos2.data.models.enclosure import Enclosure
 from orthos2.data.models.machine import Machine
 from orthos2.data.models.machinegroup import MachineGroup
+from orthos2.data.models.network.macaddress import MacAddress
+from orthos2.data.models.networkinterface import NetworkInterface
 from orthos2.data.models.platform import Platform
 from orthos2.data.models.remotepowerdevice import RemotePowerDevice
 from orthos2.data.models.remotepowertype import RemotePowerType
@@ -27,6 +29,10 @@ class AuthenticatedHttpRequest(HttpRequest):
     user: User  # type: ignore
 
 
+MandatoryCharField = models.CharField[str, str]
+OptionalCharField = models.CharField[Optional[str], Optional[str]]
+MandatoryBooleanField = models.BooleanField[bool, bool]
+OptionalBooleanField = models.BooleanField[Optional[bool], Optional[bool]]
 MandatoryDateTimeField = models.DateTimeField[datetime, datetime]
 OptionalDateTimeField = models.DateTimeField[Optional[datetime], Optional[datetime]]
 MandatoryDateField = models.DateField[date, date]
@@ -74,4 +80,20 @@ OptionalRemotePowerTypeForeignKey = models.ForeignKey[
 ]
 MandatoryRemotePowerTypeForeignKey = models.ForeignKey[
     Union[Combinable, RemotePowerType], RemotePowerType
+]
+MandatoryNetworkInterfaceForeignKey = models.ForeignKey[
+    Union[Combinable, NetworkInterface], NetworkInterface
+]
+OptionalNetworkInterfaceForeignKey = models.ForeignKey[
+    Union[Combinable, NetworkInterface, None], Optional[NetworkInterface]
+]
+OptionalMacAddressForeignKey = models.ForeignKey[
+    Union[Combinable, MacAddress, None], Optional[MacAddress]
+]
+ManyToManyNetworkInterfaceField = models.ManyToManyField[
+    NetworkInterface, NetworkInterface
+]
+ManyToManyMachineField = models.ManyToManyField[Machine, Machine]
+OptionalGenericIPAddressField = models.GenericIPAddressField[
+    Optional[str], Optional[str]
 ]
