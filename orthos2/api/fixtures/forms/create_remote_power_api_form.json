@@ -1,0 +1,14 @@
+[
+  {
+    "model": "data.remotepowertype",
+    "pk": 1,
+    "fields": {
+      "name": "apc",
+      "device": "rpower_device",
+      "username": "xxx",
+      "password": "XXX",
+      "use_port": true,
+      "systems": [["BareMetal"]]
+    }
+  }
+]

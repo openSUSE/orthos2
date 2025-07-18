@@ -28,7 +28,8 @@ RUN zypper in -y \
     python3-requests \
     python3-urllib3 \
     python3-pytz \
-    python3-django-auth-ldap
+    python3-django-auth-ldap \
+    python3-django-test-migrations
 
 # Test dependencies
 RUN zypper in -y \

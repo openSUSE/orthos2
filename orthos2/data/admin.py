@@ -28,6 +28,7 @@ from orthos2.data.models import (
     Platform,
     RemotePower,
     RemotePowerDevice,
+    RemotePowerType,
     SerialConsole,
     SerialConsoleType,
     ServerConfig,
@@ -35,7 +36,6 @@ from orthos2.data.models import (
     Vendor,
 )
 from orthos2.utils.misc import get_domain, is_unique_mac_address, suggest_host_ip
-from orthos2.utils.remotepowertype import RemotePowerType
 
 if TYPE_CHECKING:
     from django.contrib.auth.models import User
@@ -206,18 +206,16 @@ class RemotePowerInlineFormset(forms.models.BaseInlineFormSet):  # type: ignore
             return
         data = self.cleaned_data[0]
         port = data.get("port")
-        dev = data.get("remote_power_device")
+        # Django Magic: Since this is a ModelChoiceField, dev is a RemotePowerDevice object
+        dev: "RemotePowerDevice" = data.get("remote_power_device")  # type: ignore
         machine = data.get("machine")
-        # dev = RemotePowerDevice.get_by_str(remote_power_device)
         if not dev:
             raise forms.ValidationError("Bad remote device - Open a bug")
-        fence = RemotePowerType.from_fence(dev.fence_name)
-        if not fence:
-            raise forms.ValidationError("Fence not found - Open a bug")
+        fence = dev.fence_agent
         if fence.use_port:
             if not port:
                 raise forms.ValidationError(
-                    "Fence {} needs a port number".format(fence.fence)
+                    "Fence {} needs a port number".format(fence.name)
                 )
             try:
                 int(port)
@@ -233,13 +231,13 @@ class RemotePowerInlineFormset(forms.models.BaseInlineFormSet):  # type: ignore
             elif port != machine.hostname:
                 raise forms.ValidationError(
                     "{} - Port must be empty or hostname for fence: {}".format(
-                        port, dev.fence_name
+                        port, dev.fence_agent.name
                     )
                 )
         else:
             if port:
                 raise forms.ValidationError(
-                    "Fence {} needs no port, please leave emtpy".format(fence.fence)
+                    "Fence {} needs no port, please leave emtpy".format(fence.name)
                 )
 
 
@@ -285,7 +283,7 @@ class RemotePowerInlineHypervisor(admin.StackedInline):  # type: ignore
     fk_name = "machine"
     verbose_name = "Remote Power via Hypervisor"
     verbose_name_plural = "Remote Power via Hypervisor"
-    fields = ["fence_name", "options"]
+    fields = ["fence_agent", "options"]
 
     def get_formset(self, request: HttpRequest, obj: Any = None, **kwargs: Any):  # type: ignore
         """Set machine object for `formfield_for_foreignkey` method."""
@@ -844,7 +842,7 @@ class MachineAdmin(admin.ModelAdmin):  # type: ignore
         machine = Machine.objects.get(pk=object_id)
         fence = None
         if machine.has_remotepower():
-            fence = RemotePowerType.from_fence(machine.remotepower.fence_name)
+            fence = machine.remotepower.get_remotepower_fence()
 
         if not self.get_object(request, object_id):
             messages.add_message(
@@ -890,9 +888,7 @@ class MachineAdmin(admin.ModelAdmin):  # type: ignore
             and hasattr(machine, "bmc")
             and not hasattr(machine, "remotepower")
         ):
-            machine.remotepower = RemotePower(
-                machine.bmc.fence_name, machine, machine.bmc
-            )
+            machine.remotepower = RemotePower(machine=machine)
             machine.bmc.save()
             machine.remotepower.save()
             machine.save()
@@ -967,7 +963,7 @@ admin.site.register(Enclosure, EnclosureAdmin)  # type: ignore
 
 class RemotePowerDeviceAdmin(admin.ModelAdmin):  # type: ignore
     form = RemotePowerDeviceAPIForm
-    list_display = ["fqdn", "fence_name"]  # type: ignore
+    list_display = ["fqdn", "fence_agent"]  # type: ignore
 
 
 admin.site.register(RemotePowerDevice, RemotePowerDeviceAdmin)  # type: ignore
@@ -1117,5 +1113,10 @@ class MachineGroupAdmin(admin.ModelAdmin):  # type: ignore
         return output
 
 
+class RemotePowerTypeAdmin(admin.ModelAdmin):  # type: ignore
+    list_display = ("name", "device")
+
+
+admin.site.register(RemotePowerType, RemotePowerTypeAdmin)  # type: ignore
 admin.site.register(MachineGroup, MachineGroupAdmin)  # type: ignore
 admin.site.register(Vendor)  # type: ignore

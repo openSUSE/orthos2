@@ -19,6 +19,7 @@ from .networkinterface import NetworkInterface
 from .platform import Platform
 from .remotepower import RemotePower
 from .remotepowerdevice import RemotePowerDevice
+from .remotepowertype import RemotePowerType
 from .reservationhistory import ReservationHistory
 from .serialconsole import SerialConsole
 from .serialconsoletype import SerialConsoleType
@@ -50,6 +51,7 @@ __all__ = [
     "Platform",
     "RemotePower",
     "RemotePowerDevice",
+    "RemotePowerType",
     "ReservationHistory",
     "SerialConsole",
     "SerialConsoleType",

@@ -1,5 +1,11 @@
 [
   {
+    "model": "data.vendor",
+    "fields": {
+      "name": "Other"
+    }
+  },
+  {
     "model": "data.Domain",
     "pk": 1,
     "fields": {
@@ -42,10 +48,9 @@
   },
   {
     "model": "data.platform",
-    "pk": 1,
     "fields": {
       "name": "Other",
-      "vendor": 1
+      "vendor": ["Other"]
     }
   },
   {
@@ -53,21 +58,31 @@
     "pk": 1,
     "fields": {
       "name": "test",
-      "platform": 1,
+      "platform": ["Other"],
       "description": "test enclosure"
     }
   },
   {
-    "model": "data.vendor",
+    "model": "data.remotepowertype",
     "pk": null,
     "fields": {
-      "name": "Other"
+      "name": "apc",
+      "device": "rpowerdevice"
+    }
+  },
+  {
+    "model": "data.remotepowertype",
+    "pk": null,
+    "fields": {
+      "name": "ipmilanplus",
+      "device": "bmc"
     }
   },
   {
     "model": "data.remotepowerdevice",
     "pk": 1,
     "fields": {
+      "fence_agent": ["apc"],
       "username": "test",
       "password": "test",
       "fqdn": "bmc.orthos2.test",
@@ -84,7 +99,7 @@
       "fqdn": "my-bmc.foo.lan",
       "mac": "",
       "machine": 1,
-      "fence_name": "fence_ipmilanplus"
+      "fence_agent": ["ipmilanplus"]
     }
   },
   {
@@ -205,10 +220,8 @@
   },
   {
     "model": "data.remotepower",
-    "pk": null,
     "fields": {
       "machine_id": 1,
-      "fence_name": "ipmilanplus",
       "remote_power_device": 1
     }
   },
@@ -232,7 +245,7 @@
       "fqdn": "testsys-sp.orthos2.test",
       "mac": "AA:BB:CC:DD:EE:FF",
       "machine": 2,
-      "fence_name": "ipmilanplus"
+      "fence_agent": 1
     }
   },
   {
@@ -288,9 +301,8 @@
   },
   {
     "model": "data.remotepower",
-    "pk": null,
     "fields": {
-      "fence_name": "ipmilanplus",
+      "fence_agent": 1,
       "options": "",
       "machine": 2
     }

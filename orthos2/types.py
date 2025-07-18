@@ -18,6 +18,7 @@ from orthos2.data.models.machine import Machine
 from orthos2.data.models.machinegroup import MachineGroup
 from orthos2.data.models.platform import Platform
 from orthos2.data.models.remotepowerdevice import RemotePowerDevice
+from orthos2.data.models.remotepowertype import RemotePowerType
 from orthos2.data.models.serialconsoletype import SerialConsoleType
 from orthos2.data.models.system import System
 
@@ -67,4 +68,10 @@ OptionalSmallIntegerField = models.SmallIntegerField[
 ]
 OptionalRemotePowerDeviceForeignKey = models.ForeignKey[
     Union[Combinable, RemotePowerDevice, None], Optional[RemotePowerDevice]
+]
+OptionalRemotePowerTypeForeignKey = models.ForeignKey[
+    Union[Combinable, "RemotePowerType", None], Optional["RemotePowerType"]
+]
+MandatoryRemotePowerTypeForeignKey = models.ForeignKey[
+    Union[Combinable, RemotePowerType], RemotePowerType
 ]

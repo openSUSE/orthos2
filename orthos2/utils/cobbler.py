@@ -23,7 +23,6 @@ from typing import (
 from django.template import Context, Template
 
 from orthos2.utils.misc import get_hostname
-from orthos2.utils.remotepowertype import RemotePowerType
 
 if TYPE_CHECKING:
     from orthos2.data.models import Domain, Machine
@@ -383,31 +382,26 @@ class CobblerServer:
         :param save: Whether to save the machine or not.
         """
         remotepower = machine.remotepower
-        fence = RemotePowerType.from_fence(remotepower.fence_name)
-        if fence is None:
-            raise ValueError(
-                "Fence for machine %s couldn't be retrieved via RemotePowerType!"
-                % machine.fqdn
-            )
+        fence = remotepower.get_remotepower_fence()
 
         self._xmlrpc_server.modify_system(
-            object_id, "power_type", fence.fence, self._token
+            object_id, "power_type", fence.name, self._token
         )
 
-        if fence.use_identity_file:
-            self._xmlrpc_server.modify_system(
-                object_id, "power_user", fence.username, self._token
-            )
-            self._xmlrpc_server.modify_system(
-                object_id, "power_identity_file", fence.identity_file, self._token
-            )
-        else:
+        if fence.identity_file == "":
             username, password = remotepower.get_credentials()
             self._xmlrpc_server.modify_system(
                 object_id, "power_user", username, self._token
             )
             self._xmlrpc_server.modify_system(
                 object_id, "power_pass", password, self._token
+            )
+        else:
+            self._xmlrpc_server.modify_system(
+                object_id, "power_user", fence.username, self._token
+            )
+            self._xmlrpc_server.modify_system(
+                object_id, "power_identity_file", fence.identity_file, self._token
             )
 
         if fence.use_hostname_as_port:
@@ -417,7 +411,7 @@ class CobblerServer:
             )
         elif fence.use_port:
             # Temporary workaround until fence raritan accepts port as --plug param
-            if fence.fence == "raritan":
+            if fence.name == "raritan":
                 self._xmlrpc_server.modify_system(
                     object_id,
                     "power_id",
@@ -432,7 +426,7 @@ class CobblerServer:
         self._xmlrpc_server.modify_system(
             object_id, "power_address", remotepower.get_power_address(), self._token
         )
-        if fence.use_options:
+        if remotepower.options != "":
             self._xmlrpc_server.modify_system(
                 object_id, "power_options", remotepower.options, self._token
             )

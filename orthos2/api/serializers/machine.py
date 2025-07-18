@@ -173,7 +173,9 @@ class MachineSerializer(serializers.ModelSerializer[Machine]):
         source="serialconsole.kernel_device_num"
     )
 
-    power_type = serializers.CharField(source="remotepower.fence_name")
+    power_type = serializers.CharField(
+        source="remotepower.fence_agent.name", default=""
+    )
 
     power_host = serializers.CharField(source="remotepower.remote_power_device")
     power_port = serializers.CharField(source="remotepower.port")

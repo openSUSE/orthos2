@@ -2,7 +2,6 @@ import logging
 from typing import Any, Dict, List, Optional, Tuple
 
 from django import forms
-from django.db import models
 from django.forms import Field, inlineformset_factory  # type: ignore
 from django.forms.fields import (
     BooleanField,
@@ -23,6 +22,7 @@ from orthos2.data.models import (
     NetworkInterface,
     RemotePower,
     RemotePowerDevice,
+    RemotePowerType,
     SerialConsole,
     SerialConsoleType,
     System,
@@ -32,7 +32,6 @@ from orthos2.data.validators import validate_mac_address
 from orthos2.frontend.forms.reservemachine import ReserveMachineForm
 from orthos2.frontend.forms.virtualmachine import VirtualMachineForm
 from orthos2.utils.misc import is_unique_mac_address
-from orthos2.utils.remotepowertype import get_remote_power_type_choices
 
 logger = logging.getLogger("api")
 
@@ -482,11 +481,7 @@ class BMCAPIForm(forms.Form, BaseAPIForm):
             "mac",
             "username",
             "password",
-            "fence_name",
-        )
-        self.fields["fence_name"] = forms.ChoiceField(
-            choices=get_remote_power_type_choices("BMC"),
-            label="Fence Agent",
+            "fence_agent",
         )
 
     username = forms.CharField(label="BMC Username", max_length=256, required=False)
@@ -504,8 +499,8 @@ class BMCAPIForm(forms.Form, BaseAPIForm):
         label="MAC Address",
         max_length=256,
     )
-    fence_name = forms.ChoiceField(
-        choices=[],
+    fence_agent = forms.ModelChoiceField(
+        queryset=RemotePowerType.objects.filter(device="bmc"),
         label="Fence Agent",
     )
 
@@ -522,7 +517,7 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
         super(RemotePowerAPIForm, self).__init__(*args, **kwargs)
 
         self._query_fields = (
-            "fence_name",
+            "fence_agent",
             "remote_power_device",
             "port",
             "comment",
@@ -535,7 +530,7 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
 
         self.fields = formset.form().fields  # type: ignore
         self.fields["remote_power_device"].empty_label = "None"  # type: ignore
-        self.fields["fence_name"].required = False
+        self.fields["fence_agent"].required = False
 
     def clean(self) -> Optional[Dict[str, Any]]:
         """Add the machine to cleaned data for further processing."""
@@ -555,15 +550,7 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
 class RemotePowerDeviceAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
     class Meta:  # type: ignore
         model = RemotePowerDevice
-        fields = ["fqdn", "mac", "username", "password", "fence_name", "url"]
-
-    remotepower_type_choices = get_remote_power_type_choices("rpower_device")
-
-    fence_name = models.CharField(  # type: ignore
-        choices=remotepower_type_choices,
-        max_length=255,
-        verbose_name="Fence Agent",
-    )
+        fields = ["fqdn", "mac", "username", "password", "fence_agent", "url"]
 
     password = forms.CharField(
         label="Password",
@@ -571,13 +558,6 @@ class RemotePowerDeviceAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
         required=True,
         widget=forms.PasswordInput(render_value=True),
     )
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)  # type: ignore
-        remote_power_choices = get_remote_power_type_choices("rpower_device")
-        self.fields["fence_name"].choices = remote_power_choices  # type: ignore
-        # Automatic Widget selection doesn't seem to work in this scenario sadly
-        self.fields["fence_name"].widget = forms.Select(choices=remote_power_choices)
 
 
 class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):
