@@ -9,8 +9,9 @@ from django.forms import ValidationError
 
 if TYPE_CHECKING:
     from orthos2.types import (
-        MandatoryMachineOneToOneField,
         MandatoryRemotePowerTypeForeignKey,
+        ManyToManyMachineField,
+        OptionalNetworkInterfaceForeignKey,
     )
 
 
@@ -23,7 +24,7 @@ class BMC(models.Model):
         max_length=256,
         blank=True,
     )
-    machine: "MandatoryMachineOneToOneField" = models.ManyToManyField("data.Machine")
+    machine: "ManyToManyMachineField" = models.ManyToManyField("data.Machine")
 
     fence_agent: "MandatoryRemotePowerTypeForeignKey" = models.ForeignKey(
         "data.RemotePowerType",
@@ -38,7 +39,7 @@ class BMC(models.Model):
         limit_choices_to={"device": "bmc"},
     )
 
-    network_interface = models.ForeignKey(
+    network_interface: "OptionalNetworkInterfaceForeignKey" = models.ForeignKey(
         "data.NetworkInterface",
         related_name="bmc",
         on_delete=models.CASCADE,
@@ -48,21 +49,24 @@ class BMC(models.Model):
         help_text="Network interface used for BMC connection",
     )
 
+    """
+    # TODO: Do we need a natural key for this model?
     def natural_key(self) -> str:
         return self.fqdn
 
+    # FIXME: Find good string representation
     def __str__(self) -> str:
-        return self.fqdn
+        return ""
+    """
 
     def clean_fence_agent(self) -> None:
         """
-        Validate the fence_agent field to ensure it is of type "hypervisor".
+        Validate the fence_agent field to ensure it is of type "bmc".
         This method is called automatically by Django's validation system.
         """
         if not self.fence_agent:
             raise ValidationError("Fence name cannot be empty.")
         if self.fence_agent.device != "bmc":  # type: ignore
             raise ValidationError(
-                "The fence agent must be of type 'hypervisor'. "
-                "Please select a valid fence agent."
+                "The fence agent must be of type 'bmc'. Please select a valid fence agent."
             )

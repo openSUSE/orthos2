@@ -2,7 +2,16 @@
 TODO
 """
 
+from typing import TYPE_CHECKING
+
 from django.db import models
+
+if TYPE_CHECKING:
+    from orthos2.types import (
+        MandatoryCharField,
+        ManyToManyNetworkInterfaceField,
+        OptionalGenericIPAddressField,
+    )
 
 
 class IpAddress(models.Model):
@@ -10,7 +19,7 @@ class IpAddress(models.Model):
     TODO
     """
 
-    network_interface = models.ManyToManyField(
+    network_interface: "ManyToManyNetworkInterfaceField" = models.ManyToManyField(
         "data.NetworkInterface",
         related_name="ip_addresses",
         blank=True,
@@ -18,24 +27,24 @@ class IpAddress(models.Model):
         help_text="Network interface associated with this IP address",
     )
 
-    ip_address = models.GenericIPAddressField(
+    ip_address: "OptionalGenericIPAddressField" = models.GenericIPAddressField(
         protocol="both",
         unique=True,
         null=True,
         blank=True,
-        verbose_name="IPv4 address",
-        help_text="IPv4 address",
+        verbose_name="IP address",
+        help_text="IP address",
     )
 
-    protocol = models.CharField(
+    protocol: "MandatoryCharField" = models.CharField(
         max_length=10,
         choices=[("IPv4", "IPv4"), ("IPv6", "IPv6")],
-        default="both",
+        default="IPv4",
         verbose_name="Protocol",
-        help_text="IP protocol type (IPv4, IPv6, or both)",
+        help_text="IP protocol type (IPv4 or IPv6)",
     )
 
-    dns_name = models.CharField(
+    dns_name: "MandatoryCharField" = models.CharField(
         max_length=256,
         blank=True,
         verbose_name="DNS Name",
