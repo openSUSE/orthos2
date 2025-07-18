@@ -2,9 +2,18 @@
 TODO
 """
 
+from typing import TYPE_CHECKING
+
 from django.db import models
 
 from orthos2.data.validators import validate_mac_address
+
+if TYPE_CHECKING:
+    from orthos2.types import (
+        MandatoryBooleanField,
+        MandatoryCharField,
+        OptionalNetworkInterfaceForeignKey,
+    )
 
 
 class MacAddress(models.Model):
@@ -12,7 +21,7 @@ class MacAddress(models.Model):
     TODO
     """
 
-    network_interface = models.ForeignKey(
+    network_interface: "OptionalNetworkInterfaceForeignKey" = models.ForeignKey(
         "data.NetworkInterface",
         related_name="mac_addresses",
         on_delete=models.CASCADE,
@@ -22,7 +31,8 @@ class MacAddress(models.Model):
         help_text="Network interface associated with this MAC address",
     )
 
-    mac_address = models.CharField(
+    # TODO: Make upercase and check uniqeness
+    mac_address: "MandatoryCharField" = models.CharField(
         "MAC address",
         max_length=20,
         blank=False,
@@ -30,7 +40,7 @@ class MacAddress(models.Model):
         validators=[validate_mac_address],
     )
 
-    primary = models.BooleanField(
+    primary: "MandatoryBooleanField" = models.BooleanField(
         default=False,
         verbose_name="Primary MAC",
         help_text="Indicates if this is the primary MAC address for the machine",

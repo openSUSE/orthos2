@@ -31,11 +31,12 @@ from orthos2.data.models.architecture import Architecture
 from orthos2.data.models.domain import Domain, DomainAdmin, validate_domain_ending
 from orthos2.data.models.enclosure import Enclosure
 from orthos2.data.models.machinegroup import MachineGroup
-from orthos2.data.models.networkinterface import NetworkInterface, validate_mac_address
+from orthos2.data.models.networkinterface import NetworkInterface
 from orthos2.data.models.platform import Platform
 from orthos2.data.models.system import System
 from orthos2.data.virtualization import VirtualizationAPI
 from orthos2.data.virtualization.factory import virtualization_api_factory
+from orthos2.data.validators import validate_mac_address
 from orthos2.utils.misc import (
     Serializer,
     get_domain,
@@ -416,12 +417,14 @@ class Machine(models.Model):
         help_text="Reservation expires at xx.yy.zzzz (max 90 days)",
     )
 
-    reserved_reason: "models.CharField[Optional[str], Optional[str]]" = models.CharField(
-        "Reservation reason",
-        max_length=512,
-        blank=True,
-        null=True,
-        help_text="Why do you need this machine (bug no, jira feature, what do you test/work on)?",
+    reserved_reason: "models.CharField[Optional[str], Optional[str]]" = (
+        models.CharField(
+            "Reservation reason",
+            max_length=512,
+            blank=True,
+            null=True,
+            help_text="Why do you need this machine (bug no, jira feature, what do you test/work on)?",
+        )
     )
 
     platform: "OptionalPlatformForeignKey" = models.ForeignKey(
@@ -962,7 +965,7 @@ class Machine(models.Model):
 
     def get_primary_networkinterface(self) -> Optional[NetworkInterface]:
         try:
-            interface = self.networkinterfaces.get(primary=True)  # type: ignore
+            interface = self.networkinterfaces.get(primary=True)
         except NetworkInterface.DoesNotExist:
             logger.debug(
                 "In 'get_primary_networkinterface': Machine %s has no networkinterfce",
