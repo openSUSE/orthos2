@@ -37,9 +37,6 @@ jobs:
       - name: Start Compose Stack
         run: |
           docker compose -f compose.yaml -f compose.override.yml up -d
-      - name: Wait for Cobbler to run
-        run: |
-          sleep 60
       - name: Run Tests
         run: |
           docker compose exec -it orthos2 bash -c 'coverage run --source="." manage.py test orthos2'
@@ -69,9 +66,7 @@ jobs:
         run: |
           docker compose -f compose.yaml -f compose.override.yml up -d
       - name: Generate Django Token
-        # Wait 10 seconds so the container can start
         run: |
-          sleep 10
           docker compose cp orthos2:/var/lib/orthos2/admin-token .
           echo "ORTHOS_DJANGO_ADMIN_TOKEN=$(cat ./admin-token)" >> $GITHUB_ENV
       - name: Configure orthosrc
