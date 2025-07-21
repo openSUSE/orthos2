@@ -101,7 +101,7 @@ R = TypeVar("R")
 
 
 def login_required(
-    func: Callable[Concatenate["CobblerServer", P], R]
+    func: Callable[Concatenate["CobblerServer", P], R],
 ) -> Callable[Concatenate["CobblerServer", P], R]:
     """
     Decorator to ensure that the user is logged in. This only works for "CobblerServer".
@@ -272,18 +272,24 @@ class CobblerServer:
         :param object_id: ID of object to be added.
         :param save: Whether to save the machine or not.
         """
-        for idx, intf in enumerate(machine.networkinterfaces.all()):  # type: ignore
-            if not intf.mac_address:
+        for idx, intf in enumerate(
+            machine.networkinterfaces.filter(primary_mac_address__isnull=False)
+        ):
+            ipv4s = intf.ip_addresses.filter(protocol="IPv4")
+            ipv6s = intf.ip_addresses.filter(protocol="IPv6")
+            if ipv4s.count() > 1 or ipv6s.count() > 1:
                 logger.info(
-                    "Skipping machine interface %s because it has no MAC address",
-                    machine.fqdn if intf.primary else str(idx),
+                    "%s: Skipping interface %s because it has more then a single IPv4 or IPv6 address",
+                    machine.fqdn,
+                    intf.name,
                 )
                 continue
 
-            if not intf.ip_address_v4 and not intf.ip_address_v6:
+            if ipv4s.count() == 0 and ipv6s.count() == 0:
                 logger.info(
-                    "Skipping machine interface %s because it has neither IPv4 nor IPv6 addresses",
-                    machine.fqdn if intf.primary else str(idx),
+                    "%s: Skipping interface %s because it has neither IPv4 nor IPv6 addresses",
+                    machine.fqdn,
+                    intf.name,
                 )
                 continue
 

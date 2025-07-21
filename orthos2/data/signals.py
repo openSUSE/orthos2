@@ -3,11 +3,10 @@ import os
 import time
 from typing import Any, Optional
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import Signal, receiver
 
-from orthos2.data.models import Machine, NetworkInterface, SerialConsole, ServerConfig
+from orthos2.data.models import Machine, SerialConsole, ServerConfig
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.cobbler import CobblerServer
@@ -21,49 +20,6 @@ signal_cobbler_sync_dhcp = Signal()
 signal_cobbler_machine_update = Signal()
 signal_serialconsole_regenerate = Signal()
 signal_motd_regenerate = Signal()
-
-
-@receiver(post_save, sender=Machine)
-def machine_post_save(
-    sender: Any, instance: Machine, *args: Any, **kwargs: Any
-) -> None:
-    """
-    Post action after machine is saved.
-
-    When a machine gets added, the primary (initial) network interface gets added. If the MAC
-    address changed for primary network interface, a new primary network interface gets added
-    whereas the other network interfaces remain.
-
-    Systems with 'administrative' flag set do only get one single network interface.
-    """
-    if not instance.mac_address:
-        return
-
-    try:
-        primary_networkinterface = NetworkInterface.objects.get(
-            machine=instance, primary=True
-        )
-    except ObjectDoesNotExist:
-        primary_networkinterface = None
-    if primary_networkinterface:
-        if primary_networkinterface.mac_address.upper() != instance.mac_address.upper():
-
-            networkinterface, _created = instance.networkinterfaces.get_or_create(  # type: ignore
-                machine=instance, mac_address=instance.mac_address
-            )
-
-            networkinterface.primary = True
-            networkinterface.mac_address = instance.mac_address
-
-            primary_networkinterface.primary = False
-            primary_networkinterface.save()
-
-            networkinterface.save()
-
-            if instance.system.administrative:
-                primary_networkinterface.delete()
-            else:
-                instance.scan("networkinterfaces")
 
 
 @receiver(pre_delete, sender=Machine)

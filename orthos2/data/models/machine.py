@@ -62,6 +62,7 @@ if TYPE_CHECKING:
         MandatorySystemForeignKey,
         OptionalDateField,
         OptionalDateTimeField,
+        OptionalIpAddressForeignKey,
         OptionalMachineForeignKey,
         OptionalMachineGroupForeignKey,
         OptionalPlatformForeignKey,
@@ -603,6 +604,22 @@ class Machine(models.Model):
         default=0,
     )
 
+    primary_ipv4: "OptionalIpAddressForeignKey" = models.ForeignKey(
+        "data.IpAddress",
+        on_delete=models.CASCADE,
+        null=True,
+    )
+    primary_ipv6: "OptionalIpAddressForeignKey" = models.ForeignKey(
+        "data.IpAddress",
+        on_delete=models.CASCADE,
+        null=True,
+    )
+    primary_oob_ip: "OptionalIpAddressForeignKey" = models.ForeignKey(
+        "data.IpAddress",
+        on_delete=models.CASCADE,
+        null=True,
+    )
+
     updated: "models.DateTimeField[datetime.datetime, datetime.datetime]" = (
         models.DateTimeField("Updated at", auto_now=True)
     )
@@ -623,8 +640,6 @@ class Machine(models.Model):
     serialconsole: "SerialConsole"
     annotations: "RelatedManager[Annotation]"
     reservationhistory_set: "RelatedManager[ReservationHistory]"
-    # TODO: Primary IPv4 & Primary IPv6 address
-    # TODO: Primary OOB IP
 
     objects = Manager()
     api = RootManager()
@@ -655,28 +670,19 @@ class Machine(models.Model):
 
     @property
     def ip_address_v4(self) -> Optional[str]:
-        intf = self.get_primary_networkinterface()
-        if intf is None:
-            return None
-        return intf.ip_address_v4
+        if self.primary_ipv4 is not None:
+            return str(self.primary_ipv4.ip_address)
+        return None
 
     @property
     def ip_address_v6(self) -> Optional[str]:
-        intf = self.get_primary_networkinterface()
-        if intf is None:
-            return None
-        return intf.ip_address_v6
+        if self.primary_ipv6 is not None:
+            return str(self.primary_ipv6.ip_address)
+        return None
 
     @property
     def hostname(self) -> str:
         return get_hostname(self.fqdn)
-
-    @property
-    def mac_address(self) -> Optional[str]:
-        intf = self.get_primary_networkinterface()
-        if intf is None:
-            return None
-        return intf.mac_address
 
     def fetch_netbox(self) -> None:
         """
@@ -723,9 +729,6 @@ class Machine(models.Model):
         self.fqdn = self.fqdn.lower()
 
         validate_domain_ending(self.fqdn)
-
-        if self.pk is not None and self.mac_address:
-            validate_mac_address(self.mac_address)
 
         if not self.system.virtual and self.hypervisor:
             raise ValidationError("Only virtual machines may have hypervisors")
@@ -956,23 +959,6 @@ class Machine(models.Model):
 
     def get_active_distribution(self) -> Optional["Installation"]:
         return self.installations.get(active=True)  # type: ignore
-
-    def delete_secondary_interfaces(self) -> None:
-        primary = self.get_primary_networkinterface()
-        for network in self.networkinterfaces.all():  # type: ignore
-            if network != primary:
-                network.delete()
-
-    def get_primary_networkinterface(self) -> Optional[NetworkInterface]:
-        try:
-            interface = self.networkinterfaces.get(primary=True)
-        except NetworkInterface.DoesNotExist:
-            logger.debug(
-                "In 'get_primary_networkinterface': Machine %s has no networkinterfce",
-                self.fqdn,
-            )
-            return None
-        return interface
 
     def get_virtual_machines(self) -> Optional[QuerySet["Machine"]]:
         if not self.is_virtual_machine():

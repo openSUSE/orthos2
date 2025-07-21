@@ -214,14 +214,13 @@ def vm_record(request: HttpRequest, vm: Machine) -> SafeString:
         and vm.hypervisor.vm_auto_delete
     ):
         button = '<a class="btn btn-sm btn-danger" href="javascript:void(0);"'
-        button += ' onClick="delete_vm({})">'.format(vm.pk)
+        button += f' onClick="delete_vm({vm.pk})">'
     else:
         button = '<a class="btn btn-sm btn-danger disabled" href="#">'
     button += '<i class="fa fa-trash-o"></i> Delete</a>'
 
     result = "<tr>"
     result += '  <td><a href="{url}">{vm.fqdn}</a></td>'
-    result += "  <td>{vm.mac_address}</td>"
     result += "  <td>{vm.reserved_by}</td>"
     result += "  {status}"
     result += "  <td>{button}</td>"

@@ -32,6 +32,8 @@ from orthos2.api.serializers.misc import (
     Serializer,
 )
 from orthos2.data.models import BMC, Annotation, Machine, RemotePower, SerialConsole
+from orthos2.data.models.network.ipaddress import IpAddress
+from orthos2.data.models.network.macaddress import MacAddress
 from orthos2.data.models.networkinterface import NetworkInterface
 from orthos2.data.models.remotepowertype import RemotePowerType
 from orthos2.utils.misc import (
@@ -285,7 +287,7 @@ class AddVMCommand(BaseAPIView):
 
                 response = {
                     "header": {"type": "TABLE", "theader": theader},
-                    "data": [{"fqdn": vm.fqdn, "mac_address": vm.mac_address}],
+                    "data": [{"fqdn": vm.fqdn}],
                 }
                 if vm.vnc["enabled"]:  # type: ignore
                     response["data"][0]["vnc"] = "{}:{}".format(  # type: ignore
@@ -352,6 +354,8 @@ class AddMachineCommand(BaseAPIView):
                         % cleaned_data["hypervisor_fqdn"]
                     ).as_json
             del cleaned_data["hypervisor_fqdn"]
+            primary_mac_address = MacAddress(mac_address=mac_address, primary=True)
+            primary_mac_address.save()
             new_machine = Machine(**cleaned_data)
             new_machine.hypervisor = hypervisor
             new_primary_interface = new_machine.get_primary_networkinterface()
@@ -359,6 +363,8 @@ class AddMachineCommand(BaseAPIView):
                 new_primary_interface = NetworkInterface(primary=True)
             new_primary_interface.mac_address = mac_address
             if new_machine.domain_set.enable_v4:
+                # IpAddress()
+                # new_machine.primary_ipv4 =
                 new_primary_interface.ip_address_v4 = suggest_host_ip(
                     4, new_machine.domain_set
                 )

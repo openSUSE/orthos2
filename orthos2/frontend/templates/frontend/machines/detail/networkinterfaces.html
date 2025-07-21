@@ -17,7 +17,11 @@
   <tbody>
     {% for network_interface in machine.networkinterfaces.all %}
     <tr>
-      <td>{{ network_interface.mac_address }}</td>
+      {% if network_interface.primary_mac_address %}
+      <td>{{ network_interface.primary_mac_address.mac_address }}</td>
+      {% else %}
+      <td></td>
+      {% endif %}
       <td>{{ network_interface.primary|boolean_image:15|safe }}</td>
       <td>{{ network_interface.name }}</td>
       <td>{{ network_interface.driver_module }}</td>

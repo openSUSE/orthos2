@@ -440,7 +440,6 @@ class QueryField:
         Example:
             QueryField('comment')                -> Machine.comment
             QueryField('comment_length')         -> Machine.comment (for querying the char length)
-            QueryField('mac_address')            -> Machine.mac_address (dynamic field)
             QueryField('installations__comment') -> Machine.installations.comment (related field)
         """
         field = None

@@ -30,8 +30,7 @@ class IpAddress(models.Model):
     ip_address: "OptionalGenericIPAddressField" = models.GenericIPAddressField(
         protocol="both",
         unique=True,
-        null=True,
-        blank=True,
+        blank=False,
         verbose_name="IP address",
         help_text="IP address",
     )
@@ -42,6 +41,7 @@ class IpAddress(models.Model):
         default="IPv4",
         verbose_name="Protocol",
         help_text="IP protocol type (IPv4 or IPv6)",
+        blank=False,
     )
 
     dns_name: "MandatoryCharField" = models.CharField(

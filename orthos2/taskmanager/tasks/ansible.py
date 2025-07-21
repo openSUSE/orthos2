@@ -306,7 +306,6 @@ class Ansible(Task):
 
     # db_machine.serial_number # do not set
     # db_machine.architecture # do not set
-    # db_machine.mac_address #  do not set
 
     # db_machine.__ipv4 # do not set (yet)
     # db_machine.__ipv6 # do not set (yet)

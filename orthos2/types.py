@@ -16,6 +16,7 @@ from orthos2.data.models.domain import Domain
 from orthos2.data.models.enclosure import Enclosure
 from orthos2.data.models.machine import Machine
 from orthos2.data.models.machinegroup import MachineGroup
+from orthos2.data.models.network.ipaddress import IpAddress
 from orthos2.data.models.network.macaddress import MacAddress
 from orthos2.data.models.networkinterface import NetworkInterface
 from orthos2.data.models.platform import Platform
@@ -89,6 +90,9 @@ OptionalNetworkInterfaceForeignKey = models.ForeignKey[
 ]
 OptionalMacAddressForeignKey = models.ForeignKey[
     Union[Combinable, MacAddress, None], Optional[MacAddress]
+]
+OptionalIpAddressForeignKey = models.ForeignKey[
+    Union[Combinable, IpAddress, None], Optional[IpAddress]
 ]
 ManyToManyNetworkInterfaceField = models.ManyToManyField[
     NetworkInterface, NetworkInterface
