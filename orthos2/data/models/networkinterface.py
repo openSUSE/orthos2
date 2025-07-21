@@ -85,6 +85,12 @@ class NetworkInterface(models.Model):
         auto_now_add=True,
     )
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        # The two attributes below are only used for network interfaces that are attached to a VM.
+        self.model = ""
+        self.bridge = ""
+
     def natural_key(self) -> Tuple[str]:
         return (self.mac_address,)
 

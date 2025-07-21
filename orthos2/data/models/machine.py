@@ -34,7 +34,8 @@ from orthos2.data.models.machinegroup import MachineGroup
 from orthos2.data.models.networkinterface import NetworkInterface, validate_mac_address
 from orthos2.data.models.platform import Platform
 from orthos2.data.models.system import System
-from orthos2.data.models.virtualizationapi import VirtualizationAPI
+from orthos2.data.virtualization import VirtualizationAPI
+from orthos2.data.virtualization.factory import virtualization_api_factory
 from orthos2.utils.misc import (
     Serializer,
     get_domain,
@@ -557,9 +558,6 @@ class Machine(models.Model):
         help_text="The physical host this virtual machine is running on",
     )
 
-    # Runtime object created on virt_api_int in init()
-    virtualization_api = None
-
     active: "models.BooleanField[bool, bool]" = models.BooleanField(
         default=True,
         help_text="Machine vanishes from most lists. This is intendend as kind of maintenance/repair state",
@@ -641,8 +639,11 @@ class Machine(models.Model):
         else:
             self._original = None
 
-        if self.virt_api_int is not None:
-            self.virtualization_api = VirtualizationAPI(self.virt_api_int, self)  # type: ignore
+        # Only use machine.unsaved_networkinterfaces in the context of VMs
+        self.unsaved_networkinterfaces: "List[NetworkInterface]" = []
+        # Only use machine.vnc in the context of VMs
+        self.vnc: Dict[str, Any] = {}
+        self.virtualization_api = virtualization_api_factory(self.virt_api_int, self)
 
     def __str__(self) -> str:
         return self.fqdn
@@ -652,18 +653,18 @@ class Machine(models.Model):
         intf = self.get_primary_networkinterface()
         if intf is None:
             return None
-        return intf.ip_address_v4  # type: ignore
+        return intf.ip_address_v4
 
     @property
     def ip_address_v6(self) -> Optional[str]:
         intf = self.get_primary_networkinterface()
         if intf is None:
             return None
-        return intf.ip_address_v6  # type: ignore
+        return intf.ip_address_v6
 
     @property
-    def hostname(self) -> Optional[str]:
-        return get_hostname(self.fqdn)  # type: ignore
+    def hostname(self) -> str:
+        return get_hostname(self.fqdn)
 
     @property
     def mac_address(self) -> Optional[str]:

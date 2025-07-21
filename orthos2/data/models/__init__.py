@@ -26,7 +26,6 @@ from .serialconsoletype import SerialConsoleType
 from .serverconfig import ServerConfig, ServerConfigManager, ServerConfigSSHManager
 from .system import System
 from .vendor import Vendor
-from .virtualizationapi import Libvirt, VirtualizationAPI
 
 __all__ = [
     "Annotation",
@@ -60,6 +59,4 @@ __all__ = [
     "ServerConfigSSHManager",
     "System",
     "Vendor",
-    "VirtualizationAPI",
-    "Libvirt",
 ]
