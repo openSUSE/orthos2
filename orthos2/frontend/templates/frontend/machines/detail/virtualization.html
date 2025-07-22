@@ -58,7 +58,7 @@
 // collect virsh output
 function virsh_list() {
   $.ajax({
-    url: '{% url 'ajax_virtualization_list' machine.id %}',
+    url: '{% url 'frontend:ajax_virtualization_list' machine.id %}',
     beforeSend: function() {
       $('#machine-statusbar').show();
     },
@@ -79,7 +79,7 @@ function virsh_list() {
 // delete vm
 function delete_vm(vm_id) {
   $.ajax({
-    url: '{% url 'ajax_virtualization_delete' machine.id %}?vm=' + vm_id,
+    url: '{% url 'frontend:ajax_virtualization_delete' machine.id %}?vm=' + vm_id,
     success: function(data) {
       showMachineStatusBarMessage(data);
 

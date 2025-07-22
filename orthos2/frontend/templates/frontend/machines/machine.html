@@ -40,7 +40,7 @@
         <li class="nav-item">
           <a class="nav-link {% active_view request 'misc' %}" href="{% url 'frontend:misc' machine.id %}">Miscellaneous</a>
         </li>
-        {% if machine.vm_capable and machine.vm_dedicated_host and machine.virtualization_api != None %}
+        {% if machine.vm_dedicated_host and machine.virtualization_api != None %}
         <li class="nav-item">
           <a class="nav-link {% active_view request 'virtualization' %}" href="{% url 'frontend:virtualization' machine.id %}">Virtualization</a>
         </li>
