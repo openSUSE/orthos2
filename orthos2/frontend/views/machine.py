@@ -3,7 +3,7 @@ All views that are related to "/machine".
 """
 
 import logging
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Dict, Union
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -18,6 +18,7 @@ from django.http import (
 from django.shortcuts import redirect, render  # type: ignore
 
 from orthos2.data.models import Machine, ServerConfig
+from orthos2.data.models.netboxorthoscomparision import NetboxOrthosComparisionRun
 from orthos2.frontend.decorators import check_permissions
 from orthos2.frontend.forms.addmachine import AddMachineFormView
 from orthos2.frontend.forms.reservemachine import ReserveMachineForm
@@ -384,6 +385,62 @@ def machine(request: HttpRequest, id: int) -> HttpResponse:
 
 
 @login_required
+def machine_netboxcomparision(
+    request: "AuthenticatedHttpRequest", id: int
+) -> HttpResponseBase:
+    perm_list = [
+        "data.view_machine",
+    ]
+    if not request.user.has_perms(perm_list):
+        messages.error(request, "Not enough user permissions.")
+        return redirect("machines")
+
+    try:
+        machine = Machine.objects.get(pk=id)
+    except Machine.DoesNotExist:
+        messages.error(request, "Machine does not exist.")
+        return redirect("machines")
+
+    if machine.enclosure.netboxorthoscomparisionruns.count() > 0:
+        enclosure_run = machine.enclosure.netboxorthoscomparisionruns.latest(
+            "compare_timestamp"
+        )
+    else:
+        enclosure_run = None
+    if machine.netboxorthoscomparisionruns.count() > 0:
+        machine_run = machine.netboxorthoscomparisionruns.latest("compare_timestamp")
+    else:
+        machine_run = None
+    if machine.has_bmc() and machine.bmc.netboxorthoscomparisionruns.count() > 0:
+        bmc_run = machine.bmc.netboxorthoscomparisionruns.latest("compare_timestamp")
+    else:
+        bmc_run = None
+    network_interface_run: Dict[str, NetboxOrthosComparisionRun] = {}
+    for intf in machine.networkinterfaces.all():
+        network_interface_runs = NetboxOrthosComparisionRun.objects.filter(
+            object_network_interface=intf
+        )
+        if network_interface_runs.count() == 0:
+            continue
+        network_interface_run[intf.name] = network_interface_runs.latest(
+            "compare_timestamp"
+        )
+
+    return render(
+        request,
+        "frontend/machines/detail/netboxcomparison.html",
+        {
+            "machine": machine,
+            "title": "Netbox Comparison",
+            "enclosure_run": enclosure_run,
+            "bmc_run": bmc_run if machine.has_bmc() else None,
+            "network_interface_run": network_interface_run,
+            "machine_run": machine_run,
+        },
+    )
+
+
+@login_required
 @check_permissions()
 def fetch_netbox(request: HttpRequest, id: int) -> HttpResponseRedirect:
     try:
@@ -397,6 +454,27 @@ def fetch_netbox(request: HttpRequest, id: int) -> HttpResponseRedirect:
         messages.info(
             request,
             "Fetching data from Netbox for machine - this can take some seconds...",
+        )
+    except Exception as exception:
+        messages.error(request, exception)  # type: ignore
+
+    return redirect("frontend:detail", id=id)
+
+
+@login_required
+@check_permissions()
+def compare_netbox(request: HttpRequest, id: int) -> HttpResponseRedirect:
+    try:
+        requested_machine = Machine.objects.get(pk=id)
+    except Machine.DoesNotExist:
+        messages.error(request, "Machine does not exist!")
+        return redirect("frontend:machines")
+
+    try:
+        TaskManager.add(tasks.NetboxCompareFullMachine(requested_machine.pk))
+        messages.info(
+            request,
+            "Comparing data with Netbox - this can take some seconds...",
         )
     except Exception as exception:
         messages.error(request, exception)  # type: ignore

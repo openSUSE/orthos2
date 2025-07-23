@@ -1,14 +1,22 @@
+import datetime
 import logging
+import uuid
 from typing import TYPE_CHECKING, Tuple
 
 from django.db import models
 from django.db.models import QuerySet
 from requests import HTTPError
 
+from orthos2.data.models.netboxorthoscomparision import (
+    NetboxOrthosComparisionResult,
+    NetboxOrthosComparisionRun,
+)
 from orthos2.data.models.platform import Platform
 from orthos2.utils.netbox import Netbox
 
 if TYPE_CHECKING:
+    from django.db.models.fields.related_descriptors import RelatedManager
+
     from orthos2.data.models.machine import Machine
     from orthos2.types import OptionalPlatformForeignKey
 
@@ -63,6 +71,8 @@ class Enclosure(models.Model):
         default="unknown",
     )
 
+    netboxorthoscomparisionruns: "RelatedManager[NetboxOrthosComparisionRun]"
+
     def natural_key(self) -> Tuple[str]:
         return (self.name,)
 
@@ -86,6 +96,81 @@ class Enclosure(models.Model):
         """
         machines = self.get_machines().filter(system__virtual=False)
         return machines
+
+    def compare_netbox(self) -> None:
+        """
+        TODO
+        """
+        if self.netbox_id == 0:
+            logger.debug("Skipping comparision because NetBox ID is 0.")
+            return
+
+        run_uuid = uuid.uuid4()
+        run_obj = NetboxOrthosComparisionRun(
+            run_id=run_uuid,
+            compare_timestamp=datetime.datetime.now(),
+            object_type=NetboxOrthosComparisionRun.NetboxOrthosComparisionItemTypes.ENCLOSURE,
+            object_enclosure=self,
+        )
+        run_obj.save()
+
+        netbox_api = Netbox.get_instance()
+        try:
+            netbox_device = netbox_api.fetch_device(self.netbox_id)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                logger.info("Fetching from NetBox failed with status 404.")
+                return
+            raise e
+
+        # Description
+        NetboxOrthosComparisionResult(
+            run_id=run_obj,
+            property_name="description",
+            orthos_result=self.description or "None",
+            netbox_result=netbox_device.get("description", "None"),
+        ).save()
+        # Location Site
+        NetboxOrthosComparisionResult(
+            run_id=run_obj,
+            property_name="location_site",
+            orthos_result=self.location_site or "None",
+            netbox_result=netbox_device.get("site", {}).get("display", "None"),
+        ).save()
+        location_obj = netbox_device.get("location")
+        # Location Room
+        if location_obj is None:
+            netbox_location_room_result = "unknown"
+        else:
+            netbox_location_room_result = location_obj.get("display", "None")
+        NetboxOrthosComparisionResult(
+            run_id=run_obj,
+            property_name="location_room",
+            orthos_result=self.location_room or "None",
+            netbox_result=netbox_location_room_result,
+        ).save()
+        rack_obj = netbox_device.get("rack")
+        # Location Rack
+        NetboxOrthosComparisionResult(
+            run_id=run_obj,
+            property_name="location_rack",
+            orthos_result=self.location_rack or "None",
+            netbox_result=(
+                "unknown" if rack_obj is None else rack_obj.get("display", "None")
+            ),
+        ).save()
+        # Location Rack Position
+        # TODO: What if the position is not set.
+        netbox_location_rack_position_result = netbox_device.get("position", "None")
+        if netbox_location_rack_position_result is None:
+            # In case the location is unset in NetBox, the result is "None" due to the JSON value being "null".
+            netbox_location_rack_position_result = "unknown"
+        NetboxOrthosComparisionResult(
+            run_id=run_obj,
+            property_name="location_rack_position",
+            orthos_result=self.location_rack_position or "None",
+            netbox_result=netbox_location_rack_position_result,
+        ).save()
 
     def fetch_netbox(self) -> None:
         """

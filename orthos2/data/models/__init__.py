@@ -15,6 +15,10 @@ from .machine import (
     validate_dns,
 )
 from .machinegroup import MachineGroup, MachineGroupMembership
+from .netboxorthoscomparision import (
+    NetboxOrthosComparisionResult,
+    NetboxOrthosComparisionRun,
+)
 from .networkinterface import NetworkInterface
 from .platform import Platform
 from .remotepower import RemotePower
@@ -46,6 +50,8 @@ __all__ = [
     "validate_dns",
     "MachineGroup",
     "MachineGroupMembership",
+    "NetboxOrthosComparisionRun",
+    "NetboxOrthosComparisionResult",
     "NetworkInterface",
     "Platform",
     "RemotePower",
