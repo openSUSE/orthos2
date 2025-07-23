@@ -5,7 +5,13 @@ from .daily import (
     DailyMachineChecks,
 )
 from .machinetasks import MachineCheck, RegenerateMOTD
-from .netbox import NetboxFetchEnclosure, NetboxFetchFullMachine, NetboxFetchMachine
+from .netbox import (
+    NetboxFetchBMC,
+    NetboxFetchEnclosure,
+    NetboxFetchFullMachine,
+    NetboxFetchMachine,
+    NetboxFetchNetworkInterface,
+)
 from .notifications import (
     CheckForPrimaryNetwork,
     CheckMultipleAccounts,
@@ -25,9 +31,11 @@ __all__ = [
     "DailyMachineChecks",
     "MachineCheck",
     "RegenerateMOTD",
+    "NetboxFetchBMC",
     "NetboxFetchEnclosure",
     "NetboxFetchFullMachine",
     "NetboxFetchMachine",
+    "NetboxFetchNetworkInterface",
     "CheckForPrimaryNetwork",
     "CheckMultipleAccounts",
     "CheckReservationExpiration",

@@ -3,11 +3,10 @@ from typing import Callable, Optional, Tuple
 
 from django.utils import timezone
 
-from orthos2.data.models import Machine, NetworkInterface, ServerConfig
+from orthos2.data.models import Machine, ServerConfig
 from orthos2.taskmanager.models import Task
 from orthos2.utils.machinechecks import (
     get_installations,
-    get_networkinterfaces,
     get_status_ip,
     login_test,
     nmap_check,
@@ -80,14 +79,10 @@ class MachineCheck(Task):
         """
         methods = {
             self.Scan.STATUS: (self.status,),
-            self.Scan.NETWORKINTERFACES: (
-                self.network,
-                self.status_ip,
-            ),
+            self.Scan.NETWORKINTERFACES: (self.status_ip,),
             self.Scan.INSTALLATIONS: (self.installations,),
             self.Scan.ALL: (
                 self.status,
-                self.network,
                 self.status_ip,
                 self.installations,
             ),
@@ -132,45 +127,6 @@ class MachineCheck(Task):
                     self.machine.status_login = login_test(self.fqdn)
         self.online = bool(self.machine.status_login)
         self.machine.save()
-
-    def network(self) -> None:
-        """
-        Collect information about network interfaces.
-        """
-        if self.machine is None:
-            raise ValueError("Machine not set!")
-
-        if not self.machine.collect_system_information:
-            logger.debug(
-                "Network interfaces: collecting system information disabled... skip"
-            )
-            return
-
-        if self.online is False:
-            return
-
-        networkinterfaces_ = get_networkinterfaces(self.fqdn)
-
-        if isinstance(networkinterfaces_, bool) or not networkinterfaces_:
-            return
-
-        for interface in networkinterfaces_:
-            networkinterface, _created = NetworkInterface.objects.get_or_create(
-                machine=self.machine, mac_address=interface.mac_address
-            )
-            networkinterface.ethernet_type = interface.ethernet_type
-            networkinterface.driver_module = interface.driver_module
-            networkinterface.name = interface.name
-
-            networkinterface.save()
-
-        for networkinterface in self.machine.networkinterfaces.all():
-            if networkinterface.mac_address not in {
-                item.mac_address for item in networkinterfaces_
-            }:
-
-                if not networkinterface.primary:
-                    networkinterface.delete()
 
     def status_ip(self) -> None:
         """

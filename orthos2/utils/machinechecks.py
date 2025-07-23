@@ -4,7 +4,7 @@ import socket
 import threading
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from orthos2.data.models import Installation, Machine, NetworkInterface
+from orthos2.data.models import Installation, Machine
 from orthos2.utils.misc import execute
 from orthos2.utils.remote import ssh_execute
 from orthos2.utils.ssh import SSH
@@ -66,92 +66,6 @@ def login_test(fqdn: str) -> bool:
         logger.warning("SSH login failed for %s", fqdn)
         return False
     return True
-
-
-def get_networkinterfaces(fqdn: str) -> Optional[Union[bool, List[NetworkInterface]]]:
-    """Retrieve information of the systems network interfaces."""
-    try:
-        Machine.objects.get(fqdn=fqdn)
-    except Machine.DoesNotExist:
-        logger.warning("Machine '%s' does not exist", fqdn)
-        return False
-
-    # Network interfaces
-    logger.debug("Collect network interfaces...")
-    stdout, _stderr, err = ssh_execute("hwinfo --network", fqdn)
-    if err:
-        logger.warning("Machine '%s' could not read network interfaces", fqdn)
-        return None
-
-    interfaces: List[NetworkInterface] = []
-    interface = None
-
-    for line in stdout:
-        if line and line[0] != " " and line[0] != "\t":
-            if (
-                interface
-                and interface.mac_address
-                and interface.driver_module not in {"bridge", "tun"}
-            ):
-
-                interfaces.append(interface)
-            interface = NetworkInterface()
-        else:
-            match = re.match(r'\s+Driver: "(\w+)"', line)
-            if match:
-                interface.driver_module = match.group(1)  # type: ignore
-                continue
-
-            match = re.match(r"\s+SysFS ID: ([/\w.]+)", line)
-            if match:
-                interface.sysfs = match.group(1)  # type: ignore
-                continue
-
-            match = re.match(r"\s+HW Address: ([0-9a-fA-F:]+)", line)
-            if match:
-                interface.mac_address = match.group(1).upper()  # type: ignore
-                continue
-
-            match = re.match(r"\s+Device File: ([\w.]+)", line)
-            if match:
-                interface.name = match.group(1)  # type: ignore
-                continue
-
-    if (
-        interface
-        and interface.mac_address
-        and interface.driver_module not in {"bridge", "tun"}
-    ):
-
-        interfaces.append(interface)
-
-    logger.warning("Machine '%s' interfaces: '%s'", fqdn, interfaces)
-
-    for interface in interfaces:
-        if interface.sysfs is None:  # type: ignore
-            continue
-        path = "/sys/{}/type".format(interface.sysfs)  # type: ignore
-        arp_type, _stderr, err = ssh_execute("cat {}".format(path), fqdn)
-        logger.warning("Machine '%s' type: '%s'", fqdn, arp_type)
-
-        if arp_type == ARPHRD_IEEE80211:  # type: ignore
-            continue
-
-        stdout, _stderr, err = ssh_execute("ethtool {}".format(interface.name), fqdn)
-        if err:
-            logger.warning(
-                "Machine '%s' could not check networkinterface '%s'",
-                fqdn,
-                interface.name,
-            )
-            return None
-
-        for line in stdout:
-            match = re.match(r"\s+Port: (.+)", line)
-            if match:
-                interface.ethernet_type = match.group(1)
-
-    return interfaces
 
 
 def get_status_ip(fqdn: str) -> Optional[Union[bool, Machine]]:
