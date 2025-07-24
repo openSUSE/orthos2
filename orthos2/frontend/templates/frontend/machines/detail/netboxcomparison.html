@@ -8,6 +8,16 @@
 </div>
 </div>
 
+{% if machine.enclosure.netbox_id == 0 %}
+
+<div class="title">
+  <h5>Enclosure</h5>
+</div>
+
+<p>NetBox ID of enclosure is unknown!</p>
+
+{% else %}
+
 <div class="title">
   <h5>Enclosure - UUID {{ enclosure_run.run_id }}</h5>
 </div>
@@ -30,6 +40,8 @@
     {% endfor %}
   </tbody>
 </table>
+
+{% endif %}
 
 <div class="title">
   <h5>Machine - UUID {{ machine_run.run_id }}</h5>
