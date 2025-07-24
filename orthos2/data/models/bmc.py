@@ -232,10 +232,8 @@ class BMC(models.Model):
         Validate the fence_agent field to ensure it is of type "hypervisor".
         This method is called automatically by Django's validation system.
         """
-        if not self.fence_agent:
-            raise ValidationError("Fence name cannot be empty.")
-        if self.fence_agent.device != "bmc":  # type: ignore
+        if self.fence_agent.device != "bmc":
             raise ValidationError(
-                "The fence agent must be of type 'hypervisor'. "
+                "The fence agent must be of type 'bmc'. "
                 "Please select a valid fence agent."
             )
