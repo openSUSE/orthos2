@@ -170,7 +170,7 @@ class RemotePower(models.Model):
             return self.fence_agent
         if self.remote_power_device:
             return self.remote_power_device.fence_agent
-        if self.machine.bmc:
+        if self.machine.has_bmc():
             return self.machine.bmc.fence_agent
         raise ValueError("No fence agent set for remote power object. Invalid state!")
 
