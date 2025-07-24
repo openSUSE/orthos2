@@ -2,7 +2,7 @@ import ipaddress
 import logging
 import uuid
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Iterable, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -139,6 +139,45 @@ class NetworkInterface(models.Model):
                 )
             )
 
+    def fetch_netbox_record(self) -> Dict[str, Any]:
+        """
+        Fetch the NetBox record of this NetworkInterface objects. This will attempt to search either the Virtual Machine
+        or DCIM endpoint, depending on the System type of the machine.
+
+        :returns: An empty dict in case no network interface could be found in NetBox that matches the MAC of this
+                  interface.
+        """
+        netbox_api = Netbox.get_instance()
+        if self.machine.system.virtual:
+            netbox_interfaces = netbox_api.check_vm_interface_by_id(
+                self.machine.netbox_id
+            )
+        else:
+            netbox_interfaces = netbox_api.check_interface_no_mgmt_by_id(
+                self.machine.netbox_id
+            )
+        netbox_interface = {}
+        for interface in netbox_interfaces:
+            if interface.get("primary_mac_address") is None:
+                continue
+            if (
+                interface.get("primary_mac_address", {}).get("display", "")
+                == self.mac_address
+            ):
+                netbox_interface = interface
+                break
+        return netbox_interface
+
+    def fetch_netbox_ips(self, interface_id: int) -> List[Dict[str, Any]]:
+        """
+        Fetch the IPs that are assigned to a given network interface in NetBox.
+        """
+        netbox_api = Netbox.get_instance()
+        if self.machine.system.virtual:
+            return netbox_api.check_ip_by_vm_interface(interface_id)
+        else:
+            return netbox_api.check_ip_by_interface(interface_id)
+
     def compare_netbox(self) -> None:
         """
         Compare the current data in the database of Orthos 2 with the data from NetBox.
@@ -156,42 +195,29 @@ class NetworkInterface(models.Model):
         )
         run_obj.save()
 
-        netbox_api = Netbox.get_instance()
-        try:
-            netbox_machine = netbox_api.fetch_device(self.machine.netbox_id)
-        except HTTPError as e:
-            if e.response.status_code == 404:
-                logger.info("Fetching from NetBox failed with status 404.")
-                return
-            raise e
-        netbox_interfaces = netbox_api.check_interface_no_mgmt_by_id(
-            self.machine.netbox_id
-        )
-        netbox_target_interface = {}
-        for interface in netbox_interfaces:
-            if interface.get("primary_mac_address") is None:
-                continue
-            if (
-                interface.get("primary_mac_address", {}).get("display", "")
-                == self.mac_address
-            ):
-                netbox_target_interface = interface
-                break
+        netbox_machine = self.machine.fetch_netbox_record()
+        if netbox_machine is None:
+            return
+        netbox_interface = self.fetch_netbox_record()
 
         # Name
         NetboxOrthosComparisionResult(
             run_id=run_obj,
             property_name="name",
             orthos_result=self.name or "None",
-            netbox_result=netbox_target_interface.get("display", "None"),
+            netbox_result=netbox_interface.get("display", "None"),
         ).save()
 
-        ips = netbox_api.check_ip_by_interface(netbox_target_interface.get("id"))  # type: ignore
+        if len(netbox_interface.keys()) == 0:
+            logger.info("%s: Interface not found in NetBox.", self.machine.fqdn)
+            return
+
+        ips = self.fetch_netbox_ips(netbox_interface.get("id"))  # type: ignore
         if len(ips) == 0:
-            logger.debug("No IPs assigned to this interface.")
+            logger.debug("No IPs assigned to this interface in NetBox.")
             return
         if len(ips) > 2:
-            logger.warning("Too many IPs assigned to this interface.")
+            logger.warning("Too many IPs assigned to this interface in NetBox.")
             return
 
         machine_primary_ipv4 = netbox_machine.get("primary_ip4")
@@ -244,26 +270,15 @@ class NetworkInterface(models.Model):
                 logger.info("Fetching from NetBox failed with status 404.")
                 return
             raise e
-        netbox_interfaces = netbox_api.check_interface_no_mgmt_by_id(
-            self.machine.netbox_id
-        )
-        netbox_target_interface = {}
-        for interface in netbox_interfaces:
-            if interface.get("primary_mac_address") is None:
-                continue
-            if (
-                interface.get("primary_mac_address", {}).get("display", "")
-                == self.mac_address
-            ):
-                netbox_target_interface = interface
-                break
 
-        ips = netbox_api.check_ip_by_interface(netbox_target_interface.get("id"))  # type: ignore
+        netbox_interface = self.fetch_netbox_record()
+
+        ips = netbox_api.check_ip_by_interface(netbox_interface.get("id"))  # type: ignore
         if len(ips) == 0:
-            logger.debug("No IPs assigned to this interface.")
+            logger.debug("No IPs assigned to this interface in NetBox.")
             return
         if len(ips) > 2:
-            logger.warning("Too many IPs assigned to this interface.")
+            logger.warning("Too many IPs assigned to this interface in NetBox.")
             return
         # Reset Fields
         self.ip_address_v4 = None

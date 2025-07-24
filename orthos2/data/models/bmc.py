@@ -2,7 +2,7 @@ import datetime
 import ipaddress
 import logging
 import uuid
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from django.db import models
 from django.forms import ValidationError
@@ -86,6 +86,42 @@ class BMC(models.Model):
     def __str__(self) -> str:
         return self.fqdn
 
+    def fetch_netbox_record(self) -> Dict[str, Any]:
+        """
+        Fetch the NetBox record of this NetworkInterface objects. This will attempt to search either the Virtual Machine
+        or DCIM endpoint, depending on the System type of the machine.
+
+        :returns: An empty dict in case no network interface could be found in NetBox that matches the MAC of this
+                  interface.
+        """
+        netbox_api = Netbox.get_instance()
+        if self.machine.system.virtual:
+            netbox_interfaces = netbox_api.check_vm_interface_by_id(
+                self.machine.netbox_id
+            )
+        else:
+            netbox_interfaces = netbox_api.check_interface_no_mgmt_by_id(
+                self.machine.netbox_id
+            )
+        netbox_interface = {}
+        for interface in netbox_interfaces:
+            if interface.get("primary_mac_address") is None:
+                continue
+            if interface.get("primary_mac_address", {}).get("display", "") == self.mac:
+                netbox_interface = interface
+                break
+        return netbox_interface
+
+    def fetch_netbox_ips(self, interface_id: int) -> List[Dict[str, Any]]:
+        """
+        Fetch the IPs that are assigned to a given network interface in NetBox.
+        """
+        netbox_api = Netbox.get_instance()
+        if self.machine.system.virtual:
+            return netbox_api.check_ip_by_vm_interface(interface_id)
+        else:
+            return netbox_api.check_ip_by_interface(interface_id)
+
     def compare_netbox(self) -> None:
         """
         Compare the current data in the database of Orthos 2 with the data from NetBox.
@@ -102,46 +138,62 @@ class BMC(models.Model):
             object_bmc=self,
         )
         run_obj.save()
-        netbox_api = Netbox.get_instance()
-        netbox_interfaces = netbox_api.check_interface_mgmt_by_id(
-            self.machine.netbox_id
-        )
-        for interface in netbox_interfaces:
-            if interface.get("primary_mac_address") is None:
-                continue
-            if interface.get("primary_mac_address", {}).get("display", "") == self.mac:
-                # FIXME: A single interface can have any number of IPs (both v4 and v6)
+
+        netbox_machine = self.machine.fetch_netbox_record()
+        if netbox_machine is None:
+            return
+        netbox_interface = self.fetch_netbox_record()
+
+        # FIXME: A single interface can have any number of IPs (both v4 and v6)
+        NetboxOrthosComparisionResult(
+            run_id=run_obj,
+            property_name="mac_address",
+            orthos_result=self.mac,
+            netbox_result=netbox_interface.get("primary_mac_address", {}).get(
+                "display", "None"
+            ),
+        ).save()
+        ips = self.fetch_netbox_ips(netbox_interface.get("id"))  # type: ignore
+        if len(ips) == 0:
+            logger.debug("No IPs assigned to this interface in NetBox.")
+            return
+        if len(ips) > 2:
+            logger.warning("Too many IPs assigned to this interface in NetBox.")
+            return
+
+        # OOB IP
+        machine_primary_oob = netbox_machine.get("oob_ip", "")
+        # Virtual machines don't have out-of-band IPs
+        if not self.machine.system.virtual:
+            NetboxOrthosComparisionResult(
+                run_id=run_obj,
+                property_name="NetBox Out-Of-Band IP set?",
+                orthos_result="",
+                netbox_result=str((machine_primary_oob != "")),
+            ).save()
+        # IPs
+        for ip in ips:
+            ip_obj = ipaddress.ip_network(ip.get("display"))  # type: ignore
+            NetboxOrthosComparisionResult(
+                run_id=run_obj,
+                property_name="fqdn (IPv%s)" % ip_obj.version,
+                orthos_result=self.fqdn,
+                netbox_result=ip.get("dns_name", "None"),
+            ).save()
+            if ip_obj.version == 4:
                 NetboxOrthosComparisionResult(
                     run_id=run_obj,
-                    property_name="mac_address",
-                    orthos_result=self.mac,
-                    netbox_result=interface.get("primary_mac_address", {}).get(
-                        "display", "None"
-                    ),
+                    property_name="ip_address_v4",
+                    orthos_result=self.ip_address_v4 or "None",
+                    netbox_result=str(ip_obj),
                 ).save()
-                ips = netbox_api.check_ip_by_interface(interface.get("id"))  # type: ignore
-                for ip in ips:
-                    ip_obj = ipaddress.ip_network(ip.get("display"))  # type: ignore
-                    NetboxOrthosComparisionResult(
-                        run_id=run_obj,
-                        property_name="fqdn (IPv%s)" % ip_obj.version,
-                        orthos_result=self.fqdn,
-                        netbox_result=ip.get("dns_name", "None"),
-                    ).save()
-                    if ip_obj.version == 4:
-                        NetboxOrthosComparisionResult(
-                            run_id=run_obj,
-                            property_name="ip_address_v4",
-                            orthos_result=self.ip_address_v4 or "None",
-                            netbox_result=str(ip_obj),
-                        ).save()
-                    if ip_obj.version == 6:
-                        NetboxOrthosComparisionResult(
-                            run_id=run_obj,
-                            property_name="ip_address_v6",
-                            orthos_result=self.ip_address_v6 or "None",
-                            netbox_result=str(ip_obj),
-                        ).save()
+            if ip_obj.version == 6:
+                NetboxOrthosComparisionResult(
+                    run_id=run_obj,
+                    property_name="ip_address_v6",
+                    orthos_result=self.ip_address_v6 or "None",
+                    netbox_result=str(ip_obj),
+                ).save()
         # TODO: Machine
         # TODO: Ethernet Type
 
@@ -152,27 +204,28 @@ class BMC(models.Model):
         if self.machine.netbox_id == 0:
             logger.debug("Skipping fetching from NetBox because NetBox ID is 0.")
             return
-        netbox_api = Netbox.get_instance()
-        netbox_interfaces = netbox_api.check_interface_mgmt_by_id(
-            self.machine.netbox_id
-        )
+
+        netbox_interface = self.fetch_netbox_record()
+        # FIXME: A single interface can have any number of IPs (both v4 and v6)
+        ips = self.fetch_netbox_ips(netbox_interface.get("id"))  # type: ignore
+        if len(ips) == 0:
+            logger.debug("No IPs assigned to this interface in NetBox.")
+            return
+        if len(ips) > 2:
+            logger.warning("Too many IPs assigned to this interface in NetBox.")
+            return
+
         # Reset fields
         self.ip_address_v4 = None
         self.ip_address_v6 = None
         # Set fields
-        for interface in netbox_interfaces:
-            if interface.get("primary_mac_address") is None:
-                continue
-            if interface.get("primary_mac_address", {}).get("display", "") == self.mac:
-                # FIXME: A single interface can have any number of IPs (both v4 and v6)
-                ips = netbox_api.check_ip_by_interface(interface.get("id"))  # type: ignore
-                for ip in ips:
-                    ip_obj = ipaddress.ip_network(ip.get("display"))  # type: ignore
-                    if ip_obj.version == 4:
-                        self.ip_address_v4 = str(ip_obj)
-                    if ip_obj.version == 6:
-                        self.ip_address_v6 = str(ip_obj)
-                    self.save()
+        for ip in ips:
+            ip_obj = ipaddress.ip_network(ip.get("display"))  # type: ignore
+            if ip_obj.version == 4:
+                self.ip_address_v4 = str(ip_obj)
+            if ip_obj.version == 6:
+                self.ip_address_v6 = str(ip_obj)
+            self.save()
 
     def clean_fence_agent(self) -> None:
         """

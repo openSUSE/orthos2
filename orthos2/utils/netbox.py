@@ -262,6 +262,12 @@ class Netbox(REST):
         data = self.fetcher(url)
         return data["results"]
 
+    def check_ip_by_vm_interface(self, id: int) -> List[Dict[str, Any]]:
+        url = f"{self.base_url}/ipam/ip-addresses/?vminterface_id={id}"
+        logger.debug("Checking ip address from %s", url)
+        data = self.fetcher(url)
+        return data["results"]
+
     def check_ip_by_interface_family(
         self,
         id: int,
