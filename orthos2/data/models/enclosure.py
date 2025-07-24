@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Tuple
 
 from django.db import models
 from django.db.models import QuerySet
+from django.utils import timezone
 from requests import HTTPError
 
 from orthos2.data.models.netboxorthoscomparision import (
@@ -108,7 +109,7 @@ class Enclosure(models.Model):
         run_uuid = uuid.uuid4()
         run_obj = NetboxOrthosComparisionRun(
             run_id=run_uuid,
-            compare_timestamp=datetime.datetime.now(),
+            compare_timestamp=datetime.datetime.now(tz=timezone.get_current_timezone()),
             object_type=NetboxOrthosComparisionRun.NetboxOrthosComparisionItemTypes.ENCLOSURE,
             object_enclosure=self,
         )

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Optional
 
 from django.db import models
 from django.forms import ValidationError
+from django.utils import timezone
 
 from orthos2.data.models.netboxorthoscomparision import (
     NetboxOrthosComparisionResult,
@@ -96,7 +97,7 @@ class BMC(models.Model):
         run_uuid = uuid.uuid4()
         run_obj = NetboxOrthosComparisionRun(
             run_id=run_uuid,
-            compare_timestamp=datetime.datetime.now(),
+            compare_timestamp=datetime.datetime.now(tz=timezone.get_current_timezone()),
             object_type=NetboxOrthosComparisionRun.NetboxOrthosComparisionItemTypes.BMC,
             object_bmc=self,
         )

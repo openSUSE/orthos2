@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Iterable, Optional, Tuple
 
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 from requests import HTTPError
 
 from orthos2.data.models.netboxorthoscomparision import (
@@ -149,7 +150,7 @@ class NetworkInterface(models.Model):
         run_uuid = uuid.uuid4()
         run_obj = NetboxOrthosComparisionRun(
             run_id=run_uuid,
-            compare_timestamp=datetime.now(),
+            compare_timestamp=datetime.now(tz=timezone.get_current_timezone()),
             object_type=NetboxOrthosComparisionRun.NetboxOrthosComparisionItemTypes.NETWORK_INTERFACE,
             object_network_interface=self,
         )
