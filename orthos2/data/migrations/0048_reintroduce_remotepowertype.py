@@ -234,6 +234,7 @@ class Migration(migrations.Migration):
                 on_delete=django.db.models.deletion.CASCADE,
                 to="data.remotepowertype",
                 verbose_name="Fence agent",
+                null=True,
             ),
         ),
         migrations.AddField(
@@ -262,10 +263,32 @@ class Migration(migrations.Migration):
             field=models.CharField(
                 max_length=17,
                 unique=True,
+                null=True,
                 validators=[orthos2.data.validators.validate_mac_address],
             ),
         ),
         migrations.RunPython(create_initial_remotepowertypes),
         migrations.RunPython(migrate_settings_py_remote_power_types),
         migrations.RunPython(set_null_fence_agents),
+        migrations.AlterField(
+            model_name="bmc",
+            name="fence_agent",
+            field=models.ForeignKey(
+                help_text="Fence agent for remote power control",
+                limit_choices_to={"device": "bmc"},
+                on_delete=django.db.models.deletion.CASCADE,
+                to="data.remotepowertype",
+                verbose_name="Fence agent",
+            ),
+        ),
+        migrations.AlterField(
+            model_name="remotepowerdevice",
+            name="fence_agent",
+            field=models.ForeignKey(
+                limit_choices_to={"device": "rpowerdevice"},
+                on_delete=django.db.models.deletion.CASCADE,
+                to="data.remotepowertype",
+                verbose_name="Fence agent",
+            ),
+        ),
     ]
