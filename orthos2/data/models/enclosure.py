@@ -99,7 +99,7 @@ class Enclosure(models.Model):
 
     def compare_netbox(self) -> None:
         """
-        TODO
+        Compare the current data in the database of Orthos 2 with the data from NetBox.
         """
         if self.netbox_id == 0:
             logger.debug("Skipping comparision because NetBox ID is 0.")
