@@ -23,4 +23,9 @@
     <a class="nav-link" href="{% url 'frontend:machine_add' %}">Add Machine</a>
   </li>
   {% endif %}
+  {% if perms.data and perms.data.add_netboxorthoscomparisonrun  %}
+  <li class="nav-item {% active_view request 'compare_netbox_overview' %}">
+    <a class="nav-link" href="{% url 'frontend:compare_netbox_overview' %}">NetBox Comparisons</a>
+  </li>
+  {% endif %}
 </ul>

@@ -1,0 +1,64 @@
+{% extends 'frontend/base.html' %}
+
+{% load static %}
+{% load filters %}
+{% load tags %}
+
+{% block navbar %}
+
+{% include 'frontend/snippet.navlinks.html' %}
+{% include 'frontend/snippet.search.html' %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+  {% if runs %}
+
+  <table class="table table-striped table-bordered table-fixed">
+    <thead class="thead-default">
+      <tr style="border: 1px solid #ddd">
+        <th>UUID {% order_list request 'run_id' %}</th>
+        <th>Run at {% order_list request 'compare_timestamp' %}</th>
+        <th>Object Type {% order_list request 'object_type' %}</th>
+        <th>Object Name</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for run in runs %}
+      <tr>
+        <th>
+          <a
+            href="{% url 'frontend:compare_netbox_details' run.run_id %}"
+            class="text-muted"
+          >
+            {{ run.run_id }}
+          </a>
+        </th>
+        <th>{{ run.compare_timestamp }}</th>
+        <th>{{ run.object_type }}</th>
+        {% if run.object_type == "bmc" %}
+        <th>{{ run.object_bmc.fqdn }}</th>
+        {% elif run.object_type == "enclosure" %}
+        <th>{{ run.object_enclosure.name }}</th>
+        {% elif run.object_type == "machine" %}
+        <th>{{ run.object_machine.fqdn }}</th>
+        {% elif run.object_type == "network_interface" %}
+        <th>{{ run.object_network_interface.fqdn }}</th>
+        {% else %}
+        <th>Unkown object name</td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% else %}
+
+  <div class="alert alert-info">No NetBox Orthos comparison runs found!</div>
+
+  {% endif %} {% include 'frontend/snippet.paginator.html' %}
+</div>
+
+{% endblock %}
