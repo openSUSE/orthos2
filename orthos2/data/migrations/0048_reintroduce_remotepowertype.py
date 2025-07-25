@@ -95,18 +95,43 @@ def set_null_fence_agents(app_registry: Apps, schema_editor: BaseDatabaseSchemaE
     BMC = app_registry.get_model("data", "BMC")
     RemotePowerDevice = app_registry.get_model("data", "RemotePowerDevice")
     RemotePowerType = app_registry.get_model("data", "RemotePowerType")
+    RemotePower = app_registry.get_model("data", "RemotePower")
     power_type_bmc = RemotePowerType.objects.using(db_alias).get(
         name=REMOTE_POWER_TYPE_BMC_NAME
     )
     power_type_rpowerdevice = RemotePowerType.objects.using(db_alias).get(
         name=REMOTE_POWER_TYPE_RPOWERDEVICE_NAME
     )
+    power_type_hypervisor = RemotePowerType.objects.using(db_alias).get(
+        name=REMOTE_POWER_TYPE_HYPERVISOR_NAME
+    )
 
     db_alias = schema_editor.connection.alias
-    BMC.objects.using(db_alias).update(fence_agent=power_type_bmc)
-    RemotePowerDevice.objects.using(db_alias).update(
-        fence_agent=power_type_rpowerdevice
-    )
+    for bmc in BMC.objects.all():
+        try:
+            bmc.fence_agent = RemotePowerType.objects.get(name=bmc.fence_name)
+        except RemotePowerType.DoesNotExist:
+            bmc.fence_agent = power_type_bmc
+        bmc.save()
+    for rpower_device in RemotePowerDevice.objects.all():
+        try:
+            rpower_device.fence_agent = RemotePowerType.objects.get(
+                name=rpower_device.fence_name
+            )
+        except RemotePowerType.DoesNotExist:
+            rpower_device.fence_agent = power_type_rpowerdevice
+        rpower_device.save()
+    for remotepower in RemotePower.objects.all():
+        if remotepower.fence_name == "":
+            # Skip objects that have an empty fence name
+            continue
+        try:
+            remotepower.fence_agent = RemotePowerType.objects.get(
+                name=remotepower.fence_name
+            )
+        except RemotePowerType.DoesNotExist:
+            remotepower.fence_agent = power_type_hypervisor
+        remotepower.save()
 
 
 class Migration(migrations.Migration):
@@ -116,18 +141,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name="bmc",
-            name="fence_name",
-        ),
-        migrations.RemoveField(
-            model_name="remotepower",
-            name="fence_name",
-        ),
-        migrations.RemoveField(
-            model_name="remotepowerdevice",
-            name="fence_name",
-        ),
         migrations.CreateModel(
             name="RemotePowerType",
             fields=[
@@ -234,6 +247,7 @@ class Migration(migrations.Migration):
                 on_delete=django.db.models.deletion.CASCADE,
                 to="data.remotepowertype",
                 verbose_name="Fence agent",
+                null=True,
             ),
         ),
         migrations.AddField(
@@ -254,6 +268,7 @@ class Migration(migrations.Migration):
                 on_delete=django.db.models.deletion.CASCADE,
                 to="data.remotepowertype",
                 verbose_name="Fence agent",
+                null=True,
             ),
         ),
         migrations.AlterField(
@@ -262,10 +277,44 @@ class Migration(migrations.Migration):
             field=models.CharField(
                 max_length=17,
                 unique=True,
+                null=True,
                 validators=[orthos2.data.validators.validate_mac_address],
             ),
         ),
         migrations.RunPython(create_initial_remotepowertypes),
         migrations.RunPython(migrate_settings_py_remote_power_types),
         migrations.RunPython(set_null_fence_agents),
+        migrations.AlterField(
+            model_name="bmc",
+            name="fence_agent",
+            field=models.ForeignKey(
+                help_text="Fence agent for remote power control",
+                limit_choices_to={"device": "bmc"},
+                on_delete=django.db.models.deletion.CASCADE,
+                to="data.remotepowertype",
+                verbose_name="Fence agent",
+            ),
+        ),
+        migrations.AlterField(
+            model_name="remotepowerdevice",
+            name="fence_agent",
+            field=models.ForeignKey(
+                limit_choices_to={"device": "rpowerdevice"},
+                on_delete=django.db.models.deletion.CASCADE,
+                to="data.remotepowertype",
+                verbose_name="Fence agent",
+            ),
+        ),
+        migrations.RemoveField(
+            model_name="bmc",
+            name="fence_name",
+        ),
+        migrations.RemoveField(
+            model_name="remotepower",
+            name="fence_name",
+        ),
+        migrations.RemoveField(
+            model_name="remotepowerdevice",
+            name="fence_name",
+        ),
     ]

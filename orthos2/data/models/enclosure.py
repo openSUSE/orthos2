@@ -1,10 +1,11 @@
 import datetime
 import logging
 import uuid
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
 from django.db import models
 from django.db.models import QuerySet
+from django.utils import timezone
 from requests import HTTPError
 
 from orthos2.data.models.netboxorthoscomparision import (
@@ -97,9 +98,41 @@ class Enclosure(models.Model):
         machines = self.get_machines().filter(system__virtual=False)
         return machines
 
+    def fetch_netbox_record(self) -> Optional[Dict[str, Any]]:
+        """
+        Fetch the record of this Machine object. This will attempt to search either the DCIM or Virtual Machine
+        endpoint of NetBox, depending on the System type of the machine.
+
+        :returns: None in case the record cannot be retrieved. The Dict with the NetBox data otherwhise.
+        :raises HTTPError: In case any HTTP code except 200 and 404 is returned.
+        """
+        netbox_api = Netbox.get_instance()
+        # Take any machine as they should be of the system system type
+        machine = self.machine_set.first()
+        if machine is None:
+            logger.info("Cannot fetch record for enclosure without machines.")
+            return None
+        if machine.system.virtual:
+            try:
+                netbox_machine = netbox_api.fetch_vm(self.netbox_id)
+            except HTTPError as e:
+                if e.response.status_code == 404:
+                    logger.info("Fetching VM from NetBox failed with status 404.")
+                    return None
+                raise e
+        else:
+            try:
+                netbox_machine = netbox_api.fetch_device(self.netbox_id)
+            except HTTPError as e:
+                if e.response.status_code == 404:
+                    logger.info("Fetching Device from NetBox failed with status 404.")
+                    return None
+                raise e
+        return netbox_machine
+
     def compare_netbox(self) -> None:
         """
-        TODO
+        Compare the current data in the database of Orthos 2 with the data from NetBox.
         """
         if self.netbox_id == 0:
             logger.debug("Skipping comparision because NetBox ID is 0.")
@@ -108,20 +141,15 @@ class Enclosure(models.Model):
         run_uuid = uuid.uuid4()
         run_obj = NetboxOrthosComparisionRun(
             run_id=run_uuid,
-            compare_timestamp=datetime.datetime.now(),
+            compare_timestamp=datetime.datetime.now(tz=timezone.get_current_timezone()),
             object_type=NetboxOrthosComparisionRun.NetboxOrthosComparisionItemTypes.ENCLOSURE,
             object_enclosure=self,
         )
         run_obj.save()
 
-        netbox_api = Netbox.get_instance()
-        try:
-            netbox_device = netbox_api.fetch_device(self.netbox_id)
-        except HTTPError as e:
-            if e.response.status_code == 404:
-                logger.info("Fetching from NetBox failed with status 404.")
-                return
-            raise e
+        netbox_device = self.fetch_netbox_record()
+        if netbox_device is None:
+            return
 
         # Description
         NetboxOrthosComparisionResult(
@@ -179,14 +207,11 @@ class Enclosure(models.Model):
         if self.netbox_id == 0:
             logger.debug("Skipping fetching from NetBox because NetBox ID is 0.")
             return
-        netbox_api = Netbox.get_instance()
-        try:
-            netbox_device = netbox_api.fetch_device(self.netbox_id)
-        except HTTPError as e:
-            if e.response.status_code == 404:
-                logger.info("Fetching from NetBox failed with status 404.")
-                return
-            raise e
+
+        netbox_device = self.fetch_netbox_record()
+        if netbox_device is None:
+            return
+
         # Reset fields
         self.comment = ""
         self.location_site = "unknown"
