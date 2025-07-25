@@ -6,6 +6,8 @@ from orthos2.frontend import views
 
 app_name = "orthos2.frontend"
 urlpatterns = [
+    path("enclosures", views.EnclosureListView.as_view(), name="enclosures"),
+    re_path(r"^enclosures/(?P<id>[0-9]+)/$", views.EnclosureDetailed.as_view(), name="enclosures_detailed"),
     re_path(
         r"^$", RedirectView.as_view(pattern_name="frontend:free_machines"), name="root"
     ),
