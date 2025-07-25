@@ -4,6 +4,10 @@ This module contains all Django frontend views. For convenience, they are all re
 
 from .ajax import annotation, powercycle, virtualization_delete, virtualization_list
 from .auth import deprecate_current_app, login
+from .compare_netbox import (
+    NetboxOrthosComparisionRunListView,
+    netboxorthoscomparisonrun,
+)
 from .machine import (
     compare_netbox,
     console,
@@ -51,6 +55,8 @@ __all__ = [
     "virtualization_delete",
     "deprecate_current_app",
     "login",
+    "NetboxOrthosComparisionRunListView",
+    "netboxorthoscomparisonrun",
     "pci",
     "cpu",
     "networkinterfaces",

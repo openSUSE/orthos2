@@ -133,4 +133,14 @@ urlpatterns = [
         views.regenerate.regenerate_machine_motd,
         name="regenerate_machine_motd",
     ),
+    re_path(
+        r"^compare-netbox/overview",
+        views.NetboxOrthosComparisionRunListView.as_view(),
+        name="compare_netbox_overview",
+    ),
+    re_path(
+        r"^compare-netbox/(?P<id>[a-z0-9\-]+)$",
+        views.netboxorthoscomparisonrun,
+        name="compare_netbox_details",
+    ),
 ]
