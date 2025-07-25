@@ -1,0 +1,51 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+{% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+  {% if enclosure_list %}
+
+  <table class="table table-striped table-bordered table-fixed">
+    <thead class="thead-default">
+      <tr style="border: 1px solid #ddd;">
+        <th>Name </th>
+        <th>Platform </th>
+        <!-- <th>Description </th> -->
+        <th>NetBox ID </th>
+      </tr>
+    </thead>
+
+    <tbody>
+    {% for enclosure in enclosure_list %}
+      <tr>
+        {% comment %}
+        {% endcomment %}
+        <td><a class="nav-link" href="{% url 'frontend:enclosures_detailed' enclosure.id %}">{{ enclosure.name }}</a></td>
+
+        <td>{{ enclosure.name }}</td>
+        <td>{{ enclosure.platform }}x</td>
+        <td>{{ enclosure.netbox_id }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  {% include 'frontend/snippet.paginator.html' %}
+
+  {% else %}
+  <div class="alert alert-info">
+    No enclosures found!
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block javascript_imports %}
+<script src="{% static 'frontend/js/chart.js' %}"></script>
+{% endblock %}

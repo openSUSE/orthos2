@@ -30,7 +30,7 @@ SECRET_KEY = os.environ.get("ORTHOS_SECRET_KEY", "")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", gethostname(), getfqdn()]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "172.18.0.11", gethostname(), getfqdn()]
 
 # Application definition
 
