@@ -18,8 +18,8 @@ from orthos2.data.models import Enclosure
 
 class EnclosureListView(ListView):
     model = Enclosure
-
     template_name = "frontend/enclosures/enclosures.html"
+
     def get_queryset(self) -> QuerySet["Enclosure"]:
         enclosures = super(EnclosureListView, self).get_queryset()
         return enclosures.all()
@@ -31,3 +31,5 @@ class EnclosureListView(ListView):
 
 class EnclosureDetailed(DetailView):
     model = Enclosure
+    template_name = "frontend/enclosures/enclosures.html"
+    context_object_name = 'enclosure'

@@ -8,10 +8,12 @@
 {% block content %}
 
 <div class="container-fluid">
-
+    <h1>enclosure name: {{ enclosure.name }}</h1>
+</div>
 
 {% endblock %}
 
 {% block javascript_imports %}
 <script src="{% static 'frontend/js/chart.js' %}"></script>
+
 {% endblock %}
