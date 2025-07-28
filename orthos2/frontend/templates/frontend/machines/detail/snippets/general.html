@@ -74,6 +74,10 @@
       <td><a href="{{ NETBOX_URL }}/dcim/devices/{{ machine.netbox_id }}/">NetBox Device {{ machine.netbox_id }}</a></td>
       {% endif %}
     </tr>
+    <tr>
+      <td class="th">NetBox Last Checked</td>
+      <td>{{ machine.netbox_last_fetch_attempt }}</td>
+    </tr>
     {% endif %}
   </tbody>
 </table>

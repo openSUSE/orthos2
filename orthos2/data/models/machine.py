@@ -609,6 +609,12 @@ class Machine(models.Model):
         default=0,
     )
 
+    netbox_last_fetch_attempt: "OptionalDateTimeField" = models.DateTimeField(
+        "NetBox Last Fetched at",
+        null=True,
+        blank=True,
+    )
+
     updated: "models.DateTimeField[datetime.datetime, datetime.datetime]" = (
         models.DateTimeField("Updated at", auto_now=True)
     )
@@ -763,6 +769,11 @@ class Machine(models.Model):
         if self.netbox_id == 0:
             logger.debug("Skipping fetching from NetBox because NetBox ID is 0.")
             return
+
+        self.netbox_last_fetch_attempt = datetime.datetime.now(
+            tz=timezone.get_current_timezone()
+        )
+        self.save()
         netbox_api = Netbox.get_instance()
         netbox_machine = self.fetch_netbox_record()
         if netbox_machine is None:

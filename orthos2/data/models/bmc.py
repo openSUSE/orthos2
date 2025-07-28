@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from orthos2.types import (
         MandatoryMachineOneToOneField,
         MandatoryRemotePowerTypeForeignKey,
+        OptionalDateTimeField,
     )
 
 logger = logging.getLogger("models")
@@ -76,6 +77,12 @@ class BMC(models.Model):
             verbose_name="IPv6 address",
             help_text="IPv6 address",
         )
+    )
+
+    netbox_last_fetch_attempt: "OptionalDateTimeField" = models.DateTimeField(
+        "NetBox Last Fetched at",
+        null=True,
+        blank=True,
     )
 
     netboxorthoscomparisionruns: "RelatedManager[NetboxOrthosComparisionRun]"
@@ -210,6 +217,10 @@ class BMC(models.Model):
             logger.debug("Skipping fetching from NetBox because NetBox ID is 0.")
             return
 
+        self.netbox_last_fetch_attempt = datetime.datetime.now(
+            tz=timezone.get_current_timezone()
+        )
+        self.save()
         netbox_interface = self.fetch_netbox_record()
         if len(netbox_interface.keys()) == 0:
             logger.warning(

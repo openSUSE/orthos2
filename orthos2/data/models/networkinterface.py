@@ -18,7 +18,7 @@ from orthos2.utils import misc
 from orthos2.utils.netbox import Netbox
 
 if TYPE_CHECKING:
-    from orthos2.types import MandatoryMachineForeignKey
+    from orthos2.types import MandatoryMachineForeignKey, OptionalDateTimeField
 
 logger = logging.getLogger("models")
 
@@ -86,6 +86,12 @@ class NetworkInterface(models.Model):
         max_length=20,
         blank=False,
         default="unknown",
+    )
+
+    netbox_last_fetch_attempt: "OptionalDateTimeField" = models.DateTimeField(
+        "NetBox Last Fetched at",
+        null=True,
+        blank=True,
     )
 
     updated: "models.DateTimeField[datetime, datetime]" = models.DateTimeField(
@@ -262,6 +268,11 @@ class NetworkInterface(models.Model):
         if self.machine.netbox_id == 0:
             logger.debug("Skipping fetching from NetBox because NetBox ID is 0.")
             return
+
+        self.netbox_last_fetch_attempt = datetime.now(
+            tz=timezone.get_current_timezone()
+        )
+        self.save()
         netbox_api = Netbox.get_instance()
         try:
             netbox_machine = netbox_api.fetch_device(self.machine.netbox_id)
