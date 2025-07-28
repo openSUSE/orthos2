@@ -34,8 +34,8 @@
     {% for result in enclosure_run.results.all %}
     <tr class="clickable-row" data-href="#{{ result.id }}">
         <td>{{ result.property_name }}</td>
-        <td>{{ result.orthos_result }}</td>
-        <td>{{ result.netbox_result }}</td>
+        <td>{{ result.orthos_result|format_empty_str }}</td>
+        <td>{{ result.netbox_result|format_empty_str }}</td>
     </tr>
     {% endfor %}
   </tbody>
@@ -59,8 +59,8 @@
     {% for result in machine_run.results.all %}
     <tr class="clickable-row" data-href="#{{ result.id }}">
         <td>{{ result.property_name }}</td>
-        <td>{{ result.orthos_result }}</td>
-        <td>{{ result.netbox_result }}</td>
+        <td>{{ result.orthos_result|format_empty_str }}</td>
+        <td>{{ result.netbox_result|format_empty_str }}</td>
     </tr>
     {% endfor %}
   </tbody>
@@ -83,8 +83,8 @@
     {% for result in bmc_run.results.all %}
     <tr class="clickable-row" data-href="#{{ result.id }}">
         <td>{{ result.property_name }}</td>
-        <td>{{ result.orthos_result }}</td>
-        <td>{{ result.netbox_result }}</td>
+        <td>{{ result.orthos_result|format_empty_str }}</td>
+        <td>{{ result.netbox_result|format_empty_str }}</td>
     </tr>
     {% endfor %}
   </tbody>
@@ -113,8 +113,8 @@
     {% for result in network_interface_run_intf.results.all %}
     <tr class="clickable-row" data-href="#{{ result.id }}">
         <td>{{ result.property_name }}</td>
-        <td>{{ result.orthos_result }}</td>
-        <td>{{ result.netbox_result }}</td>
+        <td>{{ result.orthos_result|format_empty_str }}</td>
+        <td>{{ result.netbox_result|format_empty_str }}</td>
     </tr>
     {% endfor %}
   </tbody>

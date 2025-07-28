@@ -204,8 +204,8 @@ class NetworkInterface(models.Model):
         NetboxOrthosComparisionResult(
             run_id=run_obj,
             property_name="name",
-            orthos_result=self.name or "None",
-            netbox_result=netbox_interface.get("display", "None"),
+            orthos_result=self.name or "<not set>",
+            netbox_result=netbox_interface.get("display", "<not set>"),
         ).save()
 
         if len(netbox_interface.keys()) == 0:
@@ -229,7 +229,7 @@ class NetworkInterface(models.Model):
                 NetboxOrthosComparisionResult(
                     run_id=run_obj,
                     property_name="ip_address_v4",
-                    orthos_result=self.ip_address_v4 or "None",
+                    orthos_result=self.ip_address_v4 or "<not set>",
                     netbox_result=str(ip_obj),
                 ).save()
             # IPv6 Address
@@ -237,7 +237,7 @@ class NetworkInterface(models.Model):
                 NetboxOrthosComparisionResult(
                     run_id=run_obj,
                     property_name="ip_address_v6",
-                    orthos_result=self.ip_address_v6 or "None",
+                    orthos_result=self.ip_address_v6 or "<not set>",
                     netbox_result=str(ip_obj),
                 ).save()
             if machine_primary_ipv4 is not None and machine_primary_ipv4.get(
