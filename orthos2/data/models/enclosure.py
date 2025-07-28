@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from django.db.models.fields.related_descriptors import RelatedManager
 
     from orthos2.data.models.machine import Machine
-    from orthos2.types import OptionalPlatformForeignKey
+    from orthos2.types import OptionalDateTimeField, OptionalPlatformForeignKey
 
 logger = logging.getLogger("models")
 
@@ -50,6 +50,12 @@ class Enclosure(models.Model):
         verbose_name="NetBox ID",
         help_text="The ID that NetBox gives to the object.",
         default=0,
+    )
+
+    netbox_last_fetch_attempt: "OptionalDateTimeField" = models.DateTimeField(
+        "NetBox Last Fetched at",
+        null=True,
+        blank=True,
     )
 
     location_site: "models.CharField[str, str]" = models.CharField(
@@ -212,6 +218,10 @@ class Enclosure(models.Model):
             logger.debug("Skipping fetching from NetBox because NetBox ID is 0.")
             return
 
+        self.netbox_last_fetch_attempt = datetime.datetime.now(
+            tz=timezone.get_current_timezone()
+        )
+        self.save()
         netbox_device = self.fetch_netbox_record()
         if netbox_device is None:
             return

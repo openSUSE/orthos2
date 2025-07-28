@@ -22,6 +22,7 @@
   <h5>Enclosure - UUID {{ enclosure_run.run_id }}</h5>
 </div>
 
+<p>Most recent Enclosure update: {{ machine.enclosure.netbox_last_fetch_attempt }}</p>
 <p>Data fetched at: {{ enclosure_run.compare_timestamp }}</p>
 
 <table class="table table-bordered small table-hover">
@@ -29,6 +30,7 @@
     <th>Property Name</th>
     <th>Orthos</th>
     <th>NetBox</th>
+    <th>Is data equal?</th>
   </thead>
   <tbody>
     {% for result in enclosure_run.results.all %}
@@ -36,6 +38,11 @@
         <td>{{ result.property_name }}</td>
         <td>{{ result.orthos_result|format_empty_str }}</td>
         <td>{{ result.netbox_result|format_empty_str }}</td>
+        {% if result.orthos_result == result.netbox_result %}
+        <td>&#9989;</td>
+        {% else %}
+        <td>&#10005;</td>
+        {% endif %}
     </tr>
     {% endfor %}
   </tbody>
@@ -47,6 +54,7 @@
   <h5>Machine - UUID {{ machine_run.run_id }}</h5>
 </div>
 
+<p>Most recent Machine update: {{ machine.netbox_last_fetch_attempt }}</p>
 <p>Data fetched at: {{ machine_run.compare_timestamp }}</p>
 
 <table class="table table-bordered small table-hover">
@@ -54,6 +62,7 @@
     <th>Property Name</th>
     <th>Orthos</th>
     <th>NetBox</th>
+    <th>Is data equal?</th>
   </thead>
   <tbody>
     {% for result in machine_run.results.all %}
@@ -61,6 +70,11 @@
         <td>{{ result.property_name }}</td>
         <td>{{ result.orthos_result|format_empty_str }}</td>
         <td>{{ result.netbox_result|format_empty_str }}</td>
+        {% if result.orthos_result == result.netbox_result %}
+        <td>&#9989;</td>
+        {% else %}
+        <td>&#10005;</td>
+        {% endif %}
     </tr>
     {% endfor %}
   </tbody>
@@ -71,6 +85,7 @@
   <h5>BMC - UUID {{ bmc_run.run_id }}</h5>
 </div>
 
+<p>Most recent BMC update: {{ machine.bmc.netbox_last_fetch_attempt }}</p>
 <p>Data fetched at: {{ bmc_run.compare_timestamp }}</p>
 
 <table class="table table-bordered small table-hover">
@@ -78,6 +93,7 @@
     <th>Property Name</th>
     <th>Orthos</th>
     <th>NetBox</th>
+    <th>Is data equal?</th>
   </thead>
   <tbody>
     {% for result in bmc_run.results.all %}
@@ -85,6 +101,11 @@
         <td>{{ result.property_name }}</td>
         <td>{{ result.orthos_result|format_empty_str }}</td>
         <td>{{ result.netbox_result|format_empty_str }}</td>
+        {% if result.orthos_result == result.netbox_result %}
+        <td>&#9989;</td>
+        {% else %}
+        <td>&#10005;</td>
+        {% endif %}
     </tr>
     {% endfor %}
   </tbody>
@@ -101,6 +122,7 @@
   <h6>Network Interface {{ intf.name }} - UUID {{ network_interface_run_intf.run_id }}</h6>
 </div>
 
+<p>Most recent Interface update: {{ intf.netbox_last_fetch_attempt }}</p>
 <p>Data fetched at: {{ network_interface_run_intf.compare_timestamp }}</p>
 
 <table class="table table-bordered small table-hover">
@@ -108,6 +130,7 @@
     <th>Property Name</th>
     <th>Orthos</th>
     <th>NetBox</th>
+    <th>Is data equal?</th>
   </thead>
   <tbody>
     {% for result in network_interface_run_intf.results.all %}
@@ -115,6 +138,11 @@
         <td>{{ result.property_name }}</td>
         <td>{{ result.orthos_result|format_empty_str }}</td>
         <td>{{ result.netbox_result|format_empty_str }}</td>
+        {% if result.orthos_result == result.netbox_result %}
+        <td>&#9989;</td>
+        {% else %}
+        <td>&#10005;</td>
+        {% endif %}
     </tr>
     {% endfor %}
   </tbody>
