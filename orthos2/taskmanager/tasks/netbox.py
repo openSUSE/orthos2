@@ -97,7 +97,10 @@ class NetboxFetchFullMachine(Task):
         """
         Executes the task.
         """
-        logger.info("Fetching information from Netbox API for all machines.")
+        logger.info(
+            "Fetching information from Netbox API for machine with pk %s.",
+            self.machine_pk,
+        )
         try:
             machine = Machine.objects.get(pk=self.machine_pk)
         except ObjectDoesNotExist as err:
@@ -108,6 +111,32 @@ class NetboxFetchFullMachine(Task):
             machine.bmc.fetch_netbox()
         for intf in machine.networkinterfaces.all():
             intf.fetch_netbox()
+
+
+class NetboxFetchFullEnclosure(Task):
+    """
+    Fetch a single enclosure.
+    """
+
+    def __init__(self, enclosure_id: int) -> None:
+        """
+        Constructor to initialize the task.
+        """
+        self.enclosure_pk = enclosure_id
+
+    def execute(self) -> None:
+        """
+        Executes the task.
+        """
+        logger.info(
+            "Fetching information from Netbox API for enclosure with pk %s.",
+            self.enclosure_pk,
+        )
+        try:
+            enclosure = Enclosure.objects.get(pk=self.enclosure_pk)
+        except ObjectDoesNotExist as err:
+            raise ValueError("Requested machine doesn't exist!") from err
+        enclosure.fetch_netbox()
 
 
 class NetboxCompareFullMachine(Task):
@@ -138,6 +167,32 @@ class NetboxCompareFullMachine(Task):
             machine.bmc.compare_netbox()
         for intf in machine.networkinterfaces.all():
             intf.compare_netbox()
+
+
+class NetboxCompareEnclosure(Task):
+    """
+    Compare a single enclosure with its subobjects.
+    """
+
+    def __init__(self, enclosure_id: int) -> None:
+        """
+        Constructor to initialize the task.
+        """
+        self.enclosure_pk = enclosure_id
+
+    def execute(self) -> None:
+        """
+        Executes the task.
+        """
+        logger.info(
+            'Comparing information from Netbox API for enclosure "%s".',
+            self.enclosure_pk,
+        )
+        try:
+            enclosure = Enclosure.objects.get(pk=self.enclosure_pk)
+        except ObjectDoesNotExist as err:
+            raise ValueError("Requested enclosure doesn't exist!") from err
+        enclosure.compare_netbox()
 
 
 class NetboxCleanupComparisionResults(Task):

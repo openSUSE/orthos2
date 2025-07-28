@@ -1,0 +1,65 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+{% load tags %}
+
+{% block navbar %}
+{% include 'frontend/snippet.navlinks.html' %}
+{% include 'frontend/snippet.search.html' %}
+{% endblock %}
+
+{% block content %}
+
+{% include 'frontend/enclosures/enclosures_filterbar.html' %}
+{% include 'frontend/snippet.paginator.html' %}
+
+<div class="container-fluid">
+  <div class="d-flex justify-content-end mb-3">
+    <a class="nav-link" href="{% url 'frontend:new_enclosure' %}">
+      <button type="button" class="btn btn-success">+</button>
+    </a>
+  </div>
+
+  {% if page_obj %}
+    <table class="table table-striped table-bordered table-fixed">
+      <thead class="thead-default">
+        <tr style="border: 1px solid #ddd;">
+          <th>Name {% order_list request 'name' %}</th>
+          <th>Platform {% order_list request 'platform' %}</th>
+          <th>NetBox ID {% order_list request 'netbox_id' %}</th>
+          <th>Number of Machines</th>
+          <th width="80px">&nbsp;</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for enclosure in page_obj %}
+          <tr>
+            <td>
+              <a
+                href="{% url 'frontend:enclosure_detail' enclosure.pk %}"
+                class="text-muted"
+                >{{ enclosure.name }}</a
+              >
+            </td>
+            <td>{{ enclosure.platform }}</td>
+            <td>{{ enclosure.netbox_id }}</td>
+            <td>{{ enclosure.machine_set.count }}</td>
+            <td>
+              <a
+                href="{% url 'frontend:delete_enclosure' enclosure.pk %}"
+                class="btn btn-danger btn-sm"
+              >
+                Delete
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% include 'frontend/snippet.paginator.html' %}
+  {% else %}
+    <div class="alert alert-info">No enclosures found!</div>
+  {% endif %}
+</div>
+{% endblock %}

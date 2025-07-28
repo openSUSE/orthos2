@@ -1,0 +1,18 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+{% load tags %}
+{% load filters %}
+
+{% block navbar %}
+{% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <form method="post">{% csrf_token %}
+        <p>Are you sure you want to delete enclosure "{{ object.name }}"?</p>
+        {{ form }}
+        <input class="btn btn-danger btn-sm" type="submit" value="Confirm deletion">
+    </form>
+</div>
+{% endblock %}

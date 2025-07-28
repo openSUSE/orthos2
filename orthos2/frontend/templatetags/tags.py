@@ -90,6 +90,15 @@ def get_current_domain_filter(request: HttpRequest) -> str:
 
 
 @register.simple_tag
+def get_current_platform_filter(request: HttpRequest) -> str:
+    """Return the current platform from GET (if available)."""
+    platform = request.GET.get("platform", None)
+    if (not platform) or (platform == ""):
+        platform = "All Platforms"
+    return platform
+
+
+@register.simple_tag
 def get_current_machinegroup_filter(request: HttpRequest) -> str:
     """Return the current machine group from GET (if available)."""
     group = request.GET.get("machinegroup", None)

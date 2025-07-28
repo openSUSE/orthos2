@@ -6,6 +6,43 @@ from orthos2.frontend import views
 
 app_name = "orthos2.frontend"
 urlpatterns = [
+    path("enclosures", views.EnclosureListView.as_view(), name="enclosures"),
+    re_path(
+        r"^enclosure/(?P<id>[0-9]+)/detail$",
+        views.enclosure_detail,
+        name="enclosure_detail",
+    ),
+    re_path(
+        r"^enclosure/(?P<id>[0-9]+)/machines$",
+        views.enclosure_machines,
+        name="enclosure_machines",
+    ),
+    re_path(
+        r"^enclosure/(?P<id>[0-9]+)/netboxcomparison$",
+        views.enclosure_netboxcomparison,
+        name="enclosure_netbox_comparisons",
+    ),
+    re_path(
+        r"^enclosure/(?P<id>[0-9]+)/fetch-netbox$",
+        views.enclosure_fetch_netbox,
+        name="enclosure_netbox_fetch",
+    ),
+    re_path(
+        r"^enclosure/(?P<id>[0-9]+)/compare-netbox$",
+        views.enclosure_compare_netbox,
+        name="enclosure_netbox_compare",
+    ),
+    path("enclosures/new", views.NewEnclosure.as_view(), name="new_enclosure"),
+    path(
+        "enclosures/delete/<int:pk>/",
+        views.DeleteEnclosure.as_view(),
+        name="delete_enclosure",
+    ),
+    path(
+        "enclosures/edit/<int:pk>/",
+        views.EnclosureDetailedEdit.as_view(),
+        name="edit_enclosure",
+    ),
     re_path(
         r"^$", RedirectView.as_view(pattern_name="frontend:free_machines"), name="root"
     ),

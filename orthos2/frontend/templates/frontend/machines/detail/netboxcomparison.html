@@ -8,48 +8,6 @@
 </div>
 </div>
 
-{% if machine.enclosure.netbox_id == 0 %}
-
-<div class="title">
-  <h5>Enclosure</h5>
-</div>
-
-<p>NetBox ID of enclosure is unknown!</p>
-
-{% else %}
-
-<div class="title">
-  <h5>Enclosure - UUID {{ enclosure_run.run_id }}</h5>
-</div>
-
-<p>Most recent Enclosure update: {{ machine.enclosure.netbox_last_fetch_attempt }}</p>
-<p>Data fetched at: {{ enclosure_run.compare_timestamp }}</p>
-
-<table class="table table-bordered small table-hover">
-  <thead class="thead-default">
-    <th>Property Name</th>
-    <th>Orthos</th>
-    <th>NetBox</th>
-    <th>Is data equal?</th>
-  </thead>
-  <tbody>
-    {% for result in enclosure_run.results.all %}
-    <tr class="clickable-row" data-href="#{{ result.id }}">
-        <td>{{ result.property_name }}</td>
-        <td>{{ result.orthos_result|format_empty_str }}</td>
-        <td>{{ result.netbox_result|format_empty_str }}</td>
-        {% if result.orthos_result == result.netbox_result %}
-        <td>&#9989;</td>
-        {% else %}
-        <td>&#10005;</td>
-        {% endif %}
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
-{% endif %}
-
 <div class="title">
   <h5>Machine - UUID {{ machine_run.run_id }}</h5>
 </div>
