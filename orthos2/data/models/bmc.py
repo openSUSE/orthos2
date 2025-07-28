@@ -162,7 +162,7 @@ class BMC(models.Model):
             return
 
         # OOB IP
-        machine_primary_oob = netbox_machine.get("oob_ip", "")
+        machine_primary_oob = netbox_machine.get("oob_ip", "<not set>")
         # Virtual machines don't have out-of-band IPs
         if not self.machine.system.virtual:
             NetboxOrthosComparisionResult(
@@ -178,20 +178,20 @@ class BMC(models.Model):
                 run_id=run_obj,
                 property_name="fqdn (IPv%s)" % ip_obj.version,
                 orthos_result=self.fqdn,
-                netbox_result=ip.get("dns_name", "None"),
+                netbox_result=ip.get("dns_name", "<not set>"),
             ).save()
             if ip_obj.version == 4:
                 NetboxOrthosComparisionResult(
                     run_id=run_obj,
                     property_name="ip_address_v4",
-                    orthos_result=self.ip_address_v4 or "None",
+                    orthos_result=self.ip_address_v4 or "<not set>",
                     netbox_result=str(ip_obj),
                 ).save()
             if ip_obj.version == 6:
                 NetboxOrthosComparisionResult(
                     run_id=run_obj,
                     property_name="ip_address_v6",
-                    orthos_result=self.ip_address_v6 or "None",
+                    orthos_result=self.ip_address_v6 or "<not set>",
                     netbox_result=str(ip_obj),
                 ).save()
         # TODO: Machine

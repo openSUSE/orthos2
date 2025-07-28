@@ -80,3 +80,13 @@ def get_netbox_comparison_result(
         The comparison result for the specified interface, or None if not found.
     """
     return comparison_results.get(interface_name, None)
+
+
+@register.filter
+def format_empty_str(string: str) -> str:
+    """
+    This takes a string and will display "<empty>" in case the string is empty.
+    """
+    if string == "" or string.isspace():
+        return "<empty>"
+    return string

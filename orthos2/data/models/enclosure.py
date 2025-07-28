@@ -54,22 +54,22 @@ class Enclosure(models.Model):
 
     location_site: "models.CharField[str, str]" = models.CharField(
         max_length=512,
-        default="unknown",
+        default="<not set>",
     )
 
     location_room: "models.CharField[str, str]" = models.CharField(
         max_length=512,
-        default="unknown",
+        default="<not set>",
     )
 
     location_rack: "models.CharField[str, str]" = models.CharField(
         max_length=512,
-        default="unknown",
+        default="<not set>",
     )
 
     location_rack_position: "models.CharField[str, str]" = models.CharField(
         max_length=512,
-        default="unknown",
+        default="<not set>",
     )
 
     netboxorthoscomparisionruns: "RelatedManager[NetboxOrthosComparisionRun]"
@@ -155,26 +155,26 @@ class Enclosure(models.Model):
         NetboxOrthosComparisionResult(
             run_id=run_obj,
             property_name="description",
-            orthos_result=self.description or "None",
-            netbox_result=netbox_device.get("description", "None"),
+            orthos_result=self.description or "<not set>",
+            netbox_result=netbox_device.get("description", "<not set>"),
         ).save()
         # Location Site
         NetboxOrthosComparisionResult(
             run_id=run_obj,
             property_name="location_site",
-            orthos_result=self.location_site or "None",
-            netbox_result=netbox_device.get("site", {}).get("display", "None"),
+            orthos_result=self.location_site or "<not set>",
+            netbox_result=netbox_device.get("site", {}).get("display", "<not set>"),
         ).save()
         location_obj = netbox_device.get("location")
         # Location Room
         if location_obj is None:
-            netbox_location_room_result = "unknown"
+            netbox_location_room_result = "<not set>"
         else:
-            netbox_location_room_result = location_obj.get("display", "None")
+            netbox_location_room_result = location_obj.get("display", "<not set>")
         NetboxOrthosComparisionResult(
             run_id=run_obj,
             property_name="location_room",
-            orthos_result=self.location_room or "None",
+            orthos_result=self.location_room or "<not set>",
             netbox_result=netbox_location_room_result,
         ).save()
         rack_obj = netbox_device.get("rack")
@@ -182,21 +182,25 @@ class Enclosure(models.Model):
         NetboxOrthosComparisionResult(
             run_id=run_obj,
             property_name="location_rack",
-            orthos_result=self.location_rack or "None",
+            orthos_result=self.location_rack or "<not set>",
             netbox_result=(
-                "unknown" if rack_obj is None else rack_obj.get("display", "None")
+                "<not set>"
+                if rack_obj is None
+                else rack_obj.get("display", "<not set>")
             ),
         ).save()
         # Location Rack Position
         # TODO: What if the position is not set.
-        netbox_location_rack_position_result = netbox_device.get("position", "None")
+        netbox_location_rack_position_result = netbox_device.get(
+            "position", "<not set>"
+        )
         if netbox_location_rack_position_result is None:
-            # In case the location is unset in NetBox, the result is "None" due to the JSON value being "null".
-            netbox_location_rack_position_result = "unknown"
+            # In case the location is unset in NetBox, the result is "<not set>" due to the JSON value being "null".
+            netbox_location_rack_position_result = "<not set>"
         NetboxOrthosComparisionResult(
             run_id=run_obj,
             property_name="location_rack_position",
-            orthos_result=self.location_rack_position or "None",
+            orthos_result=self.location_rack_position or "<not set>",
             netbox_result=netbox_location_rack_position_result,
         ).save()
 
@@ -214,18 +218,18 @@ class Enclosure(models.Model):
 
         # Reset fields
         self.comment = ""
-        self.location_site = "unknown"
-        self.location_room = "unknown"
-        self.location_rack = "unknown"
-        self.location_rack_position = "unknown"
+        self.location_site = "<not set>"
+        self.location_room = "<not set>"
+        self.location_rack = "<not set>"
+        self.location_rack_position = "<not set>"
         # Description
         self.comment = netbox_device.get("description", "")
         # Location
-        self.location_site = netbox_device.get("site", {}).get("display", "unknown")
+        self.location_site = netbox_device.get("site", {}).get("display", "<not set>")
         location_obj = netbox_device.get("location", {})
-        self.location_room = location_obj.get("display", "unknown")
+        self.location_room = location_obj.get("display", "<not set>")
         rack_obj = netbox_device.get("rack", {})
-        self.location_rack = rack_obj.get("display", "unknown")
+        self.location_rack = rack_obj.get("display", "<not set>")
         # TODO: What if the position is not set.
-        self.location_rack_position = netbox_device.get("position", "unknown")
+        self.location_rack_position = netbox_device.get("position", "<not set>")
         self.save()

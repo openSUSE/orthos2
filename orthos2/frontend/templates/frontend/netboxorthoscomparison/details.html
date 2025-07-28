@@ -54,8 +54,8 @@
       {% for result in run.results.all %}
       <tr class="clickable-row" data-href="#{{ result.id }}">
         <td>{{ result.property_name }}</td>
-        <td>{{ result.orthos_result }}</td>
-        <td>{{ result.netbox_result }}</td>
+        <td>{{ result.orthos_result|format_empty_str }}</td>
+        <td>{{ result.netbox_result|format_empty_str }}</td>
       </tr>
       {% endfor %}
     </tbody>

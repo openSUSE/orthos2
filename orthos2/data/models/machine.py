@@ -734,8 +734,10 @@ class Machine(models.Model):
         NetboxOrthosComparisionResult(
             run_id=run_obj,
             property_name="architecture",
-            orthos_result=self.architecture.name or "None",
-            netbox_result=netbox_machine.get("custom_fields", {}).get("arch", "None"),
+            orthos_result=self.architecture.name or "<not set>",
+            netbox_result=netbox_machine.get("custom_fields", {}).get(
+                "arch", "<not set>"
+            ),
         ).save()
         # SystemType
         # Serial Number
@@ -744,8 +746,8 @@ class Machine(models.Model):
         NetboxOrthosComparisionResult(
             run_id=run_obj,
             property_name="description",
-            orthos_result=self.comment or "None",
-            netbox_result=netbox_machine.get("description", "None"),
+            orthos_result=self.comment or "<not set>",
+            netbox_result=netbox_machine.get("description", "<not set>"),
         ).save()
         # CPU Cores, Sockets, Threads
         # RAM (GB)
@@ -770,12 +772,14 @@ class Machine(models.Model):
         self.serial_number = ""
         self.product_code = ""
         # Description
-        self.comment = netbox_machine.get("description", "")
+        self.comment = netbox_machine.get("description", "<not set>")
         # Serial Number
-        self.serial_number = netbox_machine.get("serial", "")
+        self.serial_number = netbox_machine.get("serial", "<not set>")
         # Product Code
-        product_code = netbox_machine.get("custom_fields", {}).get("product_code", "")
-        if product_code is not None and product_code != "":
+        product_code = netbox_machine.get("custom_fields", {}).get(
+            "product_code", "<not set>"
+        )
+        if product_code is not None:
             self.product_code = product_code
         # Verify all NetworkInterfaces are created
         device_network_interfaces = netbox_api.check_interface_no_mgmt_by_id(
