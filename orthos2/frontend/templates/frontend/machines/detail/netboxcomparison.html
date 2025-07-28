@@ -29,6 +29,7 @@
     <th>Property Name</th>
     <th>Orthos</th>
     <th>NetBox</th>
+    <th>Is data equal?</th>
   </thead>
   <tbody>
     {% for result in enclosure_run.results.all %}
@@ -36,6 +37,11 @@
         <td>{{ result.property_name }}</td>
         <td>{{ result.orthos_result|format_empty_str }}</td>
         <td>{{ result.netbox_result|format_empty_str }}</td>
+        {% if result.orthos_result == result.netbox_result %}
+        <td>&#9989;</td>
+        {% else %}
+        <td>&#10005;</td>
+        {% endif %}
     </tr>
     {% endfor %}
   </tbody>
@@ -54,6 +60,7 @@
     <th>Property Name</th>
     <th>Orthos</th>
     <th>NetBox</th>
+    <th>Is data equal?</th>
   </thead>
   <tbody>
     {% for result in machine_run.results.all %}
@@ -61,6 +68,11 @@
         <td>{{ result.property_name }}</td>
         <td>{{ result.orthos_result|format_empty_str }}</td>
         <td>{{ result.netbox_result|format_empty_str }}</td>
+        {% if result.orthos_result == result.netbox_result %}
+        <td>&#9989;</td>
+        {% else %}
+        <td>&#10005;</td>
+        {% endif %}
     </tr>
     {% endfor %}
   </tbody>
@@ -78,6 +90,7 @@
     <th>Property Name</th>
     <th>Orthos</th>
     <th>NetBox</th>
+    <th>Is data equal?</th>
   </thead>
   <tbody>
     {% for result in bmc_run.results.all %}
@@ -85,6 +98,11 @@
         <td>{{ result.property_name }}</td>
         <td>{{ result.orthos_result|format_empty_str }}</td>
         <td>{{ result.netbox_result|format_empty_str }}</td>
+        {% if result.orthos_result == result.netbox_result %}
+        <td>&#9989;</td>
+        {% else %}
+        <td>&#10005;</td>
+        {% endif %}
     </tr>
     {% endfor %}
   </tbody>
@@ -108,6 +126,7 @@
     <th>Property Name</th>
     <th>Orthos</th>
     <th>NetBox</th>
+    <th>Is data equal?</th>
   </thead>
   <tbody>
     {% for result in network_interface_run_intf.results.all %}
@@ -115,6 +134,11 @@
         <td>{{ result.property_name }}</td>
         <td>{{ result.orthos_result|format_empty_str }}</td>
         <td>{{ result.netbox_result|format_empty_str }}</td>
+        {% if result.orthos_result == result.netbox_result %}
+        <td>&#9989;</td>
+        {% else %}
+        <td>&#10005;</td>
+        {% endif %}
     </tr>
     {% endfor %}
   </tbody>
