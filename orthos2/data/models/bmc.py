@@ -143,6 +143,11 @@ class BMC(models.Model):
         if netbox_machine is None:
             return
         netbox_interface = self.fetch_netbox_record()
+        if len(netbox_interface.keys()) == 0:
+            logger.warning(
+                "Interface with MAC %s could not be found in NetBox.", self.mac
+            )
+            return
 
         # FIXME: A single interface can have any number of IPs (both v4 and v6)
         NetboxOrthosComparisionResult(
@@ -206,7 +211,11 @@ class BMC(models.Model):
             return
 
         netbox_interface = self.fetch_netbox_record()
-        # FIXME: A single interface can have any number of IPs (both v4 and v6)
+        if len(netbox_interface.keys()) == 0:
+            logger.warning(
+                "Interface with MAC %s could not be found in NetBox.", self.mac
+            )
+            return
         ips = self.fetch_netbox_ips(netbox_interface.get("id"))  # type: ignore
         if len(ips) == 0:
             logger.debug("No IPs assigned to this interface in NetBox.")

@@ -850,10 +850,19 @@ class Machine(models.Model):
             ipv6_addresses = netbox_api.check_ip_by_interface_family(
                 mgmt_interface.get("id"), 6  # type: ignore
             )
-            if len(ipv4_addresses) > 1 or len(ipv6_addresses) > 1:
-                # TODO: Handle case
+            ipv4_address_count = len(ipv4_addresses)
+            ipv6_address_count = len(ipv6_addresses)
+            if ipv4_address_count > 1 or ipv6_address_count > 1:
+                logger.warning(
+                    "Skipped updating BMC interface because it had more then one IPv4 or IPv6 address!"
+                )
                 continue
-            if ipv4_addresses[0].get("dns_name") != ipv6_addresses[0].get("dns_name"):
+            if (
+                ipv4_address_count == 1
+                and ipv6_address_count == 1
+                and ipv4_addresses[0].get("dns_name")
+                != ipv6_addresses[0].get("dns_name")
+            ):
                 logger.warning(
                     "Skipped updating BMC interface because IPv4 and IPv6 DNS name are different!"
                 )
@@ -875,16 +884,20 @@ class Machine(models.Model):
             else:
                 bmc = BMC()
                 bmc.machine_id = self.id
-            bmc.fqdn = ipv4_addresses[0].get("dns_name")  # type: ignore
+            # If both families are available then they must be equal, if one is present, take either one.
+            if ipv4_address_count == 1:
+                bmc.fqdn = ipv4_addresses[0].get("dns_name")  # type: ignore
+            else:
+                bmc.fqdn = ipv6_addresses[0].get("dns_name")  # type: ignore
             bmc.fence_agent = RemotePowerType.objects.get(name=fence_name)
             bmc.mac = primary_mac.get("mac_address")
-            if len(ipv4_addresses) > 0:
+            if ipv4_address_count > 0:
                 bmc.ip_address_v4 = str(
                     ipaddress.ip_network(
                         ipv4_addresses[0].get("address")  # type: ignore
                     ).network_address
                 )
-            if len(ipv6_addresses) > 0:
+            if ipv6_address_count > 0:
                 bmc.ip_address_v6 = str(
                     ipaddress.ip_network(
                         ipv6_addresses[0].get("address")  # type: ignore
