@@ -31,25 +31,46 @@ orthos_superuser_password = get_random_string(12)
 # netbox.env
 # DB_PASSWORD, REDIS_CACHE_PASSWORD, REDIS_PASSWORD, SECRET_KEY, SUPERUSER_API_TOKEN, SUPERUSER_PASSWORD
 
-netbox_env_file = script_directory / "netbox" / "netbox.env"
-netbox_env_vars_str = netbox_env_file.read_text()
-netbox_env_vars_old = netbox_env_vars_str.splitlines()
-netbox_env_vars_new: List[str] = []
-for line in netbox_env_vars_old:
-    if line.startswith("DB_PASSWORD="):
-        line = line.replace(line, f"DB_PASSWORD={netbox_db_password}")
-    elif line.startswith("REDIS_CACHE_PASSWORD="):
-        line = line.replace(line, f"REDIS_CACHE_PASSWORD={redis_cache_password}")
-    elif line.startswith("REDIS_PASSWORD="):
-        line = line.replace(line, f"REDIS_PASSWORD={redis_password}")
-    elif line.startswith("SECRET_KEY="):
-        line = line.replace(line, f"SECRET_KEY='{netbox_secret_key}'")
-    elif line.startswith("SUPERUSER_API_TOKEN="):
-        line = line.replace(line, f"SUPERUSER_API_TOKEN={netbox_superuser_api_token}")
-    elif line.startswith("SUPERUSER_PASSWORD="):
-        line = line.replace(line, f"SUPERUSER_PASSWORD={netbox_superuser_password}")
-    netbox_env_vars_new.append(line)
-netbox_env_file.write_text("\n".join(netbox_env_vars_new) + "\n")
+(script_directory / "netbox" / "netbox.env").write_text(
+    "CORS_ORIGIN_ALLOW_ALL=True\n"
+    "DB_HOST=postgres\n"
+    "DB_NAME=netbox\n"
+    f"DB_PASSWORD={netbox_db_password}\n"
+    "DB_USER=netbox\n"
+    "EMAIL_FROM=netbox@bar.com\n"
+    "EMAIL_PASSWORD=\n"
+    "EMAIL_PORT=25\n"
+    "EMAIL_SERVER=localhost\n"
+    "EMAIL_SSL_CERTFILE=\n"
+    "EMAIL_SSL_KEYFILE=\n"
+    "EMAIL_TIMEOUT=5\n"
+    "EMAIL_USERNAME=netbox\n"
+    "# EMAIL_USE_SSL and EMAIL_USE_TLS are mutually exclusive, i.e. they can't both be `true`!\n"
+    "EMAIL_USE_SSL=false\n"
+    "EMAIL_USE_TLS=false\n"
+    "GRAPHQL_ENABLED=true\n"
+    "HOUSEKEEPING_INTERVAL=86400\n"
+    "MEDIA_ROOT=/opt/netbox/netbox/media\n"
+    "METRICS_ENABLED=false\n"
+    "REDIS_CACHE_DATABASE=1\n"
+    "REDIS_CACHE_HOST=redis-cache\n"
+    "REDIS_CACHE_INSECURE_SKIP_TLS_VERIFY=false\n"
+    f"REDIS_CACHE_PASSWORD={redis_cache_password}\n"
+    "REDIS_CACHE_SSL=false\n"
+    "REDIS_DATABASE=0\n"
+    "REDIS_HOST=redis\n"
+    "REDIS_INSECURE_SKIP_TLS_VERIFY=false\n"
+    f"REDIS_PASSWORD={redis_password}\n"
+    "REDIS_SSL=false\n"
+    "RELEASE_CHECK_URL=https://api.github.com/repos/netbox-community/netbox/releases\n"
+    f"SECRET_KEY='{netbox_secret_key}'\n"
+    "SKIP_SUPERUSER=false\n"
+    f"SUPERUSER_API_TOKEN={netbox_superuser_api_token}\n"
+    "SUPERUSER_EMAIL='noreply@example.org'\n"
+    "SUPERUSER_NAME='admin'\n"
+    f"SUPERUSER_PASSWORD={netbox_superuser_password}\n"
+    "WEBHOOKS_ENABLED=true\n"
+)
 
 # postgres.env
 # POSTGRES_PASSWORD
