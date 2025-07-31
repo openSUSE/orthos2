@@ -938,6 +938,7 @@ admin.site.register(Domain, DomainAdminAdmin)  # type: ignore
 
 class EnclosureAdmin(admin.ModelAdmin):  # type: ignore
     readonly_fields = (
+        "netbox_last_fetch_attempt",
         "location_site",
         "location_room",
         "location_rack",
