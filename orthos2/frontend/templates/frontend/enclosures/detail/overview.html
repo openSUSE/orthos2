@@ -1,0 +1,58 @@
+{% extends 'frontend/enclosures/enclosure.html' %}
+
+{% block tabcontent %}
+  <div class="row">
+    <!-- TODO: Refactor into snippet -->
+    <div class="col-10">
+      <div class="container-fluid">
+        <div class="title">
+          <h5>{{ enclosure.name }}</h5>
+        </div>
+
+        <table class="table table-striped table-bordered small">
+          <tbody class="thead-default">
+            <tr>
+              <td class="th" width="150px">Name</td>
+              <td>{{ enclosure.name }}</td>
+            </tr>
+            <tr>
+              <td class="th">Platform</td>
+              {% if enclosure.platform == None %}
+                <td></td>
+              {% else %}
+                <td>{{ enclosure.platform }}</td>
+              {% endif %}
+            </tr>
+            <tr>
+              <td class="th">Description</td>
+              <td>{{ enclosure.description }}</td>
+            </tr>
+            {% if enclosure.netbox_id > 0 %}
+              <tr>
+                <td class="th">NetBox URL</td>
+                <td>
+                  <a
+                    href="{{ NETBOX_URL }}/dcim/devices/{{ enclosure.netbox_id }}/"
+                    >NetBox Device {{ enclosure.netbox_id }}</a
+                  >
+                </td>
+              </tr>
+            {% endif %}
+            <tr>
+              <td class="th">Location</td>
+              <td>
+                <!-- TODO: Make this look nice when empty or not set -->
+                {{ enclosure.location_site }} &gt; {{ enclosure.location_room }}
+                &gt; {{ enclosure.location_rack }} &gt;
+                {{ enclosure.location_rack_position }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-2">
+      {% include 'frontend/enclosures/detail/actions.html' %}
+    </div>
+  </div>
+{% endblock %}

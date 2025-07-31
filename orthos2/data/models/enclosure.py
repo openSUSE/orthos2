@@ -24,15 +24,29 @@ if TYPE_CHECKING:
 logger = logging.getLogger("models")
 
 
+class RootEnclosureManager(models.Manager["Enclosure"]):
+    def get_queryset(self) -> QuerySet["Enclosure"]:
+        """Exclude all inactive enclosures."""
+        queryset = super(RootEnclosureManager, self).get_queryset()
+
+        return queryset.all()
+
+
 class Enclosure(models.Model):
+    class Manager(models.Manager["Enclosure"]):
+        def get_by_natural_key(self, name: str) -> "Enclosure":
+            return self.get(name=name)
+
     name: "models.CharField[str, str]" = models.CharField(
         max_length=200,
+        help_text="The name given to the enclosure.",
         blank=False,
         unique=True,
     )
 
     platform: "OptionalPlatformForeignKey" = models.ForeignKey(
         Platform,
+        help_text="The Platform of the Enclosure",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -40,6 +54,7 @@ class Enclosure(models.Model):
     )
 
     description: "models.CharField[str, str]" = models.CharField(
+        help_text="Description of the Enclosure.",
         max_length=512,
         blank=True,
     )
@@ -59,6 +74,7 @@ class Enclosure(models.Model):
     )
 
     location_site: "models.CharField[str, str]" = models.CharField(
+        help_text="The physical location.",
         max_length=512,
         default="<not set>",
     )
@@ -79,6 +95,8 @@ class Enclosure(models.Model):
     )
 
     netboxorthoscomparisionruns: "RelatedManager[NetboxOrthosComparisionRun]"
+    objects = Manager()
+    api = RootEnclosureManager()
 
     def natural_key(self) -> Tuple[str]:
         return (self.name,)
@@ -237,9 +255,13 @@ class Enclosure(models.Model):
         # Location
         self.location_site = netbox_device.get("site", {}).get("display", "<not set>")
         location_obj = netbox_device.get("location", {})
-        self.location_room = location_obj.get("display", "<not set>")
+        if location_obj is not None:
+            # When no location is available, then the JSON value is "null" --> Python "None"
+            self.location_room = location_obj.get("display", "<not set>")
         rack_obj = netbox_device.get("rack", {})
         self.location_rack = rack_obj.get("display", "<not set>")
-        # TODO: What if the position is not set.
-        self.location_rack_position = netbox_device.get("position", "<not set>")
+        location_rack_position = netbox_device.get("position", "<not set>")
+        if location_rack_position is not None:
+            # When no rack position is set, then the JSON value is "null" --> Python "None"
+            self.location_rack_position = location_rack_position
         self.save()

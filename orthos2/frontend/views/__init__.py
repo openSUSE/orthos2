@@ -8,6 +8,17 @@ from .compare_netbox import (
     NetboxOrthosComparisionRunListView,
     netboxorthoscomparisonrun,
 )
+from .enclosures import (
+    DeleteEnclosure,
+    EnclosureDetailedEdit,
+    EnclosureListView,
+    NewEnclosure,
+    enclosure_compare_netbox,
+    enclosure_detail,
+    enclosure_fetch_netbox,
+    enclosure_machines,
+    enclosure_netboxcomparison,
+)
 from .machine import (
     compare_netbox,
     console,
@@ -83,6 +94,15 @@ __all__ = [
     "FreeMachineListView",
     "VirtualMachineListView",
     "machine_search",
+    "enclosure_machines",
+    "enclosure_detail",
+    "NewEnclosure",
+    "EnclosureListView",
+    "DeleteEnclosure",
+    "EnclosureDetailedEdit",
+    "enclosure_netboxcomparison",
+    "enclosure_compare_netbox",
+    "enclosure_fetch_netbox",
     "regenerate_cobbler",
     "regenerate_domain_cscreen",
     "regenerate_domain_cobbler",

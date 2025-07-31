@@ -4,10 +4,17 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import URLPattern, re_path
 from rest_framework.request import Request
 
-from orthos2.api.commands.base import BaseAPIView, get_machine, getException
+from orthos2.api.commands.base import (
+    BaseAPIView,
+    get_enclosure,
+    get_machine,
+    getException,
+)
+from orthos2.api.serializers.enclosure import EnclosureSerializer
 from orthos2.api.serializers.machine import MachineSerializer
 from orthos2.api.serializers.misc import ErrorMessage, Serializer
 from orthos2.data.models import Machine
+from orthos2.data.models.enclosure import Enclosure
 
 
 class InfoCommand(BaseAPIView):
@@ -138,6 +145,55 @@ Example:
 
             response["header"] = {"type": "INFO", "order": order}
             response["data"] = serialzed_machine.data_info  # type: ignore
+        except Exception:
+            return ErrorMessage(getException()).as_json
+
+        return JsonResponse(response)
+
+
+class EnclosureInfoCommand(BaseAPIView):
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(r"^enclosure$", EnclosureInfoCommand.as_view(), name="enclosure"),
+        ]
+
+    @staticmethod
+    def get_tabcompletion() -> List[str]:
+        return list(Enclosure.api.all().values_list("name", flat=True))
+
+    def get(
+        self, request: Request, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
+        """Return machine information."""
+        name = request.GET.get("name", "")
+        response = {}
+
+        try:
+            result = get_enclosure(name, redirect_to="api:enclosure", data=request.GET)
+            if isinstance(result, Serializer):
+                return result.as_json
+            elif isinstance(result, HttpResponseRedirect):
+                return result
+            enclosure = result
+
+            serialzed_enclosure = EnclosureSerializer(enclosure)
+
+            order = [
+                "name",
+                "id",
+                "description",
+                "netbox_id",
+                "platform",
+                "netbox_last_fetch_attempt",
+                "location_site",
+                "location_room",
+                "location_rack",
+                "location_rack_position",
+            ]
+
+            response["header"] = {"type": "INFO", "order": order}
+            response["data"] = serialzed_enclosure.data_info  # type: ignore
         except Exception:
             return ErrorMessage(getException()).as_json
 

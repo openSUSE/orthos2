@@ -1,18 +1,23 @@
 {% load static %}
 <div class="title">
-  <h3 class="gray"><a href="{% url 'frontend:detail' machine.id %}">{{ machine.fqdn }}</a></h3>
+  <h3 class="gray">
+    <a href="{% url 'frontend:detail' machine.id %}">{{ machine.fqdn }}</a>
+  </h3>
   <h6>
-  {% if machine.enclosure.location_room and machine.enclosure.location_room != "unknown" %}
-    {{ machine.enclosure.location_room }} &gt;
-    {{ machine.enclosure.location_rack }} &gt;
-    {{ machine.enclosure.location_rack_position }}
-  {% endif %}
+    {% if machine.enclosure.location_room and machine.enclosure.location_room != "<not set>" %}
+      {{ machine.enclosure.location_room }}
+      &gt; {{ machine.enclosure.location_rack }} &gt;
+      {{ machine.enclosure.location_rack_position }}
+    {% endif %}
   </h6>
   <div class="machine-statusbar alert" id="machine-statusbar">
     <div class="spinner" width="20px">
-      <img src="{% static 'frontend/images/spinner.gif' %}" width="20px" id="spinner"/>
+      <img
+        src="{% static 'frontend/images/spinner.gif' %}"
+        width="20px"
+        id="spinner"
+      />
     </div>
-    <div id="message">
-    </div>
+    <div id="message"></div>
   </div>
 </div>

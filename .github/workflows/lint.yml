@@ -175,7 +175,7 @@ jobs:
       - uses: actions/setup-node@v4
       - name: Install Prettier
         run: |
-          npm install --save-dev --save-exact prettier
+          npm install --save-dev --save-exact prettier prettier-plugin-jinja-template
       - name: Run Prettier
         run: |
           npx prettier --check *.json ./**/*.json

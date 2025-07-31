@@ -1,0 +1,55 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+{% load tags %}
+{% load filters %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="row">
+      <main class="col-12">
+        <ul class="nav nav-tabs gray">
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'enclosure_detail' %}"
+              href="{% url 'frontend:enclosure_detail' enclosure.pk %}"
+              >Overview</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'enclosure_machines' %}"
+              href="{% url 'frontend:enclosure_machines' enclosure.pk %}"
+              >Machines</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'enclosure_netbox_comparisons' %}"
+              href="{% url 'frontend:enclosure_netbox_comparisons' enclosure.pk %}"
+              >Netbox Comparison</a
+            >
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          {% block tabcontent %}
+          {% endblock %}
+        </div>
+        <span style="font-size: 0.7em; font-family: Monospace;"
+          >API:
+          <a href="{% url 'api:enclosure' %}?name={{ enclosure.name }}"
+            >{% url 'api:enclosure' %}?name={{ enclosure.name }}</a
+          >
+          | Edit:
+          <a href="{% url 'admin:data_enclosure_change' enclosure.id %}"
+            >{% url 'admin:data_enclosure_change' enclosure.id %}</a
+          ></span
+        >
+      </main>
+    </div>
+  </div>
+{% endblock %}

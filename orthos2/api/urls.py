@@ -4,7 +4,7 @@ from django.urls import re_path
 from rest_framework.authtoken import views as authtoken_views
 
 from orthos2.api import views
-from orthos2.api.commands import *  # noqa: F403
+from orthos2.api.commands import *
 
 app_name = "api"
 urlpatterns = [
@@ -13,6 +13,7 @@ urlpatterns = [
 ]
 
 urlpatterns += InfoCommand.get_urls()  # noqa: F405
+urlpatterns += EnclosureInfoCommand.get_urls()  # noqa: F405
 urlpatterns += QueryCommand.get_urls()  # noqa: F405
 urlpatterns += ReserveCommand.get_urls()  # noqa: F405
 urlpatterns += ReleaseCommand.get_urls()  # noqa: F405

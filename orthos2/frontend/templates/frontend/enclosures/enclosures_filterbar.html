@@ -1,0 +1,26 @@
+{% load tags %}
+
+<div class="container-fluid" style="margin-bottom: 15px;">
+  <div class="row">
+    <div class="col-12">
+
+      <div class="dropdown" style="display: inline-block;">
+        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          {% get_current_platform_filter request %}
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" href="?{% url_replace request 'platform' platform.name True %}">All Platform</a>
+          <div class="dropdown-divider"></div>
+          {% for platform in platforms %}
+          <a class="dropdown-item" href="?{% url_replace request 'platform' platform.name %}">{{ platform.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div style="display: inline-block">
+          <span class="hint">Found {{ paginator.count }} Platform(s)</span>
+      </div>
+
+    </div>
+  </div>
+</div>

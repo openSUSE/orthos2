@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 
 from orthos2.api.serializers.misc import SelectSerializer
 from orthos2.data.models import Machine
+from orthos2.data.models.enclosure import Enclosure
 
 
 def getException() -> str:
@@ -74,6 +75,46 @@ def get_machine(
         return response  # type: ignore
 
     return machine
+
+
+def get_enclosure(
+    name: str,
+    redirect_to: str,
+    data: Optional[Any] = None,
+    redirect_key_replace: str = "fqdn",
+) -> Enclosure:
+    """
+    Look up name in the database and return one enclosure object if found or raise corresponding
+    exception if something went wrong.
+    """
+    if not name:
+        raise ValueError("Requires <name> argument!")
+
+    try:
+        enclosures = [Enclosure.api.get(name__startswith=name + ".")]
+    except Exception:
+        enclosures = list(Enclosure.api.filter(name__startswith=name))
+
+    if len(enclosures) == 1:
+        enclosure = enclosures[0]
+    elif enclosures:
+        selection = SelectSerializer(enclosures, "Please specify:")
+        return selection  # type: ignore
+    else:
+        raise Exception("Enclosure '{}' does not exist!".format(name))
+
+    if name != enclosure.name:
+        response = redirect(redirect_to)
+
+        if data:
+            if redirect_key_replace is not None:  # type: ignore
+                data = data.copy()
+                data.__setitem__(redirect_key_replace, enclosure.name)  # type: ignore
+            response["Location"] += "?{}".format(data.urlencode())  # type: ignore
+
+        return response  # type: ignore
+
+    return enclosure
 
 
 class BaseAPIView(APIView):

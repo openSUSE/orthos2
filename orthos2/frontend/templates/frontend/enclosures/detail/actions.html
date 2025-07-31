@@ -1,0 +1,31 @@
+{% load filters %}
+<div class="title">
+  <h5>Actions</h5>
+</div>
+
+<div class="btn-group-vertical d-flex">
+  <a
+    class="btn btn-warning btn-sm"
+    href="{% url 'frontend:edit_enclosure' enclosure.pk %}"
+    role="button"
+    >Edit Enclosure</a
+  >
+</div>
+<br />
+<div class="btn-group-vertical d-flex">
+  <a
+    class="btn btn-secondary btn-sm"
+    href="{% url 'frontend:enclosure_netbox_fetch' enclosure.pk %}"
+    role="button"
+    >Fetch Netbox</a
+  >
+</div>
+<br />
+<div class="btn-group-vertical d-flex">
+  <a
+    class="btn btn-danger btn-sm"
+    href="{% url 'frontend:delete_enclosure' enclosure.pk %}"
+    role="button"
+    >Delete Enclosure</a
+  >
+</div>

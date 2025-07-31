@@ -1,0 +1,88 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="form-group">
+      <form
+        class="pt-3"
+        method="post"
+        {% if action == 'new' %}
+          action="{% url 'frontend:new_enclosure' %}"
+        {% elif action == 'edit' %}
+          action="{% url 'frontend:edit_enclosure' object.id %}"
+        {% endif %}
+      >
+        {% csrf_token %}
+
+        {{ form.name.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.name.id_for_label }}">
+              {{ form.name.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.name }}
+            <small class="form-text text-muted">
+              {{ form.name.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.netbox_id.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.netbox_id.id_for_label }}">
+              {{ form.netbox_id.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.netbox_id }}
+            <small class="form-text text-muted">
+              {{ form.netbox_id.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.platform.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.platform.id_for_label }}">
+              {{ form.platform.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.platform }}
+            <small class="form-text text-muted">
+              {{ form.platform.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.description.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.description.id_for_label }}">
+              {{ form.description.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.description }}
+            <small class="form-text text-muted">
+              {{ form.description.help_text }}
+            </small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm btn-block">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

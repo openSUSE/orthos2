@@ -401,12 +401,6 @@ def machine_netboxcomparision(
         messages.error(request, "Machine does not exist.")
         return redirect("machines")
 
-    if machine.enclosure.netboxorthoscomparisionruns.count() > 0:
-        enclosure_run = machine.enclosure.netboxorthoscomparisionruns.latest(
-            "compare_timestamp"
-        )
-    else:
-        enclosure_run = None
     if machine.netboxorthoscomparisionruns.count() > 0:
         machine_run = machine.netboxorthoscomparisionruns.latest("compare_timestamp")
     else:
@@ -432,7 +426,6 @@ def machine_netboxcomparision(
         {
             "machine": machine,
             "title": "Netbox Comparison",
-            "enclosure_run": enclosure_run,
             "bmc_run": bmc_run if machine.has_bmc() else None,
             "network_interface_run": network_interface_run,
             "machine_run": machine_run,
