@@ -13,6 +13,7 @@ administration of the Orthos server will be discussed.
    :maxdepth: 1
 
     Setup <adminguide/setup>
+    Development Setup <adminguide/setup_devel>
     Server Configuration <adminguide/server_configuration>
     WebSockets <adminguide/websocket>
     Tokens <adminguide/tokens>
