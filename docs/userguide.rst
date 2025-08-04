@@ -13,3 +13,4 @@ GUI and the Command Line Interface (CLI).
    Virtual Machine Page <userguide/virtual_machine_page>
    Enclosure Page <userguide/enclosure_page>
    NetBox Comparison Page <userguide/netbox_comparison_page>
+   Machine Add <userguide/machine_add>
