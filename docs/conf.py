@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "Orthos2"
-copyright = "2020, openSUSE Orthos2 Team"
+copyright = "2025, openSUSE Orthos2 Team"
 author = "openSUSE Orthos2 Team"
 
 
