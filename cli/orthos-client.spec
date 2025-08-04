@@ -47,7 +47,6 @@ mkdir -p %{buildroot}/%{_mandir}/man1
 
 install cli/orthos2 %{buildroot}/%{_bindir}/orthos2
 install cli/orthosrc %{buildroot}/%{_sysconfdir}/orthosrc
-rst2man docs/commandline.rst %{buildroot}/%{_mandir}/man1/orthos2.1
 
 %files
 %attr(755, root, root) %{_bindir}/orthos2

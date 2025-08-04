@@ -7,13 +7,14 @@ Welcome to Orthos2's documentation!
 ===================================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Contents:
 
    Adminstrator Guide <adminguide>
    User Guide <userguide>
-   Command Line Client <commandline>
 
+
+.. note:: Usage of the CLI is discouraged. It will be removed in a future release. The Web UI is to be used instead.
 
 
 Indices and tables
