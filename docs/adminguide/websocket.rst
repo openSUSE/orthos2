@@ -1,4 +1,4 @@
-.. `websockets`_
+.. _websockets:
 
 **********
 WebSockets
