@@ -375,7 +375,7 @@ def machine(request: HttpRequest, id: int) -> HttpResponse:
         machine = Machine.objects.get(pk=id)
     except Machine.DoesNotExist:
         messages.error(request, "Machine does not exist.")
-        return redirect("machines")
+        return redirect("frontend:machines")
 
     return render(
         request,
@@ -393,13 +393,13 @@ def machine_netboxcomparision(
     ]
     if not request.user.has_perms(perm_list):
         messages.error(request, "Not enough user permissions.")
-        return redirect("machines")
+        return redirect("frontend:machines")
 
     try:
         machine = Machine.objects.get(pk=id)
     except Machine.DoesNotExist:
         messages.error(request, "Machine does not exist.")
-        return redirect("machines")
+        return redirect("frontend:machines")
 
     if machine.netboxorthoscomparisionruns.count() > 0:
         machine_run = machine.netboxorthoscomparisionruns.latest("compare_timestamp")
@@ -485,6 +485,6 @@ def machine_add(request: "AuthenticatedHttpRequest") -> HttpResponseBase:
     ]
     if not request.user.has_perms(perm_list):
         messages.error(request, "Insufficient user permissions.")
-        return redirect("machines")
+        return redirect("frontend:machines")
 
     return AddMachineFormView.as_view()(request)
