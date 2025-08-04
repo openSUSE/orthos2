@@ -9,7 +9,8 @@ error tickets and to write annotations to the machines.
 .. image:: ../img/userguide/05_machine_page.jpg
   :alt: Orthos2 Machine Overview Page
 
-Machine Scans, Infos, Actions and Annotations
+Navigation Bar
+##############
 
 .. image:: ../img/userguide/06_machine_infos.jpg
   :alt: Orthos2 Machine Details Tabs
@@ -18,6 +19,9 @@ Machine Scans, Infos, Actions and Annotations
   machine, to reinstall, to report errors and to write annotations.
 - CPU, Network, Installation, PCI, USB, SCSI, Miscellaneous and Reservation History: Detailed information on the
   Subitems.
+
+Status
+######
 
 .. image:: ../img/userguide/07_machine_status.jpg
   :alt: Orthos2 Machine Overview - Crop on Network Status
@@ -28,10 +32,16 @@ Machine Scans, Infos, Actions and Annotations
 
 The scan behaviour of Orthos can be defined by an administrator for the respective machine object.
 
+Annotations
+###########
+
 .. image:: ../img/userguide/08_machine_annotations.jpg
   :alt: Orthos2 Machine Overview - Crop on Annotations
 
 Additional machine information should be entered here. For example, upgrades, hardware configuration changes, etc.
+
+Machine Actions
+###############
 
 .. image:: ../img/userguide/09_machine_actions.jpg
   :alt: Orthos2 Machine Overview - Crop on Actions

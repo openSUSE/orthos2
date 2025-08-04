@@ -8,6 +8,9 @@ that are available in Orthos.
 .. image:: ../img/userguide/02_landingpage.jpg
   :alt: Orthos2 Landing Page
 
+Navigation Bar
+##############
+
 Here different possibilities are available to get to machines or to get an entire machine status.
 
 .. image:: ../img/userguide/03_top_menu_overviews.jpg
@@ -19,6 +22,9 @@ Here different possibilities are available to get to machines or to get an entir
 - Virtual Machines: Overview of all virtual machines. (Host/Gast).
 - Advanced Search: Advanced machine search.
 - Statistics: Statistics about the machines located in Orthos.
+
+Quick Filters
+#############
 
 .. image:: ../img/userguide/04_arch_quickfilter.jpg
   :alt: Orthos2 Architecture Quickfilter
