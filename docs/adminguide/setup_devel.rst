@@ -81,4 +81,5 @@ Installation/Setup (Devel system)
         Quit the server with CONTROL-C.
 
 10. Open your browser and go to `http://localhost:8000 <http://localhost:8000>`_ or
-   `http://localhost:8000/admin <http://localhost:8000/admin>`_ (use the superuser login here).
+    `http://localhost:8000/admin <http://localhost:8000/admin>`_ (use the superuser login here).
+
