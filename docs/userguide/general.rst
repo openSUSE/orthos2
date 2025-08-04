@@ -64,5 +64,7 @@ You can:
 If administrative rights are required, they must be set up by an Orthos administrator. Below a screenshot of the login
 page.
 
+.. note:: Account creation and password restoration may be disabled in case LDAP authentation is configured.
+
 .. image:: ../img/userguide/01_login_screen.jpg
   :alt: Orthos2 Login Screen
