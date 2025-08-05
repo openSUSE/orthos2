@@ -475,6 +475,7 @@ class NetworkInterfaceInline(admin.TabularInline):  # type: ignore
         "name",
         "ethernet_type",
         "driver_module",
+        "netbox_last_fetch_attempt",
     )
     formset = NetworkInterfaceInlineFormset
     form = NetworkInterfaceForm
