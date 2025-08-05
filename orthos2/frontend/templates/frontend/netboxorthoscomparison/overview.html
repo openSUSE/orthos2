@@ -45,7 +45,7 @@
         {% elif run.object_type == "machine" %}
         <th>{{ run.object_machine.fqdn }}</th>
         {% elif run.object_type == "network_interface" %}
-        <th>{{ run.object_network_interface.fqdn }}</th>
+        <th>{{ run.object_network_interface.name }}</th>
         {% else %}
         <th>Unkown object name</td>
         {% endif %}
