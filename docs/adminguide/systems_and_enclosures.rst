@@ -71,3 +71,8 @@ Description
 ===========
 
 Since Enclosure is the generic term of a complete system, this should be as precise as possible.
+
+NetBox ID
+=========
+
+The ID that NetBox gives to the object. This is used for location synchronization.

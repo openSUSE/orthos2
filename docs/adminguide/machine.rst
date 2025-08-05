@@ -4,7 +4,13 @@
 Machines
 ********
 
-Machines are the elementary objects in Orthos. They are entities like Servers, Desktop PCs, Virtual Machines (VM), Baseboard Management Controller (BMC), Remote Power devices etc. Machines can be administrative in order to serve as serial console, DHCP server etc. Administrative machines typically are productive and must not be touched. Users are able to reserve machine objects. The following figure shows the machine object organization in general:
+Concepts
+########
+
+Machines are the elementary objects in Orthos. They are entities like Servers, Desktop PCs, Virtual Machines (VM),
+Baseboard Management Controller (BMC), Remote Power devices etc. Machines can be administrative in order to serve as
+serial console, DHCP server etc. Administrative machines typically are productive and must not be touched. Users are
+able to reserve machine objects. The following figure shows the machine object organization in general:
 
 .. code-block::
 
@@ -33,19 +39,6 @@ The fully qualified domain name must be DNS resolvable by the Orthos server. The
 
 Example: bach.arch.suse.de
 
-Enclosure
-=========
-
-The corresponding enclosure object. A enclosure object represents the phyiscal chassis of a machine. If no enclosure object is selected, a new object will be created (using the machines hostname).
-
-Example: bach
-
-MAC address (required)
-======================
-
-Media Access Control address (MAC) of the primary network interface. This address is used for e.g. DHCP configuration.
-
-Example: 3C:A8:2A:10:74:C3
 
 Architecture (required)
 =======================
@@ -127,24 +120,60 @@ Orthos can scan the machines and make them available to the system for informati
 
 Example: dmesg, dmicode etc.
 
-DHCPv4
-======
+TFTP server
+===========
 
-How to handle the DHCPv4 server v4.
-
-Example: exclude, write DHCPv4 record or ignore DHCPv4 request
-
-DHCPv6
-======
-
-How to handle the DHCPv6 server v6.
-
-Example: exclude, write DHCPv6 record or ignore DHCPv6 request
+Override TFTP server used for network boot (corresponds to the ``next_server`` ISC ``dhcpd.conf`` variable)
 
 DHCP filename
 =============
 
 Here you can store a machine-specific boot file for PXE and UEFI. See also the GRUB2 documentation.
+
+NETWORK INTERFACE description
+#############################
+
+Primary
+=======
+
+A single of the many interfaces of a machine can be the primary one. This interface is supposed to receive a static IP
+that will have the primary DNS name of the machine.
+
+MAC Address
+===========
+
+The physical address of the network interface. This is the main point for synchronizing network interfaces between
+NetBox and Orthos2.
+
+IPv4 Address
+============
+
+The IPv4 address of the interface. No more then a single one is supported at the moment.
+
+IPv6 Address
+============
+
+The IPv6 address of the interface. No more then a single one is supported at the moment.
+
+Name
+====
+
+The human readable name of the interface. Does not have to match the interface naming on the host.
+
+Ethernet Type
+=============
+
+The auto-detected type of the interface.
+
+Driver Module
+=============
+
+The auto-detected linux kernel driver of the interface.
+
+NetBox Last Fetched At
+======================
+
+The datestampt when the interface was last fetched from NetBox.
 
 SERIAL CONSOLE description
 ##########################
@@ -155,13 +184,6 @@ Type
 Access type to the serial console of the machine.
 
 Example: Telnet, IPMI, free command etc
-
-CScreen server
-==============
-
-A cscreen server is a server on which the cscreen service is installed and entered.
-
-Example: sconsole1.arch.suse.de
 
 Baud rate
 =========
@@ -175,19 +197,20 @@ Kernel device
 
 Kernel device on which the kernel outputs the serial signal.
 
+Example: ttyS, ttyAMA, ttyUSB etc.
+
+Kernel device number
+====================
+
+Kernel device number that is appended to the kernel device.
+
 Example: 0, 1 etc.
-
-Management BMC
-==============
-
-Here a BMC for serial over lan can be selected, it must be created similar to a machine.
-
-Example: bahama-sp.arch.suse.de
 
 Dedicated console server
 ========================
 
-A dedicated console server is an embedded device which is only for merging multiple consoles and then deploying. Access is via telnet. Access to the console runs via the CScreen srever.
+A dedicated console server is an embedded device which is only for merging multiple consoles and then deploying. Access
+is via telnet. Access to the console runs via the CScreen srever.
 
 Example: sconsole3.arch.suse.de
 
@@ -213,20 +236,6 @@ Example: telnet sconsole3.arch.suse.de 2008
 REMOTE POWER description
 ########################
 
-Type
-====
-
-Access type to the RemotePower console of the machine.
-
-Example: Telnet, IPMI etc.
-
-Management BMC
-==============
-
-BMC can be selected, it must be created similar to a machine.
-
-Example: bahama-sp.arch.suse.de
-
 Remote power device
 ===================
 
@@ -239,10 +248,10 @@ Port
 
 Network port for accessing the RemotePower.
 
-Comment
+Options
 =======
 
-Comment indicating the remote power device.
+The option to append to the fence agents call. See individual fence agent for available parameters.
 
 Delete a machine
 ################

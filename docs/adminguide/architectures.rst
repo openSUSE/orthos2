@@ -2,7 +2,11 @@
 Architectures
 *************
 
-Machine architectures can be set up, the most common ones are already preconfigured. Machine objects have an architecture that can then be mapped to the machine.
+Concepts
+########
+
+Machine architectures can be set up, the most common ones are already preconfigured. Machine objects have an
+architecture that can then be mapped to the machine.
 
 .. code-block::
 

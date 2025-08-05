@@ -4,9 +4,6 @@
 WebSockets
 **********
 
-Serial console in the web browser
-#################################
-
 Orthos provides the ability to use an interactive serial console in the web browser for each machine that has an entry
 for a serial console. The WebSocket communication protocol is used for this. To start the WebSocket service, the
 following command line must be executed (no HTTPS/TLS):
