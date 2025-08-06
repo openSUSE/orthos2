@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "Orthos2"
-copyright = "2020, openSUSE Orthos2 Team"
+copyright = "2025, openSUSE Orthos2 Team"
 author = "openSUSE Orthos2 Team"
 
 
@@ -71,19 +71,10 @@ cli_cmd_name = "orthos2"
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (
-        "commandline",
-        cli_cmd_name,
-        "Orthos Command Line Client Documenation",
-        ["Thomas Renninger"],
-        1,
-    ),
-]
+man_pages = []  # type: ignore
 
 rst_prolog = """
 .. |orthosrc_loc| replace:: {0}
-.. |cli_cmd_name| replace:: {1}
 """.format(
-    docs_location + cli_pkg_name + "orthosrc", cli_cmd_name
+    docs_location + cli_pkg_name + "orthosrc"
 )

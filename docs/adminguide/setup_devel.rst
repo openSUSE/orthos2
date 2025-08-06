@@ -5,7 +5,7 @@ Installation/Setup (Devel system)
 1. Prepare your local system:
     .. code-block::
 
-        $ sudo zypper in python3-pip python3-virtualenv python3-devel libopenssl-devel openldap2-devel
+        $ sudo zypper in docker docker-compose openldap2-devel cyrus-sasl-devel
 
 
 2. Check out the sources:
@@ -16,15 +16,11 @@ Installation/Setup (Devel system)
 
 .. If we do a linebreak in the following line the formatting is messed up. Let it be!
 
-3. Create the virtual Python environment (`virtualenv <https://virtualenv.pypa.io/en/stable/>`_), activate it and update `pip <https://en.wikipedia.org/wiki/Pip_(package_manager)>`_
+3. Create the `virtual Python environment <https://docs.python.org/3/library/venv.html>`_, activate it and update `pip <https://en.wikipedia.org/wiki/Pip_(package_manager)>`_
     .. code-block::
 
-        $ virtualenv .env
-        Using base prefix '/usr'
-        New python executable in .env/bin/python3
-        Also creating executable in .env/bin/python
-        Installing setuptools, pip, wheel...done.
-        $ . .env/bin/activate
+        $ python -m venv .venv
+        $ . .venv/bin/activate
         $ pip install --upgrade pip
         Collecting pip
         ...
@@ -32,53 +28,24 @@ Installation/Setup (Devel system)
 4. Install the required Python modules for development:
     .. code-block::
 
-        $ pip install -r requirements-devel.txt
+        $ pip install -r requirements-devel.txt -r docs/requirements.docs.txt
         Collecting django
         ...
-        $ cd orthos2/
 
-5. Dump Database Model:
+5. Generate the required secrets to bring up the Docker Compose Stack:
     .. code-block::
 
-        orthos-admin makemigrations data frontend taskmanager api
+        python3 docker/manage-secrets.py
 
-6. Migrate (create) the database:
+6. Run the test server:
     .. code-block::
 
-         orthos-admin migrate
-         Operations to perform:
-                 Apply all migrations: admin, auth, authtoken, contenttypes, data, sessions, taskmanager
-         Running migrations:
-                 Applying ...
+        docker compose up -d
 
-7. Load initial data:
+7. Edit your ``/etc/hosts`` file and include the following line:
     .. code-block::
 
-        orthos-admin loaddata data/fixtures/*.json
-        Installed 94 object(s) from 7 fixture(s)
-        orthos-admin loaddata taskmanager/fixtures/*.json
-        Installed 2 object(s) from 1 fixture(s)
+        127.0.0.1 orthos2.orthos2.test cobbler.orthos2.test netbox.orthos2.test
 
-8. Create a superuser (administrator) account:
-    .. code-block::
-
-        $ orthos-admin createsuperuser
-        Username (leave blank to use '<your_login>'): admin
-        Email address: <your_login>@domain.de
-        Password: ********
-        Password (again): ********
-        Superuser created successfully.
-
-9. Run the test server:
-    .. code-block::
-
-        orthos-admin runserver localhost:8000
-        Performing system checks...
-        System check identified no issues (0 silenced).
-        November 23, 2017 - 16:25:35
-        Django version 1.11.7, using settings 'orthos2.settings'
-        Starting development server at http://localhost:8000/
-        Quit the server with CONTROL-C.
-
-10. Open your browser and go to `http://localhost:8000 <http://localhost:8000>`_ or
-   `http://localhost:8000/admin <http://localhost:8000/admin>`_ (use the superuser login here).
+8.  Open your browser and go to `http://orthos2.orthos2.test <http://orthos2.orthos2.test>`_ (use the superuser login 
+    here). The login password for the admin user you can find in ``docker/orthos/orthos2.env``.

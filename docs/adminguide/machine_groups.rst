@@ -2,6 +2,9 @@
 Machine Groups
 **************
 
+Concepts
+########
+
 In Orthos it is possible to group machines. Users can be assigned to one or more machine groups. Only users assigned to
 a group of machines can reserve and work with this set of machines. It is possible to assign different administrative
 rights.

@@ -13,6 +13,7 @@ administration of the Orthos server will be discussed.
    :maxdepth: 1
 
     Setup <adminguide/setup>
+    Development Setup <adminguide/setup_devel>
     Server Configuration <adminguide/server_configuration>
     WebSockets <adminguide/websocket>
     Tokens <adminguide/tokens>
@@ -24,3 +25,5 @@ administration of the Orthos server will be discussed.
     Vendors and Platforms <adminguide/vendors_and_platforms>
     Serial Console Type <adminguide/serial_console_type>
     Machine Groups <adminguide/machine_groups>
+    Remote Power Types <adminguide/remote_power_type>
+    Remote Power Devices <adminguide/remote_power_device>

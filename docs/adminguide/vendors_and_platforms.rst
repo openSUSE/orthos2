@@ -2,6 +2,9 @@
 Vendors and Platforms
 *********************
 
+Concepts
+########
+
 Under Vendors you can enter the machine manufacturer, This serves together with the platforms to recognize a machine or
 machines of the same type. Most manufacturers are already stored in the Orthos system. With platforms you can set the
 machine family name (unit name). It goes hand in hand with the vendor, the platform name is determined by the vendor.

@@ -259,7 +259,9 @@ class Enclosure(models.Model):
             # When no location is available, then the JSON value is "null" --> Python "None"
             self.location_room = location_obj.get("display", "<not set>")
         rack_obj = netbox_device.get("rack", {})
-        self.location_rack = rack_obj.get("display", "<not set>")
+        if rack_obj is not None:
+            # Unracked devices may have no rack object, then the JSON value is "null" --> Python "None"
+            self.location_rack = rack_obj.get("display", "<not set>")
         location_rack_position = netbox_device.get("position", "<not set>")
         if location_rack_position is not None:
             # When no rack position is set, then the JSON value is "null" --> Python "None"
