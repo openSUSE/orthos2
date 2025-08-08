@@ -99,12 +99,13 @@ follow the instructions on the screen.""".format(
 
 Remember that the machine reservation ends at {reserved_until}. You'll get
 another email as reminder one day before the machine gets released automatically.
-Information about Orthos can be found here: http://orthos-host.domain.de/
+Information about Orthos can be found here: {orthos2_instance}
 
 
 Regards,
 Orthos""".format(
-                reserved_until=machine.reserved_until
+                reserved_until=machine.reserved_until,
+                orthos2_instance=settings.BASE_URL,
             )
 
             send_email(user.email, subject, message)  # type: ignore
