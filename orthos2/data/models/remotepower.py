@@ -233,7 +233,7 @@ class RemotePower(models.Model):
         """
         password = None
         username = None
-        fence = self.fence_agent
+        fence = self.get_remotepower_fence()
         if not fence:
             raise ValueError("No fence agent set for remote power object")
         if fence.device == "bmc":
