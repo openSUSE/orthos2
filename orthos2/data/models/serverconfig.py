@@ -38,8 +38,8 @@ class ServerConfigManager(models.Manager["ServerConfig"]):
         try:
             obj = ServerConfig.objects.get(key=key)
             return obj.value.lower() == "bool:true"
-        except ServerConfig.DoesNotExist as e:
-            logger.warning('Key "%s" did not exist, returning fallback value', key, e)
+        except ServerConfig.DoesNotExist:
+            logger.warning('Key "%s" did not exist, returning fallback value', key)
             return fallback
 
     def list_by_key(self, key: str, delimiter: str = ",") -> Optional[List[str]]:

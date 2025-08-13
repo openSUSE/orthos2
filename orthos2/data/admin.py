@@ -163,6 +163,7 @@ class BMCInline(admin.StackedInline):  # type: ignore
     extra = 0
     formset = BMCFormInlineFormSet
     form = BMCForm
+    readonly_fields = ("netbox_last_fetch_attempt",)
 
     def get_formset(  # type: ignore
         self, request: HttpRequest, obj: Optional["Machine"] = None, **kwargs: Any
