@@ -51,7 +51,6 @@ install cli/orthosrc %{buildroot}/%{_sysconfdir}/orthosrc
 %files
 %attr(755, root, root) %{_bindir}/orthos2
 %config %attr(644, root, root) %{_sysconfdir}/orthosrc
-%{_mandir}/man1/orthos2.1*
 
 %changelog
 * Tue Sep 15 00:26:20 UTC 2020 - Thomas Renninger <trenn@suse.de>
