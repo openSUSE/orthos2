@@ -63,6 +63,9 @@ class BMCListingField(BMCSerializer):
 
         for name, field in self.fields.items():  # type: ignore
             value = getattr(instance, str(name))
+            if name == "fence_agent":
+                result[name] = {"label": field.label, "value": value.name}
+                continue
             result[name] = {"label": field.label, "value": value}
         return result
 

@@ -27,3 +27,17 @@ class MachineSerializerTest(TestCase):
 
         # Assert
         self.assertNotEqual(result, {})
+
+    def test_machine_serialization_with_remote_power(self):
+        """
+        Verify that serializing machines with remote power is working as expected.
+        """
+        # Arrange
+        machine = Machine.objects.get(pk=2)
+        serializer = MachineSerializer(machine)
+
+        # Act
+        result = serializer.data_info
+
+        # Assert
+        self.assertNotEqual(result, {})

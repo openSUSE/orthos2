@@ -43,3 +43,30 @@ class InfoTest(APITestCase):
             json_response["data"]["reserved_until"]["value"],
             ("9999-12-31T22:59:59.999999+01:00", "9999-12-31T23:59:59.999999+01:00"),
         )
+
+    def test_info_get_remote_power(self) -> None:
+        """
+        Verify that retrieving a machine with an infinite reservation is possible.
+        """
+        # Arrange
+        url = reverse("api:machine")
+        url += "?fqdn=testsys.orthos2.test"
+        self.maxDiff = None
+
+        # Act
+        response = self.client.get(url, format="json")
+        json_response = response.json()
+
+        # Assert
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue("data" in json_response)
+        self.assertTrue("header" in json_response)
+        self.assertTrue("type" in json_response["header"])
+        self.assertEqual(json_response["header"]["type"], "INFO")
+        self.assertIn(
+            json_response["data"]["reserved_until"]["value"],
+            ("9999-12-31T22:59:59.999999+01:00", "9999-12-31T23:59:59.999999+01:00"),
+        )
+        self.assertEqual(
+            json_response["data"]["bmc"]["value"]["fence_agent"]["value"], "Dummy BMC"
+        )
