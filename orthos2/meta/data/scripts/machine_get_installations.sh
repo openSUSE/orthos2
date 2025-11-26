@@ -33,7 +33,7 @@ function pretty_suse()                                                     # {{{
     local base=
 
     [ -r "${FILE}" ] || return
-    base=$(sed -e 's/(.*)//g;s/SP[0-9]//g;q' "${FILE}")
+    base=$(sed -e 's/[[:blank:]]*(.*)//g;s/SP[0-9]//g;q' "${FILE}")
     case "${base}" in
     *Enterprise*)
         local sp=$(sed -ne '/PATCHLEVEL/s|PATCHLEVEL[[:blank:]]*=[[:blank:]]*||p' "${FILE}")
