@@ -5,12 +5,14 @@
 #
 etc_issue='/etc/issue'
 etc_os_release='/etc/os-release'
+etc_suse_release='/etc/SuSE-release'
 
 while test $# -gt 0
 do
     case "$1" in
     --issue) etc_issue=$2 ; shift ;;
     --os-release) etc_os_release=$2 ; shift ;;
+    --suse-release) etc_suse_release=$2 ; shift ;;
     esac
     shift
 done
@@ -32,7 +34,7 @@ function get_milestone()                                                   # {{{
 
 function pretty_suse()                                                     # {{{
 {
-    local FILE="/etc/SuSE-release"
+    local FILE=${etc_suse_release}
     local base=
 
     [ -r "${FILE}" ] || return
