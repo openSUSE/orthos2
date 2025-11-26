@@ -22,16 +22,9 @@ done
 function get_milestone()                                                   # {{{
 {
     local FILE=$1
-    local milestone=
-    local issue=
 
-    issue=$(grep "Build\|Alpha\|Beta\|RC" ${FILE})
-
-    if [ -n "${issue}" ] ; then
-	milestone=$(echo ${issue} | sed -e 's/^.*\(Build[ ]*\?[0-9]\+\| Alpha[ ]*\?[0-9]\+\|Beta[ ]*\?[0-9]\+\|RC[ ]*\?[0-9]\+\).*$/\1/gi')
-    fi
-
-    echo $milestone
+    test -f "${FILE}" || return
+    sed -ne 's/^.*[[:blank:]]\(\(Build\|Snapshot\|Alpha\|Beta\|RC\)[- ]*\?[-0-9]\+\|PublicRC\).*/\1/p' "${FILE}"
 }                                                                          # }}}
 
 function pretty_suse()                                                     # {{{
