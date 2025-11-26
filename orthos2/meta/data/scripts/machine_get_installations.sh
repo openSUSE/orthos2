@@ -63,16 +63,32 @@ function pretty_os()                                                       # {{{
     local vers=
 
     if [ -r "${FILE}" ]; then
-        dist=$(sed -ne 's/^NAME="\?\([^"]*\)"\?.*$/\1/p' "${FILE}")
-        vers=$(sed -ne 's/^VERSION_ID="\?\([^"]*\)"\?.*$/\1/p' "${FILE}")
-        case "$dist" in
-        (SLE*)
-          case "$vers" in
-          (*.*)    vers=$(echo "$vers" | sed -e 's/\./ SP/') ;;
-          (*-SP*)  vers=$(echo "$vers" | sed -e 's/-/ /') ;;
-          esac
-          ;;
-        esac
+        dist=$(sed -ne '/^SUSE_SUPPORT_PRODUCT=/{s|[^=]\+="\?\([^"]*\)"\?.*$|\1|;p}' "${FILE}")
+        if test -n "${dist}"
+        then
+            case "${dist}" in
+            "SUSE Linux Enterprise Server") dist='SLES' ;;
+            "SUSE Linux Enterprise Server for SAP applications") dist='SLES_SAP' ;;
+            "SUSE Linux Micro") dist='SL-Micro' ;;
+            esac
+            vers=$(sed -ne '/^SUSE_SUPPORT_PRODUCT_VERSION=/{s|[^=]\+="\?\([^"]*\)"\?.*$|\1|p}' "${FILE}")
+        else
+            dist=$(sed -ne 's/^NAME="\?\([^"]*\)"\?.*$/\1/p' "${FILE}")
+            vers=$(sed -ne 's/^VERSION_ID="\?\([^"]*\)"\?.*$/\1/p' "${FILE}")
+            case "$dist" in
+            "SLE Micro")
+              ;;
+            "SL-Micro")
+              ;;
+            (SLE*)
+              case "$vers" in
+              (16.*)   ;;
+              (*.*)    vers=$(echo "$vers" | sed -e 's/\./ SP/') ;;
+              (*-SP*)  vers=$(echo "$vers" | sed -e 's/-/ /') ;;
+              esac
+              ;;
+            esac
+        fi
     fi
 
     if [ -z "$dist" ]; then
