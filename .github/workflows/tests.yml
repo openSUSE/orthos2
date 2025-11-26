@@ -24,6 +24,9 @@ jobs:
       - name: Allow writing from inside the container
         run: |
           chmod g+w,o+w .
+      - name: Verify machine_get_installations
+        run: |
+          bash tests/machine_get_installations/run_tests.sh
       - name: Install Django
         run: |
           python3 -m pip install --upgrade pip
