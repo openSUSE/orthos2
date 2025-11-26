@@ -44,7 +44,7 @@ function pretty_suse()                                                     # {{{
         fi
     fi
 
-    base=$(echo "${base}" | sed -e 's/SUSE L[Ii][nN][uU][xX] Enterprise Server/SLES/g')
+    base=$(echo "${base}" | sed -e 's/SUSE L[Ii][nN][uU][xX] Enterprise Server/SLES/g;s/SUSE Linux Enterprise Desktop/SLED/')
 
     echo $base
 }                                                                          # }}}
