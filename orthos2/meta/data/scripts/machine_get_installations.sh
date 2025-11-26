@@ -63,8 +63,8 @@ function pretty_os()                                                       # {{{
     local vers=
 
     if [ -r "${FILE}" ]; then
-        dist=$(sed -ne 's/^NAME="\([^"]*\)".*$/\1/p' "${FILE}")
-        vers=$(sed -ne 's/^VERSION_ID="\([^"]*\)".*$/\1/p' "${FILE}")
+        dist=$(sed -ne 's/^NAME="\?\([^"]*\)"\?.*$/\1/p' "${FILE}")
+        vers=$(sed -ne 's/^VERSION_ID="\?\([^"]*\)"\?.*$/\1/p' "${FILE}")
         case "$dist" in
         (SLE*)
           case "$vers" in
