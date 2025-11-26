@@ -21,8 +21,7 @@ function get_milestone()                                                   # {{{
 
 function pretty_suse()                                                     # {{{
 {
-    local MP="$1"
-    local FILE="$MP/etc/SuSE-release"
+    local FILE="/etc/SuSE-release"
     local base=
 
     [ -r "${FILE}" ] || return
@@ -44,8 +43,7 @@ function pretty_suse()                                                     # {{{
 
 function pretty_os()                                                       # {{{
 {
-    local MP="$1"
-    local FILE="$MP/etc/os-release"
+    local FILE="/etc/os-release"
     local dist=
     local vers=
 
@@ -63,7 +61,7 @@ function pretty_os()                                                       # {{{
     fi
 
     if [ -z "$dist" ]; then
-        dist=$(pretty_suse "$MP")
+        dist=$(pretty_suse)
     else
         dist="$dist $vers"
     fi
@@ -79,7 +77,7 @@ ROOT=$(mount | grep ' / ' | cut -d ' ' -f 1)
 echo ----
 echo ARCH=$(uname -i)
 echo KERNEL="$(uname -r)"
-DIST=$(pretty_os "")
+DIST=$(pretty_os)
 MILESTONE=$(get_milestone /etc/issue)
 echo DIST=${DIST} ${MILESTONE}
 echo RUNNING=1
