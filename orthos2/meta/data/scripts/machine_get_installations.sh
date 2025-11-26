@@ -6,6 +6,7 @@
 etc_issue='/etc/issue'
 etc_os_release='/etc/os-release'
 etc_suse_release='/etc/SuSE-release'
+dist_debug=
 
 while test $# -gt 0
 do
@@ -13,6 +14,7 @@ do
     --issue) etc_issue=$2 ; shift ;;
     --os-release) etc_os_release=$2 ; shift ;;
     --suse-release) etc_suse_release=$2 ; shift ;;
+    --dist-debug) dist_debug='dist_debug' ;;
     esac
     shift
 done
@@ -83,13 +85,18 @@ function pretty_os()                                                       # {{{
     echo "$dist"
 }                                                                          # }}}
 
+DIST=$(pretty_os "${etc_os_release}")
+MILESTONE=$(get_milestone "${etc_issue}")
+if test -n "${dist_debug}"
+then
+    echo DIST=${DIST} ${MILESTONE}
+    exit 0
+fi
 #
 # running installation
 echo ----
 echo ARCH=$(uname -i)
 echo KERNEL="$(uname -r)"
-DIST=$(pretty_os "${etc_os_release}")
-MILESTONE=$(get_milestone "${etc_issue}")
 echo DIST=${DIST} ${MILESTONE}
 echo RUNNING=1
 echo PART=$(mount | sed -ne '/ \/ /{s|[[:blank:]].*$||p;q}')
