@@ -33,7 +33,7 @@ function pretty_suse()                                                     # {{{
     local base=
 
     [ -r "${FILE}" ] || return
-    base=$(head -1 < ${FILE} | sed -e 's/(.*)//g' -e 's/SP[0-9]//g')
+    base=$(sed -e 's/(.*)//g;s/SP[0-9]//g;q' "${FILE}")
     if echo ${base} | grep Enterprise &>/dev/null ; then
         local sp=$(grep PATCHLEVEL ${FILE} |cut -d '=' -f 2)
         sp=$(echo ${sp} | sed -e 's/ //g')
