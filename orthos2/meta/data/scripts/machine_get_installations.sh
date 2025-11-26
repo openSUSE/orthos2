@@ -70,8 +70,6 @@ function pretty_os()                                                       # {{{
     echo "$dist"
 }                                                                          # }}}
 
-ROOT=$(mount | grep ' / ' | cut -d ' ' -f 1)
-
 #
 # running installation
 echo ----
@@ -81,6 +79,6 @@ DIST=$(pretty_os)
 MILESTONE=$(get_milestone /etc/issue)
 echo DIST=${DIST} ${MILESTONE}
 echo RUNNING=1
-echo PART=${ROOT}
+echo PART=$(mount | sed -ne '/ \/ /{s|[[:blank:]].*$||p;q}')
 
 # vim: set sw=4 ts=4 et: :collapseFolds=1:
