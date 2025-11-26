@@ -4,6 +4,7 @@
 # Collects installation information.
 #
 etc_issue='/etc/issue'
+etc_os_release='/etc/os-release'
 
 function get_milestone()                                                   # {{{
 {
@@ -44,7 +45,7 @@ function pretty_suse()                                                     # {{{
 
 function pretty_os()                                                       # {{{
 {
-    local FILE="/etc/os-release"
+    local FILE=$1
     local dist=
     local vers=
 
@@ -76,7 +77,7 @@ function pretty_os()                                                       # {{{
 echo ----
 echo ARCH=$(uname -i)
 echo KERNEL="$(uname -r)"
-DIST=$(pretty_os)
+DIST=$(pretty_os "${etc_os_release}")
 MILESTONE=$(get_milestone "${etc_issue}")
 echo DIST=${DIST} ${MILESTONE}
 echo RUNNING=1
