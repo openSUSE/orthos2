@@ -3,6 +3,7 @@
 #
 # Collects installation information.
 #
+etc_issue='/etc/issue'
 
 function get_milestone()                                                   # {{{
 {
@@ -76,7 +77,7 @@ echo ----
 echo ARCH=$(uname -i)
 echo KERNEL="$(uname -r)"
 DIST=$(pretty_os)
-MILESTONE=$(get_milestone /etc/issue)
+MILESTONE=$(get_milestone "${etc_issue}")
 echo DIST=${DIST} ${MILESTONE}
 echo RUNNING=1
 echo PART=$(mount | sed -ne '/ \/ /{s|[[:blank:]].*$||p;q}')
