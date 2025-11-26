@@ -1,0 +1,5 @@
+NAME=openSUSE
+VERSION = 12.1 (Asparagus)
+VERSION_ID="12.1"
+PRETTY_NAME="openSUSE 12.1 (Asparagus) (x86_64)"
+ID=opensuse
