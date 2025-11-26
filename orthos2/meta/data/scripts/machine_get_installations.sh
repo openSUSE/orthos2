@@ -38,7 +38,7 @@ function pretty_suse()                                                     # {{{
     *Enterprise*)
         local sp=$(sed -ne '/PATCHLEVEL/s|PATCHLEVEL[[:blank:]]*=[[:blank:]]*||p' "${FILE}")
         if [ "${sp}" == "0" ] ; then
-            base="${base} GA"
+            base="${base}"
         elif [ -n "${sp}" ] ; then
             base="${base} SP${sp}"
         fi
