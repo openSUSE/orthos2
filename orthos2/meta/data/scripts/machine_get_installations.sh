@@ -6,6 +6,15 @@
 etc_issue='/etc/issue'
 etc_os_release='/etc/os-release'
 
+while test $# -gt 0
+do
+    case "$1" in
+    --issue) etc_issue=$2 ; shift ;;
+    --os-release) etc_os_release=$2 ; shift ;;
+    esac
+    shift
+done
+
 function get_milestone()                                                   # {{{
 {
     local FILE=$1
