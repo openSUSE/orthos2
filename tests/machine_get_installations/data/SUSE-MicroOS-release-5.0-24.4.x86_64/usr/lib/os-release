@@ -1,0 +1,8 @@
+NAME="SLE Micro"
+VERSION="5.0"
+VERSION_ID="5.0"
+PRETTY_NAME="SUSE Linux Enterprise Micro 5.0"
+ID="suse-microos"
+ID_LIKE="suse"
+ANSI_COLOR="0;32"
+CPE_NAME="cpe:/o:suse:suse-microos:5.0"
