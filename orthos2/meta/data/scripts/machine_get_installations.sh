@@ -34,15 +34,16 @@ function pretty_suse()                                                     # {{{
 
     [ -r "${FILE}" ] || return
     base=$(sed -e 's/(.*)//g;s/SP[0-9]//g;q' "${FILE}")
-    if echo ${base} | grep Enterprise &>/dev/null ; then
-        local sp=$(grep PATCHLEVEL ${FILE} |cut -d '=' -f 2)
-        sp=$(echo ${sp} | sed -e 's/ //g')
+    case "${base}" in
+    *Enterprise*)
+        local sp=$(sed -ne '/PATCHLEVEL/s|PATCHLEVEL[[:blank:]]*=[[:blank:]]*||p' "${FILE}")
         if [ "${sp}" == "0" ] ; then
             base="${base} GA"
         elif [ -n "${sp}" ] ; then
             base="${base} SP${sp}"
         fi
-    fi
+        ;;
+    esac
 
     base=$(echo "${base}" | sed -e 's/SUSE L[Ii][nN][uU][xX] Enterprise Server/SLES/g;s/SUSE Linux Enterprise Desktop/SLED/')
 
