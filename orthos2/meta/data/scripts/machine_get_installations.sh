@@ -72,13 +72,12 @@ function pretty_os()                                                       # {{{
     echo "$dist"
 }                                                                          # }}}
 
-GLOBAL_ARCH=$(uname -i)
 ROOT=$(mount | grep ' / ' | cut -d ' ' -f 1)
 
 #
 # running installation
 echo ----
-echo ARCH=$GLOBAL_ARCH
+echo ARCH=$(uname -i)
 echo KERNEL="$(uname -r)"
 DIST=$(pretty_os "")
 MILESTONE=$(get_milestone /etc/issue)
