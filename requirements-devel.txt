@@ -18,7 +18,7 @@ types-pytz
 types-pexpect
 types-paramiko
 pexpect
-black==22.3.0  # See .pre-commit-config.yaml
+black==26.3.1  # See .pre-commit-config.yaml
 django-test-migrations
 
 # generate UML diagram:
