@@ -1,5 +1,5 @@
 # For the hostnames to work an entry in /etc/hosts is needed:
-# 127.0.0.1 orthos2.orthos2.test cobbler.orthos2.test netbox.orthos2.test
+# 127.0.0.1 authentik.orthos2.test orthos2.orthos2.test cobbler.orthos2.test netbox.orthos2.test
 services:
   proxy:
     image: traefik:v3.6
@@ -11,13 +11,23 @@ services:
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
+      - --providers.file.directory=/etc/traefik/dynamic
+      - --providers.file.watch=true
     ports:
       - "80:80"
       - "443:443"
       - "8080:8080"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro,z
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik_certs:/certs:ro
+      - ./traefik_certs/authentik.orthos2.test.crt:/certs/authentik.orthos2.test.crt:ro
+      - ./traefik_certs/authentik.orthos2.test.key:/certs/authentik.orthos2.test.key:ro
+      - ./traefik_certs/dynamic_conf.yaml:/etc/traefik/dynamic/certs.yaml:ro
     restart: always
+    networks:
+      orthos:
+        aliases:
+          - authentik.orthos2.test
     security_opt:
       - label:disable
   orthos2:
@@ -31,6 +41,8 @@ services:
       - NET_RAW
     volumes:
       - ./:/code:z
+    networks:
+      - orthos
     depends_on:
       orthos2_database:
         condition: service_healthy
@@ -43,10 +55,8 @@ services:
       retries: 5
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.orthos2-http.rule=Host(`orthos2.orthos2.test`)"
-      - "traefik.http.routers.orthos2-http.entrypoints=web"
-      - "traefik.http.routers.orthos2-http.middlewares=orthos2-https"
-      - "traefik.http.middlewares.orthos2-https.redirectScheme.scheme=https"
+      - "traefik.http.routers.orthos2.rule=Host(`orthos2.orthos2.test`)"
+      - "traefik.http.routers.orthos2.entrypoints=web"
       - "traefik.http.routers.orthos2-https.rule=Host(`orthos2.orthos2.test`)"
       - "traefik.http.routers.orthos2-https.entrypoints=websecure"
       - "traefik.http.routers.orthos2-https.tls=true"
@@ -63,6 +73,8 @@ services:
       - NET_RAW
     volumes:
       - ./:/code
+    networks:
+      - orthos
     depends_on:
       orthos2_database:
         condition: service_healthy
@@ -74,6 +86,8 @@ services:
     hostname: database.orthos2.test
     env_file:
       - "docker/orthos/db.env"
+    networks:
+      - orthos
     healthcheck:
       test:
         [
@@ -90,14 +104,16 @@ services:
       dockerfile: cobbler.dockerfile
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.cobbler-http.rule=Host(`cobbler.orthos2.test`)"
-      - "traefik.http.routers.cobbler-http.entrypoints=web"
+      - "traefik.http.routers.cobbler.rule=Host(`cobbler.orthos2.test`)"
+      - "traefik.http.routers.cobbler.entrypoints=web"
       - "traefik.http.routers.cobbler-https.rule=Host(`cobbler.orthos2.test`)"
       - "traefik.http.routers.cobbler-https.entrypoints=websecure"
       - "traefik.http.routers.cobbler-https.tls=true"
       - "traefik.http.services.cobbler.loadbalancer.server.port=80"
   serial_console:
     hostname: sconsole.orthos2.test
+    networks:
+      - orthos
     build:
       context: docker/serial-console
       dockerfile: serial-console.dockerfile
@@ -105,6 +121,8 @@ services:
     #  - 22:22
   machine_bmc:
     hostname: bmc.orthos2.test
+    networks:
+      - orthos
     build:
       context: docker/bmc
       dockerfile: bmc.dockerfile
@@ -113,6 +131,8 @@ services:
   # Netbox part below taken and adjusted from https://github.com/netbox-community/netbox-docker
   netbox: &netbox
     image: ${IMAGE-docker.io/netboxcommunity/netbox:latest}
+    networks:
+      - orthos
     depends_on:
       postgres:
         condition: service_healthy
@@ -135,6 +155,8 @@ services:
       - /opt/netbox/venv/bin/python
       - /opt/netbox/netbox/manage.py
       - rqworker
+    networks:
+      - orthos
     depends_on:
       netbox:
         condition: service_healthy
@@ -147,6 +169,8 @@ services:
     <<: *netbox
     command:
       - /opt/netbox/housekeeping.sh
+    networks:
+      - orthos
     depends_on:
       netbox:
         condition: service_healthy
@@ -159,6 +183,8 @@ services:
   postgres:
     image: docker.io/postgres:17-alpine
     env_file: docker/netbox/postgres.env
+    networks:
+      - orthos
     healthcheck:
       test:
         [
@@ -176,6 +202,8 @@ services:
       - -c # this is to evaluate the $REDIS_PASSWORD from the env
       - valkey-server --save "" --appendonly no --requirepass $$REDIS_PASSWORD ## $$ because of docker-compose
     env_file: docker/netbox/redis.env
+    networks:
+      - orthos
     healthcheck:
       test: '[ $$(valkey-cli --pass "$${REDIS_PASSWORD}" ping) = ''PONG'' ]'
       start_period: 5s
@@ -186,3 +214,8 @@ services:
     <<: *redis
     env_file: docker/netbox/redis-cache.env
 
+volumes:
+  database:
+    driver: local
+networks:
+  orthos:
