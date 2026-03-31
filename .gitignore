@@ -151,3 +151,7 @@ package-lock.json
 
 # Re-Include the os-release files
 !orthos2/utils/tests/**/lib
+
+#certificates
+*.crt
+*.key

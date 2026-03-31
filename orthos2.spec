@@ -58,6 +58,8 @@ Requires:  %{python3_pkgversion}-urllib3
 Requires:  %{python3_pkgversion}-paramiko
 Requires:  %{python3_pkgversion}-psycopg2
 Requires:  %{python3_pkgversion}-ldap
+Requires:  %{python3_pkgversion}-social-auth-app-django
+Requires:  %{python3_pkgversion}-social-auth-core
 Requires:  %{python3_pkgversion}-validators
 Requires:  %{python3_pkgversion}-gunicorn
 Requires:  %{python3_pkgversion}-terminado
@@ -86,6 +88,8 @@ Summary:        HTML documentation for orthos2
 BuildRequires:  %{python_module django >= 4.2}
 BuildRequires:  %{python_module django-auth-ldap}
 BuildRequires:  %{python_module django-extensions}
+BuildRequires:  %{python_module social-auth-app-django}
+BuildRequires:  %{python_module social-auth-core}
 BuildRequires:  %{python_module paramiko}
 BuildRequires:  %{python_module djangorestframework}
 BuildRequires:  %{python_module validators}

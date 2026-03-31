@@ -5,6 +5,7 @@ This script generates random secrets and passwords for various containers utiliz
 """
 
 import pathlib
+import subprocess
 from typing import List
 
 from django.core.management.utils import get_random_secret_key
@@ -12,6 +13,9 @@ from django.utils.crypto import get_random_string
 
 DJANGO_REST_ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789"
 DJANGO_REST_TOKEN_LENGTH = 40
+OIDC_ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+OIDC_KEY_LENGTH = 40
+OIDC_SECRET_LENGTH = 80
 
 script_directory = pathlib.Path(__file__).resolve().parent
 
@@ -27,6 +31,13 @@ netbox_superuser_api_token = get_random_string(
 netbox_superuser_password = get_random_string(12)
 orthos_db_password = get_random_string(12)
 orthos_superuser_password = get_random_string(12)
+
+authentik_postgresql_password = get_random_string(12)
+authentik_secret_key = get_random_secret_key()
+authentik_password = get_random_string(12)
+
+oidc_key = get_random_string(OIDC_KEY_LENGTH, OIDC_ALLOWED_CHARS)
+oidc_secret = get_random_string(OIDC_SECRET_LENGTH, OIDC_ALLOWED_CHARS)
 
 # netbox.env
 # DB_PASSWORD, REDIS_CACHE_PASSWORD, REDIS_PASSWORD, SECRET_KEY, SUPERUSER_API_TOKEN, SUPERUSER_PASSWORD
@@ -118,5 +129,45 @@ orthos_superuser_password = get_random_string(12)
     'ALLOWED_HOSTS="orthos2.orthos2.test"\n'
     'CSRF_TRUSTED_ORIGINS="https://orthos2.orthos2.test"\n'
     'CSRF_ALLOWED_ORIGIN="https://orthos2.orthos2.test"\n'
-    'CROSS_ORIGINS_WHITELIST="https://orthos2.orthos2.test"\n',
+    'CROSS_ORIGINS_WHITELIST="https://orthos2.orthos2.test"\n'
+    f'OIDC_KEY="{oidc_key}"\n'
+    f'OIDC_SECRET="{oidc_secret}"\n'
 )
+
+# authentik.env
+
+(script_directory / "authentik" / "authentik.env").write_text(
+    f"AUTHENTIK_BOOTSTRAP_PASSWORD={authentik_password}\n"
+    f"AUTHENTIK_POSTGRESQL__PASSWORD={authentik_postgresql_password}\n"
+    "AUTHENTIK_POSTGRESQL__USER=authentik\n"
+    "AUTHENTIK_POSTGRESQL__NAME=authentik\n"
+    f"AUTHENTIK_SECRET_KEY='{authentik_secret_key}'\n"
+    "AUTHENTIK_ERROR_REPORTING__ENABLED=true\n"
+    "POSTGRES_HOST_AUTH_METHOD=trust\n"
+)
+
+# create certificates
+
+if (
+    not pathlib.Path("docker/traefik/certs/authentik.orthos2.test.crt").exists()
+    or not pathlib.Path("docker/traefik/certs/authentik.orthos2.test.key").exists()
+):
+    subprocess.call("docker/traefik/openssl_cert.sh")
+
+# orthos.yaml from template
+
+orthos_path_src = pathlib.Path("docker/authentik/blueprints/orthos-template.yaml")
+orthos_path_dst = pathlib.Path("docker/authentik/blueprints/orthos.yaml")
+
+orthos_yaml = orthos_path_src.read_text(encoding="utf-8").split("\n")
+orthosyaml_new: List[str] = []
+
+for line in orthos_yaml:
+    if "client_id: " in line:
+        orthosyaml_new.append(f"    client_id: '{oidc_key}'")
+    elif "client_secret: " in line:
+        orthosyaml_new.append(f"    client_secret: '{oidc_secret}'")
+    else:
+        orthosyaml_new.append(line)
+
+orthos_path_dst.write_text("\n".join(orthosyaml_new), encoding="utf-8")
