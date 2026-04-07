@@ -265,7 +265,7 @@ class SSH(object):
             directories = directory.lstrip("/").split("/")  # type: ignore
 
             for i, _part in enumerate(directories):
-                directory = "/" + "/".join(directories[0 : i + 1])
+                directory = "/" + "/".join(directories[0 : i + 1])  # noqa: E203
                 try:
                     self._sftp.chdir(directory)
                 except FileNotFoundError:

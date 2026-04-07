@@ -25,7 +25,7 @@ class RegenerateSerialConsole(Task):
             return
 
         try:
-            _cscreen_server = Machine.objects.get(fqdn=self.fqdn)
+            Machine.objects.get(fqdn=self.fqdn)
         except Machine.DoesNotExist:
             logger.warning("Serial console server does not exist: %s", self.fqdn)
 

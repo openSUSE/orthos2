@@ -103,7 +103,7 @@ jobs:
         run: |
           pylint --rcfile=.pylintrc --fail-under=10 cli/orthos2
           pylint --rcfile=.pylintrc --fail-under=10 cli/tests
-  pycodingstyle:
+  flake8:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
@@ -124,10 +124,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pycodestyle
-      - name: Analysing the code with pycodestyle
+          python -m pip install flake8
+      - name: Analysing the code with flake8
         run: |
-          pycodestyle .
+          flake8 orthos2
   django-admin:
     runs-on: ubuntu-latest
     strategy:

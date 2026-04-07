@@ -4,7 +4,7 @@ from django.urls import re_path
 from rest_framework.authtoken import views as authtoken_views
 
 from orthos2.api import views
-from orthos2.api.commands import *
+from orthos2.api.commands import *  # noqa: F403
 
 app_name = "api"
 urlpatterns = [
@@ -28,11 +28,11 @@ urlpatterns += AddVMCommand.get_urls()  # noqa: F405
 urlpatterns += AddMachineCommand.get_urls()  # noqa: F405
 urlpatterns += AddSerialConsoleCommand.get_urls()  # noqa: F405
 urlpatterns += AddAnnotationCommand.get_urls()  # noqa: F405
-urlpatterns += AddBMCCommand.get_urls()
+urlpatterns += AddBMCCommand.get_urls()  # noqa: F405
 urlpatterns += AddRemotePowerCommand.get_urls()  # noqa: F405
-urlpatterns += AddRemotePowerDeviceCommand.get_urls()
+urlpatterns += AddRemotePowerDeviceCommand.get_urls()  # noqa: F405
 urlpatterns += DeleteCommand.get_urls()  # noqa: F405
 urlpatterns += DeleteMachineCommand.get_urls()  # noqa: F405
 urlpatterns += DeleteSerialConsoleCommand.get_urls()  # noqa: F405
 urlpatterns += DeleteRemotePowerCommand.get_urls()  # noqa: F405
-urlpatterns += DeleteRemotePowerDeviceCommand.get_urls()  # noda: F405
+urlpatterns += DeleteRemotePowerDeviceCommand.get_urls()  # noqa: F405
