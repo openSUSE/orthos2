@@ -43,8 +43,13 @@ services:
       retries: 5
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.orthos2.rule=Host(`orthos2.orthos2.test`)"
-      - "traefik.http.routers.orthos2.entrypoints=web,websecure"
+      - "traefik.http.routers.orthos2-http.rule=Host(`orthos2.orthos2.test`)"
+      - "traefik.http.routers.orthos2-http.entrypoints=web"
+      - "traefik.http.routers.orthos2-http.middlewares=orthos2-https"
+      - "traefik.http.middlewares.orthos2-https.redirectScheme.scheme=https"
+      - "traefik.http.routers.orthos2-https.rule=Host(`orthos2.orthos2.test`)"
+      - "traefik.http.routers.orthos2-https.entrypoints=websecure"
+      - "traefik.http.routers.orthos2-https.tls=true"
       - "traefik.http.services.orthos2.loadbalancer.server.port=8000"
   orthos2_taskmanager:
     build:
@@ -85,8 +90,11 @@ services:
       dockerfile: cobbler.dockerfile
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.cobbler.rule=Host(`cobbler.orthos2.test`)"
-      - "traefik.http.routers.cobbler.entrypoints=web,websecure"
+      - "traefik.http.routers.cobbler-http.rule=Host(`cobbler.orthos2.test`)"
+      - "traefik.http.routers.cobbler-http.entrypoints=web"
+      - "traefik.http.routers.cobbler-https.rule=Host(`cobbler.orthos2.test`)"
+      - "traefik.http.routers.cobbler-https.entrypoints=websecure"
+      - "traefik.http.routers.cobbler-https.tls=true"
       - "traefik.http.services.cobbler.loadbalancer.server.port=80"
   serial_console:
     hostname: sconsole.orthos2.test
@@ -113,7 +121,7 @@ services:
       redis-cache:
         condition: service_healthy
     env_file: docker/netbox/netbox.env
-    user: "unit:root"
+    user: "netbox:root"
     volumes:
       - ./docker/netbox/test_config.py:/etc/netbox/config/test_config.py:z,ro
     healthcheck:

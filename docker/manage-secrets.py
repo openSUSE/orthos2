@@ -115,4 +115,8 @@ orthos_superuser_password = get_random_string(12)
     'ORTHOS2_POSTGRES_NAME="orthos"\n'
     'ORTHOS2_POSTGRES_USER="orthos"\n'
     f'ORTHOS2_POSTGRES_PASSWORD="{orthos_db_password}"\n'
+    'ALLOWED_HOSTS="orthos2.orthos2.test"\n'
+    'CSRF_TRUSTED_ORIGINS="https://orthos2.orthos2.test"\n'
+    'CSRF_ALLOWED_ORIGIN="https://orthos2.orthos2.test"\n'
+    'CROSS_ORIGINS_WHITELIST="https://orthos2.orthos2.test"\n',
 )

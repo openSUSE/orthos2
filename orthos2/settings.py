@@ -14,9 +14,41 @@ import logging
 import logging.config
 import os
 import sys
-from socket import getfqdn, gethostname
+from typing import Any, Callable, Optional
 
 from django.contrib.messages import constants as messages
+
+
+# START: Taken from NetBox Docker Repository
+# If the `map_fn` isn't defined, then the value that is read from the environment (or the default value if not found)
+# is returned.
+# If the `map_fn` is defined, then `map_fn` is invoked and the value (that was read from the environment or the default
+# value if not found) is passed to it as a parameter. The value returned from `map_fn` is then the return value of this
+# function.
+# The `map_fn` is not invoked, if the value (that was read from the environment or the default value if not found)
+# is None.
+def _environ_get_and_map(
+    variable_name: str,
+    default: str | None = None,
+    map_fn: Optional[Callable[[str], Optional[Any]]] = None,
+) -> Any | None:
+    env_value = os.environ.get(variable_name, default)
+
+    if env_value is None:
+        return env_value
+
+    if not map_fn:
+        return env_value
+
+    return map_fn(env_value)
+
+
+_AS_BOOL = lambda value: value.lower() == "true"  # noqa: E731
+_AS_INT = lambda value: int(value)  # noqa: E731
+_AS_LIST: Callable[[str], Optional[Any]] = lambda value: list(
+    filter(None, value.split(" "))
+)
+# END: Taken from NetBox Docker Repository
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.abspath("/var/lib/orthos2")
@@ -30,7 +62,13 @@ SECRET_KEY = os.environ.get("ORTHOS_SECRET_KEY", "")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", gethostname(), getfqdn()]
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(" ")
+# ensure that '*' or 'localhost' is always in ALLOWED_HOSTS (needed for health checks)
+if "*" not in ALLOWED_HOSTS and "localhost" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append("localhost")
+CSRF_TRUSTED_ORIGINS = _environ_get_and_map("CSRF_TRUSTED_ORIGINS", "", _AS_LIST)
+CSRF_ALLOWED_ORIGIN = _environ_get_and_map("CSRF_ALLOWED_ORIGIN", "", _AS_LIST)
+CROSS_ORIGINS_WHITELIST = _environ_get_and_map("CROSS_ORIGINS_WHITELIST", "", _AS_LIST)
 
 # Application definition
 
