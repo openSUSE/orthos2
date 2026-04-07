@@ -2,7 +2,7 @@
 # 127.0.0.1 orthos2.orthos2.test cobbler.orthos2.test netbox.orthos2.test
 services:
   proxy:
-    image: traefik:v3.4
+    image: traefik:v3.6
     container_name: traefik
     command:
       - --accesslog=true
@@ -16,8 +16,10 @@ services:
       - "443:443"
       - "8080:8080"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro,z
     restart: always
+    security_opt:
+      - label:disable
   orthos2:
     build:
       context: .
@@ -28,7 +30,7 @@ services:
     cap_add:
       - NET_RAW
     volumes:
-      - ./:/code
+      - ./:/code:z
     depends_on:
       orthos2_database:
         condition: service_healthy
@@ -175,3 +177,4 @@ services:
   redis-cache:
     <<: *redis
     env_file: docker/netbox/redis-cache.env
+
