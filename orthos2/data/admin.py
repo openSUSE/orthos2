@@ -96,7 +96,7 @@ class BMCForm(forms.ModelForm):  # type: ignore
         Called during self.clean(). Suggests an IP address in case a MAC is present.
         """
         bmc_domain = Domain.objects.get(name=get_domain(self.cleaned_data["fqdn"]))
-        interface_mac = self.cleaned_data.get(f"mac")
+        interface_mac = self.cleaned_data.get("mac")
         if interface_mac == "":
             # We don't want to autogenerate an address for interfaces without MAC addresses
             self.cleaned_data["ip_address_v4"] = ""
@@ -312,7 +312,7 @@ class NetworkInterfaceForm(forms.ModelForm):  # type: ignore
         if not interface_machine:
             raise forms.ValidationError("Cannot retrieve machine for interface!")
         machine_domain = Domain.objects.get(name=get_domain(interface_machine.fqdn))
-        interface_mac = self.cleaned_data.get(f"mac_address")
+        interface_mac = self.cleaned_data.get("mac_address")
         if interface_mac == "":
             # We don't want to autogenerate an address for interfaces without MAC addresses
             self.cleaned_data["ip_address_v4"] = ""

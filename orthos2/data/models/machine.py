@@ -58,7 +58,6 @@ if TYPE_CHECKING:
     from django.db.models.fields.related_descriptors import RelatedManager
 
     from orthos2.data.models.annotation import Annotation
-    from orthos2.data.models.bmc import BMC
     from orthos2.data.models.installation import Installation
     from orthos2.data.models.remotepower import RemotePower
     from orthos2.data.models.reservationhistory import ReservationHistory
@@ -1055,7 +1054,7 @@ class Machine(models.Model):
                     update_machine = True
 
             if self.fqdn_domain != self._original.fqdn_domain:
-                logger.info(f"Domain change for: %s", self.fqdn)
+                logger.info("Domain change for: %s", self.fqdn)
                 # TODO: add error handling (checking whether the signal went through)
                 # Not removing the machine from the original Cobbler system, because there is no easy remove signal
                 # and it's probably not even necessary

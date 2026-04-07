@@ -46,7 +46,7 @@ class REST:
         r = self.s.send(prepared_request)
         if r.status_code != 201:
             logger.warning(
-                f"HTTP Response: %s - %s - %s", r.status_code, r.reason, r.text
+                "HTTP Response: %s - %s - %s", r.status_code, r.reason, r.text
             )
         r.raise_for_status()
 
@@ -62,7 +62,7 @@ class REST:
         r = self.s.send(prepared_request)
         if r.status_code != 200:
             logger.warning(
-                f"HTTP Response: %s - %s - %s", r.status_code, r.reason, r.text
+                "HTTP Response: %s - %s - %s", r.status_code, r.reason, r.text
             )
         r.raise_for_status()
 
@@ -79,7 +79,7 @@ class REST:
 
         if r.status_code != 200:
             logger.warning(
-                f"HTTP Response: %s - %s - %s", r.status_code, r.reason, r.text
+                "HTTP Response: %s - %s - %s", r.status_code, r.reason, r.text
             )
         r.raise_for_status()
 
@@ -95,7 +95,7 @@ class REST:
         r = self.s.send(prepared_request)
         if r.status_code != 204:
             logger.warning(
-                f"HTTP Response: %s - %s - %s", r.status_code, r.reason, r.text
+                "HTTP Response: %s - %s - %s", r.status_code, r.reason, r.text
             )
         r.raise_for_status()
 
