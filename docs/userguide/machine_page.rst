@@ -60,6 +60,8 @@ Machine Actions
 - Setup Machine: Here you can install your machine according to your needs. You have the possibility to install SLES, 
   SLED, Opensuse Leap, Opensuse and Tumbleweed. During the installation you have several options: install, install ssh
   install ssh auto, install auto etc.
+- Queue SOL Deactivation: For machines with IPMI serial consoles, this action queues a background task to deactivate
+  Serial-over-LAN (SOL) via the configured serial console server.
 - Report Problem: If you unexpectedly encounter a problem with the machine, you can create a support ticket here.
 
 .. image:: ../img/userguide/10_machine_release.jpg

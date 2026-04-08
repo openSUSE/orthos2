@@ -55,6 +55,24 @@ function powercycle(action) {
   });
 }
 
+
+function deactivate_sol() {
+  $.ajax({
+    type: 'POST',
+    url: '{% url 'frontend:ajax_deactivate_sol' machine.id %}',
+    beforeSend: function() {
+      // Avoid double-submits while the backend deactivation request is running.
+      $('.deactivate-sol').addClass('disabled')
+    },
+    complete: function() {
+      $('.deactivate-sol').removeClass('disabled')
+    },
+    success: function(data) {
+      showMachineStatusBarMessage(data);
+    },
+  });
+}
+
 function regenerate_domain_cscreen() {
   $.ajax({
     url: '{% url 'frontend:regenerate_domain_cscreen' machine.id %}',

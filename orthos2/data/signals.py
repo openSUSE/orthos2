@@ -20,6 +20,7 @@ signal_cobbler_regenerate = Signal()
 signal_cobbler_sync_dhcp = Signal()
 signal_cobbler_machine_update = Signal()
 signal_serialconsole_regenerate = Signal()
+signal_serialconsole_sol_deactivate = Signal()
 signal_motd_regenerate = Signal()
 
 
@@ -161,6 +162,15 @@ def regenerate_serialconsole(
     if cscreen_server_fqdn is not None:  # type: ignore[reportUnnecessaryComparison]
         task = tasks.RegenerateSerialConsole(cscreen_server_fqdn)
         TaskManager.add(task)
+
+
+@receiver(signal_serialconsole_sol_deactivate)
+def deactivate_serialconsole_sol(
+    sender: Any, machine_id: int, *args: Any, **kwargs: Any
+) -> None:
+    """Create `DeactivateSerialOverLan()` task here."""
+    task = tasks.DeactivateSerialOverLan(machine_id)
+    TaskManager.add(task)
 
 
 @receiver(signal_cobbler_regenerate)

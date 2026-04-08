@@ -140,6 +140,11 @@ urlpatterns = [
         name="ajax_powercycle",
     ),
     re_path(
+        r"^ajax/machine/(?P<machine_id>[0-9]+)/sol/deactivate$",
+        views.ajax.deactivate_sol,
+        name="ajax_deactivate_sol",
+    ),
+    re_path(
         r"^ajax/machine/(?P<host_id>[0-9]+)/virtualization/list$",
         views.ajax.virtualization_list,
         name="ajax_virtualization_list",

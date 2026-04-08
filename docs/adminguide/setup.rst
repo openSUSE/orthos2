@@ -96,4 +96,9 @@ the manual setup of a cscreen server. Follow these steps to ensure that Orthos c
 
 3. Setup passwordless SSH keys between the ``orthos`` (Orthos server) to the ``_cscreen`` user (console server).
 
+.. note:: Orthos can pass environment variables to remote commands via Paramiko ``exec_command``.
+          See `Paramiko SSHClient.exec_command docs <https://docs.paramiko.org/en/stable/api/client.html#paramiko.client.SSHClient.exec_command>`_.
+          SSH servers may silently reject environment variables, so do not rely on them unless the server-side
+          SSH daemon is configured to accept them.
+
 4. Enable and start the systemd service for cscreen ``systemctl enable --now cscreend.service``
