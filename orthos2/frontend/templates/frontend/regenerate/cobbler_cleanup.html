@@ -1,0 +1,156 @@
+{% extends 'frontend/base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row mb-3">
+    <div class="col-12">
+      <h4>Cobbler Cleanup: {{ machine.fqdn }}</h4>
+      <p class="mb-2">
+        Review the current Orthos vs Cobbler diff and select stale Cobbler machines to delete.
+      </p>
+      <a class="btn btn-secondary btn-sm" href="{% url 'frontend:detail' machine.id %}" role="button">Back to Machine</a>
+      <a class="btn btn-secondary btn-sm" href="javascript:void(0);" onclick="loadCobblerDiff()" role="button">Refresh Diff</a>
+    </div>
+  </div>
+
+  <div id="cleanup-status" class="alert" style="display:none;"></div>
+
+  <div class="row mb-2">
+    <div class="col-12">
+      Orthos machines: <strong id="orthos-machine-count">0</strong> |
+      Cobbler machines: <strong id="cobbler-machine-count">0</strong> |
+      Machines selected for deletion: <strong id="stale-machine-count">0</strong>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-4">
+      <h6>Orthos</h6>
+      <ul class="list-group" id="orthos-machine-list"></ul>
+    </div>
+    <div class="col-4">
+      <h6>Cobbler</h6>
+      <ul class="list-group" id="cobbler-machine-list"></ul>
+    </div>
+    <div class="col-4">
+      <h6>Delete from Cobbler</h6>
+      <ul class="list-group" id="stale-machine-checkbox-list"></ul>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-12">
+      <button type="button" class="btn btn-danger" id="confirm-cobbler-prune-btn">Delete Selected</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+function renderCleanupStatus(cls, message) {
+  var statusBox = $('#cleanup-status');
+  statusBox.removeClass('alert-success alert-danger alert-info');
+  statusBox.addClass('alert-' + cls);
+  statusBox.text(message);
+  statusBox.show();
+}
+
+function updateSelectedStaleMachineCount() {
+  var selectedCount = $('.stale-machine-checkbox:checked').length;
+  $('#stale-machine-count').text(selectedCount);
+}
+
+function loadCobblerDiff() {
+  $.ajax({
+    url: '{% url 'frontend:cleanup_domain_cobbler' machine.id %}?mode=diff',
+    success: function(data) {
+      var orthosMachines = data.orthos_machines || [];
+      var cobblerMachines = data.cobbler_machines || [];
+      var staleMachines = data.stale_machines || [];
+
+      $('#orthos-machine-count').text(orthosMachines.length);
+      $('#cobbler-machine-count').text(cobblerMachines.length);
+
+      $('#orthos-machine-list').empty();
+      $('#cobbler-machine-list').empty();
+      $('#stale-machine-checkbox-list').empty();
+
+      orthosMachines.forEach(function (fqdn) {
+        $('#orthos-machine-list').append('<li class="list-group-item py-1">' + fqdn + '</li>');
+      });
+
+      cobblerMachines.forEach(function (fqdn) {
+        $('#cobbler-machine-list').append('<li class="list-group-item py-1">' + fqdn + '</li>');
+      });
+
+      staleMachines.forEach(function (fqdn, idx) {
+        var checkboxId = 'stale-machine-' + idx;
+        $('#stale-machine-checkbox-list').append(
+          '<li class="list-group-item py-1">' +
+          '<div class="form-check">' +
+          '<input class="form-check-input stale-machine-checkbox" type="checkbox" checked value="' + fqdn + '" id="' + checkboxId + '">' +
+          '<label class="form-check-label" for="' + checkboxId + '">' + fqdn + '</label>' +
+          '</div>' +
+          '</li>'
+        );
+      });
+
+      updateSelectedStaleMachineCount();
+      renderCleanupStatus('info', data.message || 'Cobbler diff collected');
+    },
+    error: function(xhr) {
+      var message = 'Failed to load Cobbler diff';
+      if (xhr.responseJSON && xhr.responseJSON.message) {
+        message = xhr.responseJSON.message;
+      }
+      renderCleanupStatus('danger', message);
+    }
+  });
+}
+
+$(document).on('change', '.stale-machine-checkbox', function () {
+  updateSelectedStaleMachineCount();
+});
+
+$('#confirm-cobbler-prune-btn').on('click', function () {
+  var selected = $('.stale-machine-checkbox:checked').map(function () {
+    return $(this).val();
+  }).get();
+
+  var selectedCount = selected.length;
+  if (!confirm('Delete ' + selectedCount + ' machine(s) from Cobbler?')) {
+    return;
+  }
+
+  $.ajax({
+    url: '{% url 'frontend:cleanup_domain_cobbler' machine.id %}',
+    data: {
+      mode: 'prune',
+      fqdn: selected,
+    },
+    traditional: true,
+    beforeSend: function() {
+      $('#confirm-cobbler-prune-btn').addClass('disabled');
+    },
+    success: function(data) {
+      renderCleanupStatus('success', data.message || 'Deletion completed');
+      $('#confirm-cobbler-prune-btn').removeClass('disabled');
+      loadCobblerDiff();
+    },
+    error: function(xhr) {
+      var message = 'Failed to delete selected machines';
+      if (xhr.responseJSON && xhr.responseJSON.message) {
+        message = xhr.responseJSON.message;
+      }
+      renderCleanupStatus('danger', message);
+      $('#confirm-cobbler-prune-btn').removeClass('disabled');
+    }
+  });
+});
+
+$(function () {
+  loadCobblerDiff();
+});
+</script>
+{% endblock %}

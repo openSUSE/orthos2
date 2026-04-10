@@ -6,7 +6,8 @@ from typing import Any
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.shortcuts import render
 
 from orthos2.data.models import Machine
 from orthos2.data.signals import (
@@ -118,6 +119,40 @@ def regenerate_domain_cobbler(request: HttpRequest, host_id: int) -> JsonRespons
             status=400,
         )
 
+    target_domains = machine.cobbler_server_for.all()
+    # One Cobbler server might manage multiple domains
+    for domain in target_domains:
+        signal_cobbler_regenerate.send(sender=None, domain_id=domain.id)  # type: ignore
+    return JsonResponse(
+        {"type": "status", "cls": "success", "message": "Regeneration started"}
+    )
+
+
+@login_required
+@permission_required("data.change_domain")
+def cleanup_domain_cobbler(request: HttpRequest, host_id: int) -> JsonResponse:
+    """
+    Serves the URL "/cleanup/domain/cobbler/{host_id}".
+
+    This allows diffing and pruning stale Cobbler machines without running regeneration.
+    """
+    try:
+        machine = Machine.objects.get(pk=host_id)
+    except ObjectDoesNotExist:
+        return JsonResponse(
+            {"type": "status", "cls": "danger", "message": "Machine does not exist"},
+            status=404,
+        )
+    if not machine.is_cobbler_server():
+        return JsonResponse(
+            {
+                "type": "status",
+                "cls": "danger",
+                "message": "Machine is not a cobbler server",
+            },
+            status=400,
+        )
+
     mode = request.GET.get("mode")
     if mode == "diff":
         diff = _collect_cobbler_diff(machine)
@@ -159,12 +194,52 @@ def regenerate_domain_cobbler(request: HttpRequest, host_id: int) -> JsonRespons
             }
         )
 
-    target_domains = machine.cobbler_server_for.all()
-    # One Cobbler server might manage multiple domains
-    for domain in target_domains:
-        signal_cobbler_regenerate.send(sender=None, domain_id=domain.id)  # type: ignore
+    if mode is None:
+        mode = "diff"
+
     return JsonResponse(
-        {"type": "status", "cls": "success", "message": "Regeneration started"}
+        {
+            "type": "status",
+            "cls": "danger",
+            "message": 'Unknown cleanup mode "{mode}"'.format(mode=mode),
+        },
+        status=400,
+    )
+
+
+@login_required
+@permission_required("data.change_domain")
+def cleanup_domain_cobbler_page(request: HttpRequest, host_id: int) -> HttpResponse:
+    """
+    Serves the URL "/cleanup/domain/cobbler/{host_id}/page".
+
+    This renders the dedicated UI for reviewing and pruning stale Cobbler machines.
+    """
+    try:
+        machine = Machine.objects.get(pk=host_id)
+    except ObjectDoesNotExist:
+        return JsonResponse(
+            {"type": "status", "cls": "danger", "message": "Machine does not exist"},
+            status=404,
+        )
+
+    if not machine.is_cobbler_server():
+        return JsonResponse(
+            {
+                "type": "status",
+                "cls": "danger",
+                "message": "Machine is not a cobbler server",
+            },
+            status=400,
+        )
+
+    return render(
+        request,
+        "frontend/regenerate/cobbler_cleanup.html",
+        {
+            "machine": machine,
+            "title": "Cobbler Cleanup",
+        },
     )
 
 

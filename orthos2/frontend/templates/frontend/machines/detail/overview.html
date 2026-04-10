@@ -18,44 +18,6 @@
     {% include 'frontend/machines/detail/snippets/sidebar.html' %}
   </div>
 </div>
-
-<div class="modal fade" id="cobbler-prune-modal" tabindex="-1" role="dialog" aria-labelledby="cobblerPruneModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="cobblerPruneModalLabel">Cobbler Diff</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <p>
-          Orthos machines: <strong id="orthos-machine-count">0</strong><br/>
-          Cobbler machines: <strong id="cobbler-machine-count">0</strong><br/>
-          Machines selected for deletion: <strong id="stale-machine-count">0</strong>
-        </p>
-        <div class="row">
-          <div class="col-4">
-            <h6>Orthos</h6>
-            <ul class="list-group" id="orthos-machine-list"></ul>
-          </div>
-          <div class="col-4">
-            <h6>Cobbler</h6>
-            <ul class="list-group" id="cobbler-machine-list"></ul>
-          </div>
-          <div class="col-4">
-            <h6>Delete from Cobbler</h6>
-            <ul class="list-group" id="stale-machine-checkbox-list"></ul>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-danger" id="confirm-cobbler-prune-btn">Delete Selected</button>
-      </div>
-    </div>
-  </div>
-</div>
 {% endblock %}
 
 {% block javascript %}
@@ -126,88 +88,16 @@ function regenerate_domain_cscreen() {
 
 function regenerate_domain_cobbler() {
   $.ajax({
-    url: '{% url 'frontend:regenerate_domain_cobbler' machine.id %}?mode=diff',
+    url: '{% url 'frontend:regenerate_domain_cobbler' machine.id %}',
     beforeSend: function() {
       $('.regenerate-domain-cobbler').addClass('disabled')
     },
     success: function(data) {
-      var orthosMachines = data.orthos_machines || [];
-      var cobblerMachines = data.cobbler_machines || [];
-      var staleMachines = data.stale_machines || [];
-
-      $('#orthos-machine-count').text(orthosMachines.length);
-      $('#cobbler-machine-count').text(cobblerMachines.length);
-
-      $('#orthos-machine-list').empty();
-      $('#cobbler-machine-list').empty();
-      $('#stale-machine-checkbox-list').empty();
-
-      orthosMachines.forEach(function (fqdn) {
-        $('#orthos-machine-list').append('<li class="list-group-item py-1">' + fqdn + '</li>');
-      });
-
-      cobblerMachines.forEach(function (fqdn) {
-        $('#cobbler-machine-list').append('<li class="list-group-item py-1">' + fqdn + '</li>');
-      });
-
-      staleMachines.forEach(function (fqdn, idx) {
-        var checkboxId = 'stale-machine-' + idx;
-        $('#stale-machine-checkbox-list').append(
-          '<li class="list-group-item py-1">' +
-          '<div class="form-check">' +
-          '<input class="form-check-input stale-machine-checkbox" type="checkbox" checked value="' + fqdn + '" id="' + checkboxId + '">' +
-          '<label class="form-check-label" for="' + checkboxId + '">' + fqdn + '</label>' +
-          '</div>' +
-          '</li>'
-        );
-      });
-
-      updateSelectedStaleMachineCount();
-      $('#cobbler-prune-modal').modal('show');
+      showMachineStatusBarMessage(data);
       $('.regenerate-domain-cobbler').removeClass('disabled')
     }
   })
 }
-
-function updateSelectedStaleMachineCount() {
-  var selectedCount = $('.stale-machine-checkbox:checked').length;
-  $('#stale-machine-count').text(selectedCount);
-}
-
-$(document).on('change', '.stale-machine-checkbox', function () {
-  updateSelectedStaleMachineCount();
-});
-
-$('#confirm-cobbler-prune-btn').on('click', function () {
-  var selected = $('.stale-machine-checkbox:checked').map(function () {
-    return $(this).val();
-  }).get();
-
-  var selectedCount = selected.length;
-  if (!confirm('Delete ' + selectedCount + ' machine(s) from Cobbler?')) {
-    return;
-  }
-
-  $.ajax({
-    url: '{% url 'frontend:regenerate_domain_cobbler' machine.id %}',
-    data: {
-      mode: 'prune',
-      fqdn: selected,
-    },
-    traditional: true,
-    beforeSend: function() {
-      $('#confirm-cobbler-prune-btn').addClass('disabled')
-    },
-    success: function(data) {
-      showMachineStatusBarMessage(data);
-      $('#cobbler-prune-modal').modal('hide');
-      $('#confirm-cobbler-prune-btn').removeClass('disabled')
-    },
-    error: function() {
-      $('#confirm-cobbler-prune-btn').removeClass('disabled')
-    }
-  });
-});
 
 function regenerate_machine_motd() {
   $.ajax({

@@ -77,6 +77,7 @@
   {% endif %}
   {% if machine.is_cobbler_server and perms.data.change_domain %}
   <a class="btn btn-secondary btn-sm regenerate-domain-cobbler" href="javascript:void(0);" onclick="regenerate_domain_cobbler()" role="button">Regenerate Cobbler Server</a>
+  <a class="btn btn-warning btn-sm cleanup-domain-cobbler" href="{% url 'frontend:cleanup_domain_cobbler_page' machine.id %}" role="button">Cleanup Stale Cobbler Records</a>
   {% endif %}
 </div>
 
