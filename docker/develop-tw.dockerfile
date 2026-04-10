@@ -39,6 +39,8 @@ RUN zypper in -y \
     python3-pytest \
     python3-django-webtest \
     python3-pexpect \
+    python3-pytest \
+    python3-pytest-django \
     iputils
 
 # Create required user

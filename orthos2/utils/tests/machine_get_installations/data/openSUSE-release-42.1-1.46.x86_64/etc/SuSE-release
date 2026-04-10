@@ -1,0 +1,4 @@
+openSUSE 42.1 (x86_64)
+VERSION = 42.1
+CODENAME = Malachite
+# /etc/SuSE-release is deprecated and will be removed in the future, use /etc/os-release instead

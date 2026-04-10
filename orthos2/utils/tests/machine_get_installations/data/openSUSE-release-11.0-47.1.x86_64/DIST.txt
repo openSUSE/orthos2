@@ -1,0 +1,1 @@
+DIST=openSUSE 11.0
