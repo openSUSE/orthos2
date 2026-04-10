@@ -5,7 +5,7 @@ This script generates random secrets and passwords for various containers utiliz
 """
 
 import pathlib
-from typing import List
+import secrets
 
 from django.core.management.utils import get_random_secret_key
 from django.utils.crypto import get_random_string
@@ -28,10 +28,19 @@ netbox_superuser_password = get_random_string(12)
 orthos_db_password = get_random_string(12)
 orthos_superuser_password = get_random_string(12)
 
+
+netbox_pepper_charset = (
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*(-_=+)"
+)
+
+netbox_api_pepper = "".join(secrets.choice(netbox_pepper_charset) for _ in range(50))
+
+
 # netbox.env
 # DB_PASSWORD, REDIS_CACHE_PASSWORD, REDIS_PASSWORD, SECRET_KEY, SUPERUSER_API_TOKEN, SUPERUSER_PASSWORD
 
 (script_directory / "netbox" / "netbox.env").write_text(
+    f"API_TOKEN_PEPPER_1={netbox_api_pepper}\n"
     "CORS_ORIGIN_ALLOW_ALL=True\n"
     "DB_HOST=postgres\n"
     "DB_NAME=netbox\n"
@@ -107,6 +116,7 @@ orthos_superuser_password = get_random_string(12)
 
 (script_directory / "orthos" / "orthos2.env").write_text(
     f"ORTHOS_SECRET_KEY='{orthos2_secret_key}'\n"
+    f"ORTHOS_NETBOX_AUTH_SCHEME='Bearer'\n"
     'ORTHOS_NETBOX_URL="http://netbox.orthos2.test:8080"\n'
     f"ORTHOS_NETBOX_TOKEN='{netbox_superuser_api_token}'\n"
     f'ORTHOS_SUPERUSER_PASSWORD="{orthos_superuser_password}"\n'

@@ -27,11 +27,31 @@ class REST:
         # SSL verification
         self.s.verify = False
 
+        # NetBox auth scheme:
+        # - historically: "Token <token>"
+        # - some setups / newer NetBox deployments may require: "Bearer <token>"
+        #
+        # Backwards-compatible default is "Token".
+        scheme = getattr(settings, "NETBOX_AUTH_SCHEME", "Token") or "Token"
+        scheme = str(scheme).strip()
+
+        if scheme.lower() == "token":
+            scheme = "Token"
+        elif scheme.lower() == "bearer":
+            scheme = "Bearer"
+        else:
+            logger.warning(
+                "Unknown NETBOX_AUTH_SCHEME=%r; falling back to 'Token'. "
+                "Supported values are 'Token' and 'Bearer'.",
+                scheme,
+            )
+            scheme = "Token"
+
         # Define REST Headers
         headers = {
             "Content-Type": "application/json",
             "Accept": "application/json; indent=4",
-            "Authorization": "Token {0}".format(token),
+            "Authorization": f"{scheme} {token}",
         }
 
         self.s.headers.update(headers)
