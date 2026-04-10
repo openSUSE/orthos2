@@ -28,6 +28,11 @@ netbox_superuser_password = get_random_string(12)
 orthos_db_password = get_random_string(12)
 orthos_superuser_password = get_random_string(12)
 
+authentik_postgresql_password = get_random_string(12)
+authentik_postgresql_user = "authentik"
+authentik_postgresql_name = "authentik"
+authentik_secret_key = get_random_secret_key()
+
 # netbox.env
 # DB_PASSWORD, REDIS_CACHE_PASSWORD, REDIS_PASSWORD, SECRET_KEY, SUPERUSER_API_TOKEN, SUPERUSER_PASSWORD
 
@@ -119,4 +124,15 @@ orthos_superuser_password = get_random_string(12)
     'CSRF_TRUSTED_ORIGINS="https://orthos2.orthos2.test"\n'
     'CSRF_ALLOWED_ORIGIN="https://orthos2.orthos2.test"\n'
     'CROSS_ORIGINS_WHITELIST="https://orthos2.orthos2.test"\n',
+)
+
+# authentik.env
+
+(script_directory / "authentik" / "authentik.env").write_text(
+    f"AUTHENTIK_POSTGRESQL__PASSWORD={authentik_postgresql_password}\n"
+    f"AUTHENTIK_POSTGRESQL__USER={authentik_postgresql_user}\n"
+    f"AUTHENTIK_POSTGRESQL__NAME={authentik_postgresql_name}\n"
+    f"AUTHENTIK_SECRET_KEY={authentik_secret_key}\n"
+    "AUTHENTIK_ERROR_REPORTING__ENABLED=true\n"
+    "POSTGRES_HOST_AUTH_METHOD=trust"
 )

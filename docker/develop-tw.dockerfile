@@ -29,7 +29,9 @@ RUN zypper in -y \
     python3-urllib3 \
     python3-pytz \
     python3-django-auth-ldap \
-    python3-django-test-migrations
+    python3-django-test-migrations \
+    python3-social-auth-app-django \
+    python3-social-auth-core
 
 # Test dependencies
 RUN zypper in -y \

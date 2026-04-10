@@ -32,6 +32,9 @@
         <div class="row" style="margin: 5px;">
           <button class="btn btn-block" type="submit">Login</button>
         </div>
+        <div class="row" style="margin: 5px;">
+          <a href="{% url 'social:begin' backend='oidc' %}" class="btn btn-block">Login with Authentik</a>
+        </div>
       </form>
     </div>
   </div>
