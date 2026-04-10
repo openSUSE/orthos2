@@ -1394,6 +1394,43 @@ class Machine(models.Model):
         return False
 
     @check_permission
+    def deactivate_sol(self, user: Any = None) -> bool:
+        """Queue asynchronous deactivation of the machine Serial-over-LAN session."""
+        from orthos2.data.signals import signal_serialconsole_sol_deactivate
+
+        if not self.has_serialconsole():
+            logger.warning(
+                "SOL deactivate skipped for %s: no serial console available", self.fqdn
+            )
+            return False
+
+        if self.serialconsole.stype.name != "IPMI":
+            logger.warning(
+                "SOL deactivate skipped for %s: serial console type is not IPMI",
+                self.fqdn,
+            )
+            return False
+
+        if not self.has_bmc():
+            logger.warning("SOL deactivate skipped for %s: no BMC available", self.fqdn)
+            return False
+
+        if not self.fqdn_domain.cscreen_server:
+            logger.warning(
+                "SOL deactivate skipped for %s: no serial console server configured for domain %s",
+                self.fqdn,
+                self.fqdn_domain,
+            )
+            return False
+
+        signal_serialconsole_sol_deactivate.send(  # type: ignore
+            sender=Machine,
+            machine_id=self.pk,
+        )
+
+        return True
+
+    @check_permission
     def ssh_shutdown(self, user: Any = None, reboot: bool = False) -> bool:
         """Power off/reboot the machine using SSH."""
         from orthos2.utils.ssh import SSH

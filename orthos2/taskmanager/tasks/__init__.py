@@ -25,6 +25,7 @@ from .notifications import (
 )
 from .sconsole import RegenerateSerialConsole
 from .setup import SetupMachine
+from .sol import DeactivateSerialOverLan
 
 __all__ = [
     "RegenerateCobbler",
@@ -50,5 +51,6 @@ __all__ = [
     "SendReservationInformation",
     "SendRestoredPassword",
     "RegenerateSerialConsole",
+    "DeactivateSerialOverLan",
     "SetupMachine",
 ]

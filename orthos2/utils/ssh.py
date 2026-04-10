@@ -131,7 +131,11 @@ class SSH(object):
         raise SSH.Exception(last_exception)
 
     def execute(
-        self, command: str, retry: bool = True, timeout: Optional[float] = None
+        self,
+        command: str,
+        retry: bool = True,
+        timeout: Optional[float] = None,
+        environment: Optional[Dict[str, str]] = None,
     ) -> Tuple[Union[Iterable[str], TextIO], Union[Iterable[str], TextIO], int]:
         """
         Execute the given command.
@@ -139,12 +143,17 @@ class SSH(object):
         :param command: The command to execute.
         :param retry: Set to "True" to retry the command once if it failed on the remote (default).
         :param timeout: Timeout in seconds or "None" to disable setting a timeout (default).
+        :param environment: Optional environment variables for Paramiko `exec_command()`.
         :returns: A tuple containing stdout (list), stderr (list) and exit status (int).
         """
         try:
             stdout: Union[Iterable[str], TextIO]
             stderr: Union[Iterable[str], TextIO]
-            _stdin, stdout, stderr = self._client.exec_command(command, timeout=timeout)
+            _stdin, stdout, stderr = self._client.exec_command(
+                command,
+                timeout=timeout,
+                environment=environment,
+            )
             exitstatus = stdout.channel.recv_exit_status()
 
             stdout = stdout.readlines()
@@ -160,7 +169,12 @@ class SSH(object):
                 # reconnect
                 self.connect()
                 # avoid loops, therefore we set retry to False
-                return self.execute(command, retry=False)
+                return self.execute(
+                    command,
+                    retry=False,
+                    timeout=timeout,
+                    environment=environment,
+                )
             else:
                 raise SSH.Exception(str(e))
 

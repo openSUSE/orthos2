@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, List
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, JsonResponse
 from django.template.defaultfilters import urlize
+from django.views.decorators.http import require_POST
 
 from orthos2.data.models import Annotation, Machine, RemotePower
 from orthos2.frontend.decorators import check_permissions
@@ -67,6 +68,39 @@ def powercycle(request: HttpRequest, machine_id: int) -> JsonResponse:
             return JsonResponse(
                 {"type": "status", "cls": "danger", "message": "Power cycle failed!"}
             )
+
+    except Machine.DoesNotExist:
+        return JsonResponse(
+            {"type": "status", "cls": "danger", "message": "Machine does not exist!"}
+        )
+    except Exception as e:
+        logger.exception(e)
+        return JsonResponse({"type": "status", "cls": "danger", "message": str(e)})
+
+
+@require_POST
+@login_required
+@check_permissions(key="machine_id")
+def deactivate_sol(request: HttpRequest, machine_id: int) -> JsonResponse:
+    """Deactivate the machine SOL session and return result as JSON."""
+
+    try:
+        machine = Machine.objects.get(pk=machine_id)
+        # Keep queueing logic in the model layer so permissions and validation stay centralized.
+        result = machine.deactivate_sol(user=request.user)
+
+        if result:
+            return JsonResponse(
+                {
+                    "type": "status",
+                    "cls": "success",
+                    "message": "SOL deactivation was queued and will run in the background.",
+                }
+            )
+
+        return JsonResponse(
+            {"type": "status", "cls": "danger", "message": "SOL deactivate failed!"}
+        )
 
     except Machine.DoesNotExist:
         return JsonResponse(

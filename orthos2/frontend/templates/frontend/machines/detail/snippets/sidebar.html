@@ -79,6 +79,13 @@
   <a class="btn btn-secondary btn-sm regenerate-domain-cobbler" href="javascript:void(0);" onclick="regenerate_domain_cobbler()" role="button">Regenerate Cobbler Server</a>
   {% endif %}
 </div>
+
+{% if machine.has_serialconsole and machine.serialconsole.stype.name == "IPMI" %}
+<br/>
+<div class="btn-group-vertical d-flex">
+  <a class="btn btn-secondary btn-sm deactivate-sol" href="javascript:void(0);" onclick="deactivate_sol()" role="button">Queue SOL Deactivation</a>
+</div>
+{% endif %}
 {% endif %}
 
 <hr/>
