@@ -24,9 +24,6 @@ jobs:
       - name: Allow writing from inside the container
         run: |
           chmod g+w,o+w .
-      - name: Verify machine_get_installations
-        run: |
-          bash tests/machine_get_installations/run_tests.sh
       - name: Install Django
         run: |
           python3 -m pip install --upgrade pip
@@ -38,11 +35,13 @@ jobs:
         run: |
           docker compose build
       - name: Start Compose Stack
+        env:
+          NETBOX_START_PERIOD: 480s
         run: |
           docker compose -f compose.yaml -f compose.override.yml up -d
       - name: Run Tests
         run: |
-          docker compose exec -it orthos2 bash -c 'coverage run --source="." manage.py test orthos2'
+          docker compose exec -it orthos2 bash -c 'coverage run --source="." -m pytest orthos2'
           docker compose exec -it orthos2 bash -c 'coverage report'
           docker compose exec -it orthos2 bash -c 'coverage xml'
       - name: Upload coverage
@@ -66,6 +65,8 @@ jobs:
         run: |
           docker compose build
       - name: Setup Orthos 2 server
+        env:
+          NETBOX_START_PERIOD: 480s
         run: |
           docker compose -f compose.yaml -f compose.override.yml up -d
       - name: Generate Django Token

@@ -1,3 +1,6 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "orthos2.settings"
+
 [tool.isort]
 profile = "black"
 known_cobbler="orthos2"

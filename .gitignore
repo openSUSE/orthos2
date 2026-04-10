@@ -148,3 +148,6 @@ package-lock.json
 
 # Docker environment files
 *.env
+
+# Re-Include the os-release files
+!orthos2/utils/tests/**/lib
