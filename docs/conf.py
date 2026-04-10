@@ -12,14 +12,15 @@
 #
 import os
 import sys
+from datetime import datetime as dt
 
 sys.path.insert(0, os.path.abspath(".."))
 
 
 # -- Project information -----------------------------------------------------
-
+current_year = dt.now().year
 project = "Orthos2"
-copyright = "2025, openSUSE Orthos2 Team"
+copyright = f"{current_year}, openSUSE Orthos2 Team"
 author = "openSUSE Orthos2 Team"
 
 
