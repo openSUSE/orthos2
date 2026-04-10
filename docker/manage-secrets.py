@@ -34,6 +34,8 @@ netbox_pepper_charset = (
 )
 
 netbox_api_pepper = "".join(secrets.choice(netbox_pepper_charset) for _ in range(50))
+
+
 # netbox.env
 # DB_PASSWORD, REDIS_CACHE_PASSWORD, REDIS_PASSWORD, SECRET_KEY, SUPERUSER_API_TOKEN, SUPERUSER_PASSWORD
 
@@ -114,6 +116,7 @@ netbox_api_pepper = "".join(secrets.choice(netbox_pepper_charset) for _ in range
 
 (script_directory / "orthos" / "orthos2.env").write_text(
     f"ORTHOS_SECRET_KEY='{orthos2_secret_key}'\n"
+    f"ORTHOS_NETBOX_AUTH_SCHEME='Bearer'\n"
     'ORTHOS_NETBOX_URL="http://netbox.orthos2.test:8080"\n'
     f"ORTHOS_NETBOX_TOKEN='{netbox_superuser_api_token}'\n"
     f'ORTHOS_SUPERUSER_PASSWORD="{orthos_superuser_password}"\n'
