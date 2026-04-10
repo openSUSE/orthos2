@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import include, path, re_path
 
 urlpatterns = [
-    path('', include('social_django.urls', namespace='social')),
+    path("", include("social_django.urls", namespace="social")),
     re_path(r"^", include("orthos2.frontend.urls", namespace="frontend")),
     re_path(r"^admin/", admin.site.urls),
     re_path(r"^api/", include("orthos2.api.urls", namespace="api")),

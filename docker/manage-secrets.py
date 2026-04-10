@@ -28,10 +28,10 @@ netbox_superuser_password = get_random_string(12)
 orthos_db_password = get_random_string(12)
 orthos_superuser_password = get_random_string(12)
 
-authentik_postgresql_password=get_random_string(12)
-authentik_postgresql_user=get_random_string(12)
-authentik_postgresql_name=get_random_string(12)
-authentik_secret_key=get_random_secret_key()
+authentik_postgresql_password = get_random_string(12)
+authentik_postgresql_user = "authentik"
+authentik_postgresql_name = "authentik"
+authentik_secret_key = get_random_secret_key()
 
 # netbox.env
 # DB_PASSWORD, REDIS_CACHE_PASSWORD, REDIS_PASSWORD, SECRET_KEY, SUPERUSER_API_TOKEN, SUPERUSER_PASSWORD
@@ -128,10 +128,11 @@ authentik_secret_key=get_random_secret_key()
 
 # authentik.env
 
-(script_directory / "orthos" / "orthos2.env").write_text(
-    f"AUTHENTIK_POSTGRESQL__PASSWORD={authentik_postgresql_password}"
-    f"AUTHENTIK_POSTGRESQL__USER={authentik_postgresql_user}"
-    f"AUTHENTIK_POSTGRESQL__NAME={authentik_postgresql_name}"
-    f"AUTHENTIK_SECRET_KEY={authentik_secret_key}"
-    "AUTHENTIK_ERROR_REPORTING__ENABLED=true"
+(script_directory / "authentik" / "authentik.env").write_text(
+    f"AUTHENTIK_POSTGRESQL__PASSWORD={authentik_postgresql_password}\n"
+    f"AUTHENTIK_POSTGRESQL__USER={authentik_postgresql_user}\n"
+    f"AUTHENTIK_POSTGRESQL__NAME={authentik_postgresql_name}\n"
+    f"AUTHENTIK_SECRET_KEY={authentik_secret_key}\n"
+    "AUTHENTIK_ERROR_REPORTING__ENABLED=true\n"
+    "POSTGRES_HOST_AUTH_METHOD=trust"
 )

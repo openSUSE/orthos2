@@ -70,9 +70,6 @@ CSRF_TRUSTED_ORIGINS = _environ_get_and_map("CSRF_TRUSTED_ORIGINS", "", _AS_LIST
 CSRF_ALLOWED_ORIGIN = _environ_get_and_map("CSRF_ALLOWED_ORIGIN", "", _AS_LIST)
 CROSS_ORIGINS_WHITELIST = _environ_get_and_map("CROSS_ORIGINS_WHITELIST", "", _AS_LIST)
 
-# Trust a specific Cert
-os.environ['REQUESTS_CA_BUNDLE'] = '/code/traefik_certs/authentik.orthos2.test.crt'
-
 # Application definition
 INSTALLED_APPS = [
     "orthos2.data.apps.DataConfig",
@@ -93,8 +90,8 @@ INSTALLED_APPS = [
     "social_django",
 ]
 
-REMOTE_AUTH_BACKEND = 'social_core.backends.open_id_connect.OpenIdConnectAuth'
-SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = 'https://authentik.orthos2.test/application/o/orthos'
+REMOTE_AUTH_BACKEND = "social_core.backends.open_id_connect.OpenIdConnectAuth"
+SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = "https://authentik.orthos2.test/application/o/orthos"
 SOCIAL_AUTH_OIDC_KEY = os.environ.get("OIDC_KEY", "default")
 SOCIAL_AUTH_OIDC_SECRET = os.environ.get("OIDC_SECRET", "default")
 
@@ -259,8 +256,8 @@ LOGGING = {
     },
 }
 AUTHENTICATION_BACKENDS = (
-    'social_core.backends.open_id_connect.OpenIdConnectAuth',
-    'django.contrib.auth.backends.ModelBackend',
+    "social_core.backends.open_id_connect.OpenIdConnectAuth",
+    "django.contrib.auth.backends.ModelBackend",
 )
 
 logging.config.dictConfig(LOGGING)
@@ -273,7 +270,7 @@ STATIC_URL = "/static/"
 
 # Login URL
 LOGIN_URL = "/login/"
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = "/"
 
 # On logout, go back to the starting page
 LOGOUT_REDIRECT_URL = "/"

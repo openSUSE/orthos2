@@ -19,10 +19,9 @@ services:
       - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik_certs:/certs:ro
-      - ./traefik_certs/authentik.orthos2.test.crt:/certs/authentik.orthos2.test.crt:ro
-      - ./traefik_certs/authentik.orthos2.test.key:/certs/authentik.orthos2.test.key:ro
-      - ./traefik_certs/dynamic_conf.yaml:/etc/traefik/dynamic/certs.yaml:ro
+      - ./traefik_certs/authentik.orthos2.test.crt:/certs/authentik.orthos2.test.crt:ro,z
+      - ./traefik_certs/authentik.orthos2.test.key:/certs/authentik.orthos2.test.key:ro,z
+      - ./traefik_certs/dynamic_conf.yaml:/etc/traefik/dynamic/certs.yaml:ro,z
     restart: always
     networks:
       orthos:
