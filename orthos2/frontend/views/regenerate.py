@@ -2,6 +2,8 @@
 All views for "/regenerate".
 """
 
+from typing import Any
+
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest, JsonResponse
@@ -12,6 +14,36 @@ from orthos2.data.signals import (
     signal_cobbler_regenerate,
     signal_serialconsole_regenerate,
 )
+from orthos2.utils.cobbler import CobblerServer
+
+
+def _collect_cobbler_diff(host: Machine) -> dict[str, Any]:
+    target_domains = host.cobbler_server_for.all()
+    orthos_fqdns: set[str] = set()
+    cobbler_fqdns: set[str] = set()
+    stale_fqdns: set[str] = set()
+
+    for domain in target_domains:
+        domain_orthos_fqdns = set(
+            domain.machine_set.exclude(active=False).values_list("fqdn", flat=True)
+        )
+        orthos_fqdns.update(domain_orthos_fqdns)
+
+        server = CobblerServer(domain)
+        domain_cobbler_fqdns = server.get_machines()
+        domain_suffix = "." + domain.name
+        domain_scoped_fqdns = {
+            fqdn for fqdn in domain_cobbler_fqdns if fqdn.endswith(domain_suffix)
+        }
+
+        cobbler_fqdns.update(domain_scoped_fqdns)
+        stale_fqdns.update(domain_scoped_fqdns - domain_orthos_fqdns)
+
+    return {
+        "orthos": sorted(orthos_fqdns),
+        "cobbler": sorted(cobbler_fqdns),
+        "stale": sorted(stale_fqdns),
+    }
 
 
 @login_required
@@ -85,6 +117,48 @@ def regenerate_domain_cobbler(request: HttpRequest, host_id: int) -> JsonRespons
             },
             status=400,
         )
+
+    mode = request.GET.get("mode")
+    if mode == "diff":
+        diff = _collect_cobbler_diff(machine)
+        return JsonResponse(
+            {
+                "type": "status",
+                "cls": "info",
+                "message": "Cobbler diff collected",
+                "orthos_machines": diff["orthos"],
+                "cobbler_machines": diff["cobbler"],
+                "stale_machines": diff["stale"],
+                "delete_count": len(diff["stale"]),
+            }
+        )
+
+    if mode == "prune":
+        selected_fqdns = set(request.GET.getlist("fqdn"))
+        diff = _collect_cobbler_diff(machine)
+        allowed_fqdns = set(diff["stale"])
+        deletable_fqdns = sorted(selected_fqdns & allowed_fqdns)
+
+        target_domains = machine.cobbler_server_for.all()
+        for domain in target_domains:
+            domain_suffix = "." + domain.name
+            server = CobblerServer(domain)
+            for fqdn in deletable_fqdns:
+                if fqdn.endswith(domain_suffix):
+                    server.remove_by_name(fqdn)
+
+        return JsonResponse(
+            {
+                "type": "status",
+                "cls": "success",
+                "message": "Deleted {count} machine(s) from Cobbler".format(
+                    count=len(deletable_fqdns)
+                ),
+                "deleted_machines": deletable_fqdns,
+                "delete_count": len(deletable_fqdns),
+            }
+        )
+
     target_domains = machine.cobbler_server_for.all()
     # One Cobbler server might manage multiple domains
     for domain in target_domains:
