@@ -50,6 +50,8 @@ from .machines import (
     machine_search,
 )
 from .regenerate import (
+    cleanup_domain_cobbler,
+    cleanup_domain_cobbler_page,
     regenerate_cobbler,
     regenerate_domain_cobbler,
     regenerate_domain_cscreen,
@@ -106,6 +108,8 @@ __all__ = [
     "regenerate_cobbler",
     "regenerate_domain_cscreen",
     "regenerate_domain_cobbler",
+    "cleanup_domain_cobbler",
+    "cleanup_domain_cobbler_page",
     "regenerate_machine_motd",
     "regenerate_machine_cobbler",
     "statistics",

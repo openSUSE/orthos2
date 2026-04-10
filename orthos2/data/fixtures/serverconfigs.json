@@ -318,5 +318,21 @@
       "key": "orthos.documentation.url",
       "value": "https://w3.suse.de/~trenn/orthos_internal_docs"
     }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": null,
+    "fields": {
+      "key": "cobbler.prune.enabled",
+      "value": "bool:false"
+    }
+  },
+  {
+    "model": "data.serverconfig",
+    "pk": null,
+    "fields": {
+      "key": "cobbler.prune.dryrun",
+      "value": "bool:true"
+    }
   }
 ]

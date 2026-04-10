@@ -166,6 +166,16 @@ urlpatterns = [
         name="regenerate_domain_cobbler",
     ),
     re_path(
+        r"^cleanup/domain/cobbler/(?P<host_id>[0-9]+)$",
+        views.regenerate.cleanup_domain_cobbler,
+        name="cleanup_domain_cobbler",
+    ),
+    re_path(
+        r"^cleanup/domain/cobbler/(?P<host_id>[0-9]+)/page$",
+        views.regenerate.cleanup_domain_cobbler_page,
+        name="cleanup_domain_cobbler_page",
+    ),
+    re_path(
         r"^regenerate/machine/cobbler/(?P<host_id>[0-9]+)$",
         views.regenerate.regenerate_machine_cobbler,
         name="regenerate_machine_cobbler",

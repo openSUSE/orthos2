@@ -254,6 +254,109 @@ class CobblerMethodTests(TestCase):
             # Assert
             self.assertEqual(mock_system_remove.call_count, 1)
 
+    def test_cobbler_remove_by_name(self) -> None:
+        # Arrange
+        domain = Domain.objects.get(name="orthos2.test")
+        domain.cobbler_server = Machine.objects.get(fqdn="cobbler.orthos2.test")
+        server = cobbler.CobblerServer(domain)
+        server._token = "token"  # type: ignore
+
+        # Act
+        with mock.patch.object(server, "is_running", return_value=True), mock.patch.object(
+            server._xmlrpc_server, "remove_system"  # type: ignore
+        ) as mock_system_remove:
+            server.remove_by_name("stale.orthos2.test")
+
+            # Assert
+            mock_system_remove.assert_called_once_with(
+                "stale.orthos2.test", mock.ANY, False
+            )
+
+    def test_cobbler_remove_by_name_not_running(self) -> None:
+        # Arrange
+        domain = Domain.objects.get(name="orthos2.test")
+        domain.cobbler_server = Machine.objects.get(fqdn="cobbler.orthos2.test")
+        server = cobbler.CobblerServer(domain)
+        server._token = "token"  # type: ignore
+
+        # Act/Assert
+        with mock.patch.object(server, "is_running", return_value=False):
+            self.assertRaises(
+                cobbler.CobblerException,
+                server.remove_by_name,
+                "stale.orthos2.test",
+            )
+
+    def test_cobbler_prune_stale_dry_run(self) -> None:
+        # Arrange
+        domain = Domain.objects.get(name="orthos2.test")
+        domain.cobbler_server = Machine.objects.get(fqdn="cobbler.orthos2.test")
+        server = cobbler.CobblerServer(domain)
+
+        # Act
+        with mock.patch.object(
+            server,
+            "get_machines",
+            return_value=["testsys.orthos2.test", "stale.orthos2.test"],
+        ), mock.patch.object(server, "remove_by_name") as mock_remove_by_name:
+            result = server.prune_stale({"testsys.orthos2.test"}, dry_run=True)
+
+            # Assert
+            self.assertEqual(result, ["stale.orthos2.test"])
+            mock_remove_by_name.assert_not_called()
+
+    def test_cobbler_prune_stale_removes(self) -> None:
+        # Arrange
+        domain = Domain.objects.get(name="orthos2.test")
+        domain.cobbler_server = Machine.objects.get(fqdn="cobbler.orthos2.test")
+        server = cobbler.CobblerServer(domain)
+
+        # Act
+        with mock.patch.object(
+            server,
+            "get_machines",
+            return_value=["testsys.orthos2.test", "stale.orthos2.test"],
+        ), mock.patch.object(server, "remove_by_name") as mock_remove_by_name:
+            result = server.prune_stale({"testsys.orthos2.test"}, dry_run=False)
+
+            # Assert
+            self.assertEqual(result, ["stale.orthos2.test"])
+            mock_remove_by_name.assert_called_once_with("stale.orthos2.test")
+
+    def test_cobbler_prune_stale_no_stale(self) -> None:
+        # Arrange
+        domain = Domain.objects.get(name="orthos2.test")
+        domain.cobbler_server = Machine.objects.get(fqdn="cobbler.orthos2.test")
+        server = cobbler.CobblerServer(domain)
+
+        # Act
+        with mock.patch.object(
+            server, "get_machines", return_value=["testsys.orthos2.test"]
+        ), mock.patch.object(server, "remove_by_name") as mock_remove_by_name:
+            result = server.prune_stale({"testsys.orthos2.test"}, dry_run=False)
+
+            # Assert
+            self.assertEqual(result, [])
+            mock_remove_by_name.assert_not_called()
+
+    def test_cobbler_prune_stale_foreign_domain_protected(self) -> None:
+        # Arrange
+        domain = Domain.objects.get(name="orthos2.test")
+        domain.cobbler_server = Machine.objects.get(fqdn="cobbler.orthos2.test")
+        server = cobbler.CobblerServer(domain)
+
+        # Act
+        with mock.patch.object(
+            server,
+            "get_machines",
+            return_value=["testsys.orthos2.test", "other.foreign-domain.test"],
+        ), mock.patch.object(server, "remove_by_name") as mock_remove_by_name:
+            result = server.prune_stale({"testsys.orthos2.test"}, dry_run=False)
+
+            # Assert
+            self.assertEqual(result, [])
+            mock_remove_by_name.assert_not_called()
+
     def test_cobbler_remove_bmc(self) -> None:
         # Arrange
         domain = Domain.objects.get(name="orthos2.test")
