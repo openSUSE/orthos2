@@ -624,7 +624,7 @@ class Machine(models.Model):
 
     networkinterfaces: "RelatedManager[NetworkInterface]"
     domain_set: "Domain"
-    cobbler_server_for: "RelatedManager[Machine]"
+    cobbler_server_for: "RelatedManager[Domain]"
     cscreen_server_for: "RelatedManager[Machine]"
     tftp_server_for_domain: "Domain"
     hypervising: "RelatedManager[Machine]"

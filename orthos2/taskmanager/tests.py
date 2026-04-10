@@ -1,9 +1,78 @@
 from unittest import mock
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
-from orthos2.data.models import Machine
+from orthos2.data.models import Domain, Machine, ServerConfig
+from orthos2.taskmanager.tasks.cobbler import RegenerateCobbler
 from orthos2.taskmanager.tasks.sol import DeactivateSerialOverLan
+
+
+@override_settings(DEBUG=False)
+class RegenerateCobblerTests(TestCase):
+    fixtures = ["orthos2/utils/tests/fixtures/machines.json"]
+
+    def setUp(self) -> None:
+        ServerConfig.objects.update_or_create(
+            key="domain.validendings", defaults={"value": "orthos2.test"}
+        )
+        domain = Domain.objects.get(name="orthos2.test")
+        domain.cobbler_server = Machine.objects.get(fqdn="cobbler.orthos2.test")
+        domain.save(update_fields=["cobbler_server"])
+
+    def test_prune_disabled(self) -> None:
+        ServerConfig.objects.update_or_create(
+            key="cobbler.prune.enabled", defaults={"value": "bool:false"}
+        )
+
+        with mock.patch(
+            "orthos2.taskmanager.tasks.cobbler.CobblerServer"
+        ) as mocked_cobbler_server:
+            server_obj = mocked_cobbler_server.return_value
+
+            RegenerateCobbler().execute()
+
+            server_obj.deploy.assert_called_once()
+            server_obj.prune_stale.assert_not_called()
+
+    def test_prune_enabled_dry_run(self) -> None:
+        ServerConfig.objects.update_or_create(
+            key="cobbler.prune.enabled", defaults={"value": "bool:true"}
+        )
+        ServerConfig.objects.update_or_create(
+            key="cobbler.prune.dryrun", defaults={"value": "bool:true"}
+        )
+
+        with mock.patch(
+            "orthos2.taskmanager.tasks.cobbler.CobblerServer"
+        ) as mocked_cobbler_server:
+            server_obj = mocked_cobbler_server.return_value
+
+            RegenerateCobbler().execute()
+
+            server_obj.deploy.assert_called_once()
+            server_obj.prune_stale.assert_called_once_with(
+                {"cobbler.orthos2.test", "testsys.orthos2.test"}, dry_run=True
+            )
+
+    def test_prune_enabled_live(self) -> None:
+        ServerConfig.objects.update_or_create(
+            key="cobbler.prune.enabled", defaults={"value": "bool:true"}
+        )
+        ServerConfig.objects.update_or_create(
+            key="cobbler.prune.dryrun", defaults={"value": "bool:false"}
+        )
+
+        with mock.patch(
+            "orthos2.taskmanager.tasks.cobbler.CobblerServer"
+        ) as mocked_cobbler_server:
+            server_obj = mocked_cobbler_server.return_value
+
+            RegenerateCobbler().execute()
+
+            server_obj.deploy.assert_called_once()
+            server_obj.prune_stale.assert_called_once_with(
+                {"cobbler.orthos2.test", "testsys.orthos2.test"}, dry_run=False
+            )
 
 
 class DeactivateSerialOverLanTaskTest(TestCase):

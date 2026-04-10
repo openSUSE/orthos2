@@ -64,6 +64,21 @@ class RegenerateCobbler(Task):
                     machines = Machine.active_machines.filter(fqdn_domain=domain.pk)
                     server_obj = CobblerServer(domain)
                     server_obj.deploy(machines)
+                    if ServerConfig.get_server_config_manager().bool_by_key(
+                        "cobbler.prune.enabled", fallback=False
+                    ):
+                        dry_run = ServerConfig.get_server_config_manager().bool_by_key(
+                            "cobbler.prune.dryrun", fallback=True
+                        )
+                        orthos_fqdns = set(machines.values_list("fqdn", flat=True))
+                        stale_fqdns = server_obj.prune_stale(
+                            orthos_fqdns, dry_run=dry_run
+                        )
+                        logger.info(
+                            "* Cobbler stale entries found=%s entries=%s",
+                            len(stale_fqdns),
+                            stale_fqdns,
+                        )
                     logger.info("* Cobbler deployment finished successfully")
                 except Exception as e:
                     message = "* Cobbler deployment failed; {}".format(e)

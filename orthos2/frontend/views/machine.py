@@ -3,7 +3,7 @@ All views that are related to "/machine".
 """
 
 import logging
-from typing import TYPE_CHECKING, Dict, Union
+from typing import TYPE_CHECKING, Dict, Set, Union
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -26,12 +26,42 @@ from orthos2.frontend.forms.setupmachine import SetupMachineForm
 from orthos2.frontend.forms.virtualmachine import VirtualMachineForm
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
+from orthos2.utils.cobbler import CobblerServer
 from orthos2.utils.misc import add_offset_to_date
 
 if TYPE_CHECKING:
     from orthos2.types import AuthenticatedHttpRequest
 
 logger = logging.getLogger("views")
+
+
+def _collect_cobbler_diff(host: Machine) -> dict[str, Set[str]]:
+    """
+    Method is called after the machine was checked for being a Cobbler Server. As such it has at least one domain.
+    """
+    target_domains = host.cobbler_server_for.all()
+    result = {}
+
+    # Create the Cobbler XML-RPC Server object with the first domain to reduce the XML-RPC calls needed.
+    cobbler_server = CobblerServer(target_domains[0])
+    cobbler_systems = set(cobbler_server.get_machines())
+    for domain in target_domains:
+        logger.info(domain.name)
+        domain_suffix = "." + domain.name
+        domain_orthos_fqdns = set(
+            domain.machine_set.exclude(active=False).values_list("fqdn", flat=True)
+        )
+        cobbler_scoped_systems = {
+            fqdn for fqdn in cobbler_systems if fqdn.endswith(domain_suffix)
+        }
+        result[domain.name] = cobbler_scoped_systems - domain_orthos_fqdns
+
+    result["unscoped"] = set()
+    for fqdn in cobbler_systems:
+        if not any(fqdn.endswith(domain.name) for domain in target_domains):
+            result["unscoped"].add(fqdn)
+
+    return result
 
 
 @login_required
@@ -366,6 +396,60 @@ def console(request: HttpRequest, id: int) -> HttpResponse:
         )
     except Machine.DoesNotExist:
         raise Http404("Machine does not exist")
+
+
+@login_required
+def cobbler_cleanup(request: HttpRequest, id: int) -> HttpResponse:
+    try:
+        target_machine = Machine.objects.get(pk=id)
+    except Machine.DoesNotExist:
+        messages.error(request, "Machine does not exist")
+        raise Http404("Machine does not exist")
+
+    if not target_machine.is_cobbler_server():
+        messages.error(request, "Machine is not a cobbler server")
+        return redirect("frontend:detail", id=id)
+
+    if request.method == "POST":
+        selected_fqdns = set(request.POST.getlist("fqdn"))
+        diff = _collect_cobbler_diff(target_machine)
+
+        # Flatten the diff values to a single set of allowed FQDNs
+        allowed_fqdns = set()
+        for fqdns in diff.values():
+            allowed_fqdns.update(fqdns)
+
+        if selected_fqdns:
+            target_domains = target_machine.cobbler_server_for.all()
+            cobbler_server = CobblerServer(target_domains[0])
+
+            fqdn_delete_success = set()
+            for fqdn in selected_fqdns:
+                if fqdn in allowed_fqdns:
+                    cobbler_server.remove_by_name(fqdn)
+                    fqdn_delete_success.add(fqdn)
+
+            messages.success(
+                request,
+                "Deleted {count} machine(s) from Cobbler".format(
+                    count=len(fqdn_delete_success)
+                ),
+            )
+        else:
+            messages.warning(request, "No machines selected for deletion.")
+
+        return redirect("frontend:cleanup_domain_cobbler_page", id=id)
+
+    diff = _collect_cobbler_diff(target_machine)
+    return render(
+        request,
+        "frontend/machines/detail/cobbler_cleanup.html",
+        {
+            "machine": target_machine,
+            "title": "Cobbler Cleanup",
+            "diff": diff,
+        },
+    )
 
 
 @login_required

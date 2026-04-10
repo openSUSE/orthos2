@@ -2,6 +2,8 @@
 All views for "/regenerate".
 """
 
+import logging
+
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest, JsonResponse
@@ -12,6 +14,8 @@ from orthos2.data.signals import (
     signal_cobbler_regenerate,
     signal_serialconsole_regenerate,
 )
+
+logger = logging.getLogger("views")
 
 
 @login_required
@@ -85,6 +89,7 @@ def regenerate_domain_cobbler(request: HttpRequest, host_id: int) -> JsonRespons
             },
             status=400,
         )
+
     target_domains = machine.cobbler_server_for.all()
     # One Cobbler server might manage multiple domains
     for domain in target_domains:

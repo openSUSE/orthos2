@@ -58,6 +58,11 @@
           <a class="nav-link {% active_view request 'netboxcomparision' %}" href="{% url 'frontend:netboxcomparision' machine.id %}">NetBox Comparision</a>
         </li>
         {% endif %}
+        {% if machine.is_cobbler_server %}
+        <li class="nav-item">
+          <a class="nav-link {% active_view request 'cleanup_domain_cobbler_page' %}" href="{% url 'frontend:cleanup_domain_cobbler_page' machine.id %}">Cobbler Cleanup</a>
+        </li>
+        {% endif %}
       </ul>
 
 

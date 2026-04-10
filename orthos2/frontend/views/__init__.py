@@ -20,6 +20,7 @@ from .enclosures import (
     enclosure_netboxcomparison,
 )
 from .machine import (
+    cobbler_cleanup,
     compare_netbox,
     console,
     cpu,
@@ -87,6 +88,7 @@ __all__ = [
     "machine_netboxcomparision",
     "fetch_netbox",
     "compare_netbox",
+    "cobbler_cleanup",
     "machine_add",
     "MachineListView",
     "AllMachineListView",
