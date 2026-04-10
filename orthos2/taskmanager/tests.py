@@ -6,6 +6,7 @@ from orthos2.data.models import Domain, Machine, ServerConfig
 from orthos2.taskmanager.tasks.cobbler import RegenerateCobbler
 from orthos2.taskmanager.tasks.sol import DeactivateSerialOverLan
 
+
 @override_settings(DEBUG=False)
 class RegenerateCobblerTests(TestCase):
     fixtures = ["orthos2/utils/tests/fixtures/machines.json"]
