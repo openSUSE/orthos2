@@ -300,6 +300,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 NETBOX_URL = os.environ.get("ORTHOS_NETBOX_URL", "")
 NETBOX_TOKEN = os.environ.get("ORTHOS_NETBOX_TOKEN", "")
+NETBOX_AUTH_SCHEME = os.environ.get("ORTHOS_NETBOX_AUTH_SCHEME", "Bearer")
 
 # Check for alternative settings file. If this file exists, we use it and evaluate the code.
 # This is intended to be used for production mode.
