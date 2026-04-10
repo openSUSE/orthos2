@@ -45,6 +45,7 @@ jobs:
           docker compose exec -it orthos2 bash -c 'coverage report'
           docker compose exec -it orthos2 bash -c 'coverage xml'
       - name: Upload coverage
+        if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork) }}
         uses: codacy/codacy-coverage-reporter-action@v1.3.0
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
