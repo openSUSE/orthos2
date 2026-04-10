@@ -5,7 +5,7 @@ This script generates random secrets and passwords for various containers utiliz
 """
 
 import pathlib
-from typing import List
+import secrets
 
 from django.core.management.utils import get_random_secret_key
 from django.utils.crypto import get_random_string
@@ -28,10 +28,17 @@ netbox_superuser_password = get_random_string(12)
 orthos_db_password = get_random_string(12)
 orthos_superuser_password = get_random_string(12)
 
+
+netbox_pepper_charset = (
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*(-_=+)"
+)
+
+netbox_api_pepper = "".join(secrets.choice(netbox_pepper_charset) for _ in range(50))
 # netbox.env
 # DB_PASSWORD, REDIS_CACHE_PASSWORD, REDIS_PASSWORD, SECRET_KEY, SUPERUSER_API_TOKEN, SUPERUSER_PASSWORD
 
 (script_directory / "netbox" / "netbox.env").write_text(
+    f"API_TOKEN_PEPPER_1={netbox_api_pepper}\n"
     "CORS_ORIGIN_ALLOW_ALL=True\n"
     "DB_HOST=postgres\n"
     "DB_NAME=netbox\n"
