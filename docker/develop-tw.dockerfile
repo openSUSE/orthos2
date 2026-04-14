@@ -29,7 +29,9 @@ RUN zypper in -y \
     python3-urllib3 \
     python3-pytz \
     python3-django-auth-ldap \
-    python3-django-test-migrations
+    python3-django-test-migrations \
+    python3-social-auth-app-django \
+    python3-social-auth-core
 
 # Test dependencies
 RUN zypper in -y \
@@ -53,6 +55,8 @@ RUN mkdir -p /etc/nginx/conf.d /var/lib/orthos2 /var/log/orthos2 /var/lib/orthos
 RUN touch /var/log/orthos2/default.log
 RUN chmod o+w /var/log/orthos2/default.log
 RUN chown -R orthos:orthos /var/log/orthos2 /var/lib/orthos2 /usr/lib/orthos2 /usr/lib/orthos2/ansible /run/orthos2 /run/orthos2/ansible /run/orthos2/ansible_lastrun /run/orthos2/ansible_archive
+COPY docker/traefik/certs/authentik.orthos2.test.crt /etc/pki/trust/anchors/
+RUN update-ca-certificates -v -f
 
 # Setup container for work
 WORKDIR /code

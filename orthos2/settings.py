@@ -71,7 +71,6 @@ CSRF_ALLOWED_ORIGIN = _environ_get_and_map("CSRF_ALLOWED_ORIGIN", "", _AS_LIST)
 CROSS_ORIGINS_WHITELIST = _environ_get_and_map("CROSS_ORIGINS_WHITELIST", "", _AS_LIST)
 
 # Application definition
-
 INSTALLED_APPS = [
     "orthos2.data.apps.DataConfig",
     "orthos2.frontend.apps.FrontendConfig",
@@ -88,7 +87,15 @@ INSTALLED_APPS = [
     "orthos2.api.apps.APIConfig",
     "rest_framework",
     "rest_framework.authtoken",
+    "social_django",
 ]
+
+REMOTE_AUTH_BACKEND = "social_core.backends.open_id_connect.OpenIdConnectAuth"
+SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = "https://authentik.orthos2.test/application/o/orthos"
+SOCIAL_AUTH_OIDC_KEY = os.environ.get("OIDC_KEY", "default")
+SOCIAL_AUTH_OIDC_SECRET = os.environ.get("OIDC_SECRET", "default")
+
+SOCIAL_AUTH_JSONFIELD_ENABLED = True
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -248,6 +255,10 @@ LOGGING = {
         },
     },
 }
+AUTHENTICATION_BACKENDS = (
+    "social_core.backends.open_id_connect.OpenIdConnectAuth",
+    "django.contrib.auth.backends.ModelBackend",
+)
 
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("orthos")
@@ -259,6 +270,7 @@ STATIC_URL = "/static/"
 
 # Login URL
 LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/"
 
 # On logout, go back to the starting page
 LOGOUT_REDIRECT_URL = "/"

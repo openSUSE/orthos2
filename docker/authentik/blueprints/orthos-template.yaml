@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=https://goauthentik.io/blueprints/schema.json
+
+version: 1
+context: {}
+entries:
+- attrs:
+    access_code_validity: minutes=1
+    access_token_validity: minutes=5
+    authentication_flow: null
+    authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+    client_id: to_be_filled
+    client_secret: to_be_filled
+    client_type: confidential
+    encryption_key: null
+    include_claims_in_id_token: true
+    invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+    issuer_mode: per_provider
+    jwt_federation_providers: []
+    jwt_federation_sources: []
+    logout_method: backchannel
+    logout_uri: ''
+    name: Provider for orthos
+    property_mappings:
+    - !Find [authentik_providers_oauth2.scopemapping, [name, 'authentik default OAuth Mapping: OpenID ''openid''']]
+    - !Find [authentik_providers_oauth2.scopemapping, [name, 'authentik default OAuth Mapping: OpenID ''email''']]
+    - !Find [authentik_providers_oauth2.scopemapping, [name, 'authentik default OAuth Mapping: OpenID ''profile''']]
+    redirect_uris:
+    - matching_mode: strict
+      url: http://orthos2.orthos2.test/complete/oidc/
+    refresh_token_threshold: hours=1
+    refresh_token_validity: days=30
+    signing_key: !Find [authentik_crypto.certificatekeypair, [name, 'authentik Self-signed Certificate']]
+    sub_mode: hashed_user_id
+  conditions: []
+  id: orthos-provider
+  identifiers:
+    name: orthos-provider
+  model: authentik_providers_oauth2.oauth2provider
+  permissions: []
+  state: present
+
+- attrs:
+    backchannel_providers: []
+    group: ''
+    meta_description: ''
+    meta_icon: 'orthos.png'
+    meta_launch_url: https://orthos2.orthos2.test/login/oidc
+    meta_publisher: ''
+    name: orthos
+    open_in_new_tab: false
+    policy_engine_mode: any
+    provider: !Find [authentik_providers_oauth2.oauth2provider, [name, 'orthos-provider']]
+    slug: orthos
+  conditions: []
+  id: orthos2
+  identifiers:
+    name: Orthos 2
+  model: authentik_core.application
+  permissions: []
+  state: present

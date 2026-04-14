@@ -1,0 +1,77 @@
+services:
+  authentik-postgresql:
+    env_file:
+      - docker/authentik/authentik.env
+    environment:
+      POSTGRES_DB: ${AUTHENTIK_POSTGRESQL__NAME:-authentik}
+      POSTGRES_USER: ${AUTHENTIK_POSTGRESQL__USER:-authentik}
+    networks:
+      - orthos
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 20s
+      test:
+      - CMD-SHELL
+      - pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
+      timeout: 5s
+    image: docker.io/library/postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+    - database:/var/lib/postgresql/data
+
+  authentik-server:
+    command: server
+    depends_on:
+      authentik-postgresql:
+        condition: service_healthy
+    networks:
+      - orthos
+    env_file:
+      - docker/authentik/authentik.env
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2.1}
+    ports:
+    - ${COMPOSE_PORT_HTTP:-9000}:9000
+    - ${COMPOSE_PORT_HTTPS:-9443}:9443
+    restart: unless-stopped
+    shm_size: 512mb
+    volumes:
+    - ./orthos2/frontend/static/frontend/images/orthos.png:/data/media/public/orthos.png
+    security_opt:
+      - label:disable
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.authentik-http.rule=Host(`authentik.orthos2.test`)"
+      - "traefik.http.routers.authentik-http.entrypoints.web"
+      - "traefik.http.routers.authentik-http.middlewares=authentik-https"
+      - "traefik.http.middlewares.authentik-https.redirectScheme.scheme=https"
+      - "traefik.http.routers.authentik-https.rule=Host(`authentik.orthos2.test`)"
+      - "traefik.http.routers.authentik-https.entrypoints=websecure"
+      - "traefik.http.routers.authentik-https.tls=true"
+      - "traefik.http.services.authentik.loadbalancer.server.port=9000"
+
+  authentik-worker:
+    command: worker
+    depends_on:
+      authentik-postgresql:
+        condition: service_healthy
+    env_file:
+      - docker/authentik/authentik.env
+    networks:
+      - orthos
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2.1}
+    restart: unless-stopped
+    shm_size: 512mb
+    user: root
+    volumes:
+    - ./orthos2/frontend/static/frontend/images/orthos.png:/data/media/public/orthos.png
+    - /var/run/docker.sock:/var/run/docker.sock:z
+    - ./docker/traefik/certs/authentik.orthos2.test.crt:/certs/authentik.orthos2.test.crt:z
+    - ./docker/traefik/certs/authentik.orthos2.test.key:/certs/authentik.orthos2.test.key:z
+    - ./docker/authentik/blueprints/orthos.yaml:/blueprints/custom/orthos.yaml:ro,z
+    security_opt:
+      - label:disable
