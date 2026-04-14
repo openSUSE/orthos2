@@ -1,7 +1,20 @@
 #!/usr/bin/bash
 
+get_netbox_token() {
+    # Docker takes care of starting NetBox before the Orthos 2 container is started. As such this API endpoint can be
+    # reliably called.
+    NETBOX_TOKEN_JSON=$(curl -s -X POST \
+      -H "Content-Type: application/json" \
+      -H "Accept: Application/json; indent=4" \
+      "${ORTHOS_NETBOX_URL}/api/users/tokens/provision/" \
+      --data "{\"username\": \"${NETBOX_SUPERUSER_NAME}\", \"password\": \"${NETBOX_SUPERUSER_PASSWORD}\"}")
+    ORTHOS_NETBOX_TOKEN="nbt_$(echo $NETBOX_TOKEN_JSON | jq -r '.key').$(echo $NETBOX_TOKEN_JSON | jq -r '.token')"
+    export ORTHOS_NETBOX_TOKEN
+}
+
 server_start() {
     # Setup NetBox
+    get_netbox_token
     python3 manage.py shell </code/docker/setup_netbox.py
     # Setup Orthos 2
     git config --global --add safe.directory /code
@@ -27,6 +40,8 @@ taskmanager_start() {
         echo "Waiting for main application to become available"
         sleep 5
     done
+    # Generate NetBox API Token
+    get_netbox_token
     # Moves files into place
     python3 manage.py setup ansible --buildroot="/"
     # Start server

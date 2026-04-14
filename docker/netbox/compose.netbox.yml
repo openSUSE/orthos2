@@ -1,0 +1,86 @@
+services:
+  # Netbox part below taken and adjusted from https://github.com/netbox-community/netbox-docker
+  netbox: &netbox
+    image: ${IMAGE-docker.io/netboxcommunity/netbox:latest}
+    networks:
+      - orthos
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      redis-cache:
+        condition: service_healthy
+    env_file: netbox.env
+    user: "netbox:root"
+    volumes:
+      - ./docker/netbox/test_config.py:/etc/netbox/config/test_config.py:z,ro
+    healthcheck:
+      test: curl -f http://localhost:8080/login/ || exit 1
+      start_period: ${NETBOX_START_PERIOD-240s}
+      timeout: 3s
+      interval: 15s
+  netbox-worker:
+    <<: *netbox
+    command:
+      - /opt/netbox/venv/bin/python
+      - /opt/netbox/netbox/manage.py
+      - rqworker
+    networks:
+      - orthos
+    depends_on:
+      netbox:
+        condition: service_healthy
+    healthcheck:
+      test: ps -aux | grep -v grep | grep -q rqworker || exit 1
+      start_period: 40s
+      timeout: 3s
+      interval: 15s
+  netbox-housekeeping:
+    <<: *netbox
+    command:
+      - /opt/netbox/housekeeping.sh
+    networks:
+      - orthos
+    depends_on:
+      netbox:
+        condition: service_healthy
+    healthcheck:
+      test: ps -aux | grep -v grep | grep -q housekeeping || exit 1
+      start_period: 40s
+      timeout: 3s
+      interval: 15s
+
+  postgres:
+    image: docker.io/postgres:17-alpine
+    env_file: postgres.env
+    networks:
+      - orthos
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -h 127.0.0.1 -d $${POSTGRES_USER} -U $${POSTGRES_USER}",
+        ]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+
+  redis: &redis
+    image: docker.io/valkey/valkey:8.0-alpine
+    command:
+      - sh
+      - -c # this is to evaluate the $REDIS_PASSWORD from the env
+      - valkey-server --save "" --appendonly no --requirepass $$REDIS_PASSWORD ## $$ because of docker-compose
+    env_file: redis.env
+    networks:
+      - orthos
+    healthcheck:
+      test: '[ $$(valkey-cli --pass "$${REDIS_PASSWORD}" ping) = ''PONG'' ]'
+      start_period: 5s
+      timeout: 3s
+      interval: 1s
+      retries: 5
+  redis-cache:
+    <<: *redis
+    env_file: redis-cache.env

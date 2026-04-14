@@ -5,6 +5,7 @@ This script generates random secrets and passwords for various containers utiliz
 """
 
 import pathlib
+import secrets
 import subprocess
 from typing import List
 
@@ -25,9 +26,6 @@ orthos2_secret_key = get_random_secret_key()
 redis_password = get_random_string(12)
 redis_cache_password = get_random_string(12)
 netbox_db_password = get_random_string(12)
-netbox_superuser_api_token = get_random_string(
-    DJANGO_REST_TOKEN_LENGTH, DJANGO_REST_ALLOWED_CHARS
-)
 netbox_superuser_password = get_random_string(12)
 orthos_db_password = get_random_string(12)
 orthos_superuser_password = get_random_string(12)
@@ -39,10 +37,16 @@ authentik_password = get_random_string(12)
 oidc_key = get_random_string(OIDC_KEY_LENGTH, OIDC_ALLOWED_CHARS)
 oidc_secret = get_random_string(OIDC_SECRET_LENGTH, OIDC_ALLOWED_CHARS)
 
+netbox_pepper_charset = (
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*(-_=+)"
+)
+netbox_api_pepper = "".join(secrets.choice(netbox_pepper_charset) for _ in range(50))
+
 # netbox.env
 # DB_PASSWORD, REDIS_CACHE_PASSWORD, REDIS_PASSWORD, SECRET_KEY, SUPERUSER_API_TOKEN, SUPERUSER_PASSWORD
 
 (script_directory / "netbox" / "netbox.env").write_text(
+    f"API_TOKEN_PEPPER_1='{netbox_api_pepper}'\n"
     "CORS_ORIGIN_ALLOW_ALL=True\n"
     "DB_HOST=postgres\n"
     "DB_NAME=netbox\n"
@@ -76,7 +80,6 @@ oidc_secret = get_random_string(OIDC_SECRET_LENGTH, OIDC_ALLOWED_CHARS)
     "RELEASE_CHECK_URL=https://api.github.com/repos/netbox-community/netbox/releases\n"
     f"SECRET_KEY='{netbox_secret_key}'\n"
     "SKIP_SUPERUSER=false\n"
-    f"SUPERUSER_API_TOKEN={netbox_superuser_api_token}\n"
     "SUPERUSER_EMAIL='noreply@example.org'\n"
     "SUPERUSER_NAME='admin'\n"
     f"SUPERUSER_PASSWORD={netbox_superuser_password}\n"
@@ -118,8 +121,8 @@ oidc_secret = get_random_string(OIDC_SECRET_LENGTH, OIDC_ALLOWED_CHARS)
 
 (script_directory / "orthos" / "orthos2.env").write_text(
     f"ORTHOS_SECRET_KEY='{orthos2_secret_key}'\n"
+    f"ORTHOS_NETBOX_AUTH_SCHEME='Bearer'\n"
     'ORTHOS_NETBOX_URL="http://netbox.orthos2.test:8080"\n'
-    f"ORTHOS_NETBOX_TOKEN='{netbox_superuser_api_token}'\n"
     f'ORTHOS_SUPERUSER_PASSWORD="{orthos_superuser_password}"\n'
     'ORTHOS2_DB_ENGINE="django.db.backends.postgresql_psycopg2"\n'
     'ORTHOS2_POSTGRES_HOST="database.orthos2.test"\n'
@@ -132,6 +135,8 @@ oidc_secret = get_random_string(OIDC_SECRET_LENGTH, OIDC_ALLOWED_CHARS)
     'CROSS_ORIGINS_WHITELIST="https://orthos2.orthos2.test"\n'
     f'OIDC_KEY="{oidc_key}"\n'
     f'OIDC_SECRET="{oidc_secret}"\n'
+    "NETBOX_SUPERUSER_NAME='admin'\n"
+    f"NETBOX_SUPERUSER_PASSWORD={netbox_superuser_password}\n"
 )
 
 # authentik.env
@@ -144,6 +149,8 @@ oidc_secret = get_random_string(OIDC_SECRET_LENGTH, OIDC_ALLOWED_CHARS)
     f"AUTHENTIK_SECRET_KEY='{authentik_secret_key}'\n"
     "AUTHENTIK_ERROR_REPORTING__ENABLED=true\n"
     "POSTGRES_HOST_AUTH_METHOD=trust\n"
+    "NETBOX_SUPERUSER_NAME='admin'\n"
+    f"NETBOX_SUPERUSER_PASSWORD={netbox_superuser_password}\n"
 )
 
 # create certificates
