@@ -1,5 +1,8 @@
 # For the hostnames to work an entry in /etc/hosts is needed:
 # 127.0.0.1 authentik.orthos2.test orthos2.orthos2.test cobbler.orthos2.test netbox.orthos2.test
+include:
+  - docker/authentik/compose.authentik.yaml
+
 services:
   proxy:
     image: traefik:v3.6

@@ -1,7 +1,7 @@
 services:
   authentik-postgresql:
     env_file:
-      - docker/authentik/authentik.env
+      - authentik.env
     environment:
       POSTGRES_DB: ${AUTHENTIK_POSTGRESQL__NAME:-authentik}
       POSTGRES_USER: ${AUTHENTIK_POSTGRESQL__USER:-authentik}
@@ -28,7 +28,7 @@ services:
     networks:
       - orthos
     env_file:
-      - docker/authentik/authentik.env
+      - authentik.env
     environment:
       AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2.1}
@@ -58,7 +58,7 @@ services:
       authentik-postgresql:
         condition: service_healthy
     env_file:
-      - docker/authentik/authentik.env
+      - authentik.env
     networks:
       - orthos
     environment:
