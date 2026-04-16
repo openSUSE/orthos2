@@ -107,6 +107,11 @@ urlpatterns = [
         views.compare_netbox,
         name="netbox_compare",
     ),
+    re_path(
+        r"^machine/(?P<id>[0-9]+)/cobbler-cleanup$",
+        views.cobbler_cleanup,
+        name="cleanup_domain_cobbler_page",
+    ),
     re_path(r"^machine/(?P<id>[0-9]+)/setup$", views.setup, name="setup"),
     re_path(
         r"^machine/(?P<id>[0-9]+)/virtualization$",

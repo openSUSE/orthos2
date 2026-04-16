@@ -518,6 +518,49 @@ class CobblerServer:
             )
 
     @login_required
+    def remove_by_name(self, fqdn: str) -> None:
+        """
+        Remove a machine from a Cobbler server by FQDN.
+
+        :param fqdn: FQDN of machine to be removed.
+        """
+        if not self.is_running():
+            raise CobblerException(
+                "Cobbler server is not running: {}".format(self._cobbler_server.fqdn)
+            )
+        try:
+            self._xmlrpc_server.remove_system(fqdn, self._token, False)
+        except xmlrpc.client.Fault as xmlrpc_fault:
+            logging.error(
+                'Removing %s failed with "%s"', fqdn, xmlrpc_fault.faultString
+            )
+
+    def prune_stale(self, orthos_fqdns: set[str], dry_run: bool = True) -> list[str]:
+        """
+        Prune stale machines from Cobbler for the server domain.
+
+        :param orthos_fqdns: Set of active Orthos FQDNs for this domain.
+        :param dry_run: Whether to only log stale entries instead of removing them.
+        :returns: List of stale FQDNs found for this domain.
+        """
+        cobbler_fqdns = self.get_machines()
+        domain_suffix = "." + self._domain.name
+        stale = [
+            fqdn
+            for fqdn in cobbler_fqdns
+            if fqdn.endswith(domain_suffix) and fqdn not in orthos_fqdns
+        ]
+
+        for fqdn in stale:
+            if dry_run:
+                logger.info("[DRY-RUN] prune stale machine from Cobbler: %s", fqdn)
+            else:
+                logger.info("Prune stale machine from Cobbler: %s", fqdn)
+                self.remove_by_name(fqdn)
+
+        return stale
+
+    @login_required
     def remove_bmc(
         self, object_id: str, save: CobblerSaveModes = CobblerSaveModes.SKIP
     ) -> None:
