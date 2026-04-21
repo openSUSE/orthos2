@@ -490,6 +490,21 @@ def main():
         raise RuntimeError(
             "Creating a device role must be successful in order for the setup script to work!"
         ) from exec
+    try:
+        device_role_lpar = netbox.post_device_role(
+            {
+                "display": "LPAR",
+                "name": "LPAR",
+                "slug": "lpar",
+                "color": "3f51b5",
+                "vm_role": True,
+                "description": "IBM Power Machine Logical Partition",
+            }
+        )
+    except requests.exceptions.RequestException as exec:
+        raise RuntimeError(
+            "Creating a device role must be successful in order for the setup script to work!"
+        ) from exec
     # Create Platform
     try:
         netbox.post_platform(
@@ -620,12 +635,29 @@ def main():
         device_role_server,
         site_orthos2,
     )
+    netbox.patch_device(
+        device_kvm_host.get("id", -1), {"custom_fields": {"arch": "x86_64"}}
+    )
     # Create Cluster Type
     cluster_type_kvm_host = netbox.post_cluster_type(
         {
             "name": "KVM Host",
             "slug": "kvm-host",
             "description": "KVM Clusters that are single-host.",
+        }
+    )
+    cluster_type_pseries_hypervisor = netbox.post_cluster_type(
+        {
+            "name": "IBM pSeries Hypervisor",
+            "slug": "ibm-pseries-hypervisor",
+            "description": "",
+        }
+    )
+    cluster_type_zvm_hypervisor = netbox.post_cluster_type(
+        {
+            "name": "IBM z/VM Hypervisor",
+            "slug": "ibm-zvm-hypervisor",
+            "description": "",
         }
     )
     # Create Cluster (single device)
@@ -671,12 +703,127 @@ def main():
         device_role_server,
         site_orthos2,
     )
-    # Create 2x PowerHMC Device
+    netbox.patch_device(
+        device_cobbler.get("id", -1), {"custom_fields": {"arch": "x86_64"}}
+    )
+    # Create 2x PowerHMC VMs
+    virtual_machine_hmc_1 = netbox.post_virtual_machine(
+        {
+            "name": "example-hmc-1.orthos2.test",
+            "site": site_orthos2.get("id"),
+            "cluster": cluster_kvm_host.get("id"),
+        }
+    )
+    netbox.patch_vm(
+        virtual_machine_hmc_1.get("id", -1), {"custom_fields": {"arch": "x86_64"}}
+    )
+    virtual_machine_hmc_2 = netbox.post_virtual_machine(
+        {
+            "name": "example-hmc-2.orthos2.test",
+            "site": site_orthos2.get("id"),
+            "cluster": cluster_kvm_host.get("id"),
+        }
+    )
+    netbox.patch_vm(
+        virtual_machine_hmc_2.get("id", -1), {"custom_fields": {"arch": "x86_64"}}
+    )
     # Create PPC64LE LPAR Device
+    device_ppc64le_lpar = create_device(
+        netbox,
+        "example-ppc64le-lpar.orthos2.test",
+        manufacturer_ibmpower,
+        device_type_ibm_power_10_lpar,
+        device_role_server,
+        site_orthos2,
+    )
+    netbox.patch_device(
+        device_ppc64le_lpar.get("id", -1), {"custom_fields": {"arch": "ppc64le"}}
+    )
+
+    # Create cluster for PPC64LE LPAR
+    cluster_ppc64le_lpar = netbox.post_cluster(
+        {
+            "name": "example-ppc64le-lpar.orthos2.test",
+            "type": {
+                "name": cluster_type_pseries_hypervisor.get("name"),
+                "slug": cluster_type_pseries_hypervisor.get("slug"),
+            },
+            "scope_type": "dcim.site",
+            "scope_id": site_orthos2.get("id"),
+        }
+    )
+
     # Create PPC64LE PowerVM
+    virtual_machine_ppc64le_vm_1 = netbox.post_virtual_machine(
+        {
+            "name": "example-powervm-1.orthos2.test",
+            "site": site_orthos2.get("id"),
+            "cluster": cluster_ppc64le_lpar.get("id"),
+            "role": device_role_lpar.get("id"),
+        }
+    )
+    netbox.patch_vm(
+        virtual_machine_ppc64le_vm_1.get("id", -1),
+        {"custom_fields": {"arch": "ppc64le"}},
+    )
+
+    # Create S390 Rack
+    rack_s390 = netbox.post_rack(
+        {
+            "name": "LinuxOne",
+            "site": {"name": "orthos2-site", "slug": "orthos2-site"},
+        }
+    )
     # Create S390 Chassis Device
+    device_s390_chassis = create_device(
+        netbox,
+        "Linux One III Frame A",
+        manufacturer_ibmz,
+        device_type_ibm_z13,
+        device_role_server,
+        site_orthos2,
+    )
+    netbox.patch_device(
+        device_s390_chassis.get("id", -1),
+        {"rack": rack_s390.get("id"), "custom_fields": {"arch": "s390x"}},
+    )
     # Create S390 LPAR
+    device_s390_lpar = create_device(
+        netbox,
+        "s390zl01",
+        manufacturer_ibmz,
+        device_type_ibm_z13_lpar,
+        device_role_lpar,
+        site_orthos2,
+    )
+    netbox.patch_device(
+        device_s390_lpar.get("id", -1), {"custom_fields": {"arch": "s390x"}}
+    )
+    # Create S390 Cluster
+    cluster_s390_lpar = netbox.post_cluster(
+        {
+            "name": "s390zl01",
+            "type": {
+                "name": cluster_type_zvm_hypervisor.get("name"),
+                "slug": cluster_type_zvm_hypervisor.get("slug"),
+            },
+            "scope_type": "dcim.site",
+            "scope_id": site_orthos2.get("id"),
+        }
+    )
     # Create S390 zVM
+    virtual_machine_s390_zvm = netbox.post_virtual_machine(
+        {
+            "name": "zVM",
+            "site": site_orthos2.get("id"),
+            "cluster": cluster_s390_lpar.get("id"),
+            "role": device_role_lpar.get("id"),
+        }
+    )
+    netbox.patch_vm(
+        virtual_machine_s390_zvm.get("id", -1),
+        {"custom_fields": {"arch": "s390x"}},
+    )
 
 
 main()
