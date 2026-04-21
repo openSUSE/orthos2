@@ -87,7 +87,10 @@
       "password": "test",
       "fqdn": "bmc.orthos2.test",
       "mac": "AA:BB:CC:DD:EE",
-      "url": "https://rpower.orthos2.test"
+      "ip_address_v4": "192.0.2.5",
+      "url": "https://rpower.orthos2.test",
+      "domain_id": 1,
+      "architecture_id": 1
     }
   },
   {

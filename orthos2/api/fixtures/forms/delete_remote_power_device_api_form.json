@@ -1,5 +1,27 @@
 [
   {
+    "model": "data.domain",
+    "pk": 1,
+    "fields": {
+      "name": "example.our-org.tld",
+      "ip_v4": "127.0.0.1",
+      "ip_v6": "::1",
+      "dynamic_range_v4_start": "127.0.0.1",
+      "dynamic_range_v4_end": "127.0.0.1",
+      "dynamic_range_v6_start": "::1",
+      "dynamic_range_v6_end": "::1"
+    }
+  },
+  {
+    "model": "data.architecture",
+    "pk": null,
+    "fields": {
+      "name": "x86_64",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
     "model": "data.remotepowertype",
     "pk": null,
     "fields": {
@@ -16,7 +38,9 @@
       "password": "test",
       "fqdn": "rpower.foo.de",
       "mac": "AA:BB:CC:DD:EE",
-      "url": "https://rpower.foo.de"
+      "url": "https://rpower.foo.de",
+      "architecture_id": 1,
+      "domain_id": 1
     }
   }
 ]

@@ -505,6 +505,21 @@ def main():
         raise RuntimeError(
             "Creating a device role must be successful in order for the setup script to work!"
         ) from exec
+    try:
+        device_role_console = netbox.post_device_role(
+            {
+                "display": "Console",
+                "name": "console",
+                "slug": "console",
+                "color": "4caf50",
+                "vm_role": False,
+                "description": "Console Server",
+            }
+        )
+    except requests.exceptions.RequestException as exec:
+        raise RuntimeError(
+            "Creating a device role must be successful in order for the setup script to work!"
+        ) from exec
     # Create Platform
     try:
         netbox.post_platform(
@@ -528,6 +543,12 @@ def main():
     ip_address_v6_oob = create_ip_address(
         netbox, "2001:db8::3/128", "example-sp.orthos2.test"
     )
+    ip_address_v4_pikvm = create_ip_address(
+        netbox, "192.0.2.4/32", "pikvm-v4.orthos2.test"
+    )
+    ip_address_v6_pikvm = create_ip_address(
+        netbox, "2001:db8::4/128", "pikvm-v4.orthos2.test"
+    )
     # Create Manufacturer
     manufacturer_ibmz = create_manufacturer(netbox, "IBM zSeries", "ibm-zseries")
     manufacturer_ibmpower = create_manufacturer(
@@ -535,6 +556,7 @@ def main():
     )
     manufacturer_ampere = create_manufacturer(netbox, "Ampere", "ampere")
     manufacturer_amd = create_manufacturer(netbox, "AMD", "amd")
+    manufacturer_pikvm = create_manufacturer(netbox, "PiKVM", "pikvm")
     # Create Device Types (normal Server, PPC, S390X, aarch64)
     device_type_ibm_z13 = create_device_type(
         netbox, "z13", "z13", 42.0, manufacturer_ibmz
@@ -565,6 +587,9 @@ def main():
     )
     device_type_amd_epyc_rome = create_device_type(
         netbox, "EPYC ROME", "epyc-rome", 1.0, manufacturer_amd
+    )
+    device_type_pikvm_v4_mini = create_device_type(
+        netbox, "PiKVM V4 Mini", "pikvm-v4-mini", 1.0, manufacturer_pikvm
     )
     # Create Device - Standalone
     device_standalone = create_device(
@@ -823,6 +848,29 @@ def main():
     netbox.patch_vm(
         virtual_machine_s390_zvm.get("id", -1),
         {"custom_fields": {"arch": "s390x"}},
+    )
+
+    # Create PiKVM Device
+    device_pikvm = create_device(
+        netbox,
+        "pikvm-v4.orthos2.test",
+        manufacturer_pikvm,
+        device_type_pikvm_v4_mini,
+        device_role_console,
+        site_orthos2,
+    )
+    netbox.patch_device(
+        device_pikvm.get("id", -1), {"custom_fields": {"arch": "aarch64"}}
+    )
+    interface_pikvm = create_interface(netbox, "pikvm-v4.orthos2.test", "eth0")
+    assign_ip_address_to_interface(netbox, ip_address_v4_pikvm, interface_pikvm)
+    assign_ip_address_to_interface(netbox, ip_address_v6_pikvm, interface_pikvm)
+    netbox.patch_device(
+        device_pikvm.get("id", -1),
+        {
+            "primary_ip4": ip_address_v4_pikvm.get("id"),
+            "primary_ip6": ip_address_v6_pikvm.get("id"),
+        },
     )
 
 

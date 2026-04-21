@@ -1,5 +1,8 @@
 """
-TODO
+Models for tracking and storing comparison runs between NetBox and Orthos.
+
+This module defines models to store the runs of comparison tasks and the individual property differences found between
+NetBox and Orthos for various data objects (e.g., BMC, Enclosure, Machine, etc.).
 """
 
 from typing import TYPE_CHECKING
@@ -17,6 +20,7 @@ if TYPE_CHECKING:
         OptionalEnclosureForeignKey,
         OptionalMachineForeignKey,
         OptionalNetworkInterfaceForeignKey,
+        OptionalRemotePowerDeviceForeignKey,
     )
 
 
@@ -34,6 +38,7 @@ class NetboxOrthosComparisionRun(models.Model):
         ENCLOSURE = "enclosure", _("Enclosure")  # type: ignore
         MACHINE = "machine", _("Machine")  # type: ignore
         NETWORK_INTERFACE = "network_interface", _("Network Interface")  # type: ignore
+        REMOTE_POWER_DEVICE = "remote_power_device", _("Remote Power Device")  # type: ignore
 
     run_id: "MandatoryUUIDField" = models.UUIDField(primary_key=True, editable=False)
     compare_timestamp: "MandatoryDateField" = models.DateTimeField(blank=False)
@@ -68,6 +73,15 @@ class NetboxOrthosComparisionRun(models.Model):
         blank=True,
         related_name="netboxorthoscomparisionruns",
     )
+    object_remote_power_device: "OptionalRemotePowerDeviceForeignKey" = (
+        models.ForeignKey(
+            "data.RemotePowerDevice",
+            on_delete=models.CASCADE,
+            null=True,
+            blank=True,
+            related_name="netboxorthoscomparisionruns",
+        )
+    )
 
     def clean(self) -> None:
         super().clean()
@@ -91,6 +105,14 @@ class NetboxOrthosComparisionRun(models.Model):
             if not self.object_network_interface:
                 raise ValueError(
                     "Network Interface object must be provided for Network Interface comparison."
+                )
+        elif (
+            self.object_type
+            == self.NetboxOrthosComparisionItemTypes.REMOTE_POWER_DEVICE.value
+        ):
+            if not self.object_remote_power_device:
+                raise ValueError(
+                    "Remote Power Device object must be provided for Remote Power Device comparison."
                 )
 
 

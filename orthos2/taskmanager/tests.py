@@ -31,7 +31,7 @@ class RegenerateCobblerTests(TestCase):
 
             RegenerateCobbler().execute()
 
-            server_obj.deploy.assert_called_once()
+            server_obj.deploy_machines.assert_called_once()
             server_obj.prune_stale.assert_not_called()
 
     def test_prune_enabled_dry_run(self) -> None:
@@ -49,7 +49,7 @@ class RegenerateCobblerTests(TestCase):
 
             RegenerateCobbler().execute()
 
-            server_obj.deploy.assert_called_once()
+            server_obj.deploy_machines.assert_called_once()
             server_obj.prune_stale.assert_called_once_with(
                 {"cobbler.orthos2.test", "testsys.orthos2.test"}, dry_run=True
             )
@@ -69,7 +69,7 @@ class RegenerateCobblerTests(TestCase):
 
             RegenerateCobbler().execute()
 
-            server_obj.deploy.assert_called_once()
+            server_obj.deploy_machines.assert_called_once()
             server_obj.prune_stale.assert_called_once_with(
                 {"cobbler.orthos2.test", "testsys.orthos2.test"}, dry_run=False
             )

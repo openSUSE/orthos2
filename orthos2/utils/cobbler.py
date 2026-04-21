@@ -25,7 +25,7 @@ from django.template import Context, Template
 from orthos2.utils.misc import get_hostname
 
 if TYPE_CHECKING:
-    from orthos2.data.models import Domain, Machine
+    from orthos2.data.models import Domain, Machine, RemotePowerDevice
 
 logger = logging.getLogger("utils")
 
@@ -146,7 +146,7 @@ class CobblerServer:
         # We ignore this line because this is just the initial value so the variable is not None.
         self._token = ""  # nosec B105
 
-    def deploy(self, machines: Iterable["Machine"]) -> None:
+    def deploy_machines(self, machines: Iterable["Machine"]) -> None:
         """
         Deploy or update all machines of a single Cobbler server.
         """
@@ -163,6 +163,32 @@ class CobblerServer:
                 logger.error(
                     "Deploying of machine %s failed with the following error: %s",
                     machine.fqdn,
+                    fault.faultString,
+                    exc_info=fault,
+                )
+
+    def deploy_remotepowerdevices(self, devices: Iterable["RemotePowerDevice"]) -> None:
+        """
+        Deploy or update all Remote Power Devices of a single Cobbler server.
+        """
+        for device in devices:
+            if self._domain.pk != device.domain.pk:
+                logger.warning(
+                    'Skipping remote power device "%s" since it doesn\'t belong to the domain of the Cobbler '
+                    'server "%s"!',
+                    device.fqdn,
+                    self._domain.name,
+                )
+                continue
+            try:
+                if not self.remotepowerdevice_deployed(device):
+                    self.add_remote_power_device(device, CobblerSaveModes.NEW)
+                else:
+                    self.add_remote_power_device(device, CobblerSaveModes.BYPASS)
+            except xmlrpc.client.Fault as fault:
+                logger.error(
+                    "Deploying of remote power device %s failed with the following error: %s",
+                    device.fqdn,
                     fault.faultString,
                     exc_info=fault,
                 )
@@ -435,6 +461,73 @@ class CobblerServer:
             self._xmlrpc_server.save_system(object_id, self._token, save.value)
 
     @login_required
+    def add_remote_power_device(
+        self,
+        device: "RemotePowerDevice",
+        save: CobblerSaveModes = CobblerSaveModes.SKIP,
+    ) -> None:
+        """
+        Add a RemotePowerDevice to Cobbler.
+
+        :param device: RemotePowerDevice to be added.
+        :param save: Whether to save the machine or update it.
+        """
+        if not self._xmlrpc_server.has_item(
+            "profile", device.architecture.default_profile, self._token
+        ):
+            raise CobblerException(
+                f"profile {device.architecture.default_profile} didn't exist on cobbler server"
+            )
+
+        if save == CobblerSaveModes.NEW:
+            object_id = self._xmlrpc_server.new_system(self._token)
+        else:
+            object_id = self._xmlrpc_server.get_system_handle(device.fqdn, self._token)
+        if not isinstance(object_id, str):
+            raise TypeError("Cobbler System ID must be a string!")
+        self._xmlrpc_server.modify_system(object_id, "name", device.fqdn, self._token)
+        self._xmlrpc_server.modify_system(
+            object_id, "profile", device.architecture.default_profile, self._token
+        )
+        self._xmlrpc_server.modify_system(object_id, "filename", "", self._token)
+
+        if not device.mac:
+            logger.info(
+                "Skipping remote power device %s because it has no MAC address",
+                device.fqdn,
+            )
+
+            if save != CobblerSaveModes.SKIP:
+                self._xmlrpc_server.save_system(object_id, self._token, save.value)
+            return
+
+        if not device.ip_address_v4 and not device.ip_address_v6:
+            logger.info(
+                "Skipping remote power device %s because it has neither IPv4 nor IPv6 addresses",
+                device.fqdn,
+            )
+
+            if save != CobblerSaveModes.SKIP:
+                self._xmlrpc_server.save_system(object_id, self._token, save.value)
+            return
+
+        interface_options = {
+            "macaddress-default": device.mac,
+            "ipaddress-default": device.ip_address_v4 or "",
+            "ipv6address-default": device.ip_address_v6 or "",
+            "management-default": True,
+            "hostname-default": get_hostname(device.fqdn),
+            "dnsname-default": device.fqdn,
+        }
+
+        self._xmlrpc_server.modify_system(
+            object_id, "modify_interface", interface_options, self._token
+        )
+
+        if save != CobblerSaveModes.SKIP:
+            self._xmlrpc_server.save_system(object_id, self._token, save.value)
+
+    @login_required
     def _get_cobbler_datastructure(self, machine: "Machine") -> Dict[str, Any]:
         """
         Get a Cobbler system struct.
@@ -483,6 +576,21 @@ class CobblerServer:
             raise TypeError(
                 'Return value if machine "%s" is deployed must be of type bool!'
                 % machine.fqdn
+            )
+        return has_item
+
+    @login_required
+    def remotepowerdevice_deployed(self, device: "RemotePowerDevice") -> bool:
+        """
+        Method to signal if a machine has been deployed.
+
+        :returns: True in case the machine is present by its FQDN in Cobbler, otherwise False.
+        """
+        has_item = self._xmlrpc_server.has_item("system", device.fqdn, self._token)
+        if not isinstance(has_item, bool):
+            raise TypeError(
+                'Return value if machine "%s" is deployed must be of type bool!'
+                % device.fqdn
             )
         return has_item
 

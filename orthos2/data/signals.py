@@ -7,7 +7,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import Signal, receiver
 
-from orthos2.data.models import Machine, NetworkInterface, SerialConsole, ServerConfig
+from orthos2.data.models import (
+    Machine,
+    NetworkInterface,
+    RemotePowerDevice,
+    SerialConsole,
+    ServerConfig,
+)
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.cobbler import CobblerServer
@@ -122,6 +128,17 @@ def machine_pre_delete(
         machine_description.write(serialized_data)
 
     logger.info("Machine object serialized (target: '%s')", filename)
+
+
+@receiver(post_save, sender=RemotePowerDevice)
+def remote_power_device_post_save(
+    sender: Any, instance: RemotePowerDevice, *args: Any, **kwargs: Any
+) -> None:
+    """
+    Add or update the Cobbler system for a given RemotePowerDevice.
+    """
+    task = tasks.UpdateCobblerRemotePowerDevice(instance.id)
+    TaskManager.add(task)
 
 
 @receiver(post_save, sender=SerialConsole)

@@ -4,7 +4,7 @@ from typing import Optional
 from django.conf import settings
 from django.db.models import QuerySet
 
-from orthos2.data.models import Domain, Machine, ServerConfig
+from orthos2.data.models import Domain, Machine, RemotePowerDevice, ServerConfig
 from orthos2.taskmanager.models import Task
 from orthos2.utils.cobbler import CobblerServer
 from orthos2.utils.ssh import SSH
@@ -62,8 +62,12 @@ class RegenerateCobbler(Task):
                 try:
                     logger.info("* Cobbler deployment started...")
                     machines = Machine.active_machines.filter(fqdn_domain=domain.pk)
+                    remote_power_devices = RemotePowerDevice.objects.filter(
+                        fqdn=domain.pk
+                    )
                     server_obj = CobblerServer(domain)
-                    server_obj.deploy(machines)
+                    server_obj.deploy_machines(machines)
+                    server_obj.deploy_remotepowerdevices(remote_power_devices)
                     if ServerConfig.get_server_config_manager().bool_by_key(
                         "cobbler.prune.enabled", fallback=False
                     ):
@@ -134,6 +138,42 @@ class UpdateCobblerMachine(Task):
         except Machine.MultipleObjectsReturned:
             logger.error("Multiple Machines with id %s, aborting", self._machine_id)
             return
+        except Exception as e:
+            logger.exception(e)
+        finally:
+            logger.info("--- Cobbler deployment finished ---")
+
+
+class UpdateCobblerRemotePowerDevice(Task):
+    """
+    Updates the Cobbler configuration for a specific Remote Power Device.
+    """
+
+    def __init__(self, device_id: int) -> None:
+        self._device_id = device_id
+
+    def execute(self) -> None:
+        try:
+            remote_power_device = RemotePowerDevice.objects.get(pk=self._device_id)
+            cobbler_server_obj = CobblerServer(remote_power_device.domain)
+            try:
+                logger.info("* Cobbler deployment started...")
+                cobbler_server_obj.deploy_remotepowerdevices([remote_power_device])
+                logger.info("* Cobbler deployment finished successfully")
+            except Exception as e:
+                message = "* Cobbler deployment failed; {}".format(e)
+                if isinstance(e, (SystemError, SyntaxError)):
+                    logger.exception(message)
+                else:
+                    logger.exception(message)
+        except RemotePowerDevice.DoesNotExist:
+            logger.error(
+                "No Remote Power Devices with id %s, aborting", self._device_id
+            )
+        except RemotePowerDevice.MultipleObjectsReturned:
+            logger.error(
+                "Multiple Remote Power Devices with id %s, aborting", self._device_id
+            )
         except Exception as e:
             logger.exception(e)
         finally:
