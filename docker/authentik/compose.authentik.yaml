@@ -68,10 +68,10 @@ services:
     shm_size: 512mb
     user: root
     volumes:
-    - ./orthos2/frontend/static/frontend/images/orthos.png:/data/media/public/orthos.png
+    - ../../orthos2/frontend/static/frontend/images/orthos.png:/data/media/public/orthos.png
     - /var/run/docker.sock:/var/run/docker.sock:z
-    - ./docker/traefik/certs/authentik.orthos2.test.crt:/certs/authentik.orthos2.test.crt:z
-    - ./docker/traefik/certs/authentik.orthos2.test.key:/certs/authentik.orthos2.test.key:z
-    - ./docker/authentik/blueprints/orthos.yaml:/blueprints/custom/orthos.yaml:ro,z
+    - ../traefik/certs/authentik.orthos2.test.crt:/certs/authentik.orthos2.test.crt:z
+    - ../traefik/certs/authentik.orthos2.test.key:/certs/authentik.orthos2.test.key:z
+    - ./blueprints/orthos.yaml:/blueprints/custom/orthos.yaml:ro,z
     security_opt:
       - label:disable
