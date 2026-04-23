@@ -163,7 +163,6 @@ urlpatterns = [
         views.virtualization_add,
         name="virtualization_add",
     ),
-    re_path(r"^machine/(?P<id>[0-9]+)/console$", views.console, name="console"),
     re_path(r"^login/$", views.login, name="login"),
     re_path(
         r"^logout/$", auth_views.LogoutView.as_view(), {"next_page": "/"}, name="logout"

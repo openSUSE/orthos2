@@ -62,8 +62,6 @@ Requires:  %{python3_pkgversion}-social-auth-app-django
 Requires:  %{python3_pkgversion}-social-auth-core
 Requires:  %{python3_pkgversion}-validators
 Requires:  %{python3_pkgversion}-gunicorn
-Requires:  %{python3_pkgversion}-terminado
-Requires:  %{python3_pkgversion}-tornado
 
 # Needed to install /etc/logrotate.d/orthos2
 Requires:  logrotate

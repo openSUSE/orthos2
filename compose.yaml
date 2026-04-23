@@ -25,7 +25,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro,z
       - ./docker/traefik/certs/authentik.orthos2.test.crt:/certs/authentik.orthos2.test.crt:ro,z
       - ./docker/traefik/certs/authentik.orthos2.test.key:/certs/authentik.orthos2.test.key:ro,z
-      - ./docker/traefik//dynamic_conf.yaml:/etc/traefik/dynamic/certs.yaml:ro,z
+      - ./docker/traefik/dynamic_conf.yaml:/etc/traefik/dynamic/certs.yaml:ro,z
     restart: always
     networks:
       orthos:

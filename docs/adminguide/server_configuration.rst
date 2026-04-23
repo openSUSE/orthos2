@@ -300,20 +300,3 @@ Default: /mounts/users-space/archteam/orthos-vm-images
 Here is the path for the KVM Support UEFI Binary defined.
 
 Default: usr/share/qemu/ovmf-x86_64-opensuse.bin
-
-``websocket.cscreen.command``
-=============================
-
-Local command which gets executed when a serial console gets requested. The service appends the hostname to the command
-(e.g. ``/usr/bin/screen host``). The command can be anything returning a terminal (see :ref:`websockets` for more
-information).
-
-
-Default: ``/usr/bin/screen``
-
-``websocket.port``
-==================
-
-The port on which the WebSocket service is listening (see :ref:`websockets`) for more information).
-
-Default: ``8010``

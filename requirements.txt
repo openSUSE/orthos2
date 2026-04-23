@@ -11,7 +11,5 @@ netaddr
 django-auth-ldap
 social-auth-app-django
 social-auth-core
-terminado
-tornado
 requests
 urllib3
