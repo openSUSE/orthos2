@@ -7,7 +7,7 @@ from django.urls import URLPattern
 from rest_framework.views import APIView
 
 from orthos2.api.serializers.misc import SelectSerializer
-from orthos2.data.models import Machine
+from orthos2.data.models import Machine, RemotePowerDevice
 from orthos2.data.models.enclosure import Enclosure
 
 
@@ -115,6 +115,50 @@ def get_enclosure(
         return response  # type: ignore
 
     return enclosure
+
+
+def get_remotepowerdevice(
+    fqdn: str,
+    redirect_to: str,
+    data: Optional[Any] = None,
+    redirect_key_replace: str = "fqdn",
+) -> RemotePowerDevice:
+    """
+    Look up fqdn in the database and return one remote power device object if found or raise corresponding
+    exception if something went wrong.
+    """
+    if not fqdn:
+        raise ValueError("Requires <name> argument!")
+
+    try:
+        remotepowerdevices = [
+            RemotePowerDevice.objects.get(fqdn__startswith=fqdn + ".")
+        ]
+    except Exception:
+        remotepowerdevices = list(
+            RemotePowerDevice.objects.filter(fqdn__startswith=fqdn)
+        )
+
+    if len(remotepowerdevices) == 1:
+        remotepowerdevice = remotepowerdevices[0]
+    elif remotepowerdevices:
+        selection = SelectSerializer(remotepowerdevices, "Please specify:")
+        return selection  # type: ignore
+    else:
+        raise Exception("Enclosure '{}' does not exist!".format(fqdn))
+
+    if fqdn != remotepowerdevice.fqdn:
+        response = redirect(redirect_to)
+
+        if data:
+            if redirect_key_replace is not None:  # type: ignore
+                data = data.copy()
+                data.__setitem__(redirect_key_replace, remotepowerdevice.fqdn)  # type: ignore
+            response["Location"] += "?{}".format(data.urlencode())  # type: ignore
+
+        return response  # type: ignore
+
+    return remotepowerdevice
 
 
 class BaseAPIView(APIView):

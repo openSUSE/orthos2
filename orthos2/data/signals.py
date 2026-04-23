@@ -7,7 +7,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import Signal, receiver
 
-from orthos2.data.models import Machine, NetworkInterface, SerialConsole, ServerConfig
+from orthos2.data.models import (
+    Machine,
+    NetworkInterface,
+    RemotePowerDevice,
+    SerialConsole,
+    ServerConfig,
+)
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.cobbler import CobblerServer
@@ -19,6 +25,7 @@ logger = logging.getLogger("orthos")
 signal_cobbler_regenerate = Signal()
 signal_cobbler_sync_dhcp = Signal()
 signal_cobbler_machine_update = Signal()
+signal_cobbler_remotepowerdevice_update = Signal()
 signal_serialconsole_regenerate = Signal()
 signal_serialconsole_sol_deactivate = Signal()
 signal_motd_regenerate = Signal()
@@ -124,6 +131,17 @@ def machine_pre_delete(
     logger.info("Machine object serialized (target: '%s')", filename)
 
 
+@receiver(post_save, sender=RemotePowerDevice)
+def remote_power_device_post_save(
+    sender: Any, instance: RemotePowerDevice, *args: Any, **kwargs: Any
+) -> None:
+    """
+    Add or update the Cobbler system for a given RemotePowerDevice.
+    """
+    task = tasks.UpdateCobblerRemotePowerDevice(instance.id)
+    TaskManager.add(task)
+
+
 @receiver(post_save, sender=SerialConsole)
 def serialconsole_post_save(
     sender: Any, instance: SerialConsole, *args: Any, **kwargs: Any
@@ -222,4 +240,17 @@ def regenerate_motd(sender: Any, fqdn: str, *args: Any, **kwargs: Any) -> None:
     This should be the one and only place for creating this task.
     """
     task = tasks.RegenerateMOTD(fqdn)
+    TaskManager.add(task)
+
+
+@receiver(signal_cobbler_remotepowerdevice_update)
+def update_cobbler_remotepowerdevice(
+    sender: Any, device_id: int, *args: Any, **kwargs: Any
+) -> None:
+    """
+    Create `RegenerateCobbler()` task here.
+
+    This should be the one and only place for creating this task.
+    """
+    task = tasks.UpdateCobblerRemotePowerDevice(device_id)
     TaskManager.add(task)

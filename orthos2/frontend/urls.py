@@ -43,6 +43,46 @@ urlpatterns = [
         views.EnclosureDetailedEdit.as_view(),
         name="edit_enclosure",
     ),
+    path(
+        "remote-power-devices",
+        views.RemotePowerDevicesListView.as_view(),
+        name="remotepowerdevices",
+    ),
+    re_path(
+        r"^remote-power-devices/(?P<id>[0-9]+)/detail$",
+        views.remotepowerdevice_detail,
+        name="remotepowerdevice_detail",
+    ),
+    re_path(
+        r"^remote-power-devices/(?P<id>[0-9]+)/netboxcomparison$",
+        views.remotepowerdevice_netboxcomparison,
+        name="remotepowerdevice_netbox_comparisons",
+    ),
+    re_path(
+        r"^remote-power-devices/(?P<id>[0-9]+)/fetch-netbox$",
+        views.remotepowerdevice_fetch_netbox,
+        name="remotepowerdevice_netbox_fetch",
+    ),
+    re_path(
+        r"^remote-power-devices/(?P<id>[0-9]+)/compare-netbox$",
+        views.remotepowerdevice_compare_netbox,
+        name="remotepowerdevice_netbox_compare",
+    ),
+    path(
+        "remote-power-devices/new",
+        views.NewRemotePowerDevice.as_view(),
+        name="new_remotepowerdevice",
+    ),
+    path(
+        "remote-power-devices/delete/<int:pk>/",
+        views.DeleteRemotePowerDevice.as_view(),
+        name="delete_remotepowerdevice",
+    ),
+    path(
+        "remote-power-devices/edit/<int:pk>/",
+        views.RemotePowerDeviceDetailedEdit.as_view(),
+        name="edit_remotepowerdevice",
+    ),
     re_path(
         r"^$", RedirectView.as_view(pattern_name="frontend:free_machines"), name="root"
     ),
@@ -179,6 +219,11 @@ urlpatterns = [
         r"^regenerate/machine/motd/(?P<host_id>[0-9]+)$",
         views.regenerate.regenerate_machine_motd,
         name="regenerate_machine_motd",
+    ),
+    re_path(
+        r"^regenerate/remote-power-device/cobbler/(?P<device_id>[0-9]+)$",
+        views.regenerate.regenerate_remotepowerdevice_cobbler,
+        name="regenerate_remotepowerdevice_cobbler",
     ),
     re_path(
         r"^compare-netbox/overview",

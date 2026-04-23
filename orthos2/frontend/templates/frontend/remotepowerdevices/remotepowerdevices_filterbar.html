@@ -1,0 +1,28 @@
+{% load tags %}
+
+<div class="container-fluid" style="margin-bottom: 15px;">
+  <div class="row">
+    <div class="col-12">
+
+      <div class="dropdown" style="display: inline-block;">
+        <div class="dropdown" style="display: inline-block;">
+        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          {% get_current_domain_filter request %}
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" href="?{% url_replace request 'domain' domain.name True %}">All Network Domains</a>
+          <div class="dropdown-divider"></div>
+          {% for domain in domains %}
+          <a class="dropdown-item" href="?{% url_replace request 'domain' domain.name %}">{{ domain.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+      </div>
+
+      <div style="display: inline-block">
+          <span class="hint">Found {{ paginator.count }} Platform(s)</span>
+      </div>
+
+    </div>
+  </div>
+</div>

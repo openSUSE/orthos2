@@ -5,7 +5,13 @@ from unittest import mock
 from django.test import TestCase
 
 import orthos2.utils.cobbler as cobbler
-from orthos2.data.models import Architecture, Domain, Machine, MachineGroup
+from orthos2.data.models import (
+    Architecture,
+    Domain,
+    Machine,
+    MachineGroup,
+    RemotePowerDevice,
+)
 
 logging.disable(logging.CRITICAL)
 
@@ -71,12 +77,77 @@ class CobblerMethodTests(TestCase):
             server = cobbler.CobblerServer(domain)
 
             # Act
-            server.deploy(machines)
+            server.deploy_machines(machines)
 
             # Assert
             expected: List[Any] = []
             for exp in expected:
                 self.assertIn(exp, mocked_update_or_add.mock_calls)
+
+    def test_cobbler_deploy_remotepowerdevices(self) -> None:
+        # Arrange
+        domain = Domain.objects.get(name="orthos2.test")
+        domain.cobbler_server = Machine.objects.get(fqdn="cobbler.orthos2.test")
+        devices = RemotePowerDevice.objects.all()
+        with mock.patch.object(
+            cobbler.CobblerServer, "add_remote_power_device", return_value=None
+        ) as mocked_add_remote_power_device, mock.patch.object(
+            cobbler.CobblerServer, "remotepowerdevice_deployed", return_value=False
+        ):
+            server = cobbler.CobblerServer(domain)
+
+            # Act
+            server.deploy_remotepowerdevices(devices)
+
+            # Assert
+            for device in devices:
+                mocked_add_remote_power_device.assert_any_call(
+                    device, cobbler.CobblerSaveModes.NEW
+                )
+
+    def test_cobbler_add_remote_power_device(self) -> None:
+        # Arrange
+        domain = Domain.objects.get(name="orthos2.test")
+        domain.cobbler_server = Machine.objects.get(fqdn="cobbler.orthos2.test")
+        server = cobbler.CobblerServer(domain)
+        testsys = RemotePowerDevice.objects.get(fqdn="bmc.orthos2.test")
+
+        # Act
+        with mock.patch.object(
+            server._xmlrpc_server, "has_item", return_value=True  # type: ignore
+        ) as mock_has_item, mock.patch.object(
+            server._xmlrpc_server, "modify_system"  # type: ignore
+        ) as mock_system_modify, mock.patch.object(
+            server._xmlrpc_server, "save_system"  # type: ignore
+        ) as mock_system_save, mock.patch.object(
+            server._xmlrpc_server,  # type: ignore
+            "new_system",
+            return_value="system::bmc.orthos2.test",
+        ) as mock_system_new:
+            server.add_remote_power_device(testsys, save=cobbler.CobblerSaveModes.NEW)
+
+            # Assert
+            self.assertEqual(mock_has_item.call_count, 1)
+            self.assertEqual(mock_system_new.call_count, 1)
+            self.assertEqual(mock_system_modify.call_count, 4)
+            self.assertEqual(mock_system_save.call_count, 1)
+
+    def test_cobbler_remotepowerdevice_deployed(self) -> None:
+        # Arrange
+        domain = Domain.objects.get(name="orthos2.test")
+        domain.cobbler_server = Machine.objects.get(fqdn="cobbler.orthos2.test")
+        server = cobbler.CobblerServer(domain)
+        testsys = RemotePowerDevice.objects.get(fqdn="bmc.orthos2.test")
+
+        # Act
+        with mock.patch.object(
+            server._xmlrpc_server, "has_item", return_value=True  # type: ignore
+        ) as mock_has_item:
+            result = server.remotepowerdevice_deployed(testsys)
+
+        # Assert
+        self.assertTrue(result)
+        mock_has_item.assert_called_once_with("system", testsys.fqdn, server._token)
 
     def test_cobbler_add_machine(self) -> None:
         # Arrange

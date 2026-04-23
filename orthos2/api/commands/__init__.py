@@ -15,7 +15,11 @@ from orthos2.api.commands.delete import (
     DeleteRemotePowerDeviceCommand,
     DeleteSerialConsoleCommand,
 )
-from orthos2.api.commands.info import EnclosureInfoCommand, InfoCommand
+from orthos2.api.commands.info import (
+    EnclosureInfoCommand,
+    InfoCommand,
+    RemotePowerDeviceInfoCommand,
+)
 from orthos2.api.commands.power import PowerCommand
 from orthos2.api.commands.query import QueryCommand
 from orthos2.api.commands.regenerate import RegenerateCommand
@@ -28,6 +32,7 @@ from orthos2.api.commands.setup import SetupCommand
 
 __all__ = [
     "EnclosureInfoCommand",
+    "RemotePowerDeviceInfoCommand",
     "InfoCommand",
     "QueryCommand",
     "ReserveCommand",

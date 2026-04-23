@@ -7,7 +7,13 @@ import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from orthos2.data.models import BMC, Enclosure, Machine, NetworkInterface
+from orthos2.data.models import (
+    BMC,
+    Enclosure,
+    Machine,
+    NetworkInterface,
+    RemotePowerDevice,
+)
 from orthos2.data.models.netboxorthoscomparision import NetboxOrthosComparisionRun
 from orthos2.taskmanager.models import Task
 
@@ -79,6 +85,28 @@ class NetboxFetchNetworkInterface(Task):
             network_interface.fetch_netbox()
             logger.debug(
                 'Fetching network interface "%s" - End', network_interface.name
+            )
+
+
+class NetboxFetchRemotePowerDevice(Task):
+    """
+    Fetch a single Remote Power Device from NetBox.
+    """
+
+    def execute(self) -> None:
+        """
+        Executes the task.
+        """
+        logger.info(
+            "Fetching information from Netbox API for all remote power devices."
+        )
+        for remote_power_device in RemotePowerDevice.objects.all():
+            logger.debug(
+                'Fetching remote power device "%s" - Start', remote_power_device.fqdn
+            )
+            remote_power_device.fetch_netbox()
+            logger.debug(
+                'Fetching remote power device "%s" - End', remote_power_device.fqdn
             )
 
 
@@ -193,6 +221,34 @@ class NetboxCompareEnclosure(Task):
         except ObjectDoesNotExist as err:
             raise ValueError("Requested enclosure doesn't exist!") from err
         enclosure.compare_netbox()
+
+
+class NetboxCompareRemotePowerDevice(Task):
+    """
+    Compare a single remote power device.
+    """
+
+    def __init__(self, remote_power_device_id: int) -> None:
+        """
+        Constructor to initialize the task.
+        """
+        self.remote_power_device_pk = remote_power_device_id
+
+    def execute(self) -> None:
+        """
+        Executes the task.
+        """
+        logger.info(
+            'Comparing information from Netbox API for remote power device "%s".',
+            self.remote_power_device_pk,
+        )
+        try:
+            remote_power_device = RemotePowerDevice.objects.get(
+                pk=self.remote_power_device_pk
+            )
+        except ObjectDoesNotExist as err:
+            raise ValueError("Requested remote power device doesn't exist!") from err
+        remote_power_device.compare_netbox()
 
 
 class NetboxCleanupComparisionResults(Task):

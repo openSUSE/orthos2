@@ -14,6 +14,7 @@ urlpatterns = [
 
 urlpatterns += InfoCommand.get_urls()  # noqa: F405
 urlpatterns += EnclosureInfoCommand.get_urls()  # noqa: F405
+urlpatterns += RemotePowerDeviceInfoCommand.get_urls()  # noqa: F405
 urlpatterns += QueryCommand.get_urls()  # noqa: F405
 urlpatterns += ReserveCommand.get_urls()  # noqa: F405
 urlpatterns += ReleaseCommand.get_urls()  # noqa: F405

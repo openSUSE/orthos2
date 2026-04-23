@@ -12,6 +12,7 @@ class InfoTest(APITestCase):
     fixtures = [
         "orthos2/data/fixtures/systems.json",
         "orthos2/api/fixtures/serializers/machines.json",
+        "orthos2/api/fixtures/serializers/remotepowerdevice.json",
     ]
 
     def setUp(self) -> None:
@@ -68,5 +69,32 @@ class InfoTest(APITestCase):
             ("9999-12-31T22:59:59.999999+01:00", "9999-12-31T23:59:59.999999+01:00"),
         )
         self.assertEqual(
-            json_response["data"]["bmc"]["value"]["fence_agent"]["value"], "Dummy BMC"
+            json_response["data"]["bmc"]["value"]["fence_agent"]["value"], "apc"
+        )
+
+    def test_info_get_remote_power_device(self) -> None:
+        """
+        Verify that retrieving a remote power device is possible.
+        """
+        # Arrange
+        url = reverse("api:remotepowerdevice")
+        url += "?fqdn=pdu01.example.our-org.tld"
+        self.maxDiff = None
+
+        # Act
+        response = self.client.get(url, format="json")
+        json_response = response.json()
+
+        # Assert
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue("data" in json_response)
+        self.assertTrue("header" in json_response)
+        self.assertTrue("type" in json_response["header"])
+        self.assertEqual(json_response["header"]["type"], "INFO")
+        print(json_response["data"])
+        self.assertEqual(json_response["data"]["fqdn"], "pdu01.example.our-org.tld")
+        self.assertEqual(json_response["data"]["mac"], "00:11:22:33:44:55")
+        self.assertEqual(json_response["data"]["username"], "admin")
+        self.assertEqual(
+            json_response["data"]["url"], "http://pdu01.example.our-org.tld"
         )
