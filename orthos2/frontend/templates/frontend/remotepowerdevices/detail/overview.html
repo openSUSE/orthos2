@@ -1,0 +1,93 @@
+{% extends 'frontend/remotepowerdevices/remotepowerdevice.html' %}
+{% load static %}
+
+{% block tabcontent %}
+  <div class="row">
+    <!-- TODO: Refactor into snippet -->
+    <div class="col-10">
+      <div class="container-fluid">
+        <div class="title">
+          <h5>{{ remotepowerdevice.fqdn }}</h5>
+            <div class="machine-statusbar alert" id="machine-statusbar">
+            <div class="spinner" width="20px">
+              <img
+                src="{% static 'frontend/images/spinner.gif' %}"
+                width="20px"
+                id="spinner"
+              />
+            </div>
+            <div id="message"></div>
+          </div>
+        </div>
+
+        <table class="table table-striped table-bordered small">
+          <tbody class="thead-default">
+            <tr>
+              <td class="th" width="150px">FQDN</td>
+              <td>{{ remotepowerdevice.fqdn }}</td>
+            </tr>
+            <tr>
+              <td class="th" width="150px">MAC</td>
+              <td>{{ remotepowerdevice.mac }}</td>
+            </tr>
+            <tr>
+              <td class="th" width="150px">IPv4</td>
+              <td>{{ remotepowerdevice.ip_address_v4 }}</td>
+            </tr>
+            <tr>
+              <td class="th" width="150px">IPv6</td>
+              <td>{{ remotepowerdevice.ip_address_v6 }}</td>
+            </tr>
+            <tr>
+              <td class="th" width="150px">Username</td>
+              <td>{{ remotepowerdevice.username }}</td>
+            </tr>
+            <tr>
+              <td class="th" width="150px">Fence Agent</td>
+              <td>{{ remotepowerdevice.fence_agent }}</td>
+            </tr>
+            <tr>
+              <td class="th" width="150px">URL</td>
+              <td>{{ remotepowerdevice.url }}</td>
+            </tr>
+            {% if remotepowerdevice.netbox_id > 0 %}
+              <tr>
+                <td class="th">NetBox URL</td>
+                <td>
+                  <a
+                    href="{{ NETBOX_URL }}/dcim/devices/{{ remotepowerdevice.netbox_id }}/"
+                    >NetBox Device {{ remotepowerdevice.netbox_id }}</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="th" width="150px">NetBox Last fetched at</td>
+                <td>{{ remotepowerdevice.netbox_last_fetch_attempt }}</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-2">
+      {% include 'frontend/remotepowerdevices/detail/actions.html' %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+function regenerate_remotepowerdevice_cobbler() {
+  $.ajax({
+    url: '{% url 'frontend:regenerate_remotepowerdevice_cobbler' remotepowerdevice.id %}',
+    beforeSend: function() {
+      $('.regenerate-remotepowerdevice-cobbler').addClass('disabled')
+    },
+    success: function(data) {
+      showMachineStatusBarMessage(data);
+      $('.regenerate-remotepowerdevice-cobbler').removeClass('disabled')
+    }
+  })
+}
+</script>
+{% endblock %}

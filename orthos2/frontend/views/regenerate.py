@@ -8,10 +8,11 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest, JsonResponse
 
-from orthos2.data.models import Machine
+from orthos2.data.models import Machine, RemotePowerDevice
 from orthos2.data.signals import (
     signal_cobbler_machine_update,
     signal_cobbler_regenerate,
+    signal_cobbler_remotepowerdevice_update,
     signal_serialconsole_regenerate,
 )
 
@@ -139,6 +140,36 @@ def regenerate_machine_cobbler(request: HttpRequest, host_id: int) -> JsonRespon
         sender=None,
         domain_id=machine.fqdn_domain.id,
         machine_id=machine.id,
+    )
+    return JsonResponse(
+        {"type": "status", "cls": "success", "message": "Regeneration started"}
+    )
+
+
+@login_required
+@permission_required("data.change_remotepowerdevice")
+def regenerate_remotepowerdevice_cobbler(
+    request: HttpRequest, device_id: int
+) -> JsonResponse:
+    """
+    Serves the URL "/regenerate/remotepowerdevice/cobbler/{device_id}".
+
+    This regenerates the individual Cobbler configuration for the given machine.
+    """
+    try:
+        remotepowerdevice = RemotePowerDevice.objects.get(pk=device_id)
+    except RemotePowerDevice.DoesNotExist:
+        return JsonResponse(
+            {
+                "type": "status",
+                "cls": "danger",
+                "message": "Remote Power Device does not exist",
+            },
+            status=404,
+        )
+    signal_cobbler_remotepowerdevice_update.send(  # type: ignore
+        sender=None,
+        device_id=remotepowerdevice.id,
     )
     return JsonResponse(
         {"type": "status", "cls": "success", "message": "Regeneration started"}

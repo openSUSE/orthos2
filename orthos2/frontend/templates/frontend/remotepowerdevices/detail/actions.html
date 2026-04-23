@@ -1,0 +1,34 @@
+{% load filters %}
+<div class="title">
+  <h5>Actions</h5>
+</div>
+
+<div class="btn-group-vertical d-flex">
+  <a
+    class="btn btn-warning btn-sm"
+    href="{% url 'frontend:edit_remotepowerdevice' remotepowerdevice.pk %}"
+    role="button"
+    >Edit Remote Power Device</a
+  >
+</div>
+<br />
+<div class="btn-group-vertical d-flex">
+  <a
+    class="btn btn-secondary btn-sm"
+    href="{% url 'frontend:remotepowerdevice_netbox_fetch' remotepowerdevice.pk %}"
+    role="button"
+    >Fetch Netbox</a
+  >
+  {% if perms.data.change_remotepowerdevice %}
+  <a class="btn btn-secondary btn-sm regenerate-remotepowerdevice-cobbler" href="javascript:void(0);" onclick="regenerate_remotepowerdevice_cobbler()" role="button">Regenerate Cobbler Record</a>
+  {% endif %}
+</div>
+<br />
+<div class="btn-group-vertical d-flex">
+  <a
+    class="btn btn-danger btn-sm"
+    href="{% url 'frontend:delete_remotepowerdevice' remotepowerdevice.pk %}"
+    role="button"
+    >Delete Remote Power Device</a
+  >
+</div>

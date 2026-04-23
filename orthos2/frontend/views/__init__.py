@@ -56,6 +56,17 @@ from .regenerate import (
     regenerate_domain_cscreen,
     regenerate_machine_cobbler,
     regenerate_machine_motd,
+    regenerate_remotepowerdevice_cobbler,
+)
+from .remotepowerdevice import (
+    DeleteRemotePowerDevice,
+    NewRemotePowerDevice,
+    RemotePowerDeviceDetailedEdit,
+    RemotePowerDevicesListView,
+    remotepowerdevice_compare_netbox,
+    remotepowerdevice_detail,
+    remotepowerdevice_fetch_netbox,
+    remotepowerdevice_netboxcomparison,
 )
 from .statistics import statistics
 from .user import users_create, users_password_restore, users_preferences
@@ -110,8 +121,17 @@ __all__ = [
     "regenerate_domain_cobbler",
     "regenerate_machine_motd",
     "regenerate_machine_cobbler",
+    "regenerate_remotepowerdevice_cobbler",
     "statistics",
     "users_create",
     "users_password_restore",
     "users_preferences",
+    "RemotePowerDevicesListView",
+    "RemotePowerDeviceDetailedEdit",
+    "NewRemotePowerDevice",
+    "DeleteRemotePowerDevice",
+    "remotepowerdevice_detail",
+    "remotepowerdevice_fetch_netbox",
+    "remotepowerdevice_netboxcomparison",
+    "remotepowerdevice_compare_netbox",
 ]

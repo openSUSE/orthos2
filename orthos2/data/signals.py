@@ -25,6 +25,7 @@ logger = logging.getLogger("orthos")
 signal_cobbler_regenerate = Signal()
 signal_cobbler_sync_dhcp = Signal()
 signal_cobbler_machine_update = Signal()
+signal_cobbler_remotepowerdevice_update = Signal()
 signal_serialconsole_regenerate = Signal()
 signal_serialconsole_sol_deactivate = Signal()
 signal_motd_regenerate = Signal()
@@ -239,4 +240,17 @@ def regenerate_motd(sender: Any, fqdn: str, *args: Any, **kwargs: Any) -> None:
     This should be the one and only place for creating this task.
     """
     task = tasks.RegenerateMOTD(fqdn)
+    TaskManager.add(task)
+
+
+@receiver(signal_cobbler_remotepowerdevice_update)
+def update_cobbler_remotepowerdevice(
+    sender: Any, device_id: int, *args: Any, **kwargs: Any
+) -> None:
+    """
+    Create `RegenerateCobbler()` task here.
+
+    This should be the one and only place for creating this task.
+    """
+    task = tasks.UpdateCobblerRemotePowerDevice(device_id)
     TaskManager.add(task)

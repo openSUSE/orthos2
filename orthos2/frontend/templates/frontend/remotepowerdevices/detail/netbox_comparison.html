@@ -1,0 +1,41 @@
+{% extends 'frontend/remotepowerdevices/remotepowerdevice.html' %}
+{% load filters %}
+
+{% block tabcontent %}
+<div style="display: table; width: 100%;">
+<div style="display: table-row;" class="float-right">
+  <a class="text-right btn btn-secondary btn-sm" href="{% url 'frontend:remotepowerdevice_netbox_compare' remotepowerdevice.id %}" role="button">Preview and Compare data with NetBox</a>
+</div>
+</div>
+
+<div class="title">
+  <h5>Remote Power Device - UUID {{ remotepowerdevice_run.run_id }}</h5>
+</div>
+
+<p>Most recent Remote Power Device update: {{ remotepowerdevice.netbox_last_fetch_attempt }}</p>
+<p>Data fetched at: {{ remotepowerdevice_run.compare_timestamp }}</p>
+
+<table class="table table-bordered small table-hover">
+  <thead class="thead-default">
+    <th>Property Name</th>
+    <th>Orthos</th>
+    <th>NetBox</th>
+    <th>Is data equal?</th>
+  </thead>
+  <tbody>
+    {% for result in remotepowerdevice_run.results.all %}
+    <tr class="clickable-row" data-href="#{{ result.id }}">
+        <td>{{ result.property_name }}</td>
+        <td>{{ result.orthos_result|format_empty_str }}</td>
+        <td>{{ result.netbox_result|format_empty_str }}</td>
+        {% if result.orthos_result == result.netbox_result %}
+        <td>&#9989;</td>
+        {% else %}
+        <td>&#10005;</td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
