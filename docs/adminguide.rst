@@ -15,7 +15,6 @@ administration of the Orthos server will be discussed.
     Setup <adminguide/setup>
     Development Setup <adminguide/setup_devel>
     Server Configuration <adminguide/server_configuration>
-    WebSockets <adminguide/websocket>
     Tokens <adminguide/tokens>
     Groups and Users <adminguide/groups_and_users>
     Machines <adminguide/machine>

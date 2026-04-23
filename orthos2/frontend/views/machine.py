@@ -17,7 +17,7 @@ from django.http import (
 )
 from django.shortcuts import redirect, render  # type: ignore
 
-from orthos2.data.models import Machine, ServerConfig
+from orthos2.data.models import Machine
 from orthos2.data.models.netboxorthoscomparision import NetboxOrthosComparisionRun
 from orthos2.frontend.decorators import check_permissions
 from orthos2.frontend.forms.addmachine import AddMachineFormView
@@ -377,25 +377,6 @@ def setup(
         "frontend/machines/setup.html",
         {"form": form, "machine": machine, "title": "Setup Machine"},
     )
-
-
-@login_required
-def console(request: HttpRequest, id: int) -> HttpResponse:
-    try:
-        machine = Machine.objects.get(pk=id)
-        return render(
-            request,
-            "frontend/machines/detail/console.html",
-            {
-                "machine": machine,
-                "port": ServerConfig.get_server_config_manager().by_key(
-                    "websocket.cscreen.port"
-                ),
-                "title": "Serial Console",
-            },
-        )
-    except Machine.DoesNotExist:
-        raise Http404("Machine does not exist")
 
 
 @login_required

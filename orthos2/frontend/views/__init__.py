@@ -22,7 +22,6 @@ from .enclosures import (
 from .machine import (
     cobbler_cleanup,
     compare_netbox,
-    console,
     cpu,
     fetch_netbox,
     history,
@@ -94,7 +93,6 @@ __all__ = [
     "history",
     "rescan",
     "setup",
-    "console",
     "machine",
     "machine_netboxcomparision",
     "fetch_netbox",

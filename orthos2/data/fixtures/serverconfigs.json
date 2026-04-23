@@ -179,22 +179,6 @@
     "model": "data.serverconfig",
     "pk": null,
     "fields": {
-      "key": "websocket.cscreen.port",
-      "value": "8010"
-    }
-  },
-  {
-    "model": "data.serverconfig",
-    "pk": null,
-    "fields": {
-      "key": "websocket.cscreen.command",
-      "value": "usr/bin/screen"
-    }
-  },
-  {
-    "model": "data.serverconfig",
-    "pk": null,
-    "fields": {
       "key": "serialization.output.format",
       "value": "json"
     }

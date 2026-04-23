@@ -45,11 +45,6 @@
           <a class="nav-link {% active_view request 'virtualization' %}" href="{% url 'frontend:virtualization' machine.id %}">Virtualization</a>
         </li>
         {% endif %}
-        {% if machine.has_serialconsole %}
-        <li class="nav-item">
-          <a class="nav-link {% active_view request 'console' %}" href="{% url 'frontend:console' machine.id %}">Serial Console</a>
-        </li>
-        {% endif %}
         <li class="nav-item">
           <a class="nav-link {% active_view request 'history' %}" href="{% url 'frontend:history' machine.id %}">Reservation History</a>
         </li>
