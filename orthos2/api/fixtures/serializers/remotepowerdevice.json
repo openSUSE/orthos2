@@ -1,0 +1,55 @@
+[
+  {
+    "model": "data.architecture",
+    "pk": 1,
+    "fields": {
+      "name": "x86_64",
+      "created": "2016-01-01T10:00:00+00:00",
+      "updated": "2016-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.domain",
+    "pk": 1,
+    "fields": {
+      "name": "example.our-org.tld",
+      "ip_v4": "127.0.0.1",
+      "ip_v6": "::1",
+      "dynamic_range_v4_start": "127.0.0.1",
+      "dynamic_range_v4_end": "127.0.0.1",
+      "dynamic_range_v6_start": "::1",
+      "dynamic_range_v6_end": "::1"
+    }
+  },
+  {
+    "model": "data.remotepowertype",
+    "pk": 1,
+    "fields": {
+      "name": "apc",
+      "device": "rpowerdevice",
+      "username": "apc",
+      "password": "apc",
+      "identity_file": "",
+      "use_port": false,
+      "use_hostname_as_port": false
+    }
+  },
+  {
+    "model": "data.remotepowerdevice",
+    "pk": 1,
+    "fields": {
+      "username": "admin",
+      "password": "password",
+      "fqdn": "pdu01.example.our-org.tld",
+      "mac": "00:11:22:33:44:55",
+      "url": "http://pdu01.example.our-org.tld",
+      "fence_agent": 1,
+      "architecture": 1,
+      "ip_address_v4": "192.168.1.100",
+      "ip_address_v6": "2001:db8::100",
+      "domain": 1,
+      "netbox_id": 12345,
+      "netbox_last_fetch_attempt": "2023-10-27T10:00:00Z"
+    }
+  }
+]

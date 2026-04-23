@@ -8,12 +8,14 @@ from orthos2.api.commands.base import (
     BaseAPIView,
     get_enclosure,
     get_machine,
+    get_remotepowerdevice,
     getException,
 )
 from orthos2.api.serializers.enclosure import EnclosureSerializer
 from orthos2.api.serializers.machine import MachineSerializer
 from orthos2.api.serializers.misc import ErrorMessage, Serializer
-from orthos2.data.models import Machine
+from orthos2.api.serializers.remotepowerdevice import RemotePowerDeviceSerializer
+from orthos2.data.models import Machine, RemotePowerDevice
 from orthos2.data.models.enclosure import Enclosure
 
 
@@ -190,6 +192,58 @@ class EnclosureInfoCommand(BaseAPIView):
                 "location_room",
                 "location_rack",
                 "location_rack_position",
+            ]
+
+            response["header"] = {"type": "INFO", "order": order}
+            response["data"] = serialzed_enclosure.data_info  # type: ignore
+        except Exception:
+            return ErrorMessage(getException()).as_json
+
+        return JsonResponse(response)
+
+
+class RemotePowerDeviceInfoCommand(BaseAPIView):
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^remote-power-device$",
+                RemotePowerDeviceInfoCommand.as_view(),
+                name="remotepowerdevice",
+            ),
+        ]
+
+    @staticmethod
+    def get_tabcompletion() -> List[str]:
+        return list(RemotePowerDevice.objects.all().values_list("fqdn", flat=True))
+
+    def get(
+        self, request: Request, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
+        """Return remote power device information."""
+        fqdn = request.GET.get("fqdn", "")
+        response = {}
+
+        try:
+            result = get_remotepowerdevice(
+                fqdn, redirect_to="api:remotepowerdevice", data=request.GET
+            )
+            if isinstance(result, Serializer):
+                return result.as_json
+            elif isinstance(result, HttpResponseRedirect):
+                return result
+            remotepowerdevice = result
+
+            serialzed_enclosure = RemotePowerDeviceSerializer(remotepowerdevice)
+
+            order = [
+                "fqdn",
+                "id",
+                "username",
+                "mac",
+                "url",
+                "netbox_id",
+                "netbox_last_fetch_attempt",
             ]
 
             response["header"] = {"type": "INFO", "order": order}
