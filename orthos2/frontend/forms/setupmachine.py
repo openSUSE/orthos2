@@ -3,6 +3,7 @@ This module contains all logic to set up a new machine via PXE.
 """
 
 import collections
+import json
 import logging
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
@@ -55,13 +56,36 @@ class SetupMachineForm(forms.Form):
 
         super(SetupMachineForm, self).__init__(*args, **kwargs)
 
-        self.fields["setup"].choices = self.get_setup_select_choices(records)  # type: ignore
+        # Store records for JSON export to template
+        self.records = records
+
+        # Populate distro and profile fields
+        if isinstance(records, collections.OrderedDict):
+            # Build distro choices
+            distro_choices = [("", "Select a distribution...")]
+            distro_choices.extend([(distro, distro) for distro in records.keys()])
+            self.fields["distro"].choices = distro_choices  # type: ignore
+
+            # Build profile choices (all profiles from all distros for initial load)
+            profile_choices = [("", "Select a profile...")]
+            all_profiles = set()
+            for profiles in records.values():
+                all_profiles.update(profiles)
+            profile_choices.extend(
+                [(profile, profile) for profile in sorted(all_profiles)]
+            )
+            self.fields["profile"].choices = profile_choices  # type: ignore
+        else:
+            # Fallback for non-grouped records (shouldn't happen based on current code)
+            self.fields["distro"].choices = [("", "No distributions available")]  # type: ignore
+            self.fields["profile"].choices = [("", "No profiles available")]  # type: ignore
+
         logger.debug(
-            "Setup choices for %s.%s [%s]:\n%s\n",
+            "Distro choices for %s.%s [%s]:\n%s\n",
             machine,
             domain,
             architecture,
-            self.fields["setup"].choices,  # type: ignore
+            self.fields["distro"].choices,  # type: ignore
         )
 
     def get_setup_select_choices(self, records: Dict[str, List[str]]):
@@ -91,10 +115,18 @@ class SetupMachineForm(forms.Form):
 
         return setup_records
 
-    setup = forms.ChoiceField(
+    distro = forms.ChoiceField(
         required=True,
         choices=[],
         widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        label="Distribution",
+    )
+
+    profile = forms.ChoiceField(
+        required=True,
+        choices=[],
+        widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        label="Profile",
     )
 
     confirm_risky_setup = forms.BooleanField(
@@ -112,10 +144,15 @@ class SetupMachineForm(forms.Form):
         cleaned_data = super().clean()
         if cleaned_data is None:
             return None
-        setup_choice = cleaned_data.get("setup")
+        distro = cleaned_data.get("distro")
+        profile = cleaned_data.get("profile")
         confirmed = cleaned_data.get("confirm_risky_setup", False)
 
-        if setup_choice:
+        # Combine distro and profile into setup choice for backward compatibility
+        if distro and profile:
+            setup_choice = f"{distro}:{profile}"
+            cleaned_data["setup"] = setup_choice
+
             try:
                 if needs_boot_order_warning(setup_choice):
                     if not confirmed:
@@ -127,3 +164,7 @@ class SetupMachineForm(forms.Form):
                 raise forms.ValidationError(f"Invalid setup choice format: {e}")
 
         return cleaned_data
+
+    def get_records_json(self) -> str:
+        """Return grouped records as JSON for JavaScript."""
+        return json.dumps(self.records if hasattr(self, "records") else {})
