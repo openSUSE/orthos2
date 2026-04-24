@@ -358,7 +358,25 @@ def setup(
                 result = machine.setup(choice)
 
                 if result:
+                    from orthos2.utils.distribution import (
+                        is_manual_installation,
+                        is_risky_sles_version,
+                        needs_boot_order_warning,
+                    )
+
                     messages.success(request, "Setup '{}' initialized.".format(choice))
+
+                    if needs_boot_order_warning(choice):
+                        warning_msg = "Note: "
+                        if is_risky_sles_version(choice):
+                            warning_msg += "This SLES version may require manual BIOS/UEFI boot order configuration. "
+                        if is_manual_installation(choice):
+                            warning_msg += (
+                                "Manual installation requires setting boot order after OS installation "
+                                "completes."
+                            )
+
+                        messages.warning(request, warning_msg)
                 else:
                     messages.warning(
                         request,

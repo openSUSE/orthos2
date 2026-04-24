@@ -388,6 +388,7 @@ def main():
                 "extra_choices": [
                     ["redfish", "redfish"],
                     ["ipmilanplus", "ipmilanplus"],
+                    ["eaton_ssh", "eaton_ssh"],
                 ],
                 "order_alphabetically": True,
             }

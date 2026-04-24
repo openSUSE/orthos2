@@ -20,19 +20,134 @@
       <form method="post" action="{% url 'frontend:setup' machine.id %}" class="form-reservemachine">
         {% csrf_token %}
 
-        {{ form.setup.errors }}
+        {{ form.distro.errors }}
         <div class="row" style="margin: 5px;">
           <div class="col-3">
-            <label>{{ form.setup.label }}:</label>
+            <label>{{ form.distro.label }}:</label>
           </div>
           <div class="col-9">
-            {{ form.setup }}
-            <small class="form-text text-muted">{{ form.setup.help_text }}</small>
+            {{ form.distro }}
+            <small class="form-text text-muted">{{ form.distro.help_text }}</small>
           </div>
+        </div>
+
+        {{ form.profile.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label>{{ form.profile.label }}:</label>
+          </div>
+          <div class="col-9">
+            {{ form.profile }}
+            <small class="form-text text-muted">{{ form.profile.help_text }}</small>
+          </div>
+        </div>
+
+        <div id="boot-order-warning" class="alert alert-warning" style="display: none; margin: 15px 0;">
+          <strong>Warning: Boot Order Risk</strong>
+          <p>This setup choice may require manual BIOS/UEFI configuration:</p>
+          <ul id="warning-reasons"></ul>
+          <div class="form-check">
+            {{ form.confirm_risky_setup }}
+            <label class="form-check-label" for="{{ form.confirm_risky_setup.id_for_label }}">
+              {{ form.confirm_risky_setup.label }}
+            </label>
+          </div>
+          <small class="form-text text-muted">{{ form.confirm_risky_setup.help_text }}</small>
+          {{ form.confirm_risky_setup.errors }}
+        </div>
 
         <button type="submit" class="btn btn-secondary btn-sm btn-block">Start Setup</button>
       </form>
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const distroSelect = document.querySelector('select[name="distro"]');
+  const profileSelect = document.querySelector('select[name="profile"]');
+  const warningDiv = document.getElementById('boot-order-warning');
+  const reasonsList = document.getElementById('warning-reasons');
+  const confirmCheckbox = document.querySelector('input[name="confirm_risky_setup"]');
+
+  // Grouped records passed from Django form
+  const groupedRecords = {{ form.get_records_json|safe }};
+
+  function updateProfileOptions() {
+    const selectedDistro = distroSelect.value;
+
+    // Clear current profile options
+    profileSelect.innerHTML = '<option value="">Select a profile...</option>';
+
+    if (selectedDistro && groupedRecords[selectedDistro]) {
+      // Populate profile options for selected distro
+      groupedRecords[selectedDistro].forEach(function(profile) {
+        const option = document.createElement('option');
+        option.value = profile;
+        option.textContent = profile;
+        profileSelect.appendChild(option);
+      });
+      profileSelect.disabled = false;
+    } else {
+      profileSelect.disabled = true;
+    }
+
+    // Check warnings after updating profiles
+    checkSetupChoice();
+  }
+
+  function checkSetupChoice() {
+    const distro = distroSelect.value;
+    const profile = profileSelect.value;
+
+    if (!distro || !profile) {
+      warningDiv.style.display = 'none';
+      confirmCheckbox.required = false;
+      confirmCheckbox.checked = false;
+      return;
+    }
+
+    // Combine distro and profile to create the choice string
+    const choice = distro + ':' + profile;
+    const reasons = [];
+
+    // Check for Micro versions first - all Micro versions are safe (no version warning)
+    const isMicro = choice.match(/^SLE?-Micro-/i);
+
+    // Check for old SLES version (< 15 SP3) - only for regular SLES, not Micro
+    if (!isMicro) {
+      let slesMatch = choice.match(/^SLES?-(\d+)-SP(\d+)/i);
+      if (slesMatch) {
+        const major = parseInt(slesMatch[1]);
+        const sp = parseInt(slesMatch[2]);
+        if (major < 15 || (major === 15 && sp < 3)) {
+          reasons.push('SLES version older than 15 SP3 may have boot order issues');
+        }
+      }
+    }
+
+    // Check for manual installation (applies to both regular SLES and Micro)
+    if (choice.match(/:install$/) || choice.match(/:install-ssh$/)) {
+      reasons.push('Manual installation may change boot order');
+    }
+
+    if (reasons.length > 0) {
+      reasonsList.innerHTML = reasons.map(r => '<li>' + r + '</li>').join('');
+      warningDiv.style.display = 'block';
+      confirmCheckbox.required = true;
+    } else {
+      warningDiv.style.display = 'none';
+      confirmCheckbox.required = false;
+      confirmCheckbox.checked = false;
+    }
+  }
+
+  // Event listeners
+  distroSelect.addEventListener('change', updateProfileOptions);
+  profileSelect.addEventListener('change', checkSetupChoice);
+
+  // Initialize on page load
+  updateProfileOptions();
+});
+</script>
 {% endblock %}

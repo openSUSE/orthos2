@@ -101,6 +101,12 @@ Example:
             result = machine.setup(distribution)
 
             if result:
+                from orthos2.utils.distribution import (
+                    is_manual_installation,
+                    is_risky_sles_version,
+                    needs_boot_order_warning,
+                )
+
                 message = "OK."
 
                 if not machine.has_remotepower():
@@ -108,6 +114,13 @@ Example:
                         " This machine has no remote power - "
                         "a manuall reboot may be required."
                     )
+
+                if needs_boot_order_warning(distribution):
+                    message += " WARNING: "
+                    if is_risky_sles_version(distribution):
+                        message += "This SLES version may require manual boot order configuration. "
+                    if is_manual_installation(distribution):
+                        message += "Manual installation requires boot order setup after OS installation. "
 
                 return Message(message).as_json
             else:

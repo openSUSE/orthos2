@@ -162,6 +162,7 @@ class CheckReservationExpiration(Task):
                     machine.fqdn, delta.days
                 )
 
+            # Build base message
             message = """Hi {username},
 
 The machine reservation for {fqdn} expires at {reserved_until}.
@@ -176,12 +177,51 @@ Or use the following commandline interface command:
   (orthos) RESERVE {fqdn}
 
 Please note, that the machine will be setup after reservation expired!
+"""
 
+            # Add boot order warning if autoreinstall is enabled and default profile is risky
+            from orthos2.utils.distribution import (
+                is_manual_installation,
+                is_risky_sles_version,
+                needs_boot_order_warning,
+            )
+
+            boot_warning = ""
+            if machine.autoreinstall and machine.architecture.default_profile:
+                default_profile = machine.architecture.default_profile
+                if needs_boot_order_warning(default_profile):
+                    boot_warning = """
+BOOT ORDER WARNING
+After automatic reinstallation, this machine may not boot properly.
+"""
+
+                    if is_risky_sles_version(default_profile):
+                        boot_warning += (
+                            "  - The default profile uses SLES < 15 SP3, which may have boot order "
+                            "issues.\n"
+                        )
+
+                    if is_manual_installation(default_profile):
+                        boot_warning += (
+                            "- The default profile uses manual installation, requiring boot order "
+                            "configuration.\n"
+                        )
+
+                    boot_warning += """
+You may need to manually configure the BIOS/UEFI boot order after reinstallation.
+Consider extending your reservation or disabling autoreinstall for this machine.
+"""
+
+            message += boot_warning
+
+            message += """
 If you have any problems, contact <{support_contact}>.
 
 
 Regards,
-Orthos""".format(
+Orthos"""
+
+            message = message.format(
                 username=user.username,  # type: ignore
                 fqdn=machine.fqdn,
                 reserved_until=machine.reserved_until,
