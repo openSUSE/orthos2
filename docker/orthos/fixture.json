@@ -1,0 +1,39 @@
+[
+  {
+    "model": "data.serverconfig",
+    "pk": null,
+    "fields": {
+      "key": "domain.validendings",
+      "value": "orthos2.test"
+    }
+  },
+  {
+    "model": "data.Domain",
+    "pk": 1,
+    "fields": {
+      "name": "orthos2.test",
+      "ip_v4": "192.0.2.0",
+      "ip_v6": "2001:db8::0",
+      "dynamic_range_v4_start": "192.0.2.50",
+      "dynamic_range_v4_end": "192.0.2.60",
+      "dynamic_range_v6_start": "2001:db8::50",
+      "dynamic_range_v6_end": "2001:db8::60"
+    }
+  },
+  {
+    "model": "data.remotepowertype",
+    "pk": null,
+    "fields": {
+      "name": "ipmilanplus",
+      "device": "bmc"
+    }
+  },
+  {
+    "model": "data.remotepowertype",
+    "pk": null,
+    "fields": {
+      "name": "eaton_ssh",
+      "device": "remotepowerdevice"
+    }
+  }
+]
