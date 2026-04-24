@@ -218,11 +218,11 @@ class Domain(models.Model):
         :returns: The list of setup records from the TFTP server.
         """
 
-        if not self.tftp_server:
-            logger.warning("No TFTP server available for '%s'", self.name)
+        if not self.cobbler_server:
+            logger.warning("No Cobbler server available for '%s'", self.name)
             return {}
 
-        server = CobblerServer(self.tftp_server.fqdn_domain)
+        server = CobblerServer(self)
         records = server.get_profiles(architecture)
         logger.debug("Records:\n%s", records)
         delim_c = records[0].count(delimiter)
@@ -247,7 +247,11 @@ class Domain(models.Model):
         :returns: The list of setup records from the TFTP server grouped. They key is the distribution and the value is
                   a list of profile suffixes.
         """
-        server = CobblerServer(self.tftp_server.fqdn_domain)  # type: ignore
+        if not self.cobbler_server:
+            logger.warning("No Cobbler server available for '%s'", self.name)
+            return {}
+
+        server = CobblerServer(self)
         profiles = server.get_profiles(architecture)
 
         groups: Dict[str, List[str]] = {}

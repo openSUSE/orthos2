@@ -57,7 +57,7 @@ class SetupMachineForm(forms.Form):
 
         self.fields["setup"].choices = self.get_setup_select_choices(records)  # type: ignore
         logger.debug(
-            "Setup choicen for %s.%s [%s]:\n%s\n",
+            "Setup choices for %s.%s [%s]:\n%s\n",
             machine,
             domain,
             architecture,
@@ -96,3 +96,34 @@ class SetupMachineForm(forms.Form):
         choices=[],
         widget=forms.Select(attrs={"class": "custom-select form-control"}),
     )
+
+    confirm_risky_setup = forms.BooleanField(
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        label="I understand this setup may require manual boot order configuration",
+        help_text="This distribution or installation method may leave the machine in an unbootable state.",
+    )
+
+    def clean(self) -> Optional[Dict[str, Any]]:
+        """Validate that risky setups are confirmed."""
+        from orthos2.utils.distribution import needs_boot_order_warning
+
+        cleaned_data = super().clean()
+        if cleaned_data is None:
+            return None
+        setup_choice = cleaned_data.get("setup")
+        confirmed = cleaned_data.get("confirm_risky_setup", False)
+
+        if setup_choice:
+            try:
+                if needs_boot_order_warning(setup_choice):
+                    if not confirmed:
+                        raise forms.ValidationError(
+                            "This setup choice requires manual confirmation due to potential boot order risks. "
+                            "Please check the confirmation box to proceed."
+                        )
+            except ValueError as e:
+                raise forms.ValidationError(f"Invalid setup choice format: {e}")
+
+        return cleaned_data
