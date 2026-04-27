@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+import json
+import os
+import subprocess
+import sys
+
+ipmi_available = False
+
+# Check 1: Look for IPMI device files
+ipmi_devices = ["/dev/ipmi0", "/dev/ipmi/0", "/dev/ipmidev/0"]
+if any(os.path.exists(dev) for dev in ipmi_devices):
+    ipmi_available = True
+else:
+    # Check 2: Try to query BMC using ipmitool if available
+    try:
+        result = subprocess.run(
+            ["ipmitool", "mc", "info"],
+            capture_output=True,
+            timeout=5,
+            check=False,
+        )
+        # If ipmitool can communicate with BMC, IPMI is available
+        if result.returncode == 0:
+            ipmi_available = True
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        # ipmitool not installed or timed out
+        pass
+
+data = {"ipmi": ipmi_available}
+
+json_string = json.dumps(data)
+sys.stdout.write(json_string)

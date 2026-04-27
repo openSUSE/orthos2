@@ -586,6 +586,14 @@ class Machine(models.Model):
         help_text="Additional kernel command line parameters to pass",
     )
 
+    kernel_options_discovered: "models.CharField[str, str]" = models.CharField(
+        "Kernel Options (Discovered)",
+        max_length=4096,
+        blank=True,
+        editable=False,
+        help_text="Kernel command line parameters discovered from the running system (read-only)",
+    )
+
     last_check: "models.DateTimeField[datetime.datetime, datetime.datetime]" = (
         models.DateTimeField(
             "Checked at",

@@ -8,9 +8,11 @@ import glob
 import json
 import logging
 import os
+import re
 import shutil
 import threading
 from datetime import datetime
+from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from django.template.loader import render_to_string
@@ -197,9 +199,6 @@ class Ansible(Task):
         This can be useful if one wants to assign data which was already via ansible
         to the correct database fields here.
         """
-
-        db_machine.fqdn = ansible_machine.get("fqdn", "")
-
         # Amount of real CPU sockets
         db_machine.cpu_physical = ansible_machine.get("processor_count", 1)
         # Amount of all CPU cores (sockets * cores_per_socket)
@@ -210,19 +209,94 @@ class Ansible(Task):
         db_machine.cpu_threads = db_machine.cpu_cores * ansible_machine.get(
             "processor_threads_per_core", 1
         )
-        # db_machine.cpu_model =
-        # db_machine.cpu_flags = # --> check if in ansible, else create facts file
-        # db_machine.cpu_speed =
-        # db_machine.cpu_id =
-        db_machine.ram_amount = int(ansible_machine.get("memtotal_mb", 0))
-        # db_machine.disk_primary_size = # sectors * sector_size der 1. platte (in bytes).
-        # danach hwinfo --disk entfernen.
-        # db_machine.disk_type =
 
-        # Need extra readonly commandline field
-        # k_opts = ansible_machine.get("cmdline", 0)
-        # if k_opts:
-        #    db_machine.kernel_options = " ".join(['%s=%s' % (key,value) for key, value in k_opts.items()])
+        # CPU model, flags, and ID from custom cpuinfo.fact
+        cpuinfo = ansible_machine.get("ansible_local", {}).get("cpuinfo", {})
+        db_machine.cpu_model = cpuinfo.get("model_name", "")[:200]
+        db_machine.cpu_flags = cpuinfo.get("flags", "")
+        db_machine.cpu_id = cpuinfo.get("cpuid", "")[:200]
+        # CPU speed from dmidecode "Max Speed" field (stored as GHz)
+        cpu_speed_ghz = Decimal(0)
+        if db_machine.dmidecode:
+            # Search for "Max Speed" in dmidecode output
+            for line in db_machine.dmidecode.split("\n"):
+                if "Max Speed" in line and ":" in line:
+                    # Extract value after ":"
+                    speed_str = line.split(":", 1)[1].strip()
+                    # Parse number and unit (e.g., "3600 MHz" or "3.6 GHz")
+                    match = re.search(r"([\d.]+)\s*(MHz|GHz)", speed_str, re.IGNORECASE)
+                    if match:
+                        speed_value = Decimal(match.group(1))
+                        unit = match.group(2).upper()
+                        if unit == "MHZ":
+                            # Convert MHz to GHz
+                            cpu_speed_ghz = speed_value / 1000
+                        elif unit == "GHZ":
+                            cpu_speed_ghz = speed_value
+                    break
+        db_machine.cpu_speed = cpu_speed_ghz
+
+        db_machine.ram_amount = int(ansible_machine.get("memtotal_mb", 0))
+
+        # Disk primary size and type from ansible_devices
+        devices = ansible_machine.get("devices", {})
+        # Filter for block devices (exclude loop, ram, sr/cdrom devices)
+        block_devices = {
+            k: v
+            for k, v in devices.items()
+            if not k.startswith(("loop", "ram", "sr", "dm-")) and v.get("size")
+        }
+        if block_devices:
+            # Get first device alphabetically (sda, vda, nvme0n1, etc.)
+            first_device = sorted(block_devices.keys())[0]
+            device_info = block_devices[first_device]
+
+            # Parse disk size - can be "476.94 GB", "500107862016" (bytes), or other formats
+            size_str = device_info.get("size", "0")
+            size_gb = 0
+            # Try to parse size in various formats
+            if "GB" in size_str or "GiB" in size_str:
+                # Extract number from "476.94 GB" format
+                match = re.search(r"([\d.]+)\s*G[iB]", size_str)
+                if match:
+                    size_gb = int(float(match.group(1)))
+            elif "TB" in size_str or "TiB" in size_str:
+                # Extract number from TB format and convert to GB
+                match = re.search(r"([\d.]+)\s*T[iB]", size_str)
+                if match:
+                    size_gb = int(float(match.group(1)) * 1024)
+            elif size_str.replace(".", "").isdigit():
+                # Assume it's bytes, convert to GB
+                size_gb = int(float(size_str) / (1024**3))
+
+            db_machine.disk_primary_size = size_gb
+
+            # Determine disk type (NVMe, SSD, HDD)
+            rotational = device_info.get("rotational", "1")
+            if first_device.startswith("nvme"):
+                db_machine.disk_type = "NVMe"
+            elif rotational == "0":
+                db_machine.disk_type = "SSD"
+            else:
+                db_machine.disk_type = "HDD"
+        else:
+            db_machine.disk_primary_size = None
+            db_machine.disk_type = ""
+
+        # Populate discovered kernel options from cmdline fact
+        k_opts = ansible_machine.get("cmdline", {})
+        if k_opts and isinstance(k_opts, dict):
+            # Format as space-separated key=value pairs, handle flags without values
+            formatted_opts = []
+            for key, value in k_opts.items():
+                if value:  # key=value format
+                    formatted_opts.append(f"{key}={value}")
+                else:  # flag without value (e.g., "quiet", "ro")
+                    formatted_opts.append(key)
+            db_machine.kernel_options_discovered = " ".join(formatted_opts)
+        else:
+            db_machine.kernel_options_discovered = ""
+
         db_machine.lsmod = normalize_ascii(
             "".join(
                 ansible_machine.get("ansible_local", {})
@@ -302,36 +376,10 @@ class Ansible(Task):
 
         db_machine.bios_version = ansible_machine.get("bios_version", "")
 
-    # ------------------------------
+        # EFI detection - check if /boot/efi is mounted
+        mounts = ansible_machine.get("mounts", [])
+        db_machine.efi = any(mount.get("mount") == "/boot/efi" for mount in mounts)
 
-    # db_machine.vm_capable =  # set when nice way to do so is found
-    # db_machine.efi =  # set when nice way to do so is found
-
-    # db_machine.serial_number # do not set
-    # db_machine.architecture # do not set
-    # db_machine.mac_address #  do not set
-
-    # db_machine.__ipv4 # do not set (yet)
-    # db_machine.__ipv6 # do not set (yet)
-
-    """
-    attributes that can probaby be mapped easily/directly:
-    db_machine.architecture = ansible_machine.get("architecture")
-    db_machine.efi
-    db_machine.cpu_id
-    db_machine.cpu_model
-
-    attributes where its values probably need to be edited before assigning:
-
-    db_machine.disk_primary_size =
-    db_machine.disk_type =
-    db_machine.vm_capable =
-    db_machine.cpu_flags =
-    db_machine.cpu_physical.cpu_speed =
-
-    db_machine.efi =
-    db_machine.ipmi =
-    db_machine.hwinfo =
-    db_machine.dmidecode =
-    db_machine.lspci =
-    """
+        # VM capable - check CPU flags for virtualization extensions (vmx/svm)
+        cpu_flags_lower = db_machine.cpu_flags.lower()
+        db_machine.vm_capable = "vmx" in cpu_flags_lower or "svm" in cpu_flags_lower
