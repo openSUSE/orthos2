@@ -233,7 +233,10 @@ class Ansible(Task):
         )
         db_machine.lspci = normalize_ascii(
             "".join(
-                ansible_machine.get("lspci", {}).get("-vvv -nn", {}).get("stdout", "")
+                ansible_machine.get("ansible_local", {})
+                .get("lspci", {})
+                .get("-vvv -nn", {})
+                .get("stdout", "")
             )
         )
         last = (
