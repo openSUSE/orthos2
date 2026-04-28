@@ -1,0 +1,23 @@
+[
+  {
+    "model": "data.serverconfig",
+    "pk": null,
+    "fields": {
+      "key": "domain.validendings",
+      "value": "orthos2.test"
+    }
+  },
+  {
+    "model": "data.domain",
+    "pk": 2,
+    "fields": {
+      "name": "orthos2.test",
+      "ip_v4": "172.18.0.1",
+      "ip_v6": "::1",
+      "dynamic_range_v4_start": "172.18.0.2",
+      "dynamic_range_v4_end": "172.18.0.254",
+      "dynamic_range_v6_start": "::1",
+      "dynamic_range_v6_end": "::1"
+    }
+  }
+]

@@ -29,6 +29,9 @@ server_start() {
     git switch "$OLD_BRANCH"
     git stash pop
     python3 manage.py migrate
+    # Load test machine fixtures for development
+    python3 manage.py loaddata orthos2/data/fixtures/tests/test_domain_orthos2test.json || true
+    python3 manage.py loaddata orthos2/data/fixtures/tests/test_machine_docker.json || true
     DJANGO_SUPERUSER_PASSWORD="$ORTHOS_SUPERUSER_PASSWORD" python3 manage.py createsuperuser --noinput --username admin --email admin@example.com
     python3 manage.py shell </code/docker/django-generate-admin-token
     python3 manage.py runserver 0.0.0.0:8000
