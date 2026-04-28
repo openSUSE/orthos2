@@ -43,6 +43,9 @@ taskmanager_start() {
         echo "Waiting for main application to become available"
         sleep 5
     done
+    # Expand via PYTHONPATH so the settings are found
+    PYTHONPATH=/code
+    export PYTHONPATH
     # Generate NetBox API Token
     get_netbox_token
     # Moves files into place

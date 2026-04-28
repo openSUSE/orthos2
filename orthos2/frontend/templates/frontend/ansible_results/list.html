@@ -1,0 +1,157 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+{% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <main class="col-12">
+      <h2>{{ title }}</h2>
+
+      <!-- Filter Form -->
+      <form method="get" class="mb-3">
+        <div class="row">
+          <div class="col-md-3">
+            <input
+              type="text"
+              name="search"
+              class="form-control"
+              placeholder="Search by machine FQDN"
+              value="{{ search }}"
+            />
+          </div>
+          <div class="col-md-2">
+            <input
+              type="date"
+              name="date_from"
+              class="form-control"
+              placeholder="From"
+              value="{{ date_from }}"
+            />
+          </div>
+          <div class="col-md-2">
+            <input
+              type="date"
+              name="date_to"
+              class="form-control"
+              placeholder="To"
+              value="{{ date_to }}"
+            />
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a href="{% url 'frontend:ansible_results_list' %}" class="btn btn-secondary">Clear</a>
+          </div>
+        </div>
+      </form>
+
+      <!-- Bulk Delete Form -->
+      <form method="post" action="{% url 'frontend:ansible_results_bulk_delete' %}" id="bulk-delete-form">
+        {% csrf_token %}
+
+        <!-- Bulk Actions -->
+        <div class="mb-2">
+          <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete the selected results?');">
+            Delete Selected
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" id="select-all">Select All</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="deselect-all">Deselect All</button>
+        </div>
+
+        <!-- Results Table -->
+        <table class="table table-striped table-sm">
+          <thead>
+            <tr>
+              <th><input type="checkbox" id="select-all-checkbox" /></th>
+              <th>ID</th>
+              <th>Machine</th>
+              <th>Run Date</th>
+              <th>Ansible Version</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for result in results %}
+            <tr>
+              <td><input type="checkbox" name="result_ids" value="{{ result.pk }}" class="result-checkbox" /></td>
+              <td>{{ result.pk }}</td>
+              <td>
+                {% if result.machine %}
+                <a href="{% url 'frontend:detail' result.machine.pk %}">{{ result.machine.fqdn }}</a>
+                {% else %}
+                <em>No machine linked</em>
+                {% endif %}
+              </td>
+              <td>{{ result.run_date|date:"Y-m-d H:i:s" }}</td>
+              <td>{{ result.ansible_version|default:"-" }}</td>
+              <td>
+                <a href="{% url 'frontend:ansible_result_detail' result.pk %}" class="btn btn-sm btn-info">View</a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="text-center">No results found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </form>
+
+      <!-- Pagination -->
+      {% if is_paginated %}
+      <nav>
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">First</a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">Previous</a>
+          </li>
+          {% endif %}
+
+          <li class="page-item active">
+            <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+          </li>
+
+          {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">Next</a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">Last</a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    </main>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+// Select/deselect all checkboxes
+document.getElementById('select-all').addEventListener('click', function() {
+  document.querySelectorAll('.result-checkbox').forEach(function(checkbox) {
+    checkbox.checked = true;
+  });
+});
+
+document.getElementById('deselect-all').addEventListener('click', function() {
+  document.querySelectorAll('.result-checkbox').forEach(function(checkbox) {
+    checkbox.checked = false;
+  });
+});
+
+document.getElementById('select-all-checkbox').addEventListener('change', function() {
+  document.querySelectorAll('.result-checkbox').forEach(function(checkbox) {
+    checkbox.checked = this.checked;
+  }.bind(this));
+});
+</script>
+{% endblock %}
