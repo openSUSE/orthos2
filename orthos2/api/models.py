@@ -18,7 +18,6 @@ from orthos2.data.models import (
     Machine,
     MachineGroup,
     NetworkInterface,
-    PCIDevice,
     Platform,
     RemotePower,
     SerialConsole,
@@ -325,72 +324,6 @@ class QueryField:
             field=NetworkInterface._meta.get_field("primary"),  # type: ignore
             related_name="networkinterfaces",
             verbose_name="IF primary",
-        ),
-        # PCIDevice
-        "pci_slot": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("slot"),  # type: ignore
-            related_name="pcidevice",
-            verbose_name="Slot",
-        ),
-        "pci_vendorid": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("vendor_id"),  # type: ignore
-            related_name="pcidevice",
-            verbose_name="Vendor ID",
-        ),
-        "pci_vendor": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("vendor"),  # type: ignore
-            related_name="pcidevice",
-            verbose_name="Vendor",
-        ),
-        "pci_deviceid": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("device_id"),  # type: ignore
-            related_name="pcidevice",
-            verbose_name="Device ID",
-        ),
-        "pci_device": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("device"),  # type: ignore
-            related_name="pcidevice",
-            verbose_name="Device",
-        ),
-        "pci_classid": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("class_id"),  # type: ignore
-            related_name="pcidevice",
-            verbose_name="Class ID",
-        ),
-        "pci_classname": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("classname"),  # type: ignore
-            related_name="pcidevice",
-            verbose_name="Class name",
-        ),
-        "pci_svendorid": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("subvendor_id"),  # type: ignore
-            related_name="pcidevice",
-            verbose_name="Subvendor ID",
-        ),
-        "pci_svendorname": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("subvendor"),  # type: ignore
-            related_name="pcidevice",
-            verbose_name="Subvendor",
-        ),
-        "pci_sdeviceid": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("subdevice_id"),  # type: ignore
-            related_name="pcidevice",
-            verbose_name="Subdevice ID",
-        ),
-        "pci_sdevicename": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("subdevice"),  # type: ignore
-            related_name="pcidevice",
-            verbose_name="Subdevice",
-        ),
-        "pci_revision": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("revision"),  # type: ignore
-            related_name="pcidevice",
-            verbose_name="Revision",
-        ),
-        "pci_driver": QueryFieldMappingItem(
-            field=PCIDevice._meta.get_field("drivermodule"),  # type: ignore
-            related_name="pcidevice",
-            verbose_name="Drivermodule",
         ),
         # Platform
         "platform": QueryFieldMappingItem(
