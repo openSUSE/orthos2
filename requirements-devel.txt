@@ -20,6 +20,7 @@ types-paramiko
 pexpect
 black==22.3.0  # See .pre-commit-config.yaml
 django-test-migrations
+ansible
 
 # generate UML diagram:
 # pygraphviz

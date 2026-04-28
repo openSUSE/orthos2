@@ -1,4 +1,5 @@
 from .annotation import Annotation
+from .ansible import AnsibleScanResult
 from .architecture import Architecture
 from .bmc import BMC
 from .domain import Domain, DomainAdmin, validate_domain_ending
@@ -30,6 +31,7 @@ from .system import System
 from .vendor import Vendor
 
 __all__ = [
+    "AnsibleScanResult",
     "Annotation",
     "Architecture",
     "BMC",

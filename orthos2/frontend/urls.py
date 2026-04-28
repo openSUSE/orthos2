@@ -122,6 +122,11 @@ urlpatterns = [
     re_path(r"^machine/(?P<id>[0-9]+)/miscellaneous$", views.misc, name="misc"),
     re_path(r"^machine/(?P<id>[0-9]+)/history$", views.history, name="history"),
     re_path(
+        r"^machine/(?P<id>[0-9]+)/ansible-results$",
+        views.machine_ansible_results,
+        name="machine_ansible_results",
+    ),
+    re_path(
         r"^machine/(?P<id>[0-9]+)/netboxcomparision$",
         views.machine_netboxcomparision,
         name="netboxcomparision",
@@ -233,5 +238,31 @@ urlpatterns = [
         r"^compare-netbox/(?P<id>[a-z0-9\-]+)$",
         views.netboxorthoscomparisonrun,
         name="compare_netbox_details",
+    ),
+    # Ansible Results
+    path(
+        "ansible-results",
+        views.AnsibleResultListView.as_view(),
+        name="ansible_results_list",
+    ),
+    re_path(
+        r"^ansible-results/(?P<pk>[0-9]+)$",
+        views.ansible_result_detail,
+        name="ansible_result_detail",
+    ),
+    re_path(
+        r"^ansible-results/(?P<pk>[0-9]+)/delete$",
+        views.ansible_result_delete,
+        name="ansible_result_delete",
+    ),
+    re_path(
+        r"^ansible-results/(?P<pk>[0-9]+)/apply$",
+        views.ansible_result_apply,
+        name="ansible_result_apply",
+    ),
+    path(
+        "ansible-results/bulk-delete",
+        views.ansible_result_bulk_delete,
+        name="ansible_results_bulk_delete",
     ),
 ]

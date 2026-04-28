@@ -1,4 +1,12 @@
-- hosts: all
+---
+- name: Gather machine facts for Orthos2
+  hosts: all
+  gather_facts: yes
+
   roles:
     - add_custom_facts
-    - get_machine_information
+
+  tasks:
+    - name: Ensure all facts are gathered
+      setup:
+        gather_subset: all
