@@ -1,5 +1,5 @@
 # For the hostnames to work an entry in /etc/hosts is needed:
-# 127.0.0.1 authentik.orthos2.test orthos2.orthos2.test cobbler.orthos2.test netbox.orthos2.test
+# 127.0.0.1 authentik.orthos2.test orthos2.orthos2.test cobbler.orthos2.test netbox.orthos2.test testmachine.orthos2.test
 include:
   - docker/authentik/compose.authentik.yaml
   - docker/netbox/compose.netbox.yml
@@ -44,6 +44,8 @@ services:
       - NET_RAW
     volumes:
       - ./:/code:z
+      - ./docker/test-machine/ssh-keys/orthos2-test-machine:/var/lib/orthos2/.ssh/orthos2-test-machine:ro,z
+      - ./docker/test-machine/ssh-keys/config:/var/lib/orthos2/.ssh/config:ro,z
     networks:
       - orthos
     depends_on:
@@ -78,6 +80,8 @@ services:
       - NET_RAW
     volumes:
       - ./:/code
+      - ./docker/test-machine/ssh-keys/orthos2-test-machine:/var/lib/orthos2/.ssh/orthos2-test-machine:ro,z
+      - ./docker/test-machine/ssh-keys/config:/var/lib/orthos2/.ssh/config:ro,z
     networks:
       - orthos
     depends_on:
@@ -135,6 +139,16 @@ services:
       dockerfile: bmc.dockerfile
     ports:
       - "9001:9001"
+  test_machine:
+    hostname: testmachine.orthos2.test
+    networks:
+      - orthos
+    build:
+      context: docker/test-machine
+      dockerfile: test-machine.dockerfile
+    depends_on:
+      orthos2_database:
+        condition: service_healthy
 
 
 volumes:

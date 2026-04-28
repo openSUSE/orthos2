@@ -4,7 +4,7 @@
     "pk": null,
     "fields": {
       "key": "ssh.keys.paths",
-      "value": "/home/orthos/.ssh/master"
+      "value": "/var/lib/orthos2/.ssh/orthos2-test-machine"
     }
   },
   {

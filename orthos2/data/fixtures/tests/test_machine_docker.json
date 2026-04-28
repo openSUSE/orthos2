@@ -1,0 +1,43 @@
+[
+  {
+    "model": "data.enclosure",
+    "pk": 1,
+    "fields": {
+      "name": "testmachine",
+      "description": "test enclosure"
+    }
+  },
+  {
+    "model": "data.machine",
+    "pk": 100,
+    "fields": {
+      "enclosure": 1,
+      "fqdn": "testmachine.orthos2.test",
+      "system": 1,
+      "comment": "Docker test machine for SSH and Ansible feature testing",
+      "serial_number": "DOCKER-TEST-001",
+      "product_code": "DOCKER-TEST",
+      "architecture": 1,
+      "fqdn_domain_id": 2,
+      "status_ssh": false,
+      "status_login": false,
+      "administrative": false,
+      "updated": "2026-01-01T10:00:00+00:00",
+      "created": "2026-01-01T10:00:00+00:00"
+    }
+  },
+  {
+    "model": "data.networkinterface",
+    "pk": 100,
+    "fields": {
+      "machine": 100,
+      "primary": true,
+      "mac_address": "02:42:ac:12:00:0a",
+      "ethernet_type": "Docker bridge",
+      "driver_module": "veth",
+      "name": "eth0",
+      "updated": "2026-01-01T10:00:00+00:00",
+      "created": "2026-01-01T10:00:00+00:00"
+    }
+  }
+]

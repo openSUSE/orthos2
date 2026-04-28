@@ -1,0 +1,7 @@
+Host *
+  Match user root,_cscreen
+  StrictHostKeyChecking=no
+  ServerAliveInterval 500
+  ServerAliveCountMax 2
+  UserKnownHostsFile /dev/null
+  IdentityFile=~/.ssh/orthos2-test-machine
