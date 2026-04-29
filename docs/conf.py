@@ -67,15 +67,7 @@ html_static_path = ["_static"]
 autodoc_mock_imports = ["django-auth-ldap", "ldap"]
 
 docs_location = "/usr/share/doc/packages/"
-cli_pkg_name = "orthos-client"
-cli_cmd_name = "orthos2"
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = []  # type: ignore
-
-rst_prolog = """
-.. |orthosrc_loc| replace:: {0}
-""".format(
-    docs_location + cli_pkg_name + "orthosrc"
-)
