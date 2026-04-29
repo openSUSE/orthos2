@@ -88,13 +88,6 @@ The path to the online repo is set here. If errors occur in the Orthos code, the
 
 Default: https://gitlab.suse.de/orthos-maintainers/orthos2/issues
 
-``orthos.cli.url``
-==================
-
-The path to the Orthos command line interface.
-
-Default: https://build.suse.de/package/show/Devel:Archteam:Orthos/orthos-cli
-
 ``orthos.configuration.inline.begin``
 =====================================
 

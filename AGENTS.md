@@ -24,7 +24,7 @@ The project is organized into specialized Django apps:
   
 - **orthos2/api**: REST API layer using Django REST Framework
   - Command-based architecture in `api/commands/` (`add.py`, `delete.py`, `info.py`, `power.py`, `query.py`, `reserve.py`, etc.)
-  - Token authentication for CLI and programmatic access
+  - Token authentication for programmatic access
   - Serializers in `api/serializers/`
 
 - **orthos2/frontend**: Web interface
@@ -38,10 +38,6 @@ The project is organized into specialized Django apps:
   - Handles long-running operations like Cobbler regeneration, Netbox sync, machine scanning
 
 - **orthos2/utils**: Shared utilities and helpers
-
-- **cli/**: Command-line client (`orthos2` script)
-  - Python-based CLI for interacting with the API
-  - Uses configuration from `~/.config/orthosrc` or `/etc/orthosrc`
 
 ### Key External Integrations
 

@@ -14,9 +14,6 @@ Welcome to Orthos2's documentation!
    User Guide <userguide>
 
 
-.. note:: Usage of the CLI is discouraged. It will be removed in a future release. The Web UI is to be used instead.
-
-
 Indices and tables
 ==================
 

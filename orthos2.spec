@@ -125,9 +125,7 @@ install -D -m 0644 system-user-orthos.conf %{buildroot}%{_sysusersdir}/system-us
 
 # docs
 mkdir -p %{buildroot}%{orthos_web_docs}
-
-# client is built via separate spec file to reduce build dependencies
-rm %{buildroot}%{_prefix}/bin/orthos2
+mkdir -p %{buildroot}%{_prefix}/bin
 
 cp -r docs/_build/html/* %{buildroot}%{orthos_web_docs}
 %fdupes %{buildroot}/%{orthos_web_docs}

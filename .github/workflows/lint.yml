@@ -49,8 +49,6 @@ jobs:
           sudo chown -R $CURRENT_USER:$CURRENT_GROUP /var/log/orthos2
       - name: Run mypy for server
         run: mypy orthos2
-      - name: Run mypy for CL
-        run: mypy --strict cli
   isort:
     name: isort
     runs-on: ubuntu-latest
@@ -72,7 +70,7 @@ jobs:
         # Version see in .pre-commit-config.yaml
         with:
           options: |
-            --include '(\.pyi?|\.ipynb|cli/orthos2)$' --check --diff --safe --verbose
+            --include '(\.pyi?|\.ipynb)$' --check --diff --safe --verbose
           version: "22.3.0"
   pylint:
     runs-on: ubuntu-latest
@@ -99,10 +97,6 @@ jobs:
       - name: Analysing the code with pylint (server)
         run: |
           pylint --rcfile=.pylintrc --fail-under=10 orthos2
-      - name: Analysing the code with pylint (CLI)
-        run: |
-          pylint --rcfile=.pylintrc --fail-under=10 cli/orthos2
-          pylint --rcfile=.pylintrc --fail-under=10 cli/tests
   flake8:
     runs-on: ubuntu-latest
     strategy:

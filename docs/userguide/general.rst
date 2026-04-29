@@ -25,7 +25,6 @@ work as they do. All users of Orthos have a very technical background.
 Architecture
 ############
 
-.. note:: The CLI is deprecated. The main interface to be used should be the Web UI.
 
 .. image:: ../img/userguide/00_architecture.png
   :alt: Orthos2 High-Level Architecture
@@ -37,10 +36,7 @@ central component of Orthos. It has the following tasks:
 - communicating with the clients,
 - executing jobs such as rebooting or installating the machine or syncing some files.
 
-There are two clients: The command line interface and the web interface. While the web interface is able to deal with
-basic tasks such as getting a machine overview and reserving a machine, the CLI is able to deal with more complicated
-tasks such as executing queries and even edit the data.
-
+There is the web UI for simple tasks. For more complex opperations, please use the API.
 
 Web Client
 ##########

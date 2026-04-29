@@ -108,15 +108,6 @@ def get_current_machinegroup_filter(request: HttpRequest) -> str:
 
 
 @register.simple_tag
-def get_cli_url() -> str:
-    """Return the URL to the Orthos command line client (CLI)."""
-    url = ServerConfig.get_server_config_manager().by_key("orthos.cli.url")
-    if not url:
-        url = "#"
-    return url
-
-
-@register.simple_tag
 def status_ipv4(machine: Machine) -> SafeString:
     if machine.check_connectivity < Machine.Connectivity.PING:
         return mark_safe(

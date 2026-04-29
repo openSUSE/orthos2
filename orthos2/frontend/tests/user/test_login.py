@@ -81,12 +81,6 @@ class Login(WebTest):
             self.assertContains(page, "Bugreport")  # type: ignore
             self.assertContains(page, bugreport)  # type: ignore
 
-            download_cli = ServerConfig.get_server_config_manager().by_key(
-                "orthos.cli.url"
-            )
-            self.assertContains(page, "Download CLI")  # type: ignore
-            self.assertContains(page, download_cli)  # type: ignore
-
             self.assertContains(page, "Login")  # type: ignore
             self.assertContains(page, "Create Account")  # type: ignore
             self.assertContains(page, "Restore Password")  # type: ignore
