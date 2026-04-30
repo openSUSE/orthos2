@@ -1,4 +1,5 @@
 import logging
+import os
 import random
 import smtplib
 import socket
@@ -154,7 +155,9 @@ def send_email(
         logger.exception("Something went wrong while sending E-Mail!")
 
 
-def execute(command: str) -> Tuple[str, str, int]:
+def execute(
+    command: str, cwd: Optional[Union[os.PathLike, str, bytes]] = None
+) -> Tuple[str, str, int]:
     """
     Execute a (local) command and returns stdout, stderr and exit status.
 
@@ -165,7 +168,11 @@ def execute(command: str) -> Tuple[str, str, int]:
 
     try:
         process = subprocess.Popen(
-            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+            cwd=cwd,
         )
         data = process.communicate()
 

@@ -178,3 +178,34 @@ for line in orthos_yaml:
         orthosyaml_new.append(line)
 
 orthos_path_dst.write_text("\n".join(orthosyaml_new), encoding="utf-8")
+
+# Generate SSH keys for test machine
+
+test_machine_ssh_dir = script_directory / "test-machine" / "ssh-keys"
+test_machine_ssh_key = test_machine_ssh_dir / "orthos2-test-machine"
+test_machine_ssh_pub = test_machine_ssh_dir / "orthos2-test-machine.pub"
+test_machine_authorized_keys = test_machine_ssh_dir / "authorized_keys"
+
+if not test_machine_ssh_key.exists() or not test_machine_ssh_pub.exists():
+    print("Generating SSH keys for test machine...")
+    subprocess.call(
+        [
+            "ssh-keygen",
+            "-t",
+            "rsa",
+            "-b",
+            "4096",
+            "-f",
+            str(test_machine_ssh_key),
+            "-N",
+            "",
+            "-C",
+            "orthos2-test-machine@orthos2.test",
+        ]
+    )
+    # Copy public key to authorized_keys
+    if test_machine_ssh_pub.exists():
+        test_machine_authorized_keys.write_text(test_machine_ssh_pub.read_text())
+        print(f"SSH keys generated: {test_machine_ssh_key}")
+else:
+    print(f"SSH keys already exist: {test_machine_ssh_key}")

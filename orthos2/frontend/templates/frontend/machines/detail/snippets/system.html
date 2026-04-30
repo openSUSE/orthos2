@@ -52,8 +52,12 @@
     </tr>
     {% endif %}
     <tr>
-      <td class="th">Kernel Options</td>
+      <td class="th">Kernel Options (Passed to Cobbler)</td>
       <td><code>{{ machine.kernel_options }}</code></td>
+    </tr>
+    <tr>
+      <td class="th">Kernel Options (Discovered)</td>
+      <td><code>{{ machine.kernel_options_discovered }}</code></td>
     </tr>
   </tbody>
 </table>

@@ -1,334 +1,99 @@
 """
-This code came from utils/machinechecks "get_hardware_information()" which invoked self made shell scripts.
-This function/module will replace "get_hardware_information()" by passing ansible collected data instead of self
-called functions.
+Ansible task for scanning machines and storing results in database.
+
+Results are stored via callback plugin in AnsibleScanResult model.
+Inventory is generated in-memory by dynamic inventory plugin.
+Zero filesystem dependencies for scan results and inventory.
 """
 
-import glob
-import json
 import logging
 import os
-import shutil
-import threading
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import List
 
-from django.template.loader import render_to_string
+from django.utils import timezone
 
-from orthos2.data.models import Machine
+from orthos2.data.models import AnsibleScanResult
 from orthos2.taskmanager.models import Task
-from orthos2.utils.misc import execute, normalize_ascii
+from orthos2.utils.misc import execute
 
 logger = logging.getLogger("tasks")
 
 
 class Ansible(Task):
 
-    data_dir = "/run/orthos2/ansible"
-    data_dir_lastrun = "/run/orthos2/ansible_lastrun"
-    data_dir_archive = "/run/orthos2/ansible_archive"
     facts_dir = "/usr/lib/orthos2/ansible"
 
     def __init__(self, machines: List[str]) -> None:
         """
-        param machines: List of machines (strings) to scan via ansible
+        Initialize Ansible scan task.
+
+        param machines: List of machine FQDNs to scan via Ansible
         """
         self.machines = machines
 
-        self.thread_id = threading.current_thread().ident
-        self.inventory_yml = os.path.join(Ansible.facts_dir, "inventory.yml")
-        self.inventory_template = os.path.join(Ansible.facts_dir, "inventory.template")
-
-    def render_inventory(self) -> None:
-        """
-        Creates an ansible inventory file from the template Ansible.inventory_yml
-        and fills it with machines to scan
-        """
-        rendered = render_to_string(
-            self.inventory_template, {"machine_list": self.machines}
-        )
-        with open(self.inventory_yml, "w") as i_file:
-            i_file.write(rendered)
-
     def execute(self) -> None:
-        self.render_inventory()
-        command = (
-            "/usr/bin/ansible-playbook -i {dir}/inventory.yml {dir}/site.yml".format(
-                dir=Ansible.facts_dir
-            )
-        )
-        stdout, stderr, returncode = execute(command)
-        logger.debug("Calling: %s - %d", command, returncode)
-        logger.debug("ansible: %s - %s - %s", stdout, stderr, returncode)
-        files = self.get_json_filelist()
-        missing = list(set(self.machines) - set(files))
-        if missing:
-            logger.warning(
-                "Cannot scan machines %s via ansible, missing json file in %s",
-                self.machines,
-                Ansible.data_dir,
-            )
-        success: List[str] = []
-        fail: List[str] = []
-        for fqdn in files:
-            try:
-                Ansible.store_machine_info(fqdn)
-                success.append(fqdn)
-            except Exception:
-                logger.exception("Could not store ansible data of host %s", fqdn)
-                fail.append(fqdn)
-            logger.info("Successfully scanned via ansible: %s", success)
-        if fail:
-            logger.warning("Exceptions caught during scan for these hosts: %s", fail)
-        # Copy json files from ../ansible to ../ansible_archive
-        for file in glob.glob(Ansible.data_dir + "/*.json"):
-            shutil.copy(file, Ansible.data_dir_archive)
-        # Move ../ansible to ../ansible_lastrun
-        shutil.rmtree(Ansible.data_dir_lastrun)
-        shutil.move(Ansible.data_dir, Ansible.data_dir_lastrun)
-        os.mkdir(Ansible.data_dir)
-
-    def get_json_filelist(self) -> List[str]:
         """
-        Returns the list of machines for which json files have been
-        created via ansible scan (.json suffix removed)
+        Execute Ansible scan using dynamic inventory plugin.
+
+        The plugin reads machines from database via task hash.
+        Results are stored directly to database via callback plugin.
+        Zero filesystem I/O for inventory and scan results.
         """
-        res_files: List[str] = []
-        for _subdir, _dirs, files in os.walk(Ansible.data_dir):
-            for jfile in files:
-                if jfile.endswith(".json"):
-                    res_files.append(jfile[: -len(".json")])
-        return res_files
+        # Generate task hash to pass to plugin via environment variable
+        import json
+        from hashlib import sha1
 
-    @staticmethod
-    def get_ansible_data(
-        machine_fqdn: str, try_lastruns: bool = False
-    ) -> Optional[Dict[str, Any]]:
+        # Generate hash same way as BaseTask.generate_hash()
+        hash_input = (
+            f"{self.__class__.__name__}"
+            f"{self.__class__.__module__}"
+            f"{json.dumps(self._Task__arguments)}"  # type: ignore
+        ).encode("utf-8")
+        task_hash = sha1(hash_input).hexdigest()
 
-        ans_file = os.path.join(Ansible.data_dir, machine_fqdn + ".json")
-        if not os.path.isfile(ans_file):
-            if not try_lastruns:
-                logger.exception("json file %s does not exist", ans_file)
-                return None
-            else:
-                ans_file = os.path.join(
-                    Ansible.data_dir_lastrun, machine_fqdn + ".json"
-                )
-                if not os.path.isfile(ans_file):
-                    ans_file = os.path.join(
-                        Ansible.data_dir_archive, machine_fqdn + ".json"
-                    )
-                    if not os.path.isfile(ans_file):
-                        logger.exception("json file %s does not exist", ans_file)
-                        return None
-        try:
-            with open(ans_file, "r") as json_file:
-                ansible_machine = json.load(json_file)
-        except Exception as e:
-            logger.exception(
-                "Could not load ansible json file %s - %s", ans_file, repr(e)
-            )
-            return None
-
-        return ansible_machine
-
-    @staticmethod
-    def store_machine_info(machine_fqdn: str) -> None:
-
-        ansible_machine = Ansible.get_ansible_data(machine_fqdn)
-        if not ansible_machine:
-            return
-        db_machine = Machine.objects.get(fqdn=machine_fqdn)
-
-        Ansible.write_ansible_local(db_machine, ansible_machine)
-        db_machine.save()
-
-    @staticmethod
-    def print_machine_info(machine_fqdn: str) -> None:
-        """
-        This is only a debug function which can be used via runscript interface
-        Example:
-        manage runscript show_machine_info --script-args lammermuir.arch.suse.de  |less
-        """
-        db_machine = Machine.objects.get(fqdn=machine_fqdn)
-        if not db_machine:
-            print("Machine: %s does not exist" % machine_fqdn)
-            return
-        # # prints all non magic attributes of a machine
-        db_machine_attributes = [
-            attribute for attribute in dir(db_machine) if not attribute.startswith("_")
-        ]
-        for db_machine_attribute in db_machine_attributes:
-            try:
-                print(
-                    f"db_machine.{db_machine_attribute} = {getattr(db_machine, db_machine_attribute)}"
-                )
-            except Exception:
-                continue
-
-    @staticmethod
-    def print_ansible_info(machine_fqdn: str) -> None:
-        """
-        This is only a debug function which can be used via runscript interface
-        Example:
-        manage runscript show_ansible_info --script-args lammermuir.arch.suse.de  |less
-        """
-
-        ansible_machine = Ansible.get_ansible_data(machine_fqdn, try_lastruns=True)
-        if not ansible_machine:
-            return
-        exclude_keys = ["_ansible_facts_gathered", "ansible_local"]
-        for key in ansible_machine:
-            if key in exclude_keys:
-                continue
-            print(key, "->", ansible_machine[key])
-        return
-
-    # def get_hardware_information(fqdn):
-    @staticmethod
-    def write_ansible_local(
-        db_machine: Machine, ansible_machine: Dict[str, Any]
-    ) -> None:
-        """
-        Write ansible information retrieved from a json file to the system.
-        For developing/debugging this interface can directly be use
-        (without doing a rescan of the remote machine) via e.g.
-        manage runscript store_machine_info --script-args lammermuir.arch.suse.de
-        This can be useful if one wants to assign data which was already via ansible
-        to the correct database fields here.
-        """
-
-        db_machine.fqdn = ansible_machine.get("fqdn", "")
-
-        # Amount of real CPU sockets
-        db_machine.cpu_physical = ansible_machine.get("processor_count", 1)
-        # Amount of all CPU cores (sockets * cores_per_socket)
-        db_machine.cpu_cores = (
-            ansible_machine.get("processor_cores", 1) * db_machine.cpu_physical
-        )
-        # Amount of all CPU threads (All CPU cores * threads_per_core)
-        db_machine.cpu_threads = db_machine.cpu_cores * ansible_machine.get(
-            "processor_threads_per_core", 1
-        )
-        # db_machine.cpu_model =
-        # db_machine.cpu_flags = # --> check if in ansible, else create facts file
-        # db_machine.cpu_speed =
-        # db_machine.cpu_id =
-        db_machine.ram_amount = int(ansible_machine.get("memtotal_mb", 0))
-        # db_machine.disk_primary_size = # sectors * sector_size der 1. platte (in bytes).
-        # danach hwinfo --disk entfernen.
-        # db_machine.disk_type =
-
-        # Need extra readonly commandline field
-        # k_opts = ansible_machine.get("cmdline", 0)
-        # if k_opts:
-        #    db_machine.kernel_options = " ".join(['%s=%s' % (key,value) for key, value in k_opts.items()])
-        db_machine.lsmod = normalize_ascii(
-            "".join(
-                ansible_machine.get("ansible_local", {})
-                .get("lsmod", {})
-                .get("noargs", {})
-                .get("stdout", "")
-            )
-        )
-        db_machine.lspci = normalize_ascii(
-            "".join(
-                ansible_machine.get("lspci", {}).get("-vvv -nn", {}).get("stdout", "")
-            )
-        )
-        last = (
-            ansible_machine.get("ansible_local", {})
-            .get("last", {})
-            .get("latest", {})
-            .get("stdout", "")
-        )
-        db_machine.last = last[0:8] + last[38:49] if len(last) > 49 else ""
-        db_machine.hwinfo = normalize_ascii(
-            "".join(
-                ansible_machine.get("ansible_local", {})
-                .get("hwinfo", {})
-                .get("full", {})
-                .get("stdout", "")
-            )
-        )
-        db_machine.dmidecode = normalize_ascii(
-            "".join(
-                ansible_machine.get("ansible_local", {})
-                .get("dmidecode", {})
-                .get("noargs", {})
-                .get("stdout", "")
-            )
-        )
-        db_machine.dmesg = normalize_ascii(
-            "".join(
-                ansible_machine.get("ansible_local", {})
-                .get("dmesg", {})
-                .get("-xl", {})
-                .get("stdout", "")
-            )
-        )
-        db_machine.lsscsi = normalize_ascii(
-            "".join(
-                ansible_machine.get("ansible_local", {})
-                .get("lsscsi", {})
-                .get("-s", {})
-                .get("stdout", "")
-            )
-        )
-        db_machine.lsusb = normalize_ascii(
-            "".join(
-                ansible_machine.get("ansible_local", {})
-                .get("lsusb", {})
-                .get("noargs", {})
-                .get("stdout", "")
-            )
-        )
-        db_machine.ipmi = "IPMI" in db_machine.dmidecode
+        # Set environment variable for dynamic inventory plugin
+        os.environ["ORTHOS_SCAN_TASK_HASH"] = task_hash
 
         try:
-            bios_date = ansible_machine.get("bios_date", None)
-            if bios_date == "NA":
-                bios_date = None
-            if bios_date:
-                # Django date fields must be in "%Y-%m-%d" format
-                db_machine.bios_date = datetime.strptime(  # type: ignore
-                    bios_date, "%m/%d/%Y"
-                ).strftime("%Y-%m-%d")
-        except (ValueError, TypeError):
-            logger.exception("Could not parse bios date [%s]", db_machine.fqdn)
+            # Record scan start time to identify results from this run
+            scan_start = timezone.now()
 
-        db_machine.bios_version = ansible_machine.get("bios_version", "")
+            # Execute ansible-playbook with dynamic inventory
+            command = (
+                f"/usr/bin/ansible-playbook "
+                f"-i {Ansible.facts_dir}/orthos_dynamic.yml "
+                f"{Ansible.facts_dir}/site.yml"
+            )
+            stdout, stderr, returncode = execute(command, cwd=Ansible.facts_dir)
+            logger.debug("Calling: %s - %d", command, returncode)
+            logger.debug("ansible: %s - %s - %s", stdout, stderr, returncode)
 
-    # ------------------------------
+            if returncode != 0:
+                logger.error("Ansible playbook failed with return code %d", returncode)
+                logger.error("stderr: %s", stderr)
+                raise RuntimeError(f"Ansible playbook failed: {stderr}")
 
-    # db_machine.vm_capable =  # set when nice way to do so is found
-    # db_machine.efi =  # set when nice way to do so is found
+            # Check database for scan results from this run
+            recent_results = AnsibleScanResult.objects.filter(run_date__gte=scan_start)
 
-    # db_machine.serial_number # do not set
-    # db_machine.architecture # do not set
-    # db_machine.mac_address #  do not set
+            scanned_machines = set(
+                recent_results.values_list("machine__fqdn", flat=True).distinct()
+            )
+            expected_machines = set(self.machines)
+            missing_machines = expected_machines - scanned_machines
 
-    # db_machine.__ipv4 # do not set (yet)
-    # db_machine.__ipv6 # do not set (yet)
+            if missing_machines:
+                logger.warning(
+                    "No scan results found in database for machines: %s",
+                    ", ".join(missing_machines),
+                )
 
-    """
-    attributes that can probaby be mapped easily/directly:
-    db_machine.architecture = ansible_machine.get("architecture")
-    db_machine.efi
-    db_machine.cpu_id
-    db_machine.cpu_model
-
-    attributes where its values probably need to be edited before assigning:
-
-    db_machine.disk_primary_size =
-    db_machine.disk_type =
-    db_machine.vm_capable =
-    db_machine.cpu_flags =
-    db_machine.cpu_physical.cpu_speed =
-
-    db_machine.efi =
-    db_machine.ipmi =
-    db_machine.hwinfo =
-    db_machine.dmidecode =
-    db_machine.lspci =
-    """
+            logger.info(
+                "Successfully scanned %d/%d machines via ansible",
+                len(scanned_machines),
+                len(expected_machines),
+            )
+        finally:
+            # Clean up environment variable
+            if "ORTHOS_SCAN_TASK_HASH" in os.environ:
+                del os.environ["ORTHOS_SCAN_TASK_HASH"]

@@ -5,7 +5,7 @@ Installation/Setup (Devel system)
 1. Prepare your local system:
     .. code-block::
 
-        $ sudo zypper in docker docker-compose openldap2-devel cyrus-sasl-devel
+        $ sudo zypper in docker docker-compose gcc python3-devel openldap2-devel cyrus-sasl-devel
 
 
 2. Check out the sources:
@@ -19,7 +19,7 @@ Installation/Setup (Devel system)
 3. Create the `virtual Python environment <https://docs.python.org/3/library/venv.html>`_, activate it and update `pip <https://en.wikipedia.org/wiki/Pip_(package_manager)>`_
     .. code-block::
 
-        $ python -m venv .venv
+        $ python3 -m venv .venv
         $ . .venv/bin/activate
         $ pip install --upgrade pip
         Collecting pip
@@ -45,7 +45,7 @@ Installation/Setup (Devel system)
 7. Edit your ``/etc/hosts`` file and include the following line:
     .. code-block::
 
-        127.0.0.1 orthos2.orthos2.test cobbler.orthos2.test netbox.orthos2.test
+        127.0.0.1 authentik.orthos2.test orthos2.orthos2.test cobbler.orthos2.test netbox.orthos2.test testmachine.orthos2.test
 
 8.  Open your browser and go to `http://orthos2.orthos2.test <http://orthos2.orthos2.test>`_ (use the superuser login 
     here). The login password for the admin user you can find in ``docker/orthos/orthos2.env``.

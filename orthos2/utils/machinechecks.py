@@ -2,15 +2,12 @@ import logging
 import re
 import socket
 import threading
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from orthos2.data.models import Installation, Machine
 from orthos2.utils.misc import execute
 from orthos2.utils.remote import ssh_execute
 from orthos2.utils.ssh import SSH
-
-if TYPE_CHECKING:
-    from orthos2.data.models.components.pci import PCIDevice
 
 ARPHRD_IEEE80211 = 801
 
@@ -225,84 +222,3 @@ def get_installations(fqdn: str) -> Union[bool, List[Installation]]:
             conn.close()
         if timer:
             timer.cancel()
-
-
-def get_pci_devices(fqdn: str) -> List["PCIDevice"]:
-    """Retrieve all PCI devices."""
-
-    def get_pci_device_by_slot(
-        pci_devices: List["PCIDevice"], slot: str
-    ) -> Optional["PCIDevice"]:
-        """Return the PCI device by slot."""
-        for dev in pci_devices:
-            pci_slot = dev.slot
-            if not pci_slot:
-                continue
-            pci_slot = pci_slot.strip()
-            # pci domain hacks
-            if len(pci_slot) < 8:
-                pci_slot = "0000:" + pci_slot
-            if len(slot) < 8:
-                slot = "0000:" + slot
-            if pci_slot == slot:
-                return dev
-        return None
-
-    from orthos2.data.models import PCIDevice
-
-    try:
-        machine = Machine.objects.get(fqdn=fqdn)
-    except Machine.DoesNotExist:
-        logger.warning("Machine '%s' does not exist", fqdn)
-        return False  # type: ignore
-
-    logger.debug("Collect PCI devices for '%s'...", fqdn)
-    pci_devices: List[PCIDevice] = []
-    chunk = ""
-    stdout, _, err = ssh_execute("lspci -mmvn", machine.fqdn)
-    if err:
-        logger.warning("Machine '%s' could not collect PCI devices", fqdn)
-        return None  # type: ignore
-
-    for line in stdout:
-        if line.strip():
-            chunk += line
-        else:
-            pci_devices.append(PCIDevice.from_lspci_mmnv(chunk))
-            chunk = ""
-
-    # drivers for PCI devices from hwinfo
-    in_pci_device = False
-    current_busid = None
-
-    if machine.hwinfo:
-        for line in machine.hwinfo.splitlines():
-            if re.match(r"^\d+: PCI", line):
-                in_pci_device = True
-                continue
-            if not line.strip():
-                in_pci_device = False
-                current_busid = None
-                continue
-            if not in_pci_device:
-                continue
-            match = re.match(r"  SysFS BusID: ([0-9a-fA-F.:]+)", line)
-            if match:
-                current_busid = match.group(1)
-            match = re.match(r'  Driver: "([^"]*)"', line)
-            if match and current_busid:
-                pcidev = get_pci_device_by_slot(pci_devices, current_busid)
-                if pcidev:
-                    pcidev.drivermodule = match.group(1)
-            match = re.match(r'  Driver Modules: "([^"]*)"', line)
-            if match and current_busid:
-                pcidev = get_pci_device_by_slot(pci_devices, current_busid)
-                if pcidev:
-                    pcidev.drivermodule = match.group(1)
-
-    for pci_device in pci_devices:
-        pci_device.machine = machine
-
-    logger.debug("Collected %s PCI devices for '%s'", len(pci_devices), machine.fqdn)
-
-    return pci_devices

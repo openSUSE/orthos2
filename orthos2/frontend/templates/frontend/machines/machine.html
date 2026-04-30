@@ -48,6 +48,9 @@
         <li class="nav-item">
           <a class="nav-link {% active_view request 'history' %}" href="{% url 'frontend:history' machine.id %}">Reservation History</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link {% active_view request 'machine_ansible_results' %}" href="{% url 'frontend:machine_ansible_results' machine.id %}">Ansible Results</a>
+        </li>
         {% if perms.data and perms.data.add_netboxorthoscomparisonrun %}
         <li class="nav-item">
           <a class="nav-link {% active_view request 'netboxcomparision' %}" href="{% url 'frontend:netboxcomparision' machine.id %}">NetBox Comparision</a>
