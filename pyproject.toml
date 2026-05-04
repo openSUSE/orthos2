@@ -12,3 +12,7 @@ pythonVersion = "3.11"
 typeCheckingMode = "strict"
 useLibraryCodeForTypes = true
 exclude = ["build", "venv", ".venv", "orthos2/data/migrations"]
+
+[tool.markdownlint-cli2]
+globs = ["**.md"]
+ignores = ["node_modules", ".venv"]
