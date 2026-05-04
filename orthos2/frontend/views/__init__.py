@@ -3,6 +3,14 @@ This module contains all Django frontend views. For convenience, they are all re
 """
 
 from .ajax import annotation, powercycle, virtualization_delete, virtualization_list
+from .ansible_results import (
+    AnsibleResultListView,
+    ansible_result_apply,
+    ansible_result_bulk_delete,
+    ansible_result_delete,
+    ansible_result_detail,
+    machine_ansible_results,
+)
 from .auth import deprecate_current_app, login
 from .compare_netbox import (
     NetboxOrthosComparisionRunListView,
@@ -75,6 +83,12 @@ __all__ = [
     "powercycle",
     "virtualization_list",
     "virtualization_delete",
+    "AnsibleResultListView",
+    "ansible_result_detail",
+    "ansible_result_delete",
+    "ansible_result_bulk_delete",
+    "ansible_result_apply",
+    "machine_ansible_results",
     "deprecate_current_app",
     "login",
     "NetboxOrthosComparisionRunListView",

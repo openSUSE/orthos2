@@ -48,4 +48,9 @@
       <a class="nav-link" href="{% url 'frontend:remotepowerdevices' %}">Remote Power Devices</a>
     </li>
   {% endif %}
+  {% if perms.data and perms.data.change_ansible_result %}
+    <li class="nav-item {% active_view request 'ansible_results' %}">
+      <a class="nav-link" href="{% url 'frontend:ansible_results_list' %}">Ansible Results</a>
+    </li>
+  {% endif %}
 </ul>

@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+import json
+import os
+import sys
+
+# EFI detection: check if /sys/firmware/efi exists
+# This directory only exists when the system is booted in UEFI mode
+data = {"efi": os.path.isdir("/sys/firmware/efi")}
+
+json_string = json.dumps(data)
+sys.stdout.write(json_string)

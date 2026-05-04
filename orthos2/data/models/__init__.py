@@ -1,8 +1,7 @@
 from .annotation import Annotation
+from .ansible import AnsibleScanResult
 from .architecture import Architecture
 from .bmc import BMC
-from .component import Component
-from .components.pci import PCIDevice
 from .domain import Domain, DomainAdmin, validate_domain_ending
 from .enclosure import Enclosure
 from .installation import Installation
@@ -32,11 +31,10 @@ from .system import System
 from .vendor import Vendor
 
 __all__ = [
+    "AnsibleScanResult",
     "Annotation",
     "Architecture",
     "BMC",
-    "Component",
-    "PCIDevice",
     "Domain",
     "DomainAdmin",
     "validate_domain_ending",
