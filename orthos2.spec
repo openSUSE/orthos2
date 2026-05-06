@@ -62,7 +62,6 @@ Requires:  %{python3_pkgversion}-requests
 Requires:  %{python3_pkgversion}-urllib3
 Requires:  %{python3_pkgversion}-paramiko
 Requires:  %{python3_pkgversion}-psycopg2
-Requires:  %{python3_pkgversion}-ldap
 Requires:  %{python3_pkgversion}-social-auth-app-django
 Requires:  %{python3_pkgversion}-social-auth-core
 Requires:  %{python3_pkgversion}-validators
