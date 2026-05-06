@@ -1,6 +1,8 @@
 workflow:
   steps:
     - branch_package:
-        source_project: systemsmanagement:orthos2:github_master_ci
-        source_package: orthos2-master
-        target_project: home:trenn
+        source_project: systemsmanagement:orthos2:master
+        source_package: orthos2
+        target_project: systemsmanagement:orthos2:github_master_ci
+  filters:
+    event: pull_request
