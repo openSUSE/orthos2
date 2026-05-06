@@ -143,13 +143,6 @@ mkdir -p %{buildroot}%{_prefix}/bin
 %{_prefix}/lib/%{name}/scripts/server_1011_power.pl
 %{_prefix}/lib/%{name}/scripts/virt-create-rootfs-orthos
 %attr(755,orthos,orthos) %{_bindir}/orthos-admin
-%attr(755,orthos,orthos) %dir /srv/www/%{name}
-%attr(755,orthos,orthos) %dir %{_localstatedir}/log/%{name}
-%attr(775,orthos,orthos) %dir %{_sharedstatedir}/%{name}
-%attr(775,orthos,orthos) %dir %{_sharedstatedir}/%{name}/archiv
-%attr(775,orthos,orthos) %dir %{_sharedstatedir}/%{name}/orthos-vm-images
-%attr(775,orthos,orthos) %dir %{_sharedstatedir}/%{name}/database
-%attr(700,orthos,orthos) %dir %{_sharedstatedir}/%{name}/.ssh
 
 # defattr(fileattr, user, group, dirattr)
 # Add whole ansible directory with correct attr for dirs and files
