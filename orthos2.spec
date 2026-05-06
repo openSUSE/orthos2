@@ -161,13 +161,12 @@ cp -r docs/_build/html/* %{buildroot}%{orthos_web_docs}
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
 %dir %{_prefix}/lib/%{name}
 %dir %{_prefix}/lib/%{name}/scripts
-%{_prefix}/lib/%{name}/*
+%{_prefix}/lib/%{name}/scripts/README
+%{_prefix}/lib/%{name}/scripts/*.sh
+%{_prefix}/lib/%{name}/scripts/server_1011_power.pl
+%{_prefix}/lib/%{name}/scripts/virt-create-rootfs-orthos
 %attr(755,orthos,orthos) %{_bindir}/orthos-admin
 %attr(755,orthos,orthos) %dir /srv/www/%{name}
-%ghost %dir %{_rundir}/%{name}
-%ghost %dir %{_rundir}/%{name}/ansible
-%ghost %dir %{_rundir}/%{name}/ansible_lastrun
-%ghost %dir %{_rundir}/%{name}/ansible_archive
 %attr(755,orthos,orthos) %dir %{_localstatedir}/log/%{name}
 %attr(775,orthos,orthos) %dir %{_sharedstatedir}/%{name}
 %attr(775,orthos,orthos) %dir %{_sharedstatedir}/%{name}/archiv
