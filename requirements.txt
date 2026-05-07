@@ -13,3 +13,4 @@ social-auth-app-django
 social-auth-core
 requests
 urllib3
+gunicorn

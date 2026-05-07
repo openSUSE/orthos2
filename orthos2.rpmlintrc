@@ -2,12 +2,36 @@
 addFilter("orthos2.noarch: W: files-duplicate /usr/lib/python3.*/site-packages/orthos2")
 
 # Ansible scripts are executed remotely
+addFilter("orthos2.noarch: W: non-executable-script /usr/lib/orthos2/ansible/roles/add_custom_facts/files/facts.d/")
 addFilter("orthos2.noarch: E: non-executable-script /usr/lib/orthos2/ansible/roles/add_custom_facts/files/facts.d/")
-# django scripts are executed via manage python script
-addFilter("orthos2.noarch: E: non-executable-script /usr/lib/python3.8/site-packages/orthos2/data/scripts/")
+# Scripts that are sourced by other scripts
+addFilter("orthos2.noarch: E: non-executable-script /usr/lib/python3.*/site-packages/orthos2/data/scripts/")
+# Scripts copied by Orthos 2, to target machines
+addFilter("orthos2.noarch: W: non-executable-script /usr/lib/orthos2/scripts/")
+addFilter("orthos2.noarch: E: non-executable-script /usr/lib/orthos2/scripts/")
 
 # Need until we may get an official orthos2 user/group
 addFilter("orthos2.noarch: W: non-standard-uid *")
 addFilter("orthos2.noarch: W: non-standard-gid *")
 
 addFilter("orthos2.noarch: W: hidden-file-or-dir /var/lib/orthos2/.ssh")
+
+# False positive
+addFilter("orthos2.noarch: W: explicit-lib-dependency python3")
+addFilter("orthos2.noarch: E: explicit-lib-dependency python3")
+
+# Internal discussions for packaging /var vs. using systemd-tmpfiles
+addFilter("orthos2.noarch: E: logrotate-log-dir-not-packaged /var/log/orthos2")
+addFilter("orthos2.noarch: W: tmpfile-not-in-filelist")
+
+# %check section is executed on GitHub and too complicated for OBS
+addFilter("orthos2.spec: W: no-%check-section")
+
+# Ingore warning about indirect require for PostgreSQL client
+addFilter("orthos2.noarch: W: python-leftover-require python3-psycopg2")
+
+# Ignore non-standard group for custom user
+addFilter("system-user-orthos.noarch: W: non-standard-group System")
+
+# Ignore missing rclinks
+addFilter("orthos2.noarch: W: suse-missing-rclink")

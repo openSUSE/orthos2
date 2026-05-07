@@ -47,10 +47,10 @@ RUN groupadd -r orthos
 RUN useradd -r -g orthos -d /var/lib/orthos2 -s /bin/bash -c "orthos account" orthos
 
 # Create required directories
-RUN mkdir -p /etc/nginx/conf.d /var/lib/orthos2 /var/log/orthos2 /var/lib/orthos2/database /usr/lib/orthos2/ansible /run/orthos2/ansible /run/orthos2/ansible_lastrun /run/orthos2/ansible_archive
+RUN mkdir -p /etc/nginx/conf.d /var/lib/orthos2 /var/log/orthos2 /var/lib/orthos2/database /usr/lib/orthos2/ansible
 RUN touch /var/log/orthos2/default.log
 RUN chmod o+w /var/log/orthos2/default.log
-RUN chown -R orthos:orthos /var/log/orthos2 /var/lib/orthos2 /usr/lib/orthos2 /usr/lib/orthos2/ansible /run/orthos2 /run/orthos2/ansible /run/orthos2/ansible_lastrun /run/orthos2/ansible_archive
+RUN chown -R orthos:orthos /var/log/orthos2 /var/lib/orthos2 /usr/lib/orthos2 /usr/lib/orthos2/ansible
 COPY docker/traefik/certs/authentik.orthos2.test.crt /etc/pki/trust/anchors/
 RUN update-ca-certificates -v -f
 

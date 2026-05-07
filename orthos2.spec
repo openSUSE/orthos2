@@ -13,7 +13,7 @@
 
 %{?sle15_python_module_pythons}
 
-%if 0%{?suse_version} > 1600
+%if 0%{?suse_version} >= 1600
 %define pythons python3
 %define python3_pkgversion python3
 %else
@@ -40,13 +40,18 @@ BuildRequires:  fdupes
 BuildRequires:  systemd-rpm-macros
 # For /etc/nginx{,/conf.d} creation
 BuildRequires:  nginx
-BuildRequires:  %{python_module devel}
-BuildRequires:  %{python_module setuptools}
-# Required for python3-asgiref
-BuildRequires:  %{python_module typing_extensions if %python-base < 3.8}
-Requires(post): sudo
 BuildRequires:  python-rpm-macros
 BuildRequires:  sysuser-tools
+BuildRequires:  %{python_module devel}
+BuildRequires:  %{python_module setuptools}
+BuildRequires:  %{python_module django >= 4.2}
+BuildRequires:  %{python_module django-extensions}
+BuildRequires:  %{python_module social-auth-app-django}
+BuildRequires:  %{python_module social-auth-core}
+BuildRequires:  %{python_module paramiko}
+BuildRequires:  %{python_module djangorestframework}
+BuildRequires:  %{python_module validators}
+BuildRequires:  %{python_module netaddr}
 
 Requires:  %{python3_pkgversion}-Django >= 4.2
 Requires:  %{python3_pkgversion}-django-extensions
@@ -57,16 +62,15 @@ Requires:  %{python3_pkgversion}-requests
 Requires:  %{python3_pkgversion}-urllib3
 Requires:  %{python3_pkgversion}-paramiko
 Requires:  %{python3_pkgversion}-psycopg2
-Requires:  %{python3_pkgversion}-ldap
 Requires:  %{python3_pkgversion}-social-auth-app-django
 Requires:  %{python3_pkgversion}-social-auth-core
 Requires:  %{python3_pkgversion}-validators
 Requires:  %{python3_pkgversion}-gunicorn
-
 # Needed to install /etc/logrotate.d/orthos2
 Requires:  logrotate
 Requires:  nginx
 Requires:  ansible
+Requires(post): sudo
 
 Provides: orthos2-%{version}-%{release}
 
@@ -80,26 +84,6 @@ Orthos is the machine administration tool of the development network at SUSE. It
     generating the DHCP configuration (via Cobbler)
     reboot the machines remotely
     managing remote (serial) consoles
-
-%package docs
-Summary:        HTML documentation for orthos2
-BuildRequires:  %{python_module django >= 4.2}
-BuildRequires:  %{python_module django-auth-ldap}
-BuildRequires:  %{python_module django-extensions}
-BuildRequires:  %{python_module social-auth-app-django}
-BuildRequires:  %{python_module social-auth-core}
-BuildRequires:  %{python_module paramiko}
-BuildRequires:  %{python_module djangorestframework}
-BuildRequires:  %{python_module validators}
-BuildRequires:  %{python_module netaddr}
-BuildRequires:  %{python_module ldap}
-BuildRequires:  %{python_module sphinx_rtd_theme}
-BuildRequires:  %{python_module Sphinx}
-
-%define orthos_web_docs /srv/www/orthos2/docs
-
-%description docs
-HTML documentation that can be put into a web servers htdocs directory for publishing.
 
 %package -n system-user-orthos
 Summary:        Orthos user and group
@@ -115,20 +99,12 @@ Orthos user and group required by orthos2 package
 %build
 %sysusers_generate_pre system-user-orthos.conf orthos system-user-orthos.conf
 %python_build
-cd docs
-make html
-
 
 %install
 install -D -m 0644 system-user-orthos.conf %{buildroot}%{_sysusersdir}/system-user-orthos.conf
 %python_install
 
-# docs
-mkdir -p %{buildroot}%{orthos_web_docs}
 mkdir -p %{buildroot}%{_prefix}/bin
-
-cp -r docs/_build/html/* %{buildroot}%{orthos_web_docs}
-%fdupes %{buildroot}/%{orthos_web_docs}
 %python_expand %fdupes %{buildroot}/%{$python_sitelib}/orthos2/
 %python_exec manage.py setup all --buildroot=%{buildroot} --skip-chown
 
@@ -161,29 +137,17 @@ cp -r docs/_build/html/* %{buildroot}%{orthos_web_docs}
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
 %dir %{_prefix}/lib/%{name}
 %dir %{_prefix}/lib/%{name}/scripts
-%{_prefix}/lib/%{name}/*
+%{_prefix}/lib/%{name}/scripts/README
+%{_prefix}/lib/%{name}/scripts/*.sh
+%{_prefix}/lib/%{name}/scripts/server_1011_power.pl
+%{_prefix}/lib/%{name}/scripts/virt-create-rootfs-orthos
 %attr(755,orthos,orthos) %{_bindir}/orthos-admin
-%attr(755,orthos,orthos) %dir /srv/www/%{name}
-%ghost %dir %{_rundir}/%{name}
-%ghost %dir %{_rundir}/%{name}/ansible
-%ghost %dir %{_rundir}/%{name}/ansible_lastrun
-%ghost %dir %{_rundir}/%{name}/ansible_archive
-%attr(755,orthos,orthos) %dir %{_localstatedir}/log/%{name}
-%attr(775,orthos,orthos) %dir %{_sharedstatedir}/%{name}
-%attr(775,orthos,orthos) %dir %{_sharedstatedir}/%{name}/archiv
-%attr(775,orthos,orthos) %dir %{_sharedstatedir}/%{name}/orthos-vm-images
-%attr(775,orthos,orthos) %dir %{_sharedstatedir}/%{name}/database
-%attr(700,orthos,orthos) %dir %{_sharedstatedir}/%{name}/.ssh
 
 # defattr(fileattr, user, group, dirattr)
 # Add whole ansible directory with correct attr for dirs and files
 # Always keep this at the end with defattr
 %defattr(664, orthos, orthos, 775)
 %{_prefix}/lib/%{name}/ansible
-
-%files docs
-%dir %{orthos_web_docs}
-%{orthos_web_docs}/*
 
 %files -n system-user-orthos
 %{_sysusersdir}/system-user-orthos.conf
