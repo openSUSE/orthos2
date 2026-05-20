@@ -91,7 +91,7 @@ INSTALLED_APPS = [
 ]
 
 REMOTE_AUTH_BACKEND = "social_core.backends.open_id_connect.OpenIdConnectAuth"
-SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = "https://authentik.orthos2.test/application/o/orthos"
+SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = os.environ.get("OIDC_ENDPOINT", "")
 SOCIAL_AUTH_OIDC_KEY = os.environ.get("OIDC_KEY", "default")
 SOCIAL_AUTH_OIDC_SECRET = os.environ.get("OIDC_SECRET", "default")
 

@@ -133,6 +133,7 @@ netbox_api_pepper = "".join(secrets.choice(netbox_pepper_charset) for _ in range
     'CSRF_TRUSTED_ORIGINS="https://orthos2.orthos2.test"\n'
     'CSRF_ALLOWED_ORIGIN="https://orthos2.orthos2.test"\n'
     'CROSS_ORIGINS_WHITELIST="https://orthos2.orthos2.test"\n'
+    'OIDC_ENDPOINT="https://authentik.orthos2.test/application/o/orthos"'
     f'OIDC_KEY="{oidc_key}"\n'
     f'OIDC_SECRET="{oidc_secret}"\n'
     "NETBOX_SUPERUSER_NAME='admin'\n"
