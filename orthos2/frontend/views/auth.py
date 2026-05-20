@@ -10,7 +10,6 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth import login as auth_login
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpRequest, HttpResponsePermanentRedirect, HttpResponseRedirect
@@ -24,6 +23,11 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 
 from orthos2.data.models import ServerConfig
+from orthos2.frontend.forms.auth import RememberUsernameAuthenticationForm
+
+# Cookie configuration for "Remember username" feature
+REMEMBER_USERNAME_COOKIE_NAME = "orthos2_remembered_username"
+REMEMBER_USERNAME_COOKIE_MAX_AGE = 90 * 24 * 60 * 60  # 90 days
 
 
 def deprecate_current_app(func: Callable[[Any, Any], Any]) -> Callable[[Any, Any], Any]:
@@ -61,7 +65,7 @@ def login(
     request: HttpRequest,
     template_name: str = "frontend/registration/login.html",
     redirect_field_name: str = REDIRECT_FIELD_NAME,
-    authentication_form=AuthenticationForm,  # type: ignore
+    authentication_form=RememberUsernameAuthenticationForm,  # type: ignore
     extra_context: Optional[Dict[str, Any]] = None,
     redirect_authenticated_user: bool = False,
 ) -> Union[HttpResponseRedirect, HttpResponsePermanentRedirect, TemplateResponse]:
@@ -95,8 +99,30 @@ def login(
         form = authentication_form(request, data=request.POST)
 
         if form.is_valid():
+            # Determine redirect URL (preserve existing logic)
+            redirect_to = _get_login_redirect_url(request, redirect_to)
+            if not redirect_to or redirect_to == request.path:
+                redirect_to = resolve_url("frontend:machines")
+
+            response = HttpResponseRedirect(redirect_to)
+
+            # Handle remember username checkbox
+            if form.cleaned_data.get("remember_username"):
+                response.set_cookie(
+                    key=REMEMBER_USERNAME_COOKIE_NAME,
+                    value=form.cleaned_data.get("username"),
+                    max_age=REMEMBER_USERNAME_COOKIE_MAX_AGE,
+                    secure=not settings.DEBUG,
+                    httponly=False,
+                    samesite="Lax",
+                )
+            else:
+                response.delete_cookie(REMEMBER_USERNAME_COOKIE_NAME)
+
+            # Perform login
             auth_login(request, form.get_user())
-            return redirect("frontend:machines")
+
+            return response
         else:
             # active users without password (don't ask in oidc case)
             if settings.AUTH_ALLOW_USER_CREATION:

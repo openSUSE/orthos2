@@ -295,3 +295,74 @@ class LoginOIDCBehaviorNoCSRF(WebTest):
             # Should not log in the user
             # Should still show OIDC screen
             self.assertContains(response, "Login with Authentik")  # type: ignore
+
+
+class RememberUsernameTests(WebTest):
+    """Test the 'Remember username' feature."""
+
+    csrf_checks = True
+
+    fixtures = [
+        "orthos2/frontend/tests/fixtures/serverconfigs.json",
+        "orthos2/frontend/tests/user/fixtures/users.json",
+    ]
+
+    def test_remember_username_checkbox_checked_sets_cookie(self) -> None:
+        """When checkbox is checked, username should be stored in cookie."""
+        with self.settings(SOCIAL_AUTH_OIDC_OIDC_ENDPOINT=""):
+            form = self.app.get(reverse("frontend:login")).form  # type: ignore
+            form["username"] = "user"
+            form["password"] = "linux"
+            form["remember_username"] = True
+            response = form.submit()  # type: ignore
+
+            self.assertIn("orthos2_remembered_username", response.test_app.cookies)  # type: ignore
+            self.assertEqual(
+                response.test_app.cookies["orthos2_remembered_username"], "user"  # type: ignore
+            )
+
+    def test_remember_username_checkbox_unchecked_no_cookie(self) -> None:
+        """When checkbox is unchecked, no cookie should be set."""
+        with self.settings(SOCIAL_AUTH_OIDC_OIDC_ENDPOINT=""):
+            form = self.app.get(reverse("frontend:login")).form  # type: ignore
+            form["username"] = "user"
+            form["password"] = "linux"
+            form["remember_username"] = False
+            response = form.submit()  # type: ignore
+
+            self.assertNotIn("orthos2_remembered_username", response.test_app.cookies)  # type: ignore
+
+    def test_username_prefilled_from_cookie(self) -> None:
+        """Username field should be pre-filled from existing cookie."""
+        with self.settings(SOCIAL_AUTH_OIDC_OIDC_ENDPOINT=""):
+            self.app.set_cookie("orthos2_remembered_username", "user")  # type: ignore
+
+            page = self.app.get(reverse("frontend:login"))  # type: ignore
+            form = page.form  # type: ignore
+
+            # Username should be pre-filled
+            self.assertEqual(form["username"].value, "user")  # type: ignore
+
+    def test_cookie_deleted_when_checkbox_unchecked(self) -> None:
+        """When user unchecks checkbox, cookie should be deleted."""
+        with self.settings(SOCIAL_AUTH_OIDC_OIDC_ENDPOINT=""):
+            # First login with remember checked
+            form = self.app.get(reverse("frontend:login")).form  # type: ignore
+            form["username"] = "user"
+            form["password"] = "linux"
+            form["remember_username"] = True
+            form.submit()  # type: ignore
+
+            # Logout - navigate to a page and submit the logout form
+            page = self.app.get(reverse("frontend:free_machines"))  # type: ignore
+            logout_form = page.forms["logout-form"]  # type: ignore
+            logout_form.submit()  # type: ignore
+
+            # Login again without remember
+            form = self.app.get(reverse("frontend:login")).form  # type: ignore
+            form["username"] = "user"
+            form["password"] = "linux"
+            form["remember_username"] = False
+            response = form.submit()  # type: ignore
+
+            self.assertNotIn("orthos2_remembered_username", response.test_app.cookies)  # type: ignore
