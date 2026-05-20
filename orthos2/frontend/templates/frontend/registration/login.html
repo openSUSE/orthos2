@@ -6,7 +6,7 @@
   <li class="nav-item {% active_view request 'login' %}">
     <a class="nav-link" href="{% url 'frontend:login' %}">Login</a>
   </li>
-  {% if account_creation %}
+  {% if account_creation and show_builtin_form %}
   <li class="nav-item {% active_view request 'create_user' %}">
     <a class="nav-link" href="{% url 'frontend:create_user' %}">Create Account</a>
   </li>
@@ -21,21 +21,32 @@
 <div class="container">
   <div class="row justify-content-center">
     <div class="col-4">
-      <form class="form-signin" method="post">
-        {% csrf_token %}
+      {% if show_oidc_only %}
+        {# OIDC-only screen: Just show centered "Login with Authentik" button #}
         <div class="row" style="margin: 5px;">
-          <input type="text" name="username" id="id_username" class="form-control" placeholder="Login" required autofocus/>
+          <button class="btn btn-primary btn-block btn-lg" onclick="window.location.href='{% url 'social:begin' backend='oidc' %}'">Login with Authentik</button>
         </div>
+      {% else %}
+        {# Built-in authentication form #}
+        <form class="form-signin" method="post">
+          {% csrf_token %}
+          <div class="row" style="margin: 5px;">
+            <input type="text" name="username" id="id_username" class="form-control" placeholder="Login" required autofocus/>
+          </div>
+          <div class="row" style="margin: 5px;">
+            <input type="password" name="password" id="id_password" class="form-control" placeholder="Password" required/>
+          </div>
+          <div class="row" style="margin: 5px;">
+            <button class="btn btn-primary btn-block" type="submit">Login</button>
+          </div>
+        </form>
+        {% if oidc_configured %}
+        {# Show OIDC as secondary option when on builtin screen #}
         <div class="row" style="margin: 5px;">
-          <input type="password" name="password" id="id_password" class="form-control" placeholder="Password" required/>
+          <button class="btn btn-secondary btn-block" onclick="window.location.href='{% url 'social:begin' backend='oidc' %}'">Login with Authentik</button>
         </div>
-        <div class="row" style="margin: 5px;">
-          <button class="btn btn-block" type="submit">Login</button>
-        </div>
-      </form>
-      <div class="row" style="margin: 5px;">
-        <button class="btn btn-block" onclick="window.location.href='{% url 'social:begin' backend='oidc' %}'">Login with Authentik</button>
-      </div>
+        {% endif %}
+      {% endif %}
     </div>
   </div>
 </div>

@@ -68,6 +68,17 @@ def login(
     """Display the login form and handles the login action."""
     if extra_context is None:
         extra_context = {}
+
+    # Detect if OIDC is configured
+    oidc_configured = bool(settings.SOCIAL_AUTH_OIDC_OIDC_ENDPOINT)
+
+    # Check if user explicitly requested builtin auth
+    show_builtin = request.GET.get("builtin") == "true"
+
+    # Determine which screen to show
+    show_oidc_only = oidc_configured and not show_builtin
+    show_builtin_form = not show_oidc_only
+
     redirect_to = request.POST.get(
         redirect_field_name, request.GET.get(redirect_field_name, "")
     )
@@ -80,7 +91,7 @@ def login(
                 "your LOGIN_REDIRECT_URL doesn't point to a login page."
             )
         return HttpResponseRedirect(redirect_to)
-    elif request.method == "POST":
+    elif request.method == "POST" and show_builtin_form:
         form = authentication_form(request, data=request.POST)
 
         if form.is_valid():
@@ -112,6 +123,9 @@ def login(
         "site_name": current_site.name,  # type: ignore
         "title": "Login",
         "account_creation": settings.AUTH_ALLOW_USER_CREATION,
+        "oidc_configured": oidc_configured,
+        "show_oidc_only": show_oidc_only,
+        "show_builtin_form": show_builtin_form,
     }
     context.update(extra_context)
 
@@ -121,5 +135,12 @@ def login(
 
     if welcome_message:
         messages.info(request, mark_safe(welcome_message))
+
+    if oidc_configured and show_builtin:
+        messages.warning(
+            request,
+            "You are using built-in authentication. "
+            "Most users should use the OIDC authentication method.",
+        )
 
     return TemplateResponse(request, template_name, context)
