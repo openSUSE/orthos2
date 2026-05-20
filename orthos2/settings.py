@@ -286,10 +286,11 @@ REST_FRAMEWORK = {
 }
 
 # Orthos variables
-SERVER_FQDN = "orthos.domain.tld"
-BASE_URL = "https://orthos.domain.tld"
-CONTACT = "tbd@domain.tld"
-SUPPORT_CONTACT = "tbd@domain.tld"
+STATIC_ROOT = os.environ.get("ORTHOS2_STATIC_ROOT", "/srv/www/orthos2/static")
+SERVER_FQDN = os.environ.get("ORTHOS2_SERVER_FQDN", "orthos.domain.tld")
+BASE_URL = os.environ.get("ORTHOS2_BASE_URL", "https://orthos.domain.tld")
+CONTACT = os.environ.get("ORTHOS2_CONTACT", "tbd@domain.tld")
+SUPPORT_CONTACT = os.environ.get("ORTHOS2_SUPPORT_CONTACT", "tbd@domain.tld")
 VERSION = "2.0.0"
 SYSTEM_USER = "orthos"
 AUTH_ALLOW_USER_CREATION = False
