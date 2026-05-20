@@ -3,8 +3,8 @@ Ansible callback plugin for storing scan results in Orthos2 database.
 """
 
 import os
+from typing import TYPE_CHECKING
 
-from ansible.executor.task_result import CallbackTaskResult
 from ansible.plugins.callback import CallbackBase
 from ansible.release import __version__ as ansible_version
 
@@ -18,6 +18,9 @@ django.setup()
 
 from orthos2.data.models import AnsibleScanResult, Machine
 
+if TYPE_CHECKING:
+    from ansible.executor.task_result import CallbackTaskResult
+
 
 class CallbackModule(CallbackBase):
     """
@@ -29,7 +32,7 @@ class CallbackModule(CallbackBase):
     CALLBACK_NAME = "orthos2_history"
     CALLBACK_NEEDS_ENABLED = True
 
-    def v2_runner_on_ok(self, result: CallbackTaskResult):
+    def v2_runner_on_ok(self, result: "CallbackTaskResult"):
         """Capture successful task results"""
         host = result._host.get_name()
         task_name = result._task.get_name()
