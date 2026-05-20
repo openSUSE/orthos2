@@ -1,31 +1,78 @@
 #!/usr/bin/env python3
 
 import json
+import shutil
 import subprocess
 import sys
 
-data = dict()
+data = {
+    "noargs": {"stdout": "", "stderr": ""},
+    "--disk": {"stdout": "", "stderr": ""},
+    "--network": {"stdout": "", "stderr": ""},
+    "full": {"stdout": "", "stderr": ""},
+}
 
-command = ["hwinfo"]
-process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-data.update({"noargs":{"stdout": process.stdout.read(), "stderr":process.stderr.read()}})
+if shutil.which("hwinfo"):
+    command = ["hwinfo"]
+    process = subprocess.Popen(
+        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
+    )
+    data["noargs"]["stdout"] = process.stdout.read()
+    data["noargs"]["stderr"] = process.stderr.read()
 
-command = ["hwinfo", "--disk"]
-process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-data.update({"--disk":{"stdout": process.stdout.read(), "stderr":process.stderr.read()}})
+    command = ["hwinfo", "--disk"]
+    process = subprocess.Popen(
+        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
+    )
+    data["--disk"]["stdout"] = process.stdout.read()
+    data["--disk"]["stderr"] = process.stderr.read()
 
-command = ["hwinfo", "--network"]
-process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-data.update({"--network":{"stdout": process.stdout.read(), "stderr":process.stderr.read()}})
+    command = ["hwinfo", "--network"]
+    process = subprocess.Popen(
+        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
+    )
+    data["--network"]["stdout"] = process.stdout.read()
+    data["--network"]["stderr"] = process.stderr.read()
 
-command = ["hwinfo", "--bios", "--block", "--bridge", "--cdrom", "--cpu",
-    "--disk", "--floppy", "--framebuffer", "--gfxcard" , "--hub", "--ide",
-    "--isapnp", "--isdn", "--keyboard", "--memory", "--monitor", "--mouse",
-    "--netcard", "--network", "--partition", "--pci", "--pcmcia", "--scsi",
-    "--smp", "--sound", "--sys", "--tape", "--tv", "--usb", "--usb-ctrl",
-    "--wlan"]
-process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-data.update({"full":{"stdout": process.stdout.read(), "stderr":process.stderr.read()}})
+    command = [
+        "hwinfo",
+        "--bios",
+        "--block",
+        "--bridge",
+        "--cdrom",
+        "--cpu",
+        "--disk",
+        "--floppy",
+        "--framebuffer",
+        "--gfxcard",
+        "--hub",
+        "--ide",
+        "--isapnp",
+        "--isdn",
+        "--keyboard",
+        "--memory",
+        "--monitor",
+        "--mouse",
+        "--netcard",
+        "--network",
+        "--partition",
+        "--pci",
+        "--pcmcia",
+        "--scsi",
+        "--smp",
+        "--sound",
+        "--sys",
+        "--tape",
+        "--tv",
+        "--usb",
+        "--usb-ctrl",
+        "--wlan",
+    ]
+    process = subprocess.Popen(
+        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
+    )
+    data["full"]["stdout"] = process.stdout.read()
+    data["full"]["stderr"] = process.stderr.read()
 
 json_string = json.dumps(data)
 sys.stdout.write(json_string)

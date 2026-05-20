@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 
 import json
+import shutil
 import subprocess
 import sys
 
-data = dict()
+data = {"-s": {"stdout": "", "stderr": ""}}
 
-command = ["lsscsi", "-s"]
-process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-data.update({"-s":{"stdout": process.stdout.read(), "stderr":process.stderr.read()}})
+if shutil.which("dmidecode"):
+    command = ["lsscsi", "-s"]
+    process = subprocess.Popen(
+        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
+    )
+    data["-s"]["stdout"] = process.stdout.read()
+    data["-s"]["stderr"] = process.stderr.read()
 
 json_string = json.dumps(data)
 sys.stdout.write(json_string)
