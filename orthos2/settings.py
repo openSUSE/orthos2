@@ -57,7 +57,7 @@ BASE_DIR = os.path.abspath("/var/lib/orthos2")
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("ORTHOS_SECRET_KEY", "")
+SECRET_KEY = os.environ.get("ORTHOS2_SECRET_KEY", "")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -298,9 +298,9 @@ AUTH_ALLOW_USER_CREATION = False
 # HINT: Configure the DEFAULT_AUTO_FIELD setting ...
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-NETBOX_URL = os.environ.get("ORTHOS_NETBOX_URL", "")
-NETBOX_TOKEN = os.environ.get("ORTHOS_NETBOX_TOKEN", "")
-NETBOX_AUTH_SCHEME = os.environ.get("ORTHOS_NETBOX_AUTH_SCHEME", "Bearer")
+NETBOX_URL = os.environ.get("ORTHOS2_NETBOX_URL", "")
+NETBOX_TOKEN = os.environ.get("ORTHOS2_NETBOX_TOKEN", "")
+NETBOX_AUTH_SCHEME = os.environ.get("ORTHOS2_NETBOX_AUTH_SCHEME", "Bearer")
 
 # Check for alternative settings file. If this file exists, we use it and evaluate the code.
 # This is intended to be used for production mode.
