@@ -87,7 +87,7 @@ def login(
             auth_login(request, form.get_user())
             return redirect("frontend:machines")
         else:
-            # active users without password (don't ask in ldap case)
+            # active users without password (don't ask in oidc case)
             if settings.AUTH_ALLOW_USER_CREATION:
                 try:
                     user = User.objects.get(username=request.POST["username"])

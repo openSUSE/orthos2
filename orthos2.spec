@@ -55,7 +55,6 @@ BuildRequires:  %{python_module netaddr}
 
 Requires:  %{python3_pkgversion}-Django >= 4.2
 Requires:  %{python3_pkgversion}-django-extensions
-Requires:  %{python3_pkgversion}-django-auth-ldap
 Requires:  %{python3_pkgversion}-djangorestframework
 Requires:  %{python3_pkgversion}-netaddr
 Requires:  %{python3_pkgversion}-requests

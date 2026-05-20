@@ -8,8 +8,6 @@ RUN zypper in -y \
     python3-pip \
     python3-setuptools \
     gcc \
-    openldap2-devel \
-    cyrus-sasl-devel \
     jq \
     sudo \
     git \
@@ -28,7 +26,6 @@ RUN zypper in -y \
     python3-requests \
     python3-urllib3 \
     python3-pytz \
-    python3-django-auth-ldap \
     python3-django-test-migrations \
     python3-social-auth-app-django \
     python3-social-auth-core

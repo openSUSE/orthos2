@@ -30,7 +30,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          sudo apt-get install python3-setuptools libldap2-dev libsasl2-dev
+          sudo apt-get install python3-setuptools
           python -m pip install --upgrade pip
           pip install -r requirements-devel.txt
       - name: Create required directories
@@ -142,7 +142,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          sudo apt-get install python3-setuptools libldap2-dev libsasl2-dev
+          sudo apt-get install python3-setuptools
           python -m pip install --upgrade pip
           python -m pip install -r requirements-devel.txt
       - name: Create required directories

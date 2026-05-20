@@ -249,10 +249,6 @@ LOGGING = {
             "handlers": DEFAULT_LOG,
             "level": "DEBUG",
         },
-        "django_auth_ldap": {
-            "handlers": DEFAULT_LOG,
-            "level": "DEBUG",
-        },
     },
 }
 AUTHENTICATION_BACKENDS = (
