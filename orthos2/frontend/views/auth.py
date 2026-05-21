@@ -52,7 +52,7 @@ def deprecate_current_app(func: Callable[[Any, Any], Any]) -> Callable[[Any, Any
 
 def _get_login_redirect_url(request: HttpRequest, redirect_to: str) -> str:
     # Ensure the user-originating redirection URL is safe.
-    if not url_has_allowed_host_and_scheme(url=redirect_to, host=request.get_host()):  # type: ignore
+    if not url_has_allowed_host_and_scheme(url=redirect_to, allowed_hosts=request.get_host()):  # type: ignore
         return resolve_url(settings.LOGIN_REDIRECT_URL)
     return redirect_to
 
