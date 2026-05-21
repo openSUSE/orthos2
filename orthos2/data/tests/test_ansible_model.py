@@ -1,4 +1,5 @@
 from decimal import Decimal
+from typing import Any, Dict
 
 from django.test import TestCase
 from django.utils import timezone
@@ -25,13 +26,9 @@ class AnsibleScanResultModelTest(TestCase):
             if hasattr(machine, "bmc"):
                 machine.bmc.delete()
 
-    def _get_minimal_facts(self):
+    def _get_minimal_facts(self) -> Dict[str, Any]:
         """Get minimal facts that won't cause NOT NULL violations."""
-        return {
-            "ansible_local": {
-                "last": {"latest": ""},
-            }
-        }
+        return {"ansible_local": {}}
 
     def test_create_ansible_scan_result(self) -> None:
         """Should create AnsibleScanResult with valid facts_raw."""
@@ -429,7 +426,7 @@ class AnsibleScanResultModelTest(TestCase):
         machine = Machine.objects.first()
         assert machine is not None
         facts = self._get_minimal_facts()
-        facts["ansible_local"]["last"] = {"latest": "root pts/0 Wed Apr 30"}
+        facts["ansible_local"]["last"] = {"latest": {"stdout": "root pts/0 Wed Apr 30"}}
         facts["ansible_local"]["ipmi"] = {"ipmi": True}
 
         result = AnsibleScanResult.objects.create(
