@@ -1,8 +1,0 @@
-Scripts in that directory:
-
-machine_*:
-    Gets executed on the managed host for hardware scanning.
-
-server_*:
-    Gets executed on the Orthos server directly.
-
