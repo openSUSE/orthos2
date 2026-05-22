@@ -7,7 +7,7 @@ import sys
 
 data = {"-s": {"stdout": "", "stderr": ""}}
 
-if shutil.which("dmidecode"):
+if shutil.which("lsscsi"):
     command = ["lsscsi", "-s"]
     process = subprocess.Popen(
         command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
