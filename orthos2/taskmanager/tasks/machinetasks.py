@@ -27,18 +27,16 @@ class MachineCheck(Task):
     class Scan:
         class Action:
             STATUS = "status"
-            NETWORKINTERFACES = "networkinterfaces"
             INSTALLATIONS = "installations"
             ALL = "all"
 
-            as_list = [STATUS, NETWORKINTERFACES, INSTALLATIONS, ALL]
+            as_list = [STATUS, INSTALLATIONS, ALL]
 
         STATUS = 0
-        NETWORKINTERFACES = 1
         INSTALLATIONS = 2
         ALL = 99
 
-        as_list = [STATUS, NETWORKINTERFACES, INSTALLATIONS, ALL]
+        as_list = [STATUS, INSTALLATIONS, ALL]
 
         @classmethod
         def to_str(cls, index: int) -> str:
@@ -62,7 +60,6 @@ class MachineCheck(Task):
 
     SCAN_CHOICES = (
         (Scan.STATUS, Scan.Action.STATUS),
-        (Scan.NETWORKINTERFACES, Scan.Action.NETWORKINTERFACES),
         (Scan.INSTALLATIONS, Scan.Action.INSTALLATIONS),
         (Scan.ALL, Scan.Action.ALL),
     )
@@ -79,7 +76,6 @@ class MachineCheck(Task):
         """
         methods = {
             self.Scan.STATUS: (self.status,),
-            self.Scan.NETWORKINTERFACES: (self.status_ip,),
             self.Scan.INSTALLATIONS: (self.installations,),
             self.Scan.ALL: (
                 self.status,
