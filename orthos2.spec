@@ -136,10 +136,7 @@ mkdir -p %{buildroot}%{_prefix}/bin
 %config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
 %dir %{_prefix}/lib/%{name}
 %dir %{_prefix}/lib/%{name}/scripts
-%{_prefix}/lib/%{name}/scripts/README
 %{_prefix}/lib/%{name}/scripts/*.sh
-%{_prefix}/lib/%{name}/scripts/server_1011_power.pl
-%{_prefix}/lib/%{name}/scripts/virt-create-rootfs-orthos
 %attr(755,orthos,orthos) %{_bindir}/orthos-admin
 
 # defattr(fileattr, user, group, dirattr)

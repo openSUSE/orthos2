@@ -25,7 +25,6 @@
   <a class="btn btn-secondary btn-sm" href="{% url 'frontend:rescan' machine.id %}?action=status" role="button">Rescan Status</a>
   <a class="btn btn-secondary btn-sm {% if not machine.collect_system_information %}disabled{% endif %}" href="{% url 'frontend:rescan' machine.id %}?action=all" role="button">Rescan All</a>
   <a class="btn btn-secondary btn-sm {% if not machine.collect_system_information %}disabled{% endif %}" href="{% url 'frontend:rescan' machine.id %}?action=installations" role="button">Rescan Installations</a>
-  <a class="btn btn-secondary btn-sm {% if not machine.collect_system_information %}disabled{% endif %}" href="{% url 'frontend:rescan' machine.id %}?action=networkinterfaces" role="button">Rescan Network Interfaces</a>
 </div>
 
 {% if machine.remotepower %}
