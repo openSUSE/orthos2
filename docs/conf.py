@@ -63,9 +63,6 @@ html_static_path = ["_static"]
 
 # -- Options for Autodoc ------------------------------------------------------
 
-# So we don't need to install the ldap auth
-autodoc_mock_imports = ["django-auth-ldap", "ldap"]
-
 docs_location = "/usr/share/doc/packages/"
 
 # One entry per manual page. List of tuples

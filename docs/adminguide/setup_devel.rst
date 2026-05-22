@@ -5,7 +5,7 @@ Installation/Setup (Devel system)
 1. Prepare your local system:
     .. code-block::
 
-        $ sudo zypper in docker docker-compose gcc python3-devel openldap2-devel cyrus-sasl-devel
+        $ sudo zypper in docker docker-compose gcc python3-devel
 
 
 2. Check out the sources:

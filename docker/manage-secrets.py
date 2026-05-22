@@ -120,10 +120,10 @@ netbox_api_pepper = "".join(secrets.choice(netbox_pepper_charset) for _ in range
 # ORTHOS_SECRET_KEY, ORTHOS_NETBOX_TOKEN
 
 (script_directory / "orthos" / "orthos2.env").write_text(
-    f"ORTHOS_SECRET_KEY='{orthos2_secret_key}'\n"
-    f"ORTHOS_NETBOX_AUTH_SCHEME='Bearer'\n"
-    'ORTHOS_NETBOX_URL="http://netbox.orthos2.test:8080"\n'
-    f'ORTHOS_SUPERUSER_PASSWORD="{orthos_superuser_password}"\n'
+    f"ORTHOS2_SECRET_KEY='{orthos2_secret_key}'\n"
+    f"ORTHOS2_NETBOX_AUTH_SCHEME='Bearer'\n"
+    'ORTHOS2_NETBOX_URL="http://netbox.orthos2.test:8080"\n'
+    f'ORTHOS2_SUPERUSER_PASSWORD="{orthos_superuser_password}"\n'
     'ORTHOS2_DB_ENGINE="django.db.backends.postgresql_psycopg2"\n'
     'ORTHOS2_POSTGRES_HOST="database.orthos2.test"\n'
     'ORTHOS2_POSTGRES_NAME="orthos"\n'
@@ -133,6 +133,7 @@ netbox_api_pepper = "".join(secrets.choice(netbox_pepper_charset) for _ in range
     'CSRF_TRUSTED_ORIGINS="https://orthos2.orthos2.test"\n'
     'CSRF_ALLOWED_ORIGIN="https://orthos2.orthos2.test"\n'
     'CROSS_ORIGINS_WHITELIST="https://orthos2.orthos2.test"\n'
+    'OIDC_ENDPOINT="https://authentik.orthos2.test/application/o/orthos"'
     f'OIDC_KEY="{oidc_key}"\n'
     f'OIDC_SECRET="{oidc_secret}"\n'
     "NETBOX_SUPERUSER_NAME='admin'\n"

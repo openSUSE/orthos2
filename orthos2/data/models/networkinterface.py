@@ -230,13 +230,19 @@ class NetworkInterface(models.Model):
         machine_primary_ipv6 = netbox_machine.get("primary_ip6")
         for ip in ips:
             ip_obj = ipaddress.ip_network(ip.get("display"))  # type: ignore
+            NetboxOrthosComparisionResult(
+                run_id=run_obj,
+                property_name="fqdn (IPv%s)" % ip_obj.version,
+                orthos_result=self.machine.fqdn,
+                netbox_result=ip.get("dns_name", "<not set>"),
+            ).save()
             # IPv4 Address
             if ip_obj.version == 4:
                 NetboxOrthosComparisionResult(
                     run_id=run_obj,
                     property_name="ip_address_v4",
                     orthos_result=self.ip_address_v4 or "<not set>",
-                    netbox_result=str(ip_obj),
+                    netbox_result=str(ip_obj).split("/", 1)[0],
                 ).save()
             # IPv6 Address
             if ip_obj.version == 6:
@@ -244,7 +250,7 @@ class NetworkInterface(models.Model):
                     run_id=run_obj,
                     property_name="ip_address_v6",
                     orthos_result=self.ip_address_v6 or "<not set>",
-                    netbox_result=str(ip_obj),
+                    netbox_result=str(ip_obj).split("/", 1)[0],
                 ).save()
             if machine_primary_ipv4 is not None and machine_primary_ipv4.get(
                 "id", 0

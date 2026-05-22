@@ -42,7 +42,7 @@ Web Client
 ##########
 
 Via the link to your webserver domain it is possible to use the Orthos Web Client. The Web Client is mostly
-self-explanatory, so only the most important things are explained. You can log in via the web client with an LDAP user
+self-explanatory, so only the most important things are explained. You can log in via the web client with an OIDC user
 account. This is a normal user and has no administrative rights.This means that it is not possible to create and delete machine objects
 yourself and so on. With this account it is possible to use machines.
 
@@ -60,7 +60,7 @@ You can:
 If administrative rights are required, they must be set up by an Orthos administrator. Below a screenshot of the login
 page.
 
-.. note:: Account creation and password restoration may be disabled in case LDAP authentation is configured.
+.. note:: Account creation and password restoration may be disabled in case OIDC authentication is configured.
 
 .. image:: ../img/userguide/01_login_screen.jpg
   :alt: Orthos2 Login Screen

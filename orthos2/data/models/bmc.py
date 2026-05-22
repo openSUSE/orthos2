@@ -107,7 +107,7 @@ class BMC(models.Model):
                 self.machine.netbox_id
             )
         else:
-            netbox_interfaces = netbox_api.check_interface_no_mgmt_by_id(
+            netbox_interfaces = netbox_api.check_interface_mgmt_by_id(
                 self.machine.netbox_id
             )
         netbox_interface = {}
@@ -180,7 +180,7 @@ class BMC(models.Model):
             NetboxOrthosComparisionResult(
                 run_id=run_obj,
                 property_name="NetBox Out-Of-Band IP set?",
-                orthos_result="",
+                orthos_result="True",
                 netbox_result=str((machine_primary_oob != "")),
             ).save()
         # IPs
@@ -197,14 +197,14 @@ class BMC(models.Model):
                     run_id=run_obj,
                     property_name="ip_address_v4",
                     orthos_result=self.ip_address_v4 or "<not set>",
-                    netbox_result=str(ip_obj),
+                    netbox_result=str(ip_obj).split("/", 1)[0],
                 ).save()
             if ip_obj.version == 6:
                 NetboxOrthosComparisionResult(
                     run_id=run_obj,
                     property_name="ip_address_v6",
                     orthos_result=self.ip_address_v6 or "<not set>",
-                    netbox_result=str(ip_obj),
+                    netbox_result=str(ip_obj).split("/", 1)[0],
                 ).save()
         # TODO: Machine
         # TODO: Ethernet Type

@@ -57,7 +57,7 @@ BASE_DIR = os.path.abspath("/var/lib/orthos2")
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("ORTHOS_SECRET_KEY", "")
+SECRET_KEY = os.environ.get("ORTHOS2_SECRET_KEY", "")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -91,7 +91,7 @@ INSTALLED_APPS = [
 ]
 
 REMOTE_AUTH_BACKEND = "social_core.backends.open_id_connect.OpenIdConnectAuth"
-SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = "https://authentik.orthos2.test/application/o/orthos"
+SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = os.environ.get("OIDC_ENDPOINT", "")
 SOCIAL_AUTH_OIDC_KEY = os.environ.get("OIDC_KEY", "default")
 SOCIAL_AUTH_OIDC_SECRET = os.environ.get("OIDC_SECRET", "default")
 
@@ -249,10 +249,6 @@ LOGGING = {
             "handlers": DEFAULT_LOG,
             "level": "DEBUG",
         },
-        "django_auth_ldap": {
-            "handlers": DEFAULT_LOG,
-            "level": "DEBUG",
-        },
     },
 }
 AUTHENTICATION_BACKENDS = (
@@ -286,10 +282,11 @@ REST_FRAMEWORK = {
 }
 
 # Orthos variables
-SERVER_FQDN = "orthos.domain.tld"
-BASE_URL = "https://orthos.domain.tld"
-CONTACT = "tbd@domain.tld"
-SUPPORT_CONTACT = "tbd@domain.tld"
+STATIC_ROOT = os.environ.get("ORTHOS2_STATIC_ROOT", "/srv/www/orthos2/static")
+SERVER_FQDN = os.environ.get("ORTHOS2_SERVER_FQDN", "orthos.domain.tld")
+BASE_URL = os.environ.get("ORTHOS2_BASE_URL", "https://orthos.domain.tld")
+CONTACT = os.environ.get("ORTHOS2_CONTACT", "tbd@domain.tld")
+SUPPORT_CONTACT = os.environ.get("ORTHOS2_SUPPORT_CONTACT", "tbd@domain.tld")
 VERSION = "2.0.0"
 SYSTEM_USER = "orthos"
 AUTH_ALLOW_USER_CREATION = False
@@ -298,9 +295,9 @@ AUTH_ALLOW_USER_CREATION = False
 # HINT: Configure the DEFAULT_AUTO_FIELD setting ...
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-NETBOX_URL = os.environ.get("ORTHOS_NETBOX_URL", "")
-NETBOX_TOKEN = os.environ.get("ORTHOS_NETBOX_TOKEN", "")
-NETBOX_AUTH_SCHEME = os.environ.get("ORTHOS_NETBOX_AUTH_SCHEME", "Bearer")
+NETBOX_URL = os.environ.get("ORTHOS2_NETBOX_URL", "")
+NETBOX_TOKEN = os.environ.get("ORTHOS2_NETBOX_TOKEN", "")
+NETBOX_AUTH_SCHEME = os.environ.get("ORTHOS2_NETBOX_AUTH_SCHEME", "Bearer")
 
 # Check for alternative settings file. If this file exists, we use it and evaluate the code.
 # This is intended to be used for production mode.

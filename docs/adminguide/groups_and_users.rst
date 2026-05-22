@@ -6,7 +6,7 @@ Concepts
 ########
 
 A standard user does not belong to a group. Orthos can manage its own user base. Additionally it can also connect to an
-LDAP server and add LDAP users to its local database if successfully authenticated. By default the user cannot log
+OIDC server and add OIDC users to its local database if successfully authenticated. By default the user cannot log
 in to the admin dashboard, the necessary rights must be granted by an administrator over the admin dashboard.
 It is possible to create a user without group membership. However, users should
 be added to the appropriate groups for easier administration and permissions. Administrative permissions are set in

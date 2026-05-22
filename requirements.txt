@@ -8,7 +8,6 @@ paramiko
 djangorestframework
 validators
 netaddr
-django-auth-ldap
 social-auth-app-django
 social-auth-core
 requests

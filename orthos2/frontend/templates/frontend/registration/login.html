@@ -2,41 +2,98 @@
 {% load tags %}
 
 {% block navbar %}
-<ul class="navbar-nav mr-auto">
-  <li class="nav-item {% active_view request 'login' %}">
-    <a class="nav-link" href="{% url 'frontend:login' %}">Login</a>
-  </li>
-  {% if account_creation %}
-  <li class="nav-item {% active_view request 'create_user' %}">
-    <a class="nav-link" href="{% url 'frontend:create_user' %}">Create Account</a>
-  </li>
-  <li class="nav-item {% active_view request 'password_restore' %}">
-    <a class="nav-link" href="{% url 'frontend:password_restore' %}">Restore Password</a>
-  </li>
-  {% endif %}
-</ul>
+  <ul class="navbar-nav mr-auto">
+    <li class="nav-item {% active_view request 'login' %}">
+      <a class="nav-link" href="{% url 'frontend:login' %}">Login</a>
+    </li>
+    {% if account_creation and show_builtin_form %}
+      <li class="nav-item {% active_view request 'create_user' %}">
+        <a class="nav-link" href="{% url 'frontend:create_user' %}"
+          >Create Account</a
+        >
+      </li>
+      <li class="nav-item {% active_view request 'password_restore' %}">
+        <a class="nav-link" href="{% url 'frontend:password_restore' %}"
+          >Restore Password</a
+        >
+      </li>
+    {% endif %}
+  </ul>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-  <div class="row justify-content-center">
-    <div class="col-4">
-      <form class="form-signin" method="post">
-        {% csrf_token %}
-        <div class="row" style="margin: 5px;">
-          <input type="text" name="username" id="id_username" class="form-control" placeholder="Login" required autofocus/>
-        </div>
-        <div class="row" style="margin: 5px;">
-          <input type="password" name="password" id="id_password" class="form-control" placeholder="Password" required/>
-        </div>
-        <div class="row" style="margin: 5px;">
-          <button class="btn btn-block" type="submit">Login</button>
-        </div>
-      </form>
-      <div class="row" style="margin: 5px;">
-        <button class="btn btn-block" onclick="window.location.href='{% url 'social:begin' backend='oidc' %}'">Login with Authentik</button>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-4">
+        {% if show_oidc_only %}
+          {# OIDC-only screen: Just show centered "Login with Authentik" button #}
+          <div class="row" style="margin: 5px;">
+            <button
+              class="btn btn-primary btn-block btn-lg"
+              onclick="window.location.href='{% url 'social:begin' backend='oidc' %}'"
+            >
+              Login with Authentik
+            </button>
+          </div>
+        {% else %}
+          {# Built-in authentication form #}
+          <form class="form-signin" method="post">
+            {% csrf_token %}
+            <div class="row" style="margin: 5px;">
+              <input
+                type="text"
+                name="username"
+                id="id_username"
+                class="form-control"
+                placeholder="Login"
+                required
+                autofocus
+                value="{{ form.username.value|default:'' }}"
+              />
+            </div>
+            <div class="row" style="margin: 5px;">
+              <input
+                type="password"
+                name="password"
+                id="id_password"
+                class="form-control"
+                placeholder="Password"
+                required
+              />
+            </div>
+            <div class="row" style="margin: 5px;">
+              <div class="form-check">
+                <input
+                  type="checkbox"
+                  name="remember_username"
+                  id="id_remember_username"
+                  class="form-check-input"
+                  {% if form.remember_username.value %}checked{% endif %}
+                />
+                <label class="form-check-label" for="id_remember_username">
+                  Remember username
+                </label>
+              </div>
+            </div>
+            <div class="row" style="margin: 5px;">
+              <button class="btn btn-primary btn-block" type="submit">
+                Login
+              </button>
+            </div>
+          </form>
+          {% if oidc_configured %}
+            {# Show OIDC as secondary option when on builtin screen #}
+            <div class="row" style="margin: 5px;">
+              <button
+                class="btn btn-secondary btn-block"
+                onclick="window.location.href='{% url 'social:begin' backend='oidc' %}'"
+              >
+                Login with Authentik
+              </button>
+            </div>
+          {% endif %}
+        {% endif %}
       </div>
     </div>
   </div>
-</div>
 {% endblock %}

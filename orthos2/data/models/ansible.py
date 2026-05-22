@@ -200,7 +200,12 @@ class AnsibleScanResult(models.Model):
                 .get("stdout", "")
             )
         )
-        machine.last = facts.get("ansible_local", {}).get("last", {}).get("latest")
+        machine.last = (
+            facts.get("ansible_local", {})
+            .get("last", {})
+            .get("latest", {})
+            .get("stdout", "")
+        )
         machine.ipmi = facts.get("ansible_local", {}).get("ipmi", {}).get("ipmi", False)
 
         machine.save()

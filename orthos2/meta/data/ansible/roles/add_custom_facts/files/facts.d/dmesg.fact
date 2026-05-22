@@ -1,14 +1,26 @@
 #!/usr/bin/env python3
 
 import json
+import pathlib
 import subprocess
 import sys
 
-data = dict()
+data = {"-xl": {"stdout": "", "stderr": ""}}
 
-command = "if [ -e /var/log/boot.msg ]; then cat /var/log/boot.msg; else journalctl -xl | head -n200; fi"
-process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, shell=True)
-data.update({"-xl":{"stdout": process.stdout.read(), "stderr":process.stderr.read()}})
+bootlog = pathlib.Path("/var/log/boot.msg")
+if bootlog.is_file():
+    data["-xl"]["stdout"] = bootlog.read_text(encoding="ascii", errors="ignore")
+else:
+    command = "journalctl -xl | head -n200"
+    process = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        shell=True,
+    )
+    data["-xl"]["stdout"] = process.stdout.read().encode().decode("ascii", "ignore")
+    data["-xl"]["stderr"] = process.stderr.read().encode().decode("ascii", "ignore")
 
 json_string = json.dumps(data)
 sys.stdout.write(json_string)
