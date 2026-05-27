@@ -1101,7 +1101,6 @@ class Machine(models.Model):
                 sender=self.__class__,
                 domain_id=domain_id,
             )
-            self.scan("networkinterfaces")
         if update_sconsole:
             from orthos2.data.signals import signal_serialconsole_regenerate
 

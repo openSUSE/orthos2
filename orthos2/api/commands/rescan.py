@@ -35,10 +35,9 @@ Arguments:
                all               : Complete scan.
                misc              : Check miscellaneous software/hardware attributes.
                installations     : Rescan installed distributions only.
-               networkinterfaces : Rescan network interfaces only.
 
 Example:
-    RESCAN foo.domain.tld networkinterfaces
+    RESCAN foo.domain.tld status
 """
 
     @staticmethod

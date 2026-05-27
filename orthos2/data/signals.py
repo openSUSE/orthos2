@@ -70,8 +70,6 @@ def machine_post_save(
 
             if instance.system.administrative:
                 primary_networkinterface.delete()
-            else:
-                instance.scan("networkinterfaces")
 
 
 @receiver(pre_delete, sender=Machine)
