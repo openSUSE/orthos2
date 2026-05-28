@@ -29,6 +29,10 @@
             </tr>
             {% if enclosure.netbox_id > 0 %}
               <tr>
+                <td class="th">Is VM in NetBox?</td>
+                <td>{{ enclosure.is_virtual }}</td>
+              </tr>  
+              <tr>
                 <td class="th">NetBox URL</td>
                 <td>
                   <a

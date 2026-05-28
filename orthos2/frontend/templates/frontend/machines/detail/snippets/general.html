@@ -79,5 +79,11 @@
       <td>{{ machine.netbox_last_fetch_attempt }}</td>
     </tr>
     {% endif %}
+    {% if perms.data and perms.data.change_enclosure %}
+    <tr>
+      <td class="th">Enclosure</td>
+      <td><a href="{% url 'frontend:enclosure_detail' machine.enclosure.id %}">{{ machine.enclosure.name }}</a></td>
+    </tr>
+    {% endif %}
   </tbody>
 </table>

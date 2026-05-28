@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
-from requests import HTTPError
 
 from orthos2.data.models.netboxorthoscomparision import (
     NetboxOrthosComparisionResult,
@@ -229,7 +228,8 @@ class NetworkInterface(models.Model):
         machine_primary_ipv4 = netbox_machine.get("primary_ip4")
         machine_primary_ipv6 = netbox_machine.get("primary_ip6")
         for ip in ips:
-            ip_obj = ipaddress.ip_network(ip.get("display"))  # type: ignore
+            ip_obj = ipaddress.ip_network(misc.ip_strip_subnet_size(ip.get("display")))  # type: ignore
+            # DNS Name
             NetboxOrthosComparisionResult(
                 run_id=run_obj,
                 property_name="fqdn (IPv%s)" % ip_obj.version,
@@ -265,7 +265,6 @@ class NetworkInterface(models.Model):
         # Primary
         # MAC Address
         # Ethernet Type
-        # DNS Name
 
     def fetch_netbox(self) -> None:
         """
@@ -280,17 +279,15 @@ class NetworkInterface(models.Model):
         )
         self.save()
         netbox_api = Netbox.get_instance()
-        try:
-            netbox_machine = netbox_api.fetch_device(self.machine.netbox_id)
-        except HTTPError as e:
-            if e.response.status_code == 404:
-                logger.info("Fetching from NetBox failed with status 404.")
-                return
-            raise e
-
+        netbox_machine = self.machine.fetch_netbox_record()
+        if netbox_machine is None:
+            return
         netbox_interface = self.fetch_netbox_record()
 
-        ips = netbox_api.check_ip_by_interface(netbox_interface.get("id"))  # type: ignore
+        if self.machine.system.virtual:
+            ips = netbox_api.check_ip_by_vm_interface(netbox_interface.get("id"))  # type: ignore
+        else:
+            ips = netbox_api.check_ip_by_interface(netbox_interface.get("id"))  # type: ignore
         if len(ips) == 0:
             logger.debug("No IPs assigned to this interface in NetBox.")
             return
@@ -304,9 +301,12 @@ class NetworkInterface(models.Model):
         # Set fields
         machine_primary_ipv4 = netbox_machine.get("primary_ip4")
         machine_primary_ipv6 = netbox_machine.get("primary_ip6")
+        logger.info(machine_primary_ipv4)
+        logger.info(machine_primary_ipv6)
         for ip in ips:
-            ip_obj = ipaddress.ip_network(ip.get("display"))  # type: ignore
+            ip_obj = ipaddress.ip_address(misc.ip_strip_subnet_size(ip.get("display")))  # type: ignore
             ip_id = ip.get("id", -1)
+            logger.info(ip)
             if ip_obj.version == 4:
                 self.ip_address_v4 = str(ip_obj)
             if ip_obj.version == 6:

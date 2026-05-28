@@ -3,13 +3,13 @@
   <h3 class="gray">
     <a href="{% url 'frontend:detail' machine.id %}">{{ machine.fqdn }}</a>
   </h3>
+  {% if machine.enclosure.location_room and machine.enclosure.location_room != "<not set>" %}
   <h6>
-    {% if machine.enclosure.location_room and machine.enclosure.location_room != "<not set>" %}
       {{ machine.enclosure.location_room }}
       &gt; {{ machine.enclosure.location_rack }} &gt;
       {{ machine.enclosure.location_rack_position }}
-    {% endif %}
   </h6>
+  {% endif %}
   <div class="machine-statusbar alert" id="machine-statusbar">
     <div class="spinner" width="20px">
       <img

@@ -117,7 +117,7 @@ netbox_api_pepper = "".join(secrets.choice(netbox_pepper_charset) for _ in range
 )
 
 # orthos2.env
-# ORTHOS_SECRET_KEY, ORTHOS_NETBOX_TOKEN
+# ORTHOS2_SECRET_KEY, ORTHOS2_NETBOX_TOKEN
 
 (script_directory / "orthos" / "orthos2.env").write_text(
     f"ORTHOS2_SECRET_KEY='{orthos2_secret_key}'\n"

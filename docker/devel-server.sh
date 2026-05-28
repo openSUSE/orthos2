@@ -6,10 +6,10 @@ get_netbox_token() {
     NETBOX_TOKEN_JSON=$(curl -s -X POST \
       -H "Content-Type: application/json" \
       -H "Accept: Application/json; indent=4" \
-      "${ORTHOS_NETBOX_URL}/api/users/tokens/provision/" \
+      "${ORTHOS2_NETBOX_URL}/api/users/tokens/provision/" \
       --data "{\"username\": \"${NETBOX_SUPERUSER_NAME}\", \"password\": \"${NETBOX_SUPERUSER_PASSWORD}\"}")
-    ORTHOS_NETBOX_TOKEN="nbt_$(echo $NETBOX_TOKEN_JSON | jq -r '.key').$(echo $NETBOX_TOKEN_JSON | jq -r '.token')"
-    export ORTHOS_NETBOX_TOKEN
+    ORTHOS2_NETBOX_TOKEN="nbt_$(echo $NETBOX_TOKEN_JSON | jq -r '.key').$(echo $NETBOX_TOKEN_JSON | jq -r '.token')"
+    export ORTHOS2_NETBOX_TOKEN
 }
 
 server_start() {

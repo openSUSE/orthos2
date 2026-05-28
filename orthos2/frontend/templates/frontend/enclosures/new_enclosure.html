@@ -34,6 +34,21 @@
           </div>
         </div>
 
+        {{ form.is_virtual.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.is_virtual.id_for_label }}">
+              {{ form.is_virtual.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.is_virtual }}
+            <small class="form-text text-muted">
+              {{ form.is_virtual.help_text }}
+            </small>
+          </div>
+        </div>
+
         {{ form.netbox_id.errors }}
         <div class="row" style="margin: 5px;">
           <div class="col-3">

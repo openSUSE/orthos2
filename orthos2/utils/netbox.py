@@ -304,6 +304,16 @@ class Netbox(REST):
         data = self.fetcher(url)
         return data["results"]
 
+    def check_ip_by_vm_interface_family(
+        self,
+        id: int,
+        family: Literal[4, 6],
+    ) -> List[Dict[str, Any]]:
+        url = f"{self.base_url}/ipam/ip-addresses/?vminterface_id={id}&family={family}"
+        logger.debug("Checking ip address from %s", url)
+        data = self.fetcher(url)
+        return data["results"]
+
     def check_vlan(self, vid: int) -> List[Dict[str, Any]]:
         url = f"{self.base_url}/ipam/vlans/?vid={vid}"
         logger.debug("Checking vlans from %s", url)
