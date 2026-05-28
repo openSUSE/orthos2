@@ -1,5 +1,11 @@
 #!/bin/bash
 
-# Django wrapper script for orthos server managmenent
+# Django wrapper script for orthos server management
+DJANGO_SETTINGS_MODULE=orthos2.settings
+export DJANGO_SETTINGS_MODULE
 
-sudo -i -u orthos DJANGO_SETTINGS_MODULE=orthos2.settings django-admin $@
+if [ "$USER" == "orthos" ]; then
+  django-admin $@
+else
+  sudo -E -u orthos django-admin $@
+fi
