@@ -27,7 +27,7 @@ NETBOX_TOKEN
 
 NetBox API Token to retrieve data from the instance specified at ``NETBOX_URL``.
 
-Environment Variable: ``ORTHOS_NETBOX_TOKEN``
+Environment Variable: ``ORTHOS2_NETBOX_TOKEN``
 
 Default: ``""`` (emtpy string)
 

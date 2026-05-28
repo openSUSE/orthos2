@@ -158,7 +158,7 @@ docker compose up -d
   - `ORTHOS2_DB_ENGINE`: Database backend
   - `ORTHOS2_POSTGRES_*`: PostgreSQL connection settings
   - `ALLOWED_HOSTS`: Django allowed hosts
-  - `ORTHOS_NETBOX_URL`, `ORTHOS_NETBOX_TOKEN`: Netbox integration
+  - `ORTHOS2_NETBOX_URL`, `ORTHOS2_NETBOX_TOKEN`: Netbox integration
   - `OIDC_KEY`, `OIDC_SECRET`: Authentication configuration
 
 ## Important Development Notes
