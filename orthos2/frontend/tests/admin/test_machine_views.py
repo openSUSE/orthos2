@@ -73,6 +73,7 @@ class ChangeView(WebTest):
                 "-U {{ ipmi.user}} -P {{ ipmi.password }} sol activate"
             ),
             comment="IPMI",
+            has_ipmi_sol=True,
         )
 
         BMC.objects.create(
