@@ -404,3 +404,16 @@ def is_unique_mac_address(
     if mac_addresses.count() > 0:
         return False
     return True
+
+
+def ip_strip_subnet_size(address: str) -> str:
+    """
+    Strip the subnet mask from an IP address.
+
+    :param address: The IP address to strip the suffix from.
+    :returns: An empty string in case the format was incorrect. Otherwise the IP without the /xx suffix.
+    """
+    parts = address.split("/", maxsplit=1)
+    if len(parts) != 2:
+        return ""
+    return parts[0]

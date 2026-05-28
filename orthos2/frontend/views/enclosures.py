@@ -84,7 +84,7 @@ class EnclosureDetailedEdit(PermissionRequiredMixin, UpdateView):
     success_url = reverse_lazy("frontend:enclosures")
     permission_required = "data.change_enclosure"
 
-    fields = ["name", "platform", "netbox_id", "description"]
+    fields = ["name", "platform", "netbox_id", "description", "is_virtual"]
 
     @method_decorator(login_required)
     def dispatch(
@@ -105,7 +105,7 @@ class NewEnclosure(PermissionRequiredMixin, CreateView):
     success_url = "/enclosures"
     permission_required = "data.change_enclosure"
 
-    fields = ["name", "platform", "netbox_id", "description"]
+    fields = ["name", "platform", "netbox_id", "description", "is_virtual"]
 
     @method_decorator(login_required)
     def dispatch(

@@ -50,6 +50,7 @@ from orthos2.utils.misc import (
     get_domain,
     get_hostname,
     get_s390_hostname,
+    ip_strip_subnet_size,
     is_dns_resolvable,
 )
 from orthos2.utils.netbox import Netbox
@@ -800,9 +801,14 @@ class Machine(models.Model):
         if product_code is not None:
             self.product_code = product_code
         # Verify all NetworkInterfaces are created
-        device_network_interfaces = netbox_api.check_interface_no_mgmt_by_id(
-            self.netbox_id
-        )
+        if self.system.virtual:
+            device_network_interfaces = netbox_api.check_vm_interface_by_id(
+                self.netbox_id
+            )
+        else:
+            device_network_interfaces = netbox_api.check_interface_no_mgmt_by_id(
+                self.netbox_id
+            )
         synced_mac_addresses: Set[str] = set()
         for interface in device_network_interfaces:
             primary_mac = interface.get("primary_mac_address")
@@ -813,12 +819,20 @@ class Machine(models.Model):
                 # This is most probably a bonded interface, and we synchronize the first interface.
                 continue
             synced_mac_addresses.add(primary_mac.get("mac_address"))
-            ipv4_addresses = netbox_api.check_ip_by_interface_family(
-                interface.get("id"), 4  # type: ignore
-            )
-            ipv6_addresses = netbox_api.check_ip_by_interface_family(
-                interface.get("id"), 6  # type: ignore
-            )
+            if self.system.virtual:
+                ipv4_addresses = netbox_api.check_ip_by_vm_interface_family(
+                    interface.get("id"), 4  # type: ignore
+                )
+                ipv6_addresses = netbox_api.check_ip_by_vm_interface_family(
+                    interface.get("id"), 6  # type: ignore
+                )
+            else:
+                ipv4_addresses = netbox_api.check_ip_by_interface_family(
+                    interface.get("id"), 4  # type: ignore
+                )
+                ipv6_addresses = netbox_api.check_ip_by_interface_family(
+                    interface.get("id"), 6  # type: ignore
+                )
             if len(ipv4_addresses) > 1 or len(ipv6_addresses) > 1:
                 # TODO: Handle case
                 continue
@@ -836,94 +850,96 @@ class Machine(models.Model):
                 orthos_network_interface.mac_address = primary_mac.get("mac_address")
                 orthos_network_interface.machine_id = self.id
             # Update interface information
-            orthos_network_interface.ethernet_type = interface.get("type").get("label")  # type: ignore
+            if not self.system.virtual:
+                orthos_network_interface.ethernet_type = interface.get("type").get("label")  # type: ignore
             orthos_network_interface.name = interface.get("name")  # type: ignore
             if len(ipv4_addresses) > 0:
-                orthos_network_interface.ip_address_v4 = str(
-                    ipaddress.ip_network(
-                        ipv4_addresses[0].get("address")  # type: ignore
-                    ).network_address
+                orthos_network_interface.ip_address_v4 = ip_strip_subnet_size(
+                    ipv4_addresses[0].get("display", "")
                 )
             if len(ipv6_addresses) > 0:
-                orthos_network_interface.ip_address_v6 = str(
-                    ipaddress.ip_network(
-                        ipv6_addresses[0].get("address")  # type: ignore
-                    ).network_address
+                orthos_network_interface.ip_address_v6 = ip_strip_subnet_size(
+                    ipv6_addresses[0].get("display", "")
                 )
             orthos_network_interface.save()
-        mgmt_interfaces = netbox_api.check_interface_mgmt_by_id(self.netbox_id)
-        if len(mgmt_interfaces) > 1:
-            # Skip multi-mgmt interfaces for now. Feature will be implemented later.
-            logger.warning(
-                "Skipping fetching BMC data from NetBox since there is more then a single network interface."
-            )
-        for mgmt_interface in mgmt_interfaces:
-            primary_mac = mgmt_interface.get("primary_mac_address")
-            # Don't attempt to do things without a MAC address
-            if primary_mac is None:
-                continue
-            ipv4_addresses = netbox_api.check_ip_by_interface_family(
-                mgmt_interface.get("id"), 4  # type: ignore
-            )
-            ipv6_addresses = netbox_api.check_ip_by_interface_family(
-                mgmt_interface.get("id"), 6  # type: ignore
-            )
-            ipv4_address_count = len(ipv4_addresses)
-            ipv6_address_count = len(ipv6_addresses)
-            if ipv4_address_count > 1 or ipv6_address_count > 1:
+        if not self.system.virtual:
+            mgmt_interfaces = netbox_api.check_interface_mgmt_by_id(self.netbox_id)
+            if len(mgmt_interfaces) > 1:
+                # Skip multi-mgmt interfaces for now. Feature will be implemented later.
                 logger.warning(
-                    "Skipped updating BMC interface because it had more then one IPv4 or IPv6 address!"
+                    "Skipping fetching BMC data from NetBox since there is more then a single network interface."
                 )
-                continue
-            if (
-                ipv4_address_count == 1
-                and ipv6_address_count == 1
-                and ipv4_addresses[0].get("dns_name")
-                != ipv6_addresses[0].get("dns_name")
-            ):
-                logger.warning(
-                    "Skipped updating BMC interface because IPv4 and IPv6 DNS name are different!"
+            for mgmt_interface in mgmt_interfaces:
+                primary_mac = mgmt_interface.get("primary_mac_address")
+                # Don't attempt to do things without a MAC address
+                if primary_mac is None:
+                    continue
+                ipv4_addresses = netbox_api.check_ip_by_interface_family(
+                    mgmt_interface.get("id"), 4  # type: ignore
                 )
-                continue
-            fence_name = mgmt_interface.get("custom_fields", {}).get("fence_agent", "")
-            if fence_name == "":
-                logger.warning("Skipped because BMC interface has no fence name set!")
-                continue
-            if self.has_bmc():
-                bmc = BMC.objects.get(mac=primary_mac.get("mac_address"))
-                if bmc.machine_id != self.id:
+                ipv6_addresses = netbox_api.check_ip_by_interface_family(
+                    mgmt_interface.get("id"), 6  # type: ignore
+                )
+                ipv4_address_count = len(ipv4_addresses)
+                ipv6_address_count = len(ipv6_addresses)
+                if ipv4_address_count > 1 or ipv6_address_count > 1:
                     logger.warning(
-                        'BMC interface with MAC "%s" wasn\'t assigned to current machine %s but to machine %s!',
-                        primary_mac.get("mac_address"),
-                        self.id,
-                        bmc.machine_id,
+                        "Skipped updating BMC interface because it had more then one IPv4 or IPv6 address!"
                     )
                     continue
-            else:
-                bmc = BMC()
-                bmc.machine_id = self.id
-            # If both families are available then they must be equal, if one is present, take either one.
-            if ipv4_address_count == 1:
-                bmc.fqdn = ipv4_addresses[0].get("dns_name")  # type: ignore
-            else:
-                bmc.fqdn = ipv6_addresses[0].get("dns_name")  # type: ignore
-            bmc.fence_agent = RemotePowerType.objects.get(name=fence_name)
-            bmc.mac = primary_mac.get("mac_address")
-            if ipv4_address_count > 0:
-                bmc.ip_address_v4 = str(
-                    ipaddress.ip_network(
-                        ipv4_addresses[0].get("address")  # type: ignore
-                    ).network_address
+                if (
+                    ipv4_address_count == 1
+                    and ipv6_address_count == 1
+                    and ipv4_addresses[0].get("dns_name")
+                    != ipv6_addresses[0].get("dns_name")
+                ):
+                    logger.warning(
+                        "Skipped updating BMC interface because IPv4 and IPv6 DNS name are different!"
+                    )
+                    continue
+                fence_name = mgmt_interface.get("custom_fields", {}).get(
+                    "fence_agent", ""
                 )
-            if ipv6_address_count > 0:
-                bmc.ip_address_v6 = str(
-                    ipaddress.ip_network(
-                        ipv6_addresses[0].get("address")  # type: ignore
-                    ).network_address
-                )
-            # Username & Password will be pulled from Hashicorp Vault in the future but for
-            # now they have to be manually given.
-            bmc.save()
+                if fence_name == "":
+                    logger.warning(
+                        "Skipped because BMC interface has no fence name set!"
+                    )
+                    continue
+                if self.has_bmc():
+                    bmc = BMC.objects.get(mac=primary_mac.get("mac_address"))
+                    if bmc.machine_id != self.id:
+                        logger.warning(
+                            'BMC interface with MAC "%s" wasn\'t assigned to current machine %s but to machine %s!',
+                            primary_mac.get("mac_address"),
+                            self.id,
+                            bmc.machine_id,
+                        )
+                        continue
+                else:
+                    bmc = BMC()
+                    bmc.machine_id = self.id
+                # If both families are available then they must be equal, if one is present, take either one.
+                if ipv4_address_count == 1:
+                    bmc.fqdn = ipv4_addresses[0].get("dns_name")  # type: ignore
+                else:
+                    bmc.fqdn = ipv6_addresses[0].get("dns_name")  # type: ignore
+                bmc.fence_agent = RemotePowerType.objects.get(name=fence_name)
+                bmc.mac = primary_mac.get("mac_address")
+                if ipv4_address_count > 0:
+                    bmc.ip_address_v4 = str(
+                        ipaddress.ip_network(
+                            ipv4_addresses[0].get("address")  # type: ignore
+                        ).network_address
+                    )
+                if ipv6_address_count > 0:
+                    bmc.ip_address_v6 = str(
+                        ipaddress.ip_network(
+                            ipv6_addresses[0].get("address")  # type: ignore
+                        ).network_address
+                    )
+                # Username & Password will be pulled from Hashicorp Vault in the future but for
+                # now they have to be manually given.
+                bmc.save()
         self.save()
 
     def bmc_allowed(self) -> bool:

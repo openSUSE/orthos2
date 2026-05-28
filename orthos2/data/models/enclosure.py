@@ -94,6 +94,12 @@ class Enclosure(models.Model):
         default="<not set>",
     )
 
+    is_virtual: "models.BooleanField[bool, bool]" = models.BooleanField(
+        "Is Virtual?",
+        default=False,
+        help_text="Is the Enclosure a Virtual Machine or Device in NetBox?",
+    )
+
     netboxorthoscomparisionruns: "RelatedManager[NetboxOrthosComparisionRun]"
     objects = Manager()
     api = RootEnclosureManager()
@@ -136,7 +142,7 @@ class Enclosure(models.Model):
         if machine is None:
             logger.info("Cannot fetch record for enclosure without machines.")
             return None
-        if machine.system.virtual:
+        if self.is_virtual:
             try:
                 netbox_machine = netbox_api.fetch_vm(self.netbox_id)
             except HTTPError as e:
