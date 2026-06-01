@@ -45,6 +45,12 @@ class SerialConsoleType(models.Model):
         blank=True,
     )
 
+    has_ipmi_sol: "models.BooleanField[bool, bool]" = models.BooleanField(
+        "Has IPMI SOL?",
+        default=False,
+        help_text="If the serial console type has IPMI SOL?",
+    )
+
     def natural_key(self) -> Tuple[str]:
         return (self.name,)
 
