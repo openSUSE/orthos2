@@ -1,7 +1,9 @@
-FROM registry.opensuse.org/opensuse/tumbleweed:latest
+FROM registry.suse.com/suse/sle15:15.7
+ENV ADDITIONAL_MODULES sle-module-basesystem, SUSE-PackageHub-15-SP7-Backports-Pool, PackageHub
 
 # Install SSH server, system tools, and hardware inventory tools
-RUN zypper in -y \
+RUN --mount=type=secret,id=SCCcredentials,target=/etc/zypp/credentials.d/SCCcredentials \
+    zypper in -y \
     openssh-server \
     iproute2 \
     systemd \
@@ -12,7 +14,6 @@ RUN zypper in -y \
     lsscsi \
     util-linux \
     kmod \
-    wtmpdb \
     python3
 
 # Configure SSH for root login

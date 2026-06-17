@@ -155,3 +155,11 @@ package-lock.json
 #certificates
 *.crt
 *.key
+
+# SCC Credendials
+/docker/scc/*
+!/docker/scc/.keep
+
+
+# Ignore vscode AI rules
+.github/instructions/codacy.instructions.md

@@ -36,7 +36,9 @@ services:
   orthos2:
     build:
       context: .
-      dockerfile: docker/develop-tw.dockerfile
+      dockerfile: docker/develop.dockerfile
+      secrets:
+        - SCCcredentials
     hostname: orthos2.orthos2.test
     env_file:
       - "docker/orthos/orthos2.env"
@@ -71,7 +73,9 @@ services:
   orthos2_taskmanager:
     build:
       context: .
-      dockerfile: docker/develop-tw.dockerfile
+      dockerfile: docker/develop.dockerfile
+      secrets:
+        - SCCcredentials
     environment:
       ORTHOS2_MODE: "taskmanager"
     env_file:
@@ -111,6 +115,8 @@ services:
     build:
       context: docker/cobbler
       dockerfile: cobbler.dockerfile
+      secrets:
+        - SCCcredentials
     networks:
       - orthos
     labels:
@@ -128,6 +134,8 @@ services:
     build:
       context: docker/serial-console
       dockerfile: serial-console.dockerfile
+      secrets:
+        - SCCcredentials
     #ports:
     #  - 22:22
   machine_bmc:
@@ -137,6 +145,8 @@ services:
     build:
       context: docker/bmc
       dockerfile: bmc.dockerfile
+      secrets:
+        - SCCcredentials
     ports:
       - "9001:9001"
   test_machine:
@@ -146,11 +156,15 @@ services:
     build:
       context: docker/test-machine
       dockerfile: test-machine.dockerfile
+      secrets:
+        - SCCcredentials
     depends_on:
       orthos2_database:
         condition: service_healthy
 
-
+secrets:
+  SCCcredentials:
+    file: docker/scc/SCCcredentials
 volumes:
   database:
     driver: local
