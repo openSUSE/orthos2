@@ -15,26 +15,26 @@ get_netbox_token() {
 server_start() {
     # Setup NetBox
     get_netbox_token
-    python3 manage.py shell </code/docker/setup_netbox.py
+    python3.11 manage.py shell </code/docker/setup_netbox.py
     # Setup Orthos 2
     git config --global --add safe.directory /code
     OLD_BRANCH=$(git branch --show-current)
     git stash -u
     git switch master
-    python3 manage.py migrate
+    python3.11 manage.py migrate
     if [ -f "dump.json" ]; then
-        python3 manage.py flush --noinput
-        python3 manage.py loaddata dump.json
+        python3.11 manage.py flush --noinput
+        python3.11 manage.py loaddata dump.json
     fi
     git switch "$OLD_BRANCH"
     git stash pop
-    python3 manage.py migrate
+    python3.11 manage.py migrate
     # Load test machine fixtures for development
-    python3 manage.py loaddata orthos2/data/fixtures/tests/test_domain_orthos2test.json || true
-    python3 manage.py loaddata orthos2/data/fixtures/tests/test_machine_docker.json || true
-    DJANGO_SUPERUSER_PASSWORD="$ORTHOS2_SUPERUSER_PASSWORD" python3 manage.py createsuperuser --noinput --username admin --email admin@example.com
-    python3 manage.py shell </code/docker/django-generate-admin-token
-    python3 manage.py runserver 0.0.0.0:8000
+    python3.11 manage.py loaddata orthos2/data/fixtures/tests/test_domain_orthos2test.json || true
+    python3.11 manage.py loaddata orthos2/data/fixtures/tests/test_machine_docker.json || true
+    DJANGO_SUPERUSER_PASSWORD="$ORTHOS2_SUPERUSER_PASSWORD" python3.11 manage.py createsuperuser --noinput --username admin --email admin@example.com
+    python3.11 manage.py shell </code/docker/django-generate-admin-token
+    python3.11 manage.py runserver 0.0.0.0:8000
 }
 
 taskmanager_start() {
@@ -49,9 +49,9 @@ taskmanager_start() {
     # Generate NetBox API Token
     get_netbox_token
     # Moves files into place
-    python3 manage.py setup ansible --buildroot="/"
+    python3.11 manage.py setup ansible --buildroot="/"
     # Start server
-    python3 manage.py taskmanager --start
+    python3.11 manage.py taskmanager --start
 }
 
 if [ "$ORTHOS2_MODE" == "taskmanager" ]; then
