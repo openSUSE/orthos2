@@ -207,7 +207,7 @@ class RemotePowerDeviceInfoCommand(BaseAPIView):
     def get_urls() -> List[URLPattern]:
         return [
             re_path(
-                r"^remote-power-device$",
+                r"^remotepowerdevice$",
                 RemotePowerDeviceInfoCommand.as_view(),
                 name="remotepowerdevice",
             ),

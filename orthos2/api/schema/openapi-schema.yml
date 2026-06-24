@@ -1,0 +1,892 @@
+openapi: 3.0.2
+info:
+  title: ''
+  version: ''
+paths:
+  /api/:
+    get:
+      operationId: listroots
+      description: API root.
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - API
+  /api/machine:
+    get:
+      operationId: listInfoCommands
+      description: "Command to get information about a machine.\n\nUsage:\n    INFO\
+        \ <fqdn>\n\nArguments:\n    fqdn - FQDN or hostname of the machine.\n\nExample:\n\
+        \    INFO foo.domain.tld\n    "
+      parameters:
+      - name: fqdn
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - Machine
+  /api/enclosure:
+    get:
+      operationId: listEnclosureInfoCommands
+      description: Return machine information.
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - API
+  /api/remotepowerdevice:
+    get:
+      operationId: listRemotePowerDeviceInfoCommands
+      description: Return remote power device information.
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - RemotePowerDevice
+  /api/reserve:
+    get:
+      operationId: listReserveCommandGets
+      description: "Reserves a machine.\n\nUsage:\n    RESERVE <fqdn>\n\nArguments:\n\
+        \    fqdn - FQDN or hostname of the machine.\n\nExample:\n    RESERVE foo.domain.tld\n"
+      parameters:
+      - name: fqdn
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - API
+  /api/release:
+    get:
+      operationId: listReleaseCommands
+      description: "Releases a machine.\n\nUsage:\n    RELEASE <machine>\n\nArguments:\n\
+        \    machine - FQDN or hostname of the machine.\n\nExample:\n    RELEASE foo.domain.tld\n"
+      parameters:
+      - name: fqdn
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - API
+  /api/reservationhistory:
+    get:
+      operationId: listReservationHistoryCommands
+      description: "Show reservation history of a machine.\n\nUsage:\n    RESERVATIONHISTORY\
+        \ <machine>\n\nArguments:\n    machine - FQDN or hostname of the machine.\n\
+        \nExample:\n    RESERVATIONHISTORY foo.domain.tld\n"
+      parameters:
+      - name: fqdn
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - API
+  /api/rescan:
+    get:
+      operationId: listRescanCommands
+      description: "Command to rescan machines. Normally all machines are scanned\
+        \ once a day\nautomatically. For some reason it makes sense to rescan machines\
+        \ manually\nimmediately, e.g. if new hardware has been added.\n\nUsage:\n\
+        \    RESCAN <fqdn> <option>\n\nArguments:\n    fqdn   - FQDN or hostname of\
+        \ the machine (\"all\" without option will simulate daily machine check).\n\
+        \    option - Specify what should be rescanned. Options are:\n\n         \
+        \      status            : Check machine status (ping, SSH, login).\n    \
+        \           all               : Complete scan.\n               misc      \
+        \        : Check miscellaneous software/hardware attributes.\n           \
+        \    installations     : Rescan installed distributions only.\n\nExample:\n\
+        \    RESCAN foo.domain.tld status\n"
+      parameters:
+      - name: fqdn
+        in: query
+        schema:
+          type: string
+      - name: fqdn
+        in: query
+        schema:
+          type: string
+      - name: option
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - API
+  /api/regenerate:
+    get:
+      operationId: listRegenerateCommands
+      description: "Command to regenerate machine-related files or configuration files\
+        \ for various\nservices (superusers only).\n\nUsage:\n    REGENERATE <service>\
+        \ [options] [ <fqdn> ]\n\nArguments:\n    service - Specify which service\
+        \ configuration should be regenerated.\n              Without passing fqdn\
+        \ parameter, all hosts/servers are synced.\n        Options are:\n       \
+        \     motd               : Message of the day.\n            cobbler      \
+        \      : Cobbler configuration\n            cobbler_domain     : Cobbler Server/Domain\n\
+        \            serialconsole      : Serial console files\n\n    fqdn    - FQDN\
+        \ or hostname of the machine/server.\n              Passing this optional\
+        \ parameter restricts above service\n              to specific hosts or servers:\n\
+        \n            motd             : Hostname for which /etc/motd is regenerated\n\
+        \            cobbler          : Cobbler host/system configuration which is\
+        \ synced with orthos.\n            cobbler_domain   : Cobbler server configuration\
+        \ which is synced with orthos.\n            serialconsole    : Serial console\
+        \ server which is synced\n\n    options - [--force] (Not implemented yet)\n\
+        \n            cobbler          : Force deletion (remove) and recreation (add)\
+        \ of cobbler\n                               configuration of the specified\
+        \ systems without this param\n                               the cobbler entry\
+        \ is updated (edit) if already available\n\nExample:\n    REGENERATE cobbler\
+        \                             # regenerate/sync cobbler of all cobbler servers\
+        \ (use with care)\n    REGENERATE cobbler_domain cobbler.arch.suse.de #  \
+        \  of a specific domain/cobbler server\n    REGENERATE cobbler host.arch.suse.de\
+        \           #    of a specific machine\n    REGENERATE serialconsole sconsole1.arch.suse.de\n\
+        \    REGENERATE motd foo.domain.tld\n"
+      parameters:
+      - name: service
+        in: query
+        schema:
+          type: string
+      - name: service
+        in: query
+        schema:
+          type: string
+      - name: fqdn
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - API
+  /api/serverconfig:
+    get:
+      operationId: listServerConfigCommands
+      description: "Show server configuration (superusers only).\n\nUsage:\n    CONFIG\n\
+        \nExample:\n    CONFIG\n"
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - API
+  /api/setup:
+    get:
+      operationId: listSetupCommands
+      description: "Command to setup (re-install) a machine.\n\nUsage:\n    SETUP\
+        \ <fqdn> list\n    SETUP <fqdn> <choice>\n\nArguments:\n    machine - FQDN\
+        \ or hostname of the machine.\n    choice  - Distribution setup which should\
+        \ be applied/installed.\n\nExample:\n    SETUP foo.suse.de list\n    SETUP\
+        \ foo.suse.de SLE12-SP2-install-auto\n"
+      parameters:
+      - name: fqdn
+        in: query
+        schema:
+          type: string
+      - name: option_or_choice
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - API
+  /api/powercycle:
+    get:
+      operationId: listPowerCommands
+      description: "Command to power cycle machines or the get the current status.\n\
+        \nUsage:\n    POWER <fqdn> <action>\n\nArguments:\n    fqdn   - FQDN or hostname\
+        \ of the machine.\n    action - Specify new power state. Actions are:\n\n\
+        \               on                 : Power on.\n               off       \
+        \         : Power off via SSH. If didn't succeed, use remote power.\n    \
+        \           off-ssh            : Power off via SSH only.\n               off-remotepower\
+        \    : Power off via remote power only.\n               reboot           \
+        \  : Reboot via SSH. If didn't succeed, use remote power.\n              \
+        \ reboot-ssh         : Reboot via SSH only.\n               reboot-remotepower\
+        \ : Reboot via remote power only.\n               status             : Get\
+        \ power status.\n\nExample:\n    POWER foo.domain.tld reboot\n"
+      parameters:
+      - name: fqdn
+        in: query
+        schema:
+          type: string
+      - name: action
+        in: query
+        schema:
+          type: string
+          enum:
+          - 'off'
+          - off-remotepower
+          - off-ssh
+          - 'on'
+          - reboot
+          - reboot-remotepower
+          - reboot-ssh
+          - status
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - API
+  /api/add:
+    get:
+      operationId: listAddCommands
+      description: "Adds items to the database. All information will be queried interactively.\n\
+        \n    Usage:\n        ADD <item> [args*]\n\n    Arguments:\n        item -\
+        \ Specify the item which should be added. Items are:\n\n                machine\
+        \                       : Add a machine (superusers only).\n             \
+        \   annotation <fqdn>             : Add an annotation to a specific\n    \
+        \                                            machine (no bugreports).\n  \
+        \              serialconsole <fqdn>          : Add a serial console to a specific\n\
+        \                                                machine (superusers only).\n\
+        \                remotepower <fqdn>            : Add a remote power to a specific\n\
+        \                                                machine (superusers only).\n\
+        \                virtualmachine <architecture> : Add a virtual machine on\
+        \ a specific\n                                                architecture.\n\
+        \                bmc <fqdn>                    : Add a bmc to a machine.\n\
+        \n    Example:\n        ADD machine\n        ADD virtualmachine x86_64\n \
+        \       ADD serialconsole foo.domain.tld\n        ADD remotepower foo.domain.tld\n\
+        \        ADD annotation foo.domain.tld\n        ADD bmc foo.domain.tld\n \
+        \   "
+      parameters:
+      - name: args*
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - API
+  /api/vm/add:
+    get:
+      operationId: listAddVMCommandGets
+      description: Return form for adding a virtual machine.
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - Vm
+  /api/machine/add:
+    get:
+      operationId: listAddMachineCommands
+      description: Return form for adding a machine.
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - Machine
+    post:
+      operationId: createAddMachineCommand
+      description: Add machine.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - Machine
+  /api/serialconsole/add:
+    get:
+      operationId: listAddSerialConsoleCommandGets
+      description: Return form for adding a machine.
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - Serialconsole
+  /api/annotation/add:
+    get:
+      operationId: listAddAnnotationCommandGets
+      description: Return form for adding an annotation.
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - Annotation
+  /api/bmc/add:
+    get:
+      operationId: listAddBMCCommandGets
+      description: Return form for adding an BMC.
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - Bmc
+  /api/remotepower/add:
+    get:
+      operationId: listAddRemotePowerCommandGets
+      description: Return form for adding a remotepower.
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - Remotepower
+  /api/remotepowerdevice/add:
+    get:
+      operationId: listAddRemotePowerDeviceCommands
+      description: Return form for adding a remotepowerdevice.
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - RemotePowerDevice
+    post:
+      operationId: createAddRemotePowerDeviceCommand
+      description: Add remotepowerdevice.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - RemotePowerDevice
+  /api/delete:
+    get:
+      operationId: listDeleteCommands
+      description: "Deletes items from the database.\n\nUsage:\n    DELETE <item>\
+        \ [args*]\n\nArguments:\n    item - Specify the item which should be deleted.\
+        \ Items are:\n\n             machine            : Delete a machine (superusers\
+        \ only).\n             serialconsole      : Delete serial console of a specifc\
+        \ machine\n                                    (superusers only).\n      \
+        \       remotepower        : Delete remote power of a specifc machine\n  \
+        \                                  (superusers only).\n             remotepowerdevice\
+        \  : Delete a remotepower device (superusers only).\n\nExample:\n    DELETE\
+        \ machine\n"
+      parameters:
+      - name: args*
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - API
+  /api/machine/delete:
+    get:
+      operationId: listDeleteMachineCommands
+      description: Return form for deleting a machine.
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - Machine
+    post:
+      operationId: createDeleteMachineCommand
+      description: Delete machine.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - Machine
+  /api/serialconsole/delete:
+    get:
+      operationId: listDeleteSerialConsoleCommands
+      description: Return form for deleting a serial console.
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - Serialconsole
+    post:
+      operationId: createDeleteSerialConsoleCommand
+      description: Delete serial console.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - Serialconsole
+  /api/remotepower/delete:
+    get:
+      operationId: listDeleteRemotePowerCommands
+      description: Return form for deleting a remote power.
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - Remotepower
+    post:
+      operationId: createDeleteRemotePowerCommand
+      description: Delete remote power.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - Remotepower
+  /api/remotepowerdevice/delete:
+    get:
+      operationId: listDeleteRemotePowerDeviceCommands
+      description: Return form for deleting a remote power.
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - RemotePowerDevice
+    post:
+      operationId: createDeleteRemotePowerDeviceCommand
+      description: Delete remote power.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - RemotePowerDevice
+  /api/login:
+    post:
+      operationId: createAuthToken
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+          description: ''
+      tags:
+      - API
+  /api/query:
+    post:
+      operationId: createQueryCommand
+      description: "Command to query machines. You can just specify a comma-separated\
+        \ list of\nfields, then you get that fields for all machines.\n\nExample:\n\
+        \n    QUERY fqdn, cpu_physical\n    QUERY fqdn WHERE cpu_model =~ Intel\n\
+        \    QUERY fqdn WHERE cpu_model =~ Intel OR !efi\n\nValid operators are:\n\
+        ------------------------------------------------------------------------------\n\
+        !<field>            not\n== =                exactly equal\n=~           \
+        \       contains\n=*                  startswith\n!=                  unequal\n\
+        >  <                greater or less than (numbers only)\n>= <=           \
+        \    greater equals or less equals (numbers only)\nAND                 logical\
+        \ conjunction\nOR                  logical disjunction\n------------------------------------------------------------------------------\n"
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data*:
+                  type: string
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                data*:
+                  type: string
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - API
+  /api/machine/{id}/reserve:
+    post:
+      operationId: createReserveCommandPost
+      description: "Reserves a machine.\n\nUsage:\n    RESERVE <fqdn>\n\nArguments:\n\
+        \    fqdn - FQDN or hostname of the machine.\n\nExample:\n    RESERVE foo.domain.tld\n"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - Machine
+  /api/vm/{architecture}/add:
+    post:
+      operationId: createAddVMCommandPost
+      description: Add virtual machine for specific `architecture`.
+      parameters:
+      - name: architecture
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - Vm
+  /api/serialconsole/{fqdn}/add:
+    post:
+      operationId: createAddSerialConsoleCommandPost
+      description: Add serial console to machine.
+      parameters:
+      - name: fqdn
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - Serialconsole
+  /api/annotation/{fqdn}/add:
+    post:
+      operationId: createAddAnnotationCommandPost
+      description: Add annotation to machine.
+      parameters:
+      - name: fqdn
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - Annotation
+  /api/bmc/add/{fqdn}/:
+    post:
+      operationId: createAddBMCCommandPost
+      description: Add BMC to machine.
+      parameters:
+      - name: fqdn
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - Bmc
+  /api/remotepower/add/{fqdn}/:
+    post:
+      operationId: createAddRemotePowerCommandPost
+      description: Add remote power to machine.
+      parameters:
+      - name: fqdn
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - Remotepower
+components:
+  schemas:
+    AuthToken:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        token:
+          type: string
+          readOnly: true
+      required:
+      - username
+      - password

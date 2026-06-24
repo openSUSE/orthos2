@@ -20,7 +20,7 @@ from orthos2.data.models import Machine
 from orthos2.utils.misc import add_offset_to_date, format_cli_form_errors
 
 
-class ReserveCommand(BaseAPIView):
+class ReserveCommandGet(BaseAPIView):
 
     METHOD = "GET"
     URL = "/reserve"
@@ -43,12 +43,7 @@ Example:
     @staticmethod
     def get_urls() -> List[URLPattern]:
         return [
-            re_path(r"^reserve$", ReserveCommand.as_view(), name="reserve"),
-            re_path(
-                r"^machine/(?P<id>[0-9]+)/reserve$",
-                ReserveCommand.as_view(),
-                name="reserve",
-            ),
+            re_path(r"^reserve$", ReserveCommandGet.as_view(), name="reserve"),
         ]
 
     def get(
@@ -81,6 +76,36 @@ Example:
             form.as_dict(), self.URL_POST.format(id=machine.pk), form.get_order()
         )
         return input.as_json
+
+
+class ReserveCommandPost(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/machine/{id}/reserve"
+    ARGUMENTS = ()
+
+    HELP_SHORT = "Reserve machines."
+    HELP = """Reserves a machine.
+
+Usage:
+    RESERVE <fqdn>
+
+Arguments:
+    fqdn - FQDN or hostname of the machine.
+
+Example:
+    RESERVE foo.domain.tld
+"""
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^machine/(?P<id>[0-9]+)/reserve$",
+                ReserveCommandPost.as_view(),
+                name="reserve",
+            ),
+        ]
 
     def post(
         self, request: Request, id: int, *args: Any, **kwargs: Any
