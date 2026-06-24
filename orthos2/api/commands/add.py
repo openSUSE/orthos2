@@ -10,7 +10,6 @@ from django.http import (
 )
 from django.shortcuts import redirect  # type: ignore
 from django.urls import URLPattern, re_path, reverse  # type: ignore
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
 from orthos2.api.commands.base import BaseAPIView, get_machine
@@ -180,25 +179,20 @@ class AddCommand(BaseAPIView):
                 return ErrorMessage("Invalid number of arguments for 'bmc'!").as_json
 
             return redirect(
-                "{}?fqdn={}".format(reverse("api:bmc_add"), sub_arguments[0])
+                "{}?fqdn={}".format(reverse("api:bmc_add_get"), sub_arguments[0])
             )
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
 
-class AddVMCommand(BaseAPIView):
+class AddVMCommandGet(BaseAPIView):
 
     URL_POST = "/vm/{arch}/add"
 
     @staticmethod
     def get_urls() -> List[URLPattern]:
         return [
-            re_path(r"^vm/add", AddVMCommand.as_view(), name="vm_add"),
-            re_path(
-                r"^vm/(?P<architecture>[a-z0-9\.-_]+)/add$",
-                AddVMCommand.as_view(),
-                name="vm_add",
-            ),
+            re_path(r"^vm/add", AddVMCommandGet.as_view(), name="vm_add_get"),
         ]
 
     def _get_available_architectures(self) -> List[str]:
@@ -247,6 +241,31 @@ class AddVMCommand(BaseAPIView):
             form.get_order(),
         )
         return input.as_json
+
+
+class AddVMCommandPost(BaseAPIView):
+
+    URL_POST = "/vm/{arch}/add"
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^vm/(?P<architecture>[a-z0-9\.-_]+)/add$",
+                AddVMCommandPost.as_view(),
+                name="vm_add_post",
+            ),
+        ]
+
+    def _get_available_architectures(self) -> List[str]:
+        """Return list of available architectures for virtual machines."""
+        architectures = list(
+            Machine.api.filter(vm_dedicated_host=True)
+            .order_by()
+            .values_list("architecture__name", flat=True)
+            .distinct()
+        )
+        return architectures
 
     def post(
         self, request: Request, architecture: Any, *args: Any, **kwargs: Any
@@ -378,28 +397,24 @@ class AddMachineCommand(BaseAPIView):
         return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
 
 
-class AddBMCCommand(BaseAPIView):
-    permission_classes = [IsAuthenticated]
+class AddBMCCommandGet(BaseAPIView):
     URL_POST = "/bmc/add/{fqdn}"
 
     @staticmethod
     def get_urls() -> List[URLPattern]:
         return [
-            re_path(r"^bmc/add", AddBMCCommand.as_view(), name="bmc_add"),
-            re_path(
-                r"^bmc/add/(?P<fqdn>[a-z0-9.-]+)/$",
-                AddBMCCommand.as_view(),
-                name="bmc_add",
-            ),
+            re_path(r"^bmc/add", AddBMCCommandGet.as_view(), name="bmc_add_get"),
         ]
 
     def get(
         self, request: Request, *args: Any, **kwargs: Any
     ) -> Union[JsonResponse, HttpResponseRedirect]:
         """Return form for adding an BMC."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
         fqdn = request.GET.get("fqdn", "")
         try:
-            result = get_machine(fqdn, redirect_to="api:bmc_add", data=request.GET)
+            result = get_machine(fqdn, redirect_to="api:bmc_add_post", data=request.GET)
             if isinstance(result, Serializer):
                 return result.as_json
             elif isinstance(result, HttpResponseRedirect):
@@ -415,14 +430,30 @@ class AddBMCCommand(BaseAPIView):
         )
         return input_serializer.as_json
 
+
+class AddBMCCommandPost(BaseAPIView):
+    URL_POST = "/bmc/add/{fqdn}"
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^bmc/add/(?P<fqdn>[a-z0-9.-]+)/$",
+                AddBMCCommandPost.as_view(),
+                name="bmc_add_post",
+            ),
+        ]
+
     def post(
         self, request: Request, *args: Any, **kwargs: Any
     ) -> Union[JsonResponse, HttpResponseRedirect]:
         """Add BMC to machine."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
         try:
             # FIXME: When you call /bmc/add/ the machine is add
-            fqdn = request.path.split("/")[-1]
-            result = get_machine(fqdn, redirect_to="api:bmc_add", data=request.GET)
+            fqdn = request.path.split("/")[-2]
+            result = get_machine(fqdn, redirect_to="api:bmc_add_post", data=request.GET)
             if isinstance(result, Serializer):
                 return result.as_json
             elif isinstance(result, HttpResponseRedirect):
@@ -465,7 +496,7 @@ class AddBMCCommand(BaseAPIView):
         return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
 
 
-class AddSerialConsoleCommand(BaseAPIView):
+class AddSerialConsoleCommandGet(BaseAPIView):
 
     URL_POST = "/serialconsole/{fqdn}/add"
 
@@ -474,13 +505,8 @@ class AddSerialConsoleCommand(BaseAPIView):
         return [
             re_path(
                 r"^serialconsole/add",
-                AddSerialConsoleCommand.as_view(),
-                name="serialconsole_add",
-            ),
-            re_path(
-                r"^serialconsole/(?P<fqdn>[a-z0-9\.-]+)/add$",
-                AddSerialConsoleCommand.as_view(),
-                name="serialconsole_add",
+                AddSerialConsoleCommandGet.as_view(),
+                name="serialconsole_add_get",
             ),
         ]
 
@@ -518,6 +544,21 @@ class AddSerialConsoleCommand(BaseAPIView):
             form.as_dict(), self.URL_POST.format(fqdn=machine.fqdn), form.get_order()
         )
         return input.as_json
+
+
+class AddSerialConsoleCommandPost(BaseAPIView):
+
+    URL_POST = "/serialconsole/{fqdn}/add"
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^serialconsole/(?P<fqdn>[a-z0-9\.-]+)/add$",
+                AddSerialConsoleCommandPost.as_view(),
+                name="serialconsole_add_post",
+            ),
+        ]
 
     def post(
         self, request: Request, fqdn: str, *args: Any, **kwargs: Any
@@ -559,7 +600,7 @@ class AddSerialConsoleCommand(BaseAPIView):
         return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
 
 
-class AddAnnotationCommand(BaseAPIView):
+class AddAnnotationCommandGet(BaseAPIView):
 
     URL_POST = "/annotation/{fqdn}/add"
 
@@ -568,13 +609,8 @@ class AddAnnotationCommand(BaseAPIView):
         return [
             re_path(
                 r"^annotation/add",
-                AddAnnotationCommand.as_view(),
-                name="annotation_add",
-            ),
-            re_path(
-                r"^annotation/(?P<fqdn>[a-z0-9\.-]+)/add$",
-                AddAnnotationCommand.as_view(),
-                name="annotation_add",
+                AddAnnotationCommandGet.as_view(),
+                name="annotation_add_get",
             ),
         ]
 
@@ -604,6 +640,21 @@ class AddAnnotationCommand(BaseAPIView):
             form.as_dict(), self.URL_POST.format(fqdn=machine.fqdn), form.get_order()
         )
         return input.as_json
+
+
+class AddAnnotationCommandPost(BaseAPIView):
+
+    URL_POST = "/annotation/{fqdn}/add"
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^annotation/(?P<fqdn>[a-z0-9\.-]+)/add$",
+                AddAnnotationCommandPost.as_view(),
+                name="annotation_add_post",
+            ),
+        ]
 
     def post(
         self, request: Request, fqdn: str, *args: Any, **kwargs: Any
@@ -642,7 +693,7 @@ class AddAnnotationCommand(BaseAPIView):
         return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
 
 
-class AddRemotePowerCommand(BaseAPIView):
+class AddRemotePowerCommandGet(BaseAPIView):
 
     URL_POST = "/remotepower/add/{fqdn}"
 
@@ -651,13 +702,8 @@ class AddRemotePowerCommand(BaseAPIView):
         return [
             re_path(
                 r"^remotepower/add",
-                AddRemotePowerCommand.as_view(),
-                name="remotepower_add",
-            ),
-            re_path(
-                r"^remotepower/add/(?P<fqdn>[a-z0-9\.-]+)$/",
-                AddRemotePowerCommand.as_view(),
-                name="remotepower_add",
+                AddRemotePowerCommandGet.as_view(),
+                name="remotepower_add_get",
             ),
         ]
 
@@ -698,6 +744,21 @@ class AddRemotePowerCommand(BaseAPIView):
         )
         return input.as_json
 
+
+class AddRemotePowerCommandPost(BaseAPIView):
+
+    URL_POST = "/remotepower/add/{fqdn}"
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^remotepower/add/(?P<fqdn>[a-z0-9\.-]+)$/",
+                AddRemotePowerCommandPost.as_view(),
+                name="remotepower_add_post",
+            ),
+        ]
+
     def post(
         self, request: Request, *args: Any, **kwargs: Any
     ) -> Union[JsonResponse, HttpResponseRedirect]:
@@ -708,7 +769,7 @@ class AddRemotePowerCommand(BaseAPIView):
             ).as_json
 
         try:
-            fqdn = request.path.split("/")[-1]
+            fqdn = request.path.split("/")[-2]
             result = get_machine(
                 fqdn, redirect_to="api:remotepower_add", data=request.GET
             )

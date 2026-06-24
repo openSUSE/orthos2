@@ -16,6 +16,8 @@ RUN --mount=type=secret,id=SCCcredentials,target=/etc/zypp/credentials.d/SCCcred
     git \
     openssh \
     ansible \
+    python311-PyYAML \
+    python311-uritemplate \
     python311-Django \
     python311-django-extensions \
     python311-paramiko \
