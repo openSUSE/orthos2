@@ -112,9 +112,12 @@ class CobblerMethodTests(TestCase):
         server = cobbler.CobblerServer(domain)
         testsys = RemotePowerDevice.objects.get(fqdn="bmc.orthos2.test")
 
-        # Act
+        # has_item: True for profile existence check, False for interface existence check
+        has_item_responses = [True, False]
         with mock.patch.object(
-            server._xmlrpc_server, "has_item", return_value=True  # type: ignore
+            server._xmlrpc_server,  # type: ignore
+            "has_item",
+            side_effect=has_item_responses,
         ) as mock_has_item, mock.patch.object(
             server._xmlrpc_server, "modify_system"  # type: ignore
         ) as mock_system_modify, mock.patch.object(
@@ -123,14 +126,28 @@ class CobblerMethodTests(TestCase):
             server._xmlrpc_server,  # type: ignore
             "new_system",
             return_value="system::bmc.orthos2.test",
-        ) as mock_system_new:
+        ) as mock_system_new, mock.patch.object(
+            server._xmlrpc_server,  # type: ignore
+            "new_network_interface",
+            return_value="intf::bmc.orthos2.test:default",
+        ) as mock_intf_new, mock.patch.object(
+            server._xmlrpc_server, "modify_network_interface"  # type: ignore
+        ) as mock_intf_modify, mock.patch.object(
+            server._xmlrpc_server, "save_network_interface"  # type: ignore
+        ) as mock_intf_save:
             server.add_remote_power_device(testsys, save=cobbler.CobblerSaveModes.NEW)
 
-            # Assert
-            self.assertEqual(mock_has_item.call_count, 1)
+            # Assert: has_item called for profile check + interface existence check
+            self.assertEqual(mock_has_item.call_count, 2)
             self.assertEqual(mock_system_new.call_count, 1)
-            self.assertEqual(mock_system_modify.call_count, 4)
+            # modify_system: name, profile, filename = 3 calls
+            self.assertEqual(mock_system_modify.call_count, 3)
             self.assertEqual(mock_system_save.call_count, 1)
+            # new_network_interface: 1 call (interface doesn't exist yet)
+            self.assertEqual(mock_intf_new.call_count, 1)
+            # modify_network_interface: name, mac, ipv4.address, ipv6.address, management, dns.name = 6
+            self.assertEqual(mock_intf_modify.call_count, 6)
+            self.assertEqual(mock_intf_save.call_count, 1)
 
     def test_cobbler_remotepowerdevice_deployed(self) -> None:
         # Arrange
@@ -199,14 +216,27 @@ class CobblerMethodTests(TestCase):
         testsys = Machine.objects.get(fqdn="testsys.orthos2.test")
         object_id = "system::testsys.orthos2.test"
 
-        # Act
         with mock.patch.object(
-            server._xmlrpc_server, "modify_system"  # type: ignore
-        ) as mock_system_modify:
+            server._xmlrpc_server, "has_item", return_value=False  # type: ignore
+        ) as mock_has_item, mock.patch.object(
+            server._xmlrpc_server,  # type: ignore
+            "new_network_interface",
+            return_value="intf::testsys.orthos2.test:default",
+        ) as mock_intf_new, mock.patch.object(
+            server._xmlrpc_server, "modify_network_interface"  # type: ignore
+        ) as mock_intf_modify, mock.patch.object(
+            server._xmlrpc_server, "save_network_interface"  # type: ignore
+        ) as mock_intf_save:
             server.add_network_interfaces(testsys, object_id)
 
-            # Assert
-            self.assertEqual(mock_system_modify.call_count, 2)
+            # testsys.orthos2.test has 2 processable interfaces:
+            #   NI pk=2 (primary, mac present, ipv6 only): new x1, modify x6 (name,mac,ipv4,ipv6,management,dns.name), save x1
+            #   NI pk=3 (non-primary, mac present, ipv4 only): new x1, modify x5 (name,mac,ipv4,ipv6,management), save x1
+            #   NI pk=4 (non-primary, no mac): skipped
+            self.assertEqual(mock_has_item.call_count, 2)
+            self.assertEqual(mock_intf_new.call_count, 2)
+            self.assertEqual(mock_intf_modify.call_count, 11)
+            self.assertEqual(mock_intf_save.call_count, 2)
 
     def test_cobbler_add_bmc(self) -> None:
         # Arrange
@@ -215,14 +245,25 @@ class CobblerMethodTests(TestCase):
         server = cobbler.CobblerServer(domain)
         testsys = Machine.objects.get(fqdn="testsys.orthos2.test")
 
-        # Act
         with mock.patch.object(
-            server._xmlrpc_server, "modify_system"  # type: ignore
-        ) as mock_system_modify:
+            server._xmlrpc_server, "has_item", return_value=False  # type: ignore
+        ) as mock_has_item, mock.patch.object(
+            server._xmlrpc_server,  # type: ignore
+            "new_network_interface",
+            return_value="intf::testsys.orthos2.test:bmc",
+        ) as mock_intf_new, mock.patch.object(
+            server._xmlrpc_server, "modify_network_interface"  # type: ignore
+        ) as mock_intf_modify, mock.patch.object(
+            server._xmlrpc_server, "save_network_interface"  # type: ignore
+        ) as mock_intf_save:
             server.add_bmc(testsys, "system::testsys.orthos2.test")
 
-            # Assert
-            self.assertEqual(mock_system_modify.call_count, 1)
+            self.assertEqual(mock_has_item.call_count, 1)
+            self.assertEqual(mock_intf_new.call_count, 1)
+            # name, interface_type, mac_address, dns.name = 4 calls
+            # (BMC fixture has no ip_address_v4/v6, so conditional IP calls are skipped)
+            self.assertEqual(mock_intf_modify.call_count, 4)
+            self.assertEqual(mock_intf_save.call_count, 1)
 
     def test_cobbler_add_serial_console(self) -> None:
         # Arrange
@@ -436,14 +477,17 @@ class CobblerMethodTests(TestCase):
         domain.cobbler_server = Machine.objects.get(fqdn="cobbler.orthos2.test")
         server = cobbler.CobblerServer(domain)
 
-        # Act
         with mock.patch.object(
-            server._xmlrpc_server, "modify_system"  # type: ignore
-        ) as mock_system_modify:
-            server.remove_bmc("system::testsys.orthos2.test")
+            server._xmlrpc_server, "has_item", return_value=True  # type: ignore
+        ) as mock_has_item, mock.patch.object(
+            server._xmlrpc_server, "remove_network_interface"  # type: ignore
+        ) as mock_intf_remove:
+            server.remove_bmc("testsys.orthos2.test")
 
-            # Assert
-            self.assertEqual(mock_system_modify.call_count, 1)
+            self.assertEqual(mock_has_item.call_count, 1)
+            mock_intf_remove.assert_called_once_with(
+                "testsys.orthos2.test:bmc", server._token
+            )
 
     def test_cobbler_remove_serial_console(self) -> None:
         # Arrange
@@ -506,10 +550,18 @@ class CobblerMethodTests(TestCase):
         domain.cobbler_server = Machine.objects.get(fqdn="cobbler.orthos2.test")
         server = cobbler.CobblerServer(domain)
 
-        # Act
-        profiles = server.get_profiles("x86_64")
+        with mock.patch.object(
+            server._xmlrpc_server,  # type: ignore
+            "find_profile",
+            return_value=[],
+        ) as mock_find_profile:
+            # Act
+            profiles = server.get_profiles("x86_64")
 
-        # Assert
+            # Assert: Cobbler 4.0.0 signature: (criteria, expand, resolved, token)
+            mock_find_profile.assert_called_once_with(
+                {"name": "x86_64*"}, False, False, server._token
+            )
         self.assertTrue(isinstance(profiles, list))  # type: ignore
         self.assertEqual(len(profiles), 0)
 
