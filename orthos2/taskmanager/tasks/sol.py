@@ -111,10 +111,28 @@ class DeactivateSerialOverLan(Task):
             )
             return
 
-        command = "/usr/bin/ipmitool -I lanplus -H {} -U {} -E sol deactivate".format(
-            shlex.quote(host),
-            shlex.quote(username),
+        # Inject -4 or -6 if this is present inside the ipmitool command template of the serial console
+        command_parts = ["/usr/bin/ipmitool", "-I", "lanplus"]
+        if machine.serialconsole.stype.command:
+            # We don't care about placeholders here, we just want to check for the presence of -4 or -6
+            stype_command_parts = shlex.split(machine.serialconsole.stype.command)
+            if "-4" in stype_command_parts:
+                command_parts.append("-4")
+            elif "-6" in stype_command_parts:
+                command_parts.append("-6")
+
+        command_parts.extend(
+            [
+                "-H",
+                shlex.quote(host),
+                "-U",
+                shlex.quote(username),
+                "-E",
+                "sol",
+                "deactivate",
+            ]
         )
+        command = " ".join(command_parts)
 
         conn = None
         try:
