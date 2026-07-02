@@ -27,7 +27,7 @@ class DeactivateSerialOverLan(Task):
 
         if (
             not machine.has_serialconsole()
-            or machine.serialconsole.stype.name != "IPMI"
+            or not machine.serialconsole.stype.has_ipmi_sol
         ):
             logger.error(
                 "SOL deactivate skipped for non-IPMI machine: %s", machine.fqdn

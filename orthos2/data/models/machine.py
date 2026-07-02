@@ -1427,7 +1427,7 @@ class Machine(models.Model):
             )
             return False
 
-        if self.serialconsole.stype.name != "IPMI":
+        if not self.serialconsole.stype.has_ipmi_sol:
             logger.warning(
                 "SOL deactivate skipped for %s: serial console type is not IPMI",
                 self.fqdn,

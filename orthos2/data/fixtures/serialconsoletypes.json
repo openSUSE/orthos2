@@ -1,7 +1,7 @@
 [
   {
     "model": "data.serialconsoletype",
-    "pk": null,
+    "pk": 1,
     "fields": {
       "name": "Device",
       "command": "{{ device }} {{ baud_rate }}",
@@ -10,7 +10,7 @@
   },
   {
     "model": "data.serialconsoletype",
-    "pk": null,
+    "pk": 2,
     "fields": {
       "name": "Telnet",
       "command": "telnet {{ console_server.fqdn }} {{ port }}",
@@ -19,7 +19,7 @@
   },
   {
     "model": "data.serialconsoletype",
-    "pk": null,
+    "pk": 3,
     "fields": {
       "name": "Command",
       "command": "{{ command }}",
@@ -28,7 +28,7 @@
   },
   {
     "model": "data.serialconsoletype",
-    "pk": null,
+    "pk": 4,
     "fields": {
       "name": "IPMI",
       "command": "ipmitool -I lanplus -H {{ machine.bmc.fqdn }} -U {{ ipmi.user}} -P {{ ipmi.password }} sol activate",
@@ -37,7 +37,7 @@
   },
   {
     "model": "data.serialconsoletype",
-    "pk": null,
+    "pk": 5,
     "fields": {
       "name": "s390",
       "command": "ssh -o StrictHostKeyChecking=no {{ machine.get_s390_hostname }}@{{ console_server.fqdn }}",
@@ -46,7 +46,7 @@
   },
   {
     "model": "data.serialconsoletype",
-    "pk": null,
+    "pk": 6,
     "fields": {
       "name": "libvirt/qemu",
       "command": "virsh -c qemu+ssh://root@{{ machine.hypervisor.fqdn }}/system console {{ machine.hostname }}",
@@ -55,7 +55,7 @@
   },
   {
     "model": "data.serialconsoletype",
-    "pk": null,
+    "pk": 7,
     "fields": {
       "name": "libvirt/lxc",
       "command": "virsh -c lxc+ssh://root@{{ machine.hypervisor.fqdn }}/system console {{ machine.hostname }}",
@@ -64,7 +64,7 @@
   },
   {
     "model": "data.serialconsoletype",
-    "pk": null,
+    "pk": 8,
     "fields": {
       "name": "PowerPC HMC",
       "command": "ssh -4 -t padmin@{{ machine.hypervisor.fqdn }} rmvterm -p {{ machine.hostname }}; mkvterm -p {{ machine.hostname }}",
