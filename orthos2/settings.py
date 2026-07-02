@@ -278,8 +278,10 @@ MESSAGE_TAGS = {messages.ERROR: "danger"}
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.TokenAuthentication",
-    )
+    ),
+    "DEFAULT_SCHEMA_CLASS": "orthos2.api.schema.CustomViewSchema",
 }
+
 
 # Orthos variables
 STATIC_ROOT = os.environ.get("ORTHOS2_STATIC_ROOT", "/srv/www/orthos2/static")

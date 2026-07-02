@@ -1,32 +1,39 @@
 {% load tags %}
 {% load static %}
 <div class="col-6 text-right text-sm header" style="color: #ffffff;">
-<div class="small">
-  {% if user.is_authenticated %}
-  {% if user.is_superuser %}
-  <i class="fa fa-user-md fa-lg"></i> {{ user.username }}
-  {% else %}
-  <i class="fa fa-user fa-lg"></i> {{ user.username }}
-  {% endif %}
-  <span class="spacer-20"></span>
-  <a href="{% url 'frontend:preferences_user' %}"><i class="fa fa-cogs fa-lg"></i> Preferences</a>
-  {% endif %}
-  <span class="spacer-20"></span>
+  <div class="small">
+    {% if user.is_authenticated %}
+    {% if user.is_superuser %}
+    <i class="fa fa-user-md fa-lg"></i> {{ user.username }}
+    {% else %}
+    <i class="fa fa-user fa-lg"></i> {{ user.username }}
+    {% endif %}
+    <span class="spacer-20"></span>
+    <a href="{% url 'frontend:preferences_user' %}"><i class="fa fa-cogs fa-lg"></i> Preferences</a>
+    {% endif %}
+    <span class="spacer-20"></span>
 
-  {% if user.is_superuser or not user.is_authenticated %}
-  <a href="{% url 'admin:index' %}"><i class="fa fa-sliders fa-lg"></i> Administration</a><span class="spacer-20"/>
-  {% endif %}
+    {% if user.is_superuser or not user.is_authenticated %}
+    <a href="{% url 'admin:index' %}"><i class="fa fa-sliders fa-lg"></i> Administration</a><span class="spacer-20" />
+    {% endif %}
 
-  <a href="{% get_bugreport_url %}" target="_blank"><i class="fa fa-bug fa-lg"></i> Bugreport</a><span class="spacer-20"/>
+    <a href="{% get_bugreport_url %}" target="_blank"><i class="fa fa-bug fa-lg"></i> Bugreport</a><span
+      class="spacer-20" />
 
-  <a href="{% get_documentation_url %}" target="_blank"><i class="fa fa-info-circle fa-lg"></i> Documentation</a>
+    <a href="{% get_documentation_url %}" target="_blank"><i class="fa fa-info-circle fa-lg"></i> Documentation</a><span
+      class="spacer-20" />
 
-  {% if user.is_authenticated %}
-  <span class="spacer-20"></span>
-  <form id="logout-form" method="post" action="{% url 'frontend:logout' %}">
-    {% csrf_token %}
-    <button type="submit"><i class="fa fa-sign-out fa-lg"></i> Logout</button>
-  </form>
-  {% endif %}
-</div>
+    <a href="/api/schema/swagger-ui" target="_blank"><i class="fa fa-info-circle fa-lg"></i> API Documentation</a><span
+      class="spacer-20" />
+
+    <a href="/api/schema" target="_blank"><i class="fa fa-info-circle fa-lg"></i> REST API</a>
+
+    {% if user.is_authenticated %}
+    <span class="spacer-20"></span>
+    <form id="logout-form" method="post" action="{% url 'frontend:logout' %}">
+      {% csrf_token %}
+      <button type="submit"><i class="fa fa-sign-out fa-lg"></i> Logout</button>
+    </form>
+    {% endif %}
+  </div>
 </div>

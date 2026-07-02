@@ -6,6 +6,7 @@ import json
 from django.contrib.auth.models import User
 from django.urls import reverse  # type: ignore
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
 from orthos2.data.models import BMC
@@ -25,11 +26,12 @@ class AddBMCTest(APITestCase):
         self.user = User.objects.create_superuser(
             username="testuser", email="test@test.de", password="12345"
         )
-        self.client.force_authenticate(user=self.user)
+        auth_token, _ = Token.objects.get_or_create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + auth_token.key)
 
     def test_add_bmc_get(self) -> None:
         # Arrange
-        url = reverse("api:bmc_add")
+        url = reverse("api:bmc_add_get")
         url += "/test"
         data = {
             "fqdn": "test.testing.suse.de",
@@ -52,8 +54,7 @@ class AddBMCTest(APITestCase):
         """Test the route /bmc/add/{fqdn}"""
         # Arrange
         agent = RemotePowerType.objects.get(name="ipmilanplus")
-        url = reverse("api:bmc_add")
-        url += "/test%2Etesting%2Esuse%2Ede"
+        url = reverse("api:bmc_add_post", kwargs={"fqdn": "test.testing.suse.de"})
         data = {
             "form": {
                 "fqdn": "test.testing.suse.de",

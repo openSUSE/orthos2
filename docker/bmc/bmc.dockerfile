@@ -1,9 +1,15 @@
-FROM registry.opensuse.org/opensuse/leap:15.5
+FROM registry.suse.com/suse/sle15:15.7
 
 RUN zypper --gpg-auto-import-keys ref && \
-    zypper in -y python3-devel python3-pip gcc
-# https://github.com/shapeblue/ipmisim
-RUN pip3 install ipmisim
+    zypper in -y \ 
+    gcc \
+    python3-devel \
+    python3-pip
+
+RUN pip3 install pycryptodome pyghmi future
+
+#https://github.com/shapeblue/ipmisim
+RUN pip3 install --no-deps ipmisim
 
 WORKDIR /code
 COPY bmc.py /code

@@ -26,7 +26,7 @@ def root(request: HttpRequest) -> JsonResponse:
         "commands": {
             "info": commands.InfoCommand.description(),
             "query": commands.QueryCommand.description(),
-            "reserve": commands.ReserveCommand.description(),
+            "reserve": commands.ReserveCommandGet.description(),
             "release": commands.ReleaseCommand.description(),
             "reservationhistory": commands.ReservationHistoryCommand.description(),
             "rescan": commands.RescanCommand.description(),

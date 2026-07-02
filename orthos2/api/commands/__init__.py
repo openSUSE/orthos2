@@ -1,12 +1,17 @@
 from orthos2.api.commands.add import (
-    AddAnnotationCommand,
-    AddBMCCommand,
+    AddAnnotationCommandGet,
+    AddAnnotationCommandPost,
+    AddBMCCommandGet,
+    AddBMCCommandPost,
     AddCommand,
     AddMachineCommand,
-    AddRemotePowerCommand,
+    AddRemotePowerCommandGet,
+    AddRemotePowerCommandPost,
     AddRemotePowerDeviceCommand,
-    AddSerialConsoleCommand,
-    AddVMCommand,
+    AddSerialConsoleCommandGet,
+    AddSerialConsoleCommandPost,
+    AddVMCommandGet,
+    AddVMCommandPost,
 )
 from orthos2.api.commands.delete import (
     DeleteCommand,
@@ -26,7 +31,7 @@ from orthos2.api.commands.regenerate import RegenerateCommand
 from orthos2.api.commands.release import ReleaseCommand
 from orthos2.api.commands.rescan import RescanCommand
 from orthos2.api.commands.reservationhistory import ReservationHistoryCommand
-from orthos2.api.commands.reserve import ReserveCommand
+from orthos2.api.commands.reserve import ReserveCommandGet, ReserveCommandPost
 from orthos2.api.commands.serverconfig import ServerConfigCommand
 from orthos2.api.commands.setup import SetupCommand
 
@@ -35,7 +40,8 @@ __all__ = [
     "RemotePowerDeviceInfoCommand",
     "InfoCommand",
     "QueryCommand",
-    "ReserveCommand",
+    "ReserveCommandGet",
+    "ReserveCommandPost",
     "ReleaseCommand",
     "ReservationHistoryCommand",
     "RescanCommand",
@@ -44,16 +50,21 @@ __all__ = [
     "SetupCommand",
     "PowerCommand",
     "AddCommand",
-    "AddVMCommand",
+    "AddVMCommandGet",
+    "AddVMCommandPost",
     "AddMachineCommand",
-    "AddSerialConsoleCommand",
-    "AddAnnotationCommand",
-    "AddRemotePowerCommand",
+    "AddSerialConsoleCommandGet",
+    "AddSerialConsoleCommandPost",
+    "AddAnnotationCommandGet",
+    "AddAnnotationCommandPost",
+    "AddRemotePowerCommandPost",
+    "AddRemotePowerCommandGet",
     "DeleteCommand",
     "DeleteMachineCommand",
     "DeleteSerialConsoleCommand",
     "DeleteRemotePowerCommand",
     "DeleteRemotePowerDeviceCommand",
-    "AddBMCCommand",
+    "AddBMCCommandPost",
+    "AddBMCCommandGet",
     "AddRemotePowerDeviceCommand",
 ]
