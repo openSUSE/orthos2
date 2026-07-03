@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from orthos2.data.models import AnsibleScanResult, Domain, Machine, ServerConfig
+from orthos2.data.models.system import System
 
 
 class AnsibleScanResultModelTest(TestCase):
@@ -489,3 +490,184 @@ class AnsibleScanResultModelTest(TestCase):
         # Assert
         assert "AnsibleScan" in result_str
         assert machine.fqdn in result_str or str(machine) in result_str
+
+    def test_apply_to_machine_cpu_uses_processor_list_count(self) -> None:
+        """Should use actual processor list length for cpu_threads/cpu_cores, not count*cores."""
+        # This tests the fix for issue #374: Xen guests can report ansible_processor_count and
+        # ansible_processor_cores both equal to the vCPU count, causing count*cores inflation.
+        # The ansible_processor list contains one numeric index per logical CPU, which is reliable.
+        machine = Machine.objects.first()
+        assert machine is not None
+        facts = self._get_minimal_facts()
+        # Simulate Xen misreporting: 160 "sockets" each claiming 160 cores = 25600 (wrong).
+        # The ansible_processor list has exactly 160 numeric entries (the real vCPU count).
+        facts.update(
+            {
+                "ansible_processor_count": 160,
+                "ansible_processor_cores": 160,
+                "ansible_processor_threads_per_core": 1,
+                "ansible_processor": [str(i) for i in range(160)],  # 160 logical CPUs
+            }
+        )
+
+        result = AnsibleScanResult.objects.create(
+            machine=machine, facts_raw=facts, ansible_version="2.9.27"
+        )
+        result.apply_to_machine()
+
+        machine.refresh_from_db()
+        assert machine.cpu_physical == 160
+        assert machine.cpu_cores == 160  # not 160*160=25600
+        assert machine.cpu_threads == 160
+
+    def test_apply_to_machine_cpu_processor_list_with_hyperthreading(self) -> None:
+        """Should divide logical CPUs by threads_per_core to get cpu_cores."""
+        machine = Machine.objects.first()
+        assert machine is not None
+        facts = self._get_minimal_facts()
+        # 2 sockets, 4 cores each, 2 threads = 16 logical CPUs
+        facts.update(
+            {
+                "ansible_processor_count": 2,
+                "ansible_processor_cores": 4,
+                "ansible_processor_threads_per_core": 2,
+                "ansible_processor": [str(i) for i in range(16)],
+            }
+        )
+
+        result = AnsibleScanResult.objects.create(
+            machine=machine, facts_raw=facts, ansible_version="2.9.27"
+        )
+        result.apply_to_machine()
+
+        machine.refresh_from_db()
+        assert machine.cpu_physical == 2
+        assert machine.cpu_cores == 8  # 16 logical / 2 threads = 8 cores
+        assert machine.cpu_threads == 16
+
+    def test_apply_to_machine_cpu_falls_back_without_processor_list(self) -> None:
+        """Should fall back to count*cores formula when ansible_processor list is absent."""
+        machine = Machine.objects.first()
+        assert machine is not None
+        facts = self._get_minimal_facts()
+        facts.update(
+            {
+                "ansible_processor_count": 2,
+                "ansible_processor_cores": 4,
+                "ansible_processor_threads_per_core": 2,
+                # No ansible_processor key
+            }
+        )
+
+        result = AnsibleScanResult.objects.create(
+            machine=machine, facts_raw=facts, ansible_version="2.9.27"
+        )
+        result.apply_to_machine()
+
+        machine.refresh_from_db()
+        assert machine.cpu_physical == 2
+        assert machine.cpu_cores == 8  # 2 * 4
+        assert machine.cpu_threads == 16  # 8 * 2
+
+    def test_apply_to_machine_corrects_system_type_for_xen_guest(self) -> None:
+        """Should update machine.system to VM XEN when Ansible reports xen guest role."""
+        # Create VM XEN system type (not in the base fixture)
+        System.objects.get_or_create(name="VM XEN", defaults={"virtual": True})
+
+        machine = Machine.objects.first()
+        assert machine is not None
+        assert not machine.system.virtual  # starts as BareMetal
+
+        facts = self._get_minimal_facts()
+        facts.update(
+            {
+                "ansible_virtualization_role": "guest",
+                "ansible_virtualization_type": "xen",
+            }
+        )
+
+        result = AnsibleScanResult.objects.create(
+            machine=machine, facts_raw=facts, ansible_version="2.9.27"
+        )
+        result.apply_to_machine()
+
+        machine.refresh_from_db()
+        assert machine.system.name == "VM XEN"
+        assert machine.system.virtual is True
+
+    def test_apply_to_machine_corrects_system_type_for_kvm_guest(self) -> None:
+        """Should update machine.system to VM KVM when Ansible reports kvm guest role."""
+        System.objects.get_or_create(name="VM KVM", defaults={"virtual": True})
+
+        machine = Machine.objects.first()
+        assert machine is not None
+
+        facts = self._get_minimal_facts()
+        facts.update(
+            {
+                "ansible_virtualization_role": "guest",
+                "ansible_virtualization_type": "kvm",
+            }
+        )
+
+        result = AnsibleScanResult.objects.create(
+            machine=machine, facts_raw=facts, ansible_version="2.9.27"
+        )
+        result.apply_to_machine()
+
+        machine.refresh_from_db()
+        assert machine.system.name == "VM KVM"
+
+    def test_apply_to_machine_does_not_change_system_type_for_already_virtual(
+        self,
+    ) -> None:
+        """Should not change system type when machine is already marked virtual."""
+        vm_xen_system, _ = System.objects.get_or_create(
+            name="VM XEN", defaults={"virtual": True}
+        )
+
+        machine = Machine.objects.first()
+        assert machine is not None
+        # Set machine to already-correct VM XEN type
+        machine.system = vm_xen_system
+        machine.save()
+
+        facts = self._get_minimal_facts()
+        facts.update(
+            {
+                "ansible_virtualization_role": "guest",
+                "ansible_virtualization_type": "xen",
+            }
+        )
+
+        result = AnsibleScanResult.objects.create(
+            machine=machine, facts_raw=facts, ansible_version="2.9.27"
+        )
+        result.apply_to_machine()
+
+        machine.refresh_from_db()
+        assert machine.system.name == "VM XEN"  # unchanged
+
+    def test_apply_to_machine_does_not_change_system_type_for_unknown_virt_type(
+        self,
+    ) -> None:
+        """Should not change system type when virtualization type has no known mapping."""
+        machine = Machine.objects.first()
+        assert machine is not None
+        original_system_name = machine.system.name
+
+        facts = self._get_minimal_facts()
+        facts.update(
+            {
+                "ansible_virtualization_role": "guest",
+                "ansible_virtualization_type": "vmware",  # no mapping defined
+            }
+        )
+
+        result = AnsibleScanResult.objects.create(
+            machine=machine, facts_raw=facts, ansible_version="2.9.27"
+        )
+        result.apply_to_machine()
+
+        machine.refresh_from_db()
+        assert machine.system.name == original_system_name  # unchanged
