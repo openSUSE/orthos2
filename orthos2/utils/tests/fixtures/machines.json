@@ -33,7 +33,8 @@
     "fields": {
       "name": "IPMI",
       "command": "ipmitool -I lanplus -H {{ machine.bmc.fqdn }} -U {{ ipmi.user}} -P {{ ipmi.password }} sol activate",
-      "comment": "IPMI"
+      "comment": "IPMI",
+      "has_ipmi_sol": true
     }
   },
   {

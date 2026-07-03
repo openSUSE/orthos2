@@ -60,6 +60,9 @@ function deactivate_sol() {
   $.ajax({
     type: 'POST',
     url: '{% url 'frontend:ajax_deactivate_sol' machine.id %}',
+    data: {
+      csrfmiddlewaretoken: '{{ csrf_token }}'
+    },
     beforeSend: function() {
       // Avoid double-submits while the backend deactivation request is running.
       $('.deactivate-sol').addClass('disabled')

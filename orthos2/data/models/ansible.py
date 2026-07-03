@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from django.db import models
 from django.utils import timezone
 
+from orthos2.data.models.system import System
 from orthos2.utils.misc import normalize_ascii
 
 if TYPE_CHECKING:
@@ -69,12 +70,26 @@ class AnsibleScanResult(models.Model):
 
         # Update CPU fields
         machine.cpu_physical = facts.get("ansible_processor_count", 1)
-        machine.cpu_cores = machine.cpu_physical * facts.get(
-            "ansible_processor_cores", 1
+        threads_per_core = facts.get("ansible_processor_threads_per_core", 1) or 1
+
+        # ansible_processor is a flat list of [index, vendor, model, index, vendor, model, ...]
+        # Counting the numeric string entries gives the actual total logical CPU count.
+        # This avoids using ansible_processor_count * ansible_processor_cores which can be
+        # inflated on some Xen configurations where both values equal the total vCPU count.
+        processors_list = facts.get("ansible_processor", [])
+        actual_logical_cpus = sum(
+            1 for x in processors_list if isinstance(x, str) and x.isdigit()
         )
-        machine.cpu_threads = machine.cpu_cores * facts.get(
-            "ansible_processor_threads_per_core", 1
-        )
+
+        if actual_logical_cpus > 0:
+            machine.cpu_threads = actual_logical_cpus
+            machine.cpu_cores = max(actual_logical_cpus // threads_per_core, 1)
+        else:
+            machine.cpu_cores = machine.cpu_physical * facts.get(
+                "ansible_processor_cores", 1
+            )
+            machine.cpu_threads = machine.cpu_cores * threads_per_core
+
         machine.cpu_speed = Decimal(
             facts.get("ansible_local", {}).get("cpuinfo", {}).get("cpuspeed", 0.0)
         )
@@ -86,13 +101,12 @@ class AnsibleScanResult(models.Model):
         )
 
         # Update CPU model
-        processors = facts.get("ansible_processor", [])
-        if processors and isinstance(processors, list):
+        if processors_list and isinstance(processors_list, list):
             # ansible_processor contains: counts, vendor names, and model strings
             # We need to skip numeric entries and vendor names to get the actual model
             vendor_names = {"GenuineIntel", "AuthenticAMD", "ARM", "AARCH64"}
 
-            for proc in processors:
+            for proc in processors_list:
                 if isinstance(proc, str) and not proc.isdigit():
                     # Skip vendor name entries
                     if proc in vendor_names:
@@ -149,7 +163,31 @@ class AnsibleScanResult(models.Model):
 
         # Update virtualization capability
         virt_role = facts.get("ansible_virtualization_role", "")
+        virt_type = facts.get("ansible_virtualization_type", "")
         machine.vm_capable = virt_role == "host"
+
+        # Correct system type when Ansible identifies this machine as a VM guest
+        # but it is currently labeled as a non-virtual system (e.g., BareMetal).
+        if virt_role == "guest" and machine.system and not machine.system.virtual:
+            virt_type_to_system_name = {
+                "xen": "VM XEN",
+                "kvm": "VM KVM",
+            }
+            system_name = virt_type_to_system_name.get(virt_type.lower())
+            if system_name:
+                try:
+                    machine.system = System.objects.get(name=system_name)
+                    logger.info(
+                        "Updated system type for '%s' to '%s' based on Ansible facts",
+                        machine.fqdn,
+                        system_name,
+                    )
+                except System.DoesNotExist:
+                    logger.warning(
+                        "System type '%s' not found, cannot correct type for VM '%s'",
+                        system_name,
+                        machine.fqdn,
+                    )
 
         # Update hardware info fields (large text dumps)
         machine.lspci = normalize_ascii(

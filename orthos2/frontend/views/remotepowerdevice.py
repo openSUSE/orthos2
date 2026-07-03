@@ -118,8 +118,14 @@ class NewRemotePowerDevice(PermissionRequiredMixin, CreateView):
             )
             return super().form_invalid(form)  # type: ignore
         # Fetch IPv4 and IPv6 from Primary IPs
-        primary_ipv4_id = netbox_object.get("primary_ip4", {}).get("id", "")
-        primary_ipv6_id = netbox_object.get("primary_ip6", {}).get("id", "")
+        if netbox_object.get("primary_ip4") is not None:
+            primary_ipv4_id = netbox_object.get("primary_ip4", {}).get("id", 0)
+        else:
+            primary_ipv4_id = 0
+        if netbox_object.get("primary_ip6") is not None:
+            primary_ipv6_id = netbox_object.get("primary_ip6", {}).get("id", 0)
+        else:
+            primary_ipv6_id = 0
         if not primary_ipv4_id and not primary_ipv6_id:
             form.add_error(
                 "netbox_id",

@@ -79,12 +79,25 @@ def machine_pre_delete(
     """Pre delete action for machine. Save deleted machine object as file for archiving.
     Also remove the machine from the cobbler Server.
     """
-    server = CobblerServer(instance.fqdn_domain)
-    if server:
+    try:
+        server = CobblerServer(instance.fqdn_domain)
         server.remove(instance)
+    except Exception:
+        logger.warning(
+            "Failed to remove machine '%s' from Cobbler, skipping.",
+            instance.fqdn,
+            exc_info=True,
+        )
 
     if instance.is_vm_managed():
-        instance.hypervisor.virtualization_api.remove(instance)  # type: ignore
+        try:
+            instance.hypervisor.virtualization_api.remove(instance)  # type: ignore
+        except Exception:
+            logger.warning(
+                "Failed to remove VM '%s' from hypervisor, skipping.",
+                instance.fqdn,
+                exc_info=True,
+            )
 
     if not ServerConfig.get_server_config_manager().bool_by_key(
         "serialization.execute"

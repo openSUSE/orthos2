@@ -809,8 +809,20 @@ class Machine(models.Model):
             device_network_interfaces = netbox_api.check_interface_no_mgmt_by_id(
                 self.netbox_id
             )
+        ignored_interface_prefixes = (
+            "veth",
+            "flannel",
+            "docker",
+            "usb",
+            "cali",
+            "tunl",
+            "lo",
+        )
         synced_mac_addresses: Set[str] = set()
         for interface in device_network_interfaces:
+            interface_name = interface.get("name", "")
+            if any(interface_name.startswith(p) for p in ignored_interface_prefixes):
+                continue
             primary_mac = interface.get("primary_mac_address")
             if primary_mac is None:
                 continue
@@ -1427,7 +1439,7 @@ class Machine(models.Model):
             )
             return False
 
-        if self.serialconsole.stype.name != "IPMI":
+        if not self.serialconsole.stype.has_ipmi_sol:
             logger.warning(
                 "SOL deactivate skipped for %s: serial console type is not IPMI",
                 self.fqdn,

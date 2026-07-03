@@ -55,6 +55,10 @@
       <td class="th">NDA Hardware</td>
       <td>{{ machine.nda|boolean_image:15|safe }}</td>
     </tr>
+    <tr>
+      <td class="th">Auto-reinstall on Release</td>
+      <td>{{ machine.autoreinstall|boolean_image:15|safe }}</td>
+    </tr>
     {% if machine.group %}
     <tr>
       <td class="th">Group</td>
