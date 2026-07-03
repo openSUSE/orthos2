@@ -27,6 +27,7 @@
   </tbody>
 </table>
 
+{% if machine.bmc %}
 <div class="title">
   <h5>Management Interfaces</h5>
 </div>
@@ -45,7 +46,8 @@
         <small>(<a href="http://{{ machine.bmc.fqdn }}">http</a>|<a href="https://{{ machine.bmc.fqdn }}">https</a>)</small></td>
       <td>{{ machine.bmc.comment }}</td>
     </tr>
-   
+
   </tbody>
 </table>
+{% endif %}
 {% endblock %}
