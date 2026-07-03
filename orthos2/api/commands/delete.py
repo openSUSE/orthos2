@@ -24,7 +24,7 @@ from orthos2.api.serializers.misc import (
     ErrorMessage,
     InputSerializer,
 )
-from orthos2.data.models import Machine, RemotePowerDevice
+from orthos2.data.models import Machine, NetworkInterface, RemotePowerDevice
 from orthos2.utils.misc import format_cli_form_errors
 
 logger = logging.getLogger("api")
@@ -414,3 +414,61 @@ class DeleteRemotePowerDeviceCommand(BaseAPIView):
                 return ErrorMessage("Something went wrong!").as_json
 
         return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
+
+
+class DeleteNetworkInterfaceCommand(BaseAPIView):
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^networkinterface/(?P<id>[0-9]+)$",
+                DeleteNetworkInterfaceCommand.as_view(),
+                name="networkinterface_delete",
+            ),
+        ]
+
+    def delete(
+        self, request: Request, id: int, *args: Any, **kwargs: Any
+    ) -> JsonResponse:
+        """Delete a network interface by ID."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        try:
+            interface = NetworkInterface.objects.get(pk=id)
+        except NetworkInterface.DoesNotExist:
+            return ErrorMessage(
+                "Network interface with id '{}' does not exist!".format(id)
+            ).as_json
+
+        if interface.primary:
+            return ErrorMessage(
+                "The primary network interface cannot be deleted!"
+            ).as_json
+
+        try:
+            result = interface.delete()
+
+            theader = [
+                {"objects": "Deleted objects"},
+                {"count": "#"},
+            ]
+
+            response: Dict[str, Any] = {
+                "header": {"type": "TABLE", "theader": theader},
+                "data": [],
+            }
+            for key, value in result[1].items():
+                response["data"].append(  # type: ignore
+                    {"objects": key.replace("data.", ""), "count": value}
+                )
+            return JsonResponse(response)
+
+        except Exception as e:
+            logger.exception(e)
+            return ErrorMessage("Something went wrong!").as_json

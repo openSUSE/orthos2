@@ -3,10 +3,11 @@ All views that are related to "/machine".
 """
 
 import logging
-from typing import TYPE_CHECKING, Dict, Set, Union
+from typing import TYPE_CHECKING, Any, Dict, Set, Union
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.http import (
     Http404,
     HttpRequest,
@@ -16,8 +17,10 @@ from django.http import (
     HttpResponseRedirect,
 )
 from django.shortcuts import redirect, render  # type: ignore
+from django.urls import reverse_lazy
+from django.views.generic import DeleteView
 
-from orthos2.data.models import Machine
+from orthos2.data.models import Machine, NetworkInterface
 from orthos2.data.models.netboxorthoscomparision import NetboxOrthosComparisionRun
 from orthos2.frontend.decorators import check_permissions
 from orthos2.frontend.forms.addmachine import AddMachineFormView
@@ -571,3 +574,28 @@ def machine_add(request: "AuthenticatedHttpRequest") -> HttpResponseBase:
         return redirect("frontend:machines")
 
     return AddMachineFormView.as_view()(request)
+
+
+class DeleteNetworkInterface(DeleteView):  # type: ignore
+    model = NetworkInterface
+    template_name = "frontend/machines/detail/networkinterface_confirm_deletion.html"
+
+    def get_success_url(self) -> str:
+        return reverse_lazy(  # type: ignore
+            "frontend:networkinterfaces", kwargs={"id": self.object.machine_id}
+        )
+
+    def dispatch(
+        self, request: HttpRequest, *args: Any, **kwargs: Any
+    ) -> HttpResponseBase:
+        if not request.user.is_authenticated:
+            return redirect("frontend:login")
+        if not request.user.is_superuser:  # type: ignore
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form: Any) -> HttpResponse:
+        obj = self.get_object()
+        if obj.primary:
+            raise PermissionDenied
+        return super().form_valid(form)

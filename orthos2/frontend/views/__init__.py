@@ -28,6 +28,7 @@ from .enclosures import (
     enclosure_netboxcomparison,
 )
 from .machine import (
+    DeleteNetworkInterface,
     cobbler_cleanup,
     compare_netbox,
     cpu,
@@ -96,6 +97,7 @@ __all__ = [
     "pci",
     "cpu",
     "networkinterfaces",
+    "DeleteNetworkInterface",
     "installations",
     "usb",
     "scsi",

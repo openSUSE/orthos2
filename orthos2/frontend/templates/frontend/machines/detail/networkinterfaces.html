@@ -13,6 +13,7 @@
     <th>Name</th>
     <th>Driver Module</th>
     <th>Ethernet Type</th>
+    {% if request.user.is_superuser %}<th></th>{% endif %}
   </thead>
   <tbody>
     {% for network_interface in machine.networkinterfaces.all %}
@@ -22,6 +23,15 @@
       <td>{{ network_interface.name }}</td>
       <td>{{ network_interface.driver_module }}</td>
       <td>{{ network_interface.ethernet_type }}</td>
+      {% if request.user.is_superuser %}
+      <td>
+        {% if network_interface.primary %}
+        <button class="btn btn-danger btn-sm" disabled>Delete</button>
+        {% else %}
+        <a class="btn btn-danger btn-sm" href="{% url 'frontend:delete_networkinterface' network_interface.pk %}">Delete</a>
+        {% endif %}
+      </td>
+      {% endif %}
     </tr>
     {% endfor %}
   </tbody>
