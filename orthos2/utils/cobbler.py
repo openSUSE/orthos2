@@ -203,8 +203,8 @@ class CobblerServer:
                 self._token = token
                 return
             raise TypeError("Cobbler server returned incorrect data for token!")
-        except xmlrpc.client.Fault as xmlrpc_fault:
-            logger.error("Error logging in!", exc_info=xmlrpc_fault)
+        except (xmlrpc.client.Fault, OSError) as e:
+            logger.error("Error logging in to Cobbler!", exc_info=e)
 
     @login_required
     def add_machine(
@@ -749,7 +749,7 @@ class CobblerServer:
         """
         try:
             self._xmlrpc_server.ping()
-        except xmlrpc.client.Fault:
+        except (xmlrpc.client.Fault, OSError):
             return False
         return True
 
