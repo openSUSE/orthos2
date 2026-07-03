@@ -162,6 +162,7 @@ class MachineSerializer(serializers.ModelSerializer[Machine]):
             "location_room",
             "location_rack",
             "location_rack_position",
+            "autoreinstall",
         )
 
     serial_type = serializers.CharField(source="serialconsole.stype.name")
