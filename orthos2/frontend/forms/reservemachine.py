@@ -68,3 +68,17 @@ class ReserveMachineForm(forms.Form):
             datetime.datetime.now().date() + datetime.timedelta(days=90)
         ):
             self.add_error("until", "Reservation period is limited (max. 90 days).")
+
+
+class ReserveMachineForUserForm(ReserveMachineForm):
+    """
+    Form for superusers to reserve a machine on behalf of another user.
+    """
+
+    field_order = ["machine", "reason", "until"]
+
+    machine = forms.CharField(
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+        help_text="Enter the fully qualified domain name (FQDN) of the machine to reserve.",
+        label="Machine FQDN",
+    )

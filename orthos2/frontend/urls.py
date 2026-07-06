@@ -188,6 +188,11 @@ urlpatterns = [
         views.user_reservations,
         name="user_reservations",
     ),
+    re_path(
+        r"^user/(?P<id>[0-9]+)/reserve$",
+        views.user_reserve_machine,
+        name="user_reserve_machine",
+    ),
     re_path(r"^user/create$", views.users_create, name="create_user"),
     re_path(r"^user/preferences$", views.users_preferences, name="preferences_user"),
     re_path(

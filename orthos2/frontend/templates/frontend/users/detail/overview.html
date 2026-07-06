@@ -2,7 +2,7 @@
 
 {% block tabcontent %}
   <div class="row">
-    <div class="col-6">
+    <div class="col-5">
       <div class="container-fluid">
         <div class="title">
           <h5>{{ user_obj.username }}</h5>
@@ -69,7 +69,7 @@
       </div>
     </div>
 
-    <div class="col-6">
+    <div class="col-5">
       <div class="container-fluid">
         <div class="title">
           <h5>Access &amp; Authentication</h5>
@@ -113,6 +113,10 @@
           </tbody>
         </table>
       </div>
+    </div>
+
+    <div class="col-2">
+      {% include 'frontend/users/detail/snippets/sidebar.html' %}
     </div>
   </div>
 {% endblock %}

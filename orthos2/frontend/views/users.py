@@ -2,18 +2,26 @@
 All views that are under "/users" and "/user/<id>/".
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q, QuerySet
-from django.http import Http404, HttpRequest, HttpResponse, HttpResponseBase
-from django.shortcuts import render
+from django.http import (
+    Http404,
+    HttpRequest,
+    HttpResponse,
+    HttpResponseBase,
+    HttpResponseRedirect,
+)
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 
 from orthos2.data.models import Machine
+from orthos2.frontend.forms.reservemachine import ReserveMachineForUserForm
 
 
 class UserListView(ListView):  # type: ignore
@@ -110,3 +118,44 @@ def user_reservations(request: HttpRequest, id: int) -> HttpResponse:
         )
     except User.DoesNotExist:
         raise Http404("User does not exist")
+
+
+@login_required
+def user_reserve_machine(
+    request: HttpRequest, id: int
+) -> Union[HttpResponse, HttpResponseRedirect]:
+    if not request.user.is_superuser:
+        raise PermissionDenied
+    user_obj = get_object_or_404(User, pk=id)
+
+    if request.method == "POST":
+        form = ReserveMachineForUserForm(request.POST)
+        if form.is_valid():
+            fqdn = form.cleaned_data["machine"]
+            reason = form.cleaned_data["reason"]
+            until = form.cleaned_data["until"]
+            try:
+                machine = Machine.objects.get(fqdn=fqdn)
+                machine.reserve(
+                    reason, until, user=request.user, reserve_for_user=user_obj
+                )
+                messages.success(
+                    request, f"Machine '{fqdn}' reserved for {user_obj.username}."
+                )
+                return redirect("frontend:user_detail", id=id)
+            except Machine.DoesNotExist:
+                form.add_error("machine", f"Machine '{fqdn}' not found.")
+            except Exception as e:
+                messages.error(request, str(e))
+    else:
+        form = ReserveMachineForUserForm()
+
+    return render(
+        request,
+        "frontend/users/reserve.html",
+        {
+            "form": form,
+            "user_obj": user_obj,
+            "title": f"Reserve Machine for {user_obj.username}",
+        },
+    )
