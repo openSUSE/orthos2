@@ -1,0 +1,44 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+{% load tags %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="row">
+      <main class="col-12">
+        <ul class="nav nav-tabs gray">
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'user_detail' %}"
+              href="{% url 'frontend:user_detail' user_obj.pk %}"
+              >Overview</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'user_reservations' %}"
+              href="{% url 'frontend:user_reservations' user_obj.pk %}"
+              >Reservations</a
+            >
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          {% block tabcontent %}
+          {% endblock %}
+        </div>
+
+        <span style="font-size: 0.7em; font-family: Monospace;"
+          >Admin:
+          <a href="{% url 'admin:auth_user_change' user_obj.id %}"
+            >{% url 'admin:auth_user_change' user_obj.id %}</a
+          ></span
+        >
+      </main>
+    </div>
+  </div>
+{% endblock %}

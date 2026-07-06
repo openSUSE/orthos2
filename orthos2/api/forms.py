@@ -144,11 +144,19 @@ class ReserveMachineAPIForm(ReserveMachineForm, BaseAPIForm):
             "initial": self.fields["username"].initial,
             "required": True,
         }
+
+        result["permanently"] = {
+            "type": "BOOLEAN",
+            "prompt": "Reserve permanently (superusers only)",
+            "initial": False,
+            "required": False,
+        }
+
         return result
 
     def get_order(self) -> List[str]:
         """Return input order."""
-        return ["username", "reason", "until"]
+        return ["username", "reason", "until", "permanently"]
 
 
 class VirtualMachineAPIForm(VirtualMachineForm, BaseAPIForm):

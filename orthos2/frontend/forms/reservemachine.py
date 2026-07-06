@@ -20,6 +20,7 @@ class ReserveMachineForm(forms.Form):
         reason = kwargs.pop("reason", None)
         until = kwargs.pop("until", None)
         username = kwargs.pop("username", None)
+        permanently = kwargs.pop("permanently", False)
         super(ReserveMachineForm, self).__init__(*args, **kwargs)
         self.fields["reason"].initial = reason
         if until is not None:
@@ -27,6 +28,7 @@ class ReserveMachineForm(forms.Form):
                 until, format=settings.SHORT_DATE_FORMAT
             )
         self.fields["username"].initial = username
+        self.fields["permanently"].initial = permanently
 
     reason = forms.CharField(
         widget=forms.Textarea(attrs={"class": "form-control"}),
@@ -34,12 +36,21 @@ class ReserveMachineForm(forms.Form):
     )
 
     until = forms.DateField(
+        required=False,
         widget=forms.TextInput(
             attrs={"id": "datepicker", "size": "10", "class": "form-control"}
         ),
         help_text="Format: YYYY-MM-DD (TZ: "
         + timezone.get_default_timezone_name()
-        + "). Type '9999-12-31' for infinite reservation (superusers only).",
+        + "). Max 90 days. Leave empty when reserving permanently.",
+    )
+
+    permanently = forms.BooleanField(
+        required=False,
+        label="Reserve permanently (superusers only)",
+        widget=forms.CheckboxInput(
+            attrs={"class": "form-check-input", "id": "permanently"}
+        ),
     )
 
     username = forms.CharField(widget=forms.HiddenInput(), required=False)
@@ -47,24 +58,34 @@ class ReserveMachineForm(forms.Form):
     def clean(self) -> None:
         cleaned_data = super(ReserveMachineForm, self).clean()
         if cleaned_data is None:
-            # It may be that a superclass didn't return cleaned data (as this is optional)
-            # https://docs.djangoproject.com/en/4.2/ref/forms/validation/#cleaning-and-validating-fields-that-depend-on-each-other
             cleaned_data = self.cleaned_data
-        reserved_until = cleaned_data.get("until")
+        permanently = cleaned_data.get("permanently", False)
+        until = cleaned_data.get("until")
 
-        if not reserved_until:
-            # return due to further checks which needs datetime object
-            return
-
-        if reserved_until == datetime.date.max:
-            pass
-
-        elif reserved_until <= datetime.datetime.now().date():
+        if permanently:
+            cleaned_data["until"] = None
+        elif not until:
+            self.add_error(
+                "until",
+                "Please provide a reservation date or check 'Reserve permanently'.",
+            )
+        elif until <= datetime.datetime.now().date():
             self.add_error(
                 "until", "Reservation date must be in the future (min. 1 day)."
             )
-
-        elif reserved_until > (
-            datetime.datetime.now().date() + datetime.timedelta(days=90)
-        ):
+        elif until > (datetime.datetime.now().date() + datetime.timedelta(days=90)):
             self.add_error("until", "Reservation period is limited (max. 90 days).")
+
+
+class ReserveMachineForUserForm(ReserveMachineForm):
+    """
+    Form for superusers to reserve a machine on behalf of another user.
+    """
+
+    field_order = ["machine", "reason", "until", "permanently"]
+
+    machine = forms.CharField(
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+        help_text="Enter the fully qualified domain name (FQDN) of the machine to reserve.",
+        label="Machine FQDN",
+    )

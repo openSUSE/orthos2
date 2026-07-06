@@ -237,7 +237,9 @@ def machine_reserve(
 
     if request.method == "GET":
         form = ReserveMachineForm(
-            reason=machine.reserved_reason, until=machine.reserved_until
+            reason=machine.reserved_reason,
+            until=machine.reserved_until,
+            permanently=machine.reserved_permanently,
         )
 
     else:

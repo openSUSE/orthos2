@@ -1,4 +1,3 @@
-import datetime
 import json
 from typing import Any, List, Union
 
@@ -119,9 +118,13 @@ Example:
         try:
             data = json.loads(request.body.decode("utf-8"))["form"]
 
-            if data["until"] == 0 and request.user.is_superuser:  # type: ignore
-                # set to 'infinite'
-                data["until"] = datetime.date.max
+            permanently = data.get("permanently", False)
+            # Also accept until=0 from superusers as a backward-compat alias for permanent.
+            if (permanently or data.get("until") == 0) and request.user.is_superuser:  # type: ignore
+                data["until"] = None
+                data["permanently"] = True
+            elif permanently and not request.user.is_superuser:  # type: ignore
+                return ErrorMessage("Permanent reservation is not allowed.").as_json
             else:
                 # set 'until' field (=offset) to concrete date for form validation
                 data["until"] = add_offset_to_date(data["until"], as_string=True)

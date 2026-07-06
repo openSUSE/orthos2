@@ -1,7 +1,5 @@
-import datetime
 from typing import TYPE_CHECKING, Any, Dict, List
 
-from django.utils import timezone
 from rest_framework import serializers
 
 from orthos2.api.serializers.annotation import AnnotationSerializer
@@ -70,24 +68,6 @@ class BMCListingField(BMCSerializer):
         return result
 
 
-class DateTimeInfiniteField(serializers.DateTimeField):
-    def to_representation(self, value: "datetime.datetime") -> str:
-        if value.date() == datetime.date.max:
-            current_time_offset = datetime.datetime.now(
-                tz=timezone.get_current_timezone()
-            ).utcoffset()
-            if current_time_offset is None:
-                raise RuntimeError("Timezone could not be determined!")
-            custom_max = (
-                datetime.datetime.combine(
-                    datetime.date.max, datetime.time.max, tzinfo=datetime.timezone.utc
-                )
-                - current_time_offset
-            )
-            return super().to_representation(custom_max)
-        return super().to_representation(value)
-
-
 class MachineSerializer(serializers.ModelSerializer[Machine]):
 
     enclosure = serializers.StringRelatedField()  # type: ignore
@@ -99,7 +79,7 @@ class MachineSerializer(serializers.ModelSerializer[Machine]):
     networkinterfaces = NetworkInterfaceListingField(many=True)
 
     reserved_by = serializers.StringRelatedField()  # type: ignore
-    reserved_until = DateTimeInfiniteField()
+    reserved_until = serializers.DateTimeField(allow_null=True)
 
     installations = InstallationListingField(many=True)
 
@@ -140,6 +120,7 @@ class MachineSerializer(serializers.ModelSerializer[Machine]):
             "reserved_reason",
             "reserved_at",
             "reserved_until",
+            "reserved_permanently",
             "cpu_model",
             "cpu_id",
             "cpu_cores",

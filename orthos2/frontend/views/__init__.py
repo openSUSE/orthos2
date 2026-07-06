@@ -78,6 +78,7 @@ from .remotepowerdevice import (
 )
 from .statistics import statistics
 from .user import users_create, users_password_restore, users_preferences
+from .users import UserListView, user_detail, user_reservations, user_reserve_machine
 
 __all__ = [
     "annotation",
@@ -140,6 +141,10 @@ __all__ = [
     "users_create",
     "users_password_restore",
     "users_preferences",
+    "UserListView",
+    "user_detail",
+    "user_reservations",
+    "user_reserve_machine",
     "RemotePowerDevicesListView",
     "RemotePowerDeviceDetailedEdit",
     "NewRemotePowerDevice",

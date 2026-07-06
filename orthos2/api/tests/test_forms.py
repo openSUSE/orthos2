@@ -21,14 +21,25 @@ from orthos2.data.models.remotepowertype import RemotePowerType
 
 
 class ReserveMachineAPIFormTests(TestCase):
-    def test_form(self) -> None:
-        """Test the machine reservation API form"""
-        # Arrange & Act
+    def test_form_with_date(self) -> None:
+        """Test the machine reservation API form with a concrete date"""
+        import datetime
+
+        future_date = (datetime.date.today() + datetime.timedelta(days=7)).strftime(
+            "%Y-%m-%d"
+        )
         form = ReserveMachineAPIForm(
-            {"reason": "my reason", "until": "9999-12-31", "user": "testuser"}
+            {"reason": "my reason", "until": future_date, "username": "testuser"}
         )
 
-        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_permanently(self) -> None:
+        """Test the machine reservation API form with permanently=True"""
+        form = ReserveMachineAPIForm(
+            {"reason": "my reason", "permanently": True, "username": "testuser"}
+        )
+
         self.assertTrue(form.is_valid())
 
 

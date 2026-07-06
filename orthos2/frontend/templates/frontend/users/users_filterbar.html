@@ -1,0 +1,57 @@
+{% load tags %}
+
+<div class="container-fluid" style="margin-bottom: 15px;">
+  <div class="row">
+    <div class="col-12 d-flex align-items-center">
+      <div>
+        <span class="hint" style="margin-right: 0.5rem;">Staff</span>
+        <div class="btn-group" role="group" style="margin-right: 1rem;">
+          <a
+            class="btn btn-secondary btn-sm {% active request '1' %}"
+            href="?{% url_replace request 'is_staff' '1' %}"
+            role="button"
+            >Yes</a
+          >
+          <a
+            class="btn btn-secondary btn-sm {% active request '0' %}"
+            href="?{% url_replace request 'is_staff' '0' %}"
+            role="button"
+            >No</a
+          >
+          <a
+            class="btn btn-secondary btn-sm"
+            href="?{% url_replace request 'is_staff' '' True %}"
+            role="button"
+            >&#215;</a
+          >
+        </div>
+
+        <span class="hint" style="margin-right: 0.5rem;">Superuser</span>
+        <div class="btn-group" role="group" style="margin-right: 1rem;">
+          <a
+            class="btn btn-secondary btn-sm {% active request '1' %}"
+            href="?{% url_replace request 'is_superuser' '1' %}"
+            role="button"
+            >Yes</a
+          >
+          <a
+            class="btn btn-secondary btn-sm {% active request '0' %}"
+            href="?{% url_replace request 'is_superuser' '0' %}"
+            role="button"
+            >No</a
+          >
+          <a
+            class="btn btn-secondary btn-sm"
+            href="?{% url_replace request 'is_superuser' '' True %}"
+            role="button"
+            >&#215;</a
+          >
+        </div>
+
+        <div style="display: inline-block;">
+          <span class="hint">Found {{ paginator.count }} User(s)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

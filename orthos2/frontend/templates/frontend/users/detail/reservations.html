@@ -1,0 +1,48 @@
+{% extends 'frontend/users/user.html' %}
+
+{% block tabcontent %}
+  <div class="row">
+    <div class="col-12">
+      <div class="container-fluid">
+        <div class="title">
+          <h5>Active Reservations</h5>
+        </div>
+
+        {% if machines %}
+          <table class="table table-striped table-bordered small">
+            <thead class="thead-default">
+              <tr style="border: 1px solid #ddd;">
+                <th>Machine</th>
+                <th>Reserved At</th>
+                <th>Reserved Until</th>
+                {% if user.is_superuser %}<th>Actions</th>{% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for machine in machines %}
+                <tr>
+                  <td>
+                    <a
+                      href="{% url 'frontend:detail' machine.pk %}"
+                      class="text-muted"
+                      >{{ machine.fqdn }}</a
+                    >
+                  </td>
+                  <td>{{ machine.reserved_at|default:"—" }}</td>
+                  <td>{% if machine.reserved_permanently %}Permanent{% else %}{{ machine.reserved_until|default:"—" }}{% endif %}</td>
+                  {% if user.is_superuser %}
+                  <td>
+                    <a class="btn btn-warning btn-sm" href="{% url 'frontend:release_machine' machine.pk %}" role="button">Release</a>
+                  </td>
+                  {% endif %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="alert alert-info">This user has no active reservations.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

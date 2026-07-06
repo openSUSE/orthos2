@@ -10,6 +10,7 @@
   {% elif machine.reserved_by and user.username != machine.reserved_by.username %}
     {% if user.is_superuser %}
     <a class="btn btn-danger btn-sm" href="{% url 'frontend:reserve_machine' machine.id %}" role="button">Reserve Machine (owned by {{ machine.reserved_by.username }})</a>
+    <a class="btn btn-warning btn-sm" href="{% url 'frontend:release_machine' machine.id %}" role="button">Release Machine</a>
     {% else %}
     <a class="btn btn-success btn-sm disabled" href="#" role="button">Reserve Machine</a>
     {% endif %}

@@ -433,6 +433,10 @@ class Machine(models.Model):
         help_text="Why do you need this machine (bug no, jira feature, what do you test/work on)?",
     )
 
+    reserved_permanently: "models.BooleanField[bool, bool]" = models.BooleanField(
+        default=False
+    )
+
     platform: "OptionalPlatformForeignKey" = models.ForeignKey(
         Platform, blank=True, null=True, on_delete=models.SET_NULL
     )
@@ -1261,10 +1265,8 @@ class Machine(models.Model):
         return hasattr(self, "serialconsole")
 
     def is_reserved_infinite(self) -> bool:
-        """Return true if machine is reserved infinite `datetime.date(9999, 12, 31)`."""
-        if self.reserved_by and self.reserved_until.date() == datetime.date.max:  # type: ignore
-            return True
-        return False
+        """Return true if machine is reserved permanently."""
+        return bool(self.reserved_by and self.reserved_permanently)
 
     def has_setup_capability(self) -> bool:
         """
@@ -1277,11 +1279,11 @@ class Machine(models.Model):
     def reserve(
         self,
         reason: str,
-        until: datetime.date,
+        until: Optional[datetime.date],
         user: Optional["User"] = None,
         reserve_for_user: Optional["User"] = None,
     ) -> None:
-        """Reserve machine."""
+        """Reserve machine. Pass until=None for a permanent reservation (superusers only)."""
         from .reservationhistory import ReservationHistory
 
         from orthos2.taskmanager import tasks
@@ -1295,8 +1297,8 @@ class Machine(models.Model):
         if not reason:
             raise ReserveException("Please provide a reservation reason.")
 
-        if until == datetime.date.max and not user.is_superuser:  # type: ignore
-            raise ReserveException("Infinite reservation is not allowed.")
+        if until is None and not user.is_superuser:  # type: ignore
+            raise ReserveException("Permanent reservation is not allowed.")
 
         # add to history if a superuser takes over the reservation
         if self.reserved_by and (self.reserved_by not in {user, reserve_for_user}):
@@ -1318,28 +1320,15 @@ class Machine(models.Model):
             self.reserved_at = timezone.now()
             extension = False
 
-        # Infinte reservation:
-        # --------------------
-        # Use `datetime.date.max` for the date and `datetime.time.min` for the time.
-        # The minimum time (0, 0) must be set so that the correct time zone calculation does not
-        # exceed the maximum DateTime limit (CET (UTC+1) of 9999-12-31, 23:59 (UTC) would result
-        # in `OverflowError: date value out of range`).
-
-        # Normal reservation (not infinite):
-        # ----------------------------------
-        # Combine the `datetime.date` object with `datetime.time.max` (23, 59) and make the
-        # new `datetime.datetime` object time zone aware using the default time zone (see
-        # `TIME_ZONE` in the django settings).
-        if until == datetime.date.max:
-            until = timezone.datetime.combine(  # type: ignore
-                datetime.date.max, timezone.datetime.min.time()  # type: ignore
-            )
-            until = timezone.make_aware(until, timezone.utc)  # type: ignore
+        self.reserved_permanently = until is None
+        if until is None:
+            self.reserved_until = None
         else:
-            until = timezone.datetime.combine(until, timezone.datetime.max.time())  # type: ignore
-            until = timezone.make_aware(until, timezone.get_default_timezone())  # type: ignore
+            until_dt = timezone.datetime.combine(until, timezone.datetime.max.time())  # type: ignore
+            self.reserved_until = timezone.make_aware(
+                until_dt, timezone.get_default_timezone()
+            )
 
-        self.reserved_until = until
         self.save()
 
         self.update_motd()
@@ -1379,6 +1368,7 @@ class Machine(models.Model):
         self.reserved_reason = None
         self.reserved_at = None
         self.reserved_until = None
+        self.reserved_permanently = False
 
         self.save()
         reservationhistory.save()

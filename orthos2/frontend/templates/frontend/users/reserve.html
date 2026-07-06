@@ -1,0 +1,98 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block javascript %}
+  <script>
+    $(function () {
+      $("#datepicker").datepicker({
+        maxDate: "+90d",
+        minDate: 1,
+        dateFormat: "yy-mm-dd",
+      });
+
+      function toggleDatepicker() {
+        if ($("#permanently").is(":checked")) {
+          $("#datepicker").val("").prop("disabled", true);
+        } else {
+          $("#datepicker").prop("disabled", false);
+        }
+      }
+
+      $("#permanently").on("change", toggleDatepicker);
+      toggleDatepicker();
+    });
+  </script>
+{% endblock %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-6">
+        <div class="title">
+          <h5>Reserve Machine for {{ user_obj.username }}</h5>
+        </div>
+
+        <form
+          method="post"
+          action="{% url 'frontend:user_reserve_machine' user_obj.pk %}"
+          class="form-reservemachine"
+        >
+          {% csrf_token %}
+
+          {{ form.machine.errors }}
+          <div class="row" style="margin: 5px;">
+            <div class="col-3">
+              <label>{{ form.machine.label }}:</label>
+            </div>
+            <div class="col-9">
+              {{ form.machine }}
+              <small class="form-text text-muted">{{ form.machine.help_text }}</small>
+            </div>
+          </div>
+
+          {{ form.reason.errors }}
+          <div class="row" style="margin: 5px;">
+            <div class="col-3">
+              <label>{{ form.reason.label }}:</label>
+            </div>
+            <div class="col-9">
+              {{ form.reason }}
+              <small class="form-text text-muted">{{ form.reason.help_text }}</small>
+            </div>
+          </div>
+
+          {{ form.until.errors }}
+          <div class="row" style="margin: 5px;">
+            <div class="col-3">
+              <label>{{ form.until.label }}:</label>
+            </div>
+            <div class="col-9">
+              {{ form.until }}
+              <small class="form-text text-muted">{{ form.until.help_text }}</small>
+            </div>
+          </div>
+
+          {{ form.permanently.errors }}
+          <div class="row" style="margin: 5px;">
+            <div class="col-3">
+              <label>{{ form.permanently.label }}:</label>
+            </div>
+            <div class="col-9">
+              <div class="form-check">
+                {{ form.permanently }}
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-secondary btn-sm btn-block">
+            Reserve for {{ user_obj.username }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
