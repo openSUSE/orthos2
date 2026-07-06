@@ -23,7 +23,7 @@ class InfoTest(APITestCase):
 
     def test_info_get_infinite_reservation(self) -> None:
         """
-        Verify that retrieving a machine with an infinite reservation is possible.
+        Verify that retrieving a machine with a permanent reservation is possible.
         """
         # Arrange
         url = reverse("api:machine")
@@ -40,14 +40,12 @@ class InfoTest(APITestCase):
         self.assertTrue("header" in json_response)
         self.assertTrue("type" in json_response["header"])
         self.assertEqual(json_response["header"]["type"], "INFO")
-        self.assertIn(
-            json_response["data"]["reserved_until"]["value"],
-            ("9999-12-31T22:59:59.999999+01:00", "9999-12-31T23:59:59.999999+01:00"),
-        )
+        self.assertIsNone(json_response["data"]["reserved_until"]["value"])
+        self.assertTrue(json_response["data"]["reserved_permanently"]["value"])
 
     def test_info_get_remote_power(self) -> None:
         """
-        Verify that retrieving a machine with an infinite reservation is possible.
+        Verify that retrieving a machine with a permanent reservation is possible.
         """
         # Arrange
         url = reverse("api:machine")
@@ -64,10 +62,8 @@ class InfoTest(APITestCase):
         self.assertTrue("header" in json_response)
         self.assertTrue("type" in json_response["header"])
         self.assertEqual(json_response["header"]["type"], "INFO")
-        self.assertIn(
-            json_response["data"]["reserved_until"]["value"],
-            ("9999-12-31T22:59:59.999999+01:00", "9999-12-31T23:59:59.999999+01:00"),
-        )
+        self.assertIsNone(json_response["data"]["reserved_until"]["value"])
+        self.assertTrue(json_response["data"]["reserved_permanently"]["value"])
         self.assertEqual(
             json_response["data"]["bmc"]["value"]["fence_agent"]["value"], "apc"
         )

@@ -29,7 +29,7 @@
                     >
                   </td>
                   <td>{{ machine.reserved_at|default:"—" }}</td>
-                  <td>{{ machine.reserved_until|default:"—" }}</td>
+                  <td>{% if machine.reserved_permanently %}Permanent{% else %}{{ machine.reserved_until|default:"—" }}{% endif %}</td>
                   {% if user.is_superuser %}
                   <td>
                     <a class="btn btn-warning btn-sm" href="{% url 'frontend:release_machine' machine.pk %}" role="button">Release</a>

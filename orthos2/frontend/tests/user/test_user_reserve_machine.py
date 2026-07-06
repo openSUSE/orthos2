@@ -120,7 +120,7 @@ class UserReserveMachineViewTest(TestCase):
         self.machine.refresh_from_db()
         self.assertIsNone(self.machine.reserved_by)
 
-    def test_reserve_infinite_date(self) -> None:
+    def test_reserve_permanently(self) -> None:
         self.client.force_login(self.superuser)
 
         response = self.client.post(
@@ -128,11 +128,12 @@ class UserReserveMachineViewTest(TestCase):
             {
                 "machine": self.machine.fqdn,
                 "reason": "Permanent owner reservation",
-                "until": "9999-12-31",
+                "permanently": True,
             },
         )
 
         self.assertRedirects(response, self._detail_url(self.target_user.pk))
         self.machine.refresh_from_db()
         self.assertEqual(self.machine.reserved_by, self.target_user)
-        self.assertEqual(self.machine.reserved_until.date(), datetime.date.max)
+        self.assertTrue(self.machine.reserved_permanently)
+        self.assertIsNone(self.machine.reserved_until)

@@ -11,6 +11,17 @@ $( function() {
       dateFormat: "yy-mm-dd",
     }
   );
+
+  function toggleDatepicker() {
+    if ($('#permanently').is(':checked')) {
+      $('#datepicker').val('').prop('disabled', true);
+    } else {
+      $('#datepicker').prop('disabled', false);
+    }
+  }
+
+  $('#permanently').on('change', toggleDatepicker);
+  toggleDatepicker();
 } );
 </script>
 {% endblock %}
@@ -54,6 +65,21 @@ $( function() {
             {{ form.until }}
             <small class="form-text text-muted">{{ form.until.help_text }}</small>
           </div>
+        </div>
+
+        {% if request.user.is_superuser %}
+        {{ form.permanently.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label>{{ form.permanently.label }}:</label>
+          </div>
+          <div class="col-9">
+            <div class="form-check">
+              {{ form.permanently }}
+            </div>
+          </div>
+        </div>
+        {% endif %}
 
         <button type="submit" class="btn btn-secondary btn-sm btn-block">Reserve</button>
       </form>

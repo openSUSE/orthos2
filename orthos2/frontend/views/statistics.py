@@ -3,7 +3,6 @@ All views that are related to "/statistics".
 """
 
 import datetime
-from datetime import timezone as tz
 from typing import List
 
 from django.contrib.auth.decorators import login_required
@@ -66,12 +65,8 @@ def statistics(request: HttpRequest) -> HttpResponse:
         matrix[0].append(architecture.machine_set.count())
         matrix[1].append(architecture.machine_set.filter(reserved_by=None).count())
         matrix[2].append(architecture.machine_set.filter(status_login=True).count())
-        infinite = timezone.datetime.combine(  # type: ignore
-            datetime.date.max, timezone.datetime.min.time()  # type: ignore
-        )
-        infinite = timezone.make_aware(infinite, tz.utc)  # type: ignore
         matrix[3].append(
-            architecture.machine_set.filter(reserved_until=infinite).count()
+            architecture.machine_set.filter(reserved_permanently=True).count()
         )
 
     matrix[0].append(sum(matrix[0]))

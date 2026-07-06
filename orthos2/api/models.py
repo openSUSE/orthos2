@@ -770,13 +770,6 @@ class APIQuery:
                 #   query ... where inst_dist =* 'sles 12' -> 'sles%2012' -> 'sles 12'
                 token = token.replace("%20", " ")
 
-                if condition[0].is_DateTimeField() and token.lower() == "infinite":
-                    if condition[1] == "__iexact":
-                        # no timezone offset here
-                        token = "9999-12-31 00:00:00"
-                    else:
-                        token = "9999-12-31 00:00+0000"
-
                 condition = condition + (token,)  # type: ignore
                 state = -1
 

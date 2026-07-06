@@ -9,6 +9,17 @@
         minDate: 1,
         dateFormat: "yy-mm-dd",
       });
+
+      function toggleDatepicker() {
+        if ($("#permanently").is(":checked")) {
+          $("#datepicker").val("").prop("disabled", true);
+        } else {
+          $("#datepicker").prop("disabled", false);
+        }
+      }
+
+      $("#permanently").on("change", toggleDatepicker);
+      toggleDatepicker();
     });
   </script>
 {% endblock %}
@@ -62,6 +73,18 @@
             <div class="col-9">
               {{ form.until }}
               <small class="form-text text-muted">{{ form.until.help_text }}</small>
+            </div>
+          </div>
+
+          {{ form.permanently.errors }}
+          <div class="row" style="margin: 5px;">
+            <div class="col-3">
+              <label>{{ form.permanently.label }}:</label>
+            </div>
+            <div class="col-9">
+              <div class="form-check">
+                {{ form.permanently }}
+              </div>
             </div>
           </div>
 
