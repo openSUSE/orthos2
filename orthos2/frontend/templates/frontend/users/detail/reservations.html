@@ -15,6 +15,7 @@
                 <th>Machine</th>
                 <th>Reserved At</th>
                 <th>Reserved Until</th>
+                {% if user.is_superuser %}<th>Actions</th>{% endif %}
               </tr>
             </thead>
             <tbody>
@@ -29,6 +30,11 @@
                   </td>
                   <td>{{ machine.reserved_at|default:"—" }}</td>
                   <td>{{ machine.reserved_until|default:"—" }}</td>
+                  {% if user.is_superuser %}
+                  <td>
+                    <a class="btn btn-warning btn-sm" href="{% url 'frontend:release_machine' machine.pk %}" role="button">Release</a>
+                  </td>
+                  {% endif %}
                 </tr>
               {% endfor %}
             </tbody>
