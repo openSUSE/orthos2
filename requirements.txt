@@ -13,3 +13,5 @@ social-auth-core
 requests
 urllib3
 gunicorn
+uritemplate
+PyYAML

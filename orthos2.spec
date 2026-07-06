@@ -21,7 +21,7 @@
 %endif
 
 Name:           orthos2
-Version:        1.11
+Version:        1.12
 Release:        0
 Summary:        Machine administration
 Url:            https://github.com/openSUSE/orthos2
@@ -65,6 +65,8 @@ Requires:  %{python3_pkgversion}-social-auth-app-django
 Requires:  %{python3_pkgversion}-social-auth-core
 Requires:  %{python3_pkgversion}-validators
 Requires:  %{python3_pkgversion}-gunicorn
+Requires:  %{python3_pkgversion}-PyYAML
+Requires:  %{python3_pkgversion}-uritemplate
 # Needed to install /etc/logrotate.d/orthos2
 Requires:  logrotate
 Requires:  nginx
