@@ -14,7 +14,7 @@ urlpatterns = [
     path(
         "schema/swagger-ui/",
         TemplateView.as_view(
-            template_name="swagger-ui.html",
+            template_name="api/swagger-ui.html",
             extra_context={"schema_url": "api:openapi-schema"},
         ),
         name="swagger-ui",
