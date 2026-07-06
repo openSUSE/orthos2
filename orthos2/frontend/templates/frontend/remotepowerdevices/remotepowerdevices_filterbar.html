@@ -2,8 +2,9 @@
 
 <div class="container-fluid" style="margin-bottom: 15px;">
   <div class="row">
-    <div class="col-12">
+    <div class="col-12 d-flex align-items-center">
 
+      <div>
       <div class="dropdown" style="display: inline-block;">
         <div class="dropdown" style="display: inline-block;">
         <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -22,6 +23,11 @@
       <div style="display: inline-block">
           <span class="hint">Found {{ paginator.count }} Platform(s)</span>
       </div>
+      </div>
+
+      <a class="nav-link ml-auto" href="{% url 'frontend:new_remotepowerdevice' %}">
+        <button type="button" class="btn btn-success">+</button>
+      </a>
 
     </div>
   </div>

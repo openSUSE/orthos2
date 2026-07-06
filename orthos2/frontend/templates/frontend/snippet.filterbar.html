@@ -3,7 +3,8 @@
 {% if architectures and domains %}
 <div class="container-fluid" style="margin-bottom: 15px;">
   <div class="row">
-    <div class="col-12">
+    <div class="col-12 d-flex align-items-center">
+      <div>
       <div class="btn-group" role="group">
         {% for architecture in architectures %}
         <a class="btn btn-secondary btn-sm {% active request architecture.name %}" href="?{% url_replace request 'arch' architecture.name %}" role="button">{{ architecture.name }}</a>
@@ -55,6 +56,13 @@
       <div style="display: inline-block">
           <span class="hint">Found {{ paginator.count }} Machine(s)</span>
       </div>
+      </div>
+
+      {% if perms.data and perms.data.add_machine %}
+      <a class="nav-link ml-auto" href="{% url 'frontend:machine_add' %}">
+        <button type="button" class="btn btn-success">+</button>
+      </a>
+      {% endif %}
 
     </div>
   </div>
