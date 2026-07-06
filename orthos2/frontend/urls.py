@@ -177,6 +177,17 @@ urlpatterns = [
     re_path(
         r"^logout/$", auth_views.LogoutView.as_view(), {"next_page": "/"}, name="logout"
     ),
+    path("users", views.UserListView.as_view(), name="users"),
+    re_path(
+        r"^user/(?P<id>[0-9]+)/detail$",
+        views.user_detail,
+        name="user_detail",
+    ),
+    re_path(
+        r"^user/(?P<id>[0-9]+)/reservations$",
+        views.user_reservations,
+        name="user_reservations",
+    ),
     re_path(r"^user/create$", views.users_create, name="create_user"),
     re_path(r"^user/preferences$", views.users_preferences, name="preferences_user"),
     re_path(

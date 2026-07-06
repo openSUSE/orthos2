@@ -1,0 +1,66 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+{% load tags %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+  {% include 'frontend/snippet.search.html' %}
+{% endblock %}
+
+{% block content %}
+
+  {% include 'frontend/users/users_filterbar.html' %}
+  {% include 'frontend/snippet.paginator.html' %}
+
+  <div class="container-fluid">
+    {% if page_obj %}
+      <table class="table table-striped table-bordered table-fixed">
+        <thead class="thead-default">
+          <tr style="border: 1px solid #ddd;">
+            <th>Username {% order_list request 'username' %}</th>
+            <th>First Name {% order_list request 'first_name' %}</th>
+            <th>Last Name {% order_list request 'last_name' %}</th>
+            <th>Email {% order_list request 'email' %}</th>
+            <th>Staff</th>
+            <th>Superuser</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for user in page_obj %}
+            <tr>
+              <td>
+                <a
+                  href="{% url 'frontend:user_detail' user.pk %}"
+                  class="text-muted"
+                  >{{ user.username }}</a
+                >
+              </td>
+              <td>{{ user.first_name }}</td>
+              <td>{{ user.last_name }}</td>
+              <td>{{ user.email }}</td>
+              <td>
+                {% if user.is_staff %}
+                  <span class="badge badge-success">Yes</span>
+                {% else %}
+                  <span class="badge badge-secondary">No</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if user.is_superuser %}
+                  <span class="badge badge-danger">Yes</span>
+                {% else %}
+                  <span class="badge badge-secondary">No</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% include 'frontend/snippet.paginator.html' %}
+    {% else %}
+      <div class="alert alert-info">No users found!</div>
+    {% endif %}
+  </div>
+{% endblock %}
