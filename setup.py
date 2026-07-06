@@ -22,7 +22,7 @@ def requires(filename: str = "requirements.txt"):
 if __name__ == "__main__":
     setup(
         name="orthos2",
-        version="0.1",
+        version="1.11",
         description="Machine administration server",
         long_description="""
         Orthos is the machine administration tool of the development network at SUSE.
