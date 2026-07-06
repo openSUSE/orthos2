@@ -21,7 +21,7 @@
 %endif
 
 Name:           orthos2
-Version:        1.11
+Version:        1.12
 Release:        0
 Summary:        Machine administration
 Url:            https://github.com/openSUSE/orthos2
