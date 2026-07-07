@@ -1,17 +1,12 @@
 import datetime
 
 from django.db import migrations, models
-from django.utils import timezone
 
 
 def migrate_infinite_reservations(apps, schema_editor):
     Machine = apps.get_model("data", "Machine")
-    import pytz
 
-    utc = pytz.utc
-    infinite = timezone.datetime.combine(datetime.date.max, datetime.time.min)
-    infinite = timezone.make_aware(infinite, utc)
-    Machine.objects.filter(reserved_until=infinite).update(
+    Machine.objects.filter(reserved_until__date=datetime.date.max).update(
         reserved_permanently=True,
         reserved_until=None,
     )
