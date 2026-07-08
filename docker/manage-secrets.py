@@ -119,7 +119,9 @@ netbox_api_pepper = "".join(secrets.choice(netbox_pepper_charset) for _ in range
 # orthos2.env
 # ORTHOS2_SECRET_KEY, ORTHOS2_NETBOX_TOKEN
 
-(script_directory / "orthos" / "orthos2.env").write_text(
+(script_directory / "orthos" / "orthos2dev.env").write_text(
+    'FQDN="orthos2.orthos2.test"\n'
+    'PROJECT="production"\n'
     f"ORTHOS2_SECRET_KEY='{orthos2_secret_key}'\n"
     f"ORTHOS2_NETBOX_AUTH_SCHEME='Bearer'\n"
     'ORTHOS2_NETBOX_URL="http://netbox.orthos2.test:8080"\n'
@@ -133,12 +135,23 @@ netbox_api_pepper = "".join(secrets.choice(netbox_pepper_charset) for _ in range
     'CSRF_TRUSTED_ORIGINS="https://orthos2.orthos2.test"\n'
     'CSRF_ALLOWED_ORIGIN="https://orthos2.orthos2.test"\n'
     'CROSS_ORIGINS_WHITELIST="https://orthos2.orthos2.test"\n'
-    'OIDC_ENDPOINT="https://authentik.orthos2.test/application/o/orthos"'
+    'OIDC_ENDPOINT="https://authentik.orthos2.test/application/o/orthos"\n'
     f'OIDC_KEY="{oidc_key}"\n'
     f'OIDC_SECRET="{oidc_secret}"\n'
     "NETBOX_SUPERUSER_NAME='admin'\n"
     f"NETBOX_SUPERUSER_PASSWORD={netbox_superuser_password}\n"
 )
+
+# Docker secrets consumed by compose.testing.yaml / compose.yaml (production.dockerfile)
+# OrthosKey and OIDCsecret mirror the values written to orthos2dev.env above so the
+# production entrypoint (docker/production-server.sh) sees the same secrets as the
+# devel entrypoint. NetboxToken can't be generated here: it's provisioned by calling
+# a running Netbox instance's API (see get_netbox_token() in docker/devel-server.sh),
+# so it must be created manually before starting the testing stack, e.g.:
+#   echo "<token>" > docker/secrets/NetboxToken
+
+(script_directory / "secrets" / "OrthosKey").write_text(orthos2_secret_key)
+(script_directory / "secrets" / "OIDCsecret").write_text(oidc_secret)
 
 # authentik.env
 

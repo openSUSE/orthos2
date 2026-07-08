@@ -14,6 +14,7 @@ administration of the Orthos server will be discussed.
 
     Setup <adminguide/setup>
     Development Setup <adminguide/setup_devel>
+    Docker Setup <adminguide/setup_docker>
     Server Configuration <adminguide/server_configuration>
     Tokens <adminguide/tokens>
     Groups and Users <adminguide/groups_and_users>

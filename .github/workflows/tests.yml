@@ -34,15 +34,15 @@ jobs:
         env:
           SCC_CREDENTIALS: ${{ secrets.SCC_CREDENTIALS }}
         run: |
-          echo "$SCC_CREDENTIALS" > docker/scc/SCCcredentials
+          echo "$SCC_CREDENTIALS" > docker/secrets/SCCcredentials
       - name: Build images
         run: |
-          docker compose build
+          docker compose -f compose.common.yaml -f compose.dev.yaml build
       - name: Start Compose Stack
         env:
           NETBOX_START_PERIOD: 480s
         run: |
-          docker compose -f compose.yaml -f compose.override.yml up -d
+          docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml up -d
       - name: Run Tests
         run: |
           docker compose exec -it orthos2 bash -c 'coverage run --source="." -m pytest orthos2'

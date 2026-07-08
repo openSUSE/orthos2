@@ -1,0 +1,42 @@
+# This file is specifically to test the production dockerfile, without needing to already have a netbox, postgres, test machine, and cobbler on hand
+# Combine with the shared services in compose.common.yaml:
+#   docker compose -f compose.common.yaml -f compose.testing.yaml -f compose.dev.override.yml up -d
+services:
+  orthos2:
+    build:
+      context: docker
+      dockerfile: production.dockerfile
+      secrets:
+        - SCCcredentials
+      args:
+        PROJECT: "${PROJECT:-production}"
+    secrets:
+      - NetboxToken
+      - OrthosKey
+      - OIDCsecret
+    env_file:
+      - ".env"
+      - "docker/orthos/orthos2dev.env"
+  orthos2_taskmanager:
+    build:
+      context: docker
+      dockerfile: production.dockerfile
+      secrets:
+        - SCCcredentials
+      args:
+        PROJECT: "${PROJECT:-production}"
+    secrets:
+      - NetboxToken
+      - OrthosKey
+      - OIDCsecret
+    env_file:
+      - ".env"
+      - "docker/orthos/orthos2dev.env"
+
+secrets:
+  NetboxToken:
+    file: docker/secrets/NetboxToken
+  OrthosKey:
+    file: docker/secrets/OrthosKey
+  OIDCsecret:
+    file: docker/secrets/OIDCsecret

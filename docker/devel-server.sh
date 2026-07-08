@@ -8,13 +8,14 @@ get_netbox_token() {
       -H "Accept: Application/json; indent=4" \
       "${ORTHOS2_NETBOX_URL}/api/users/tokens/provision/" \
       --data "{\"username\": \"${NETBOX_SUPERUSER_NAME}\", \"password\": \"${NETBOX_SUPERUSER_PASSWORD}\"}")
-    ORTHOS2_NETBOX_TOKEN="nbt_$(echo $NETBOX_TOKEN_JSON | jq -r '.key').$(echo $NETBOX_TOKEN_JSON | jq -r '.token')"
-    export ORTHOS2_NETBOX_TOKEN
+    ORTHOS2_NETBOX_TOKEN="nbt_$(echo "$NETBOX_TOKEN_JSON" | jq -r '.key').$(echo "$NETBOX_TOKEN_JSON" | jq -r '.token')"
+    echo "$ORTHOS2_NETBOX_TOKEN"
 }
 
 server_start() {
     # Setup NetBox
-    get_netbox_token
+    ORTHOS2_NETBOX_TOKEN=$(get_netbox_token)
+    export ORTHOS2_NETBOX_TOKEN
     python3.11 manage.py shell </code/docker/setup_netbox.py
     # Setup Orthos 2
     git config --global --add safe.directory /code
@@ -47,7 +48,8 @@ taskmanager_start() {
     PYTHONPATH=/code
     export PYTHONPATH
     # Generate NetBox API Token
-    get_netbox_token
+    ORTHOS2_NETBOX_TOKEN=$(get_netbox_token)
+    export ORTHOS2_NETBOX_TOKEN
     # Moves files into place
     python3.11 manage.py setup ansible --buildroot="/"
     # Start server
