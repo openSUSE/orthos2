@@ -71,6 +71,7 @@ Requires:  %{python3_pkgversion}-uritemplate
 Requires:  logrotate
 Requires:  nginx
 Requires:  ansible
+Requires(pre): system-user-orthos
 Requires(post): sudo
 
 Provides: orthos2-%{version}-%{release}
