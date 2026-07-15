@@ -13,6 +13,10 @@ on:
 jobs:
   unit:
     runs-on: ubuntu-latest
+    # Skip on PRs from forks: the SCC_CREDENTIALS and CODACY_PROJECT_TOKEN
+    # secrets are not available to workflows triggered by fork PRs, so the
+    # job would fail before it can run any tests.
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork }}
 
     strategy:
       max-parallel: 4
