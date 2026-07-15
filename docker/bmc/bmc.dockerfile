@@ -1,7 +1,7 @@
 FROM registry.suse.com/suse/sle15:15.7
 
 RUN zypper --gpg-auto-import-keys ref && \
-    zypper in -y \ 
+    zypper in -y \
     gcc \
     python3-devel \
     python3-pip
