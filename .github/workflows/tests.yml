@@ -49,9 +49,9 @@ jobs:
           docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml up -d
       - name: Run Tests
         run: |
-          docker compose exec -it orthos2 bash -c 'coverage run --source="." -m pytest orthos2'
-          docker compose exec -it orthos2 bash -c 'coverage report'
-          docker compose exec -it orthos2 bash -c 'coverage xml'
+          docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml exec -it orthos2 bash -c 'coverage run --source="." -m pytest orthos2'
+          docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml exec -it orthos2 bash -c 'coverage report'
+          docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml exec -it orthos2 bash -c 'coverage xml'
       - name: Upload coverage
         if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork) }}
         uses: codacy/codacy-coverage-reporter-action@v1.3.0
