@@ -1,0 +1,175 @@
+# Shared services for the local, self-contained stack (dev and testing variants).
+# This file is never used on its own - always combine it with either compose.dev.yaml
+# or compose.testing.yaml, plus compose.dev.override.yml, e.g.:
+#   docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml up -d
+#   docker compose -f compose.common.yaml -f compose.testing.yaml -f compose.dev.override.yml up -d
+#
+# compose.dev.override.yml (Traefik routing for the "netbox" service pulled in via the
+# include: below) must stay a separate -f layer rather than a service block in this file:
+# Compose versions differ on whether redeclaring an include:'d service in the *same* file
+# is a merge or a "conflicts with imported resource" error (docker/compose#11404, #11482).
+# A later -f file is unambiguously a merge, so that's the only version-safe way to extend it.
+#
+# Compose merges services across -f files: plain lists (env_file, cap_add) are appended,
+# secrets/volumes/ports merge by their unique key (target/mount path), and mappings
+# (build, environment, labels) are merged key-by-key. See compose.dev.yaml/compose.testing.yaml
+# for the orthos2/orthos2_taskmanager fields (build, env_file, secrets) that vary per variant.
+#
+# For the hostnames to work an entry in /etc/hosts is needed:
+# 127.0.0.1 authentik.orthos2.test orthos2.orthos2.test cobbler.orthos2.test netbox.orthos2.test testmachine.orthos2.test
+include:
+  - docker/authentik/compose.authentik.yaml
+  - docker/netbox/compose.netbox.yml
+
+services:
+  proxy:
+    image: traefik:v3.6
+    container_name: traefik
+    command:
+      - --accesslog=true
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --providers.file.directory=/etc/traefik/dynamic
+      - --providers.file.watch=true
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro,z
+      - ./docker/traefik/certs/authentik.orthos2.test.crt:/certs/authentik.orthos2.test.crt:ro,z
+      - ./docker/traefik/certs/authentik.orthos2.test.key:/certs/authentik.orthos2.test.key:ro,z
+      - ./docker/traefik/dynamic_conf.yaml:/etc/traefik/dynamic/certs.yaml:ro,z
+    restart: always
+    networks:
+      orthos:
+        aliases:
+          - authentik.orthos2.test
+    security_opt:
+      - label:disable
+  orthos2:
+    hostname: orthos2.orthos2.test
+    cap_add:
+      - NET_RAW
+    volumes:
+      - ./:/code:z
+      - ./docker/test-machine/ssh-keys/orthos2-test-machine:/var/lib/orthos2/.ssh/orthos2-test-machine:ro,z
+      - ./docker/test-machine/ssh-keys/config:/var/lib/orthos2/.ssh/config:ro,z
+    networks:
+      - orthos
+    depends_on:
+      orthos2_database:
+        condition: service_healthy
+      netbox:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.orthos2-http.rule=Host(`orthos2.orthos2.test`)"
+      - "traefik.http.routers.orthos2-http.entrypoints=web"
+      - "traefik.http.routers.orthos2-http.middlewares=orthos2-https"
+      - "traefik.http.middlewares.orthos2-https.redirectScheme.scheme=https"
+      - "traefik.http.routers.orthos2-https.rule=Host(`orthos2.orthos2.test`)"
+      - "traefik.http.routers.orthos2-https.entrypoints=websecure"
+      - "traefik.http.routers.orthos2-https.tls=true"
+      - "traefik.http.services.orthos2.loadbalancer.server.port=8000"
+  orthos2_taskmanager:
+    environment:
+      ORTHOS2_MODE: "taskmanager"
+    cap_add:
+      - NET_RAW
+    volumes:
+      - ./:/code
+      - ./docker/test-machine/ssh-keys/orthos2-test-machine:/var/lib/orthos2/.ssh/orthos2-test-machine:ro,z
+      - ./docker/test-machine/ssh-keys/config:/var/lib/orthos2/.ssh/config:ro,z
+    networks:
+      - orthos
+    depends_on:
+      orthos2_database:
+        condition: service_healthy
+      orthos2:
+        condition: service_healthy
+  orthos2_database:
+    image: postgres
+    restart: always
+    hostname: database.orthos2.test
+    env_file:
+      - "docker/orthos/db.env"
+    networks:
+      - orthos
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -h 127.0.0.1 -d $${POSTGRES_USER} -U $${POSTGRES_USER}",
+        ]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+  cobbler:
+    hostname: cobbler.orthos2.test
+    build:
+      context: docker/cobbler
+      dockerfile: cobbler.dockerfile
+      secrets:
+        - SCCcredentials
+    networks:
+      - orthos
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cobbler-http.rule=Host(`cobbler.orthos2.test`)"
+      - "traefik.http.routers.cobbler-http.entrypoints=web"
+      - "traefik.http.routers.cobbler-https.rule=Host(`cobbler.orthos2.test`)"
+      - "traefik.http.routers.cobbler-https.entrypoints=websecure"
+      - "traefik.http.routers.cobbler-https.tls=true"
+      - "traefik.http.services.cobbler.loadbalancer.server.port=80"
+  serial_console:
+    hostname: sconsole.orthos2.test
+    networks:
+      - orthos
+    build:
+      context: docker/serial-console
+      dockerfile: serial-console.dockerfile
+      secrets:
+        - SCCcredentials
+    #ports:
+    #  - 22:22
+  machine_bmc:
+    hostname: bmc.orthos2.test
+    networks:
+      - orthos
+    build:
+      context: docker/bmc
+      dockerfile: bmc.dockerfile
+      secrets:
+        - SCCcredentials
+    ports:
+      - "9001:9001"
+  test_machine:
+    hostname: testmachine.orthos2.test
+    networks:
+      - orthos
+    build:
+      context: docker/test-machine
+      dockerfile: test-machine.dockerfile
+      secrets:
+        - SCCcredentials
+    depends_on:
+      orthos2_database:
+        condition: service_healthy
+
+secrets:
+  SCCcredentials:
+    file: docker/secrets/SCCcredentials
+volumes:
+  database:
+    driver: local
+networks:
+  orthos:

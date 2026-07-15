@@ -157,8 +157,8 @@ package-lock.json
 *.key
 
 # SCC Credendials
-/docker/scc/*
-!/docker/scc/.keep
+/docker/secrets/*
+!/docker/secrets/.keep
 
 
 # Ignore vscode AI rules

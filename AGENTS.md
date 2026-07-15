@@ -56,13 +56,19 @@ The project is organized into specialized Django apps:
 
 ### Running the Development Environment
 
-The primary development workflow uses Docker Compose:
+The project ships three Docker Compose entry points, sharing services defined in `compose.common.yaml`:
 
 ```bash
-# Start all services (Orthos2, PostgreSQL, Netbox, Cobbler, Authentik, Traefik)
+# Production: proxy + orthos2 + orthos2_taskmanager, using the prebuilt registry image
 docker compose up -d
 
-# Access services at:
+# Full local dev stack: builds docker/develop.dockerfile, plus Netbox/Cobbler/Authentik/etc.
+docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml up -d
+
+# Local stack that builds and exercises docker/production.dockerfile instead
+docker compose -f compose.common.yaml -f compose.testing.yaml -f compose.dev.override.yml up -d
+
+# Access services at (dev/testing stacks only):
 # - https://orthos2.orthos2.test (main app)
 # - https://netbox.orthos2.test (Netbox)
 # - https://authentik.orthos2.test (auth provider)
@@ -72,12 +78,14 @@ docker compose up -d
 # 127.0.0.1 authentik.orthos2.test orthos2.orthos2.test cobbler.orthos2.test netbox.orthos2.test
 ```
 
-The compose setup includes:
+The dev/testing compose setup includes:
 - `orthos2`: Main Django application (port 8000)
 - `orthos2_taskmanager`: Background task processor
 - `orthos2_database`: PostgreSQL database
 - `cobbler`, `netbox`, `authentik`: Integrated services
 - `proxy`: Traefik reverse proxy
+
+The production `compose.yaml` only runs `proxy`, `orthos2`, and `orthos2_taskmanager` against a prebuilt image.
 
 ### Running Tests
 
@@ -152,7 +160,8 @@ docker compose up -d
 ## Configuration
 
 - **Settings**: `orthos2/settings.py` (main), `/etc/orthos2/settings` (production override)
-- **Environment variables**: All `ORTHOS_*` and `ORTHOS2_*` prefixed vars (see `docker/orthos/orthos2.env` for examples)
+- **Environment variables**: All `ORTHOS_*` and `ORTHOS2_*` prefixed vars (see `docker/orthos/orthos2dev.env`, generated
+  by `docker/manage-secrets.py`, for examples)
 - **Key env vars**:
   - `ORTHOS_SECRET_KEY`: Django secret key
   - `ORTHOS2_DB_ENGINE`: Database backend

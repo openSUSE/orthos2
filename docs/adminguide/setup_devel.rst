@@ -40,7 +40,18 @@ Installation/Setup (Devel system)
 6. Run the test server:
     .. code-block::
 
-        docker compose up -d
+        docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml up -d
+
+    If you wish to test for the production environment instead, first bring up the dev stack once
+    (as above) to obtain a Netbox API token, then supply it as a Docker secret:
+    .. code-block::
+
+        echo "<token from ORTHOS2_NETBOX_TOKEN in the running orthos2 container>" > docker/secrets/NetboxToken
+
+    and run
+    .. code-block::
+
+        docker compose -f compose.common.yaml -f compose.testing.yaml -f compose.dev.override.yml up -d
 
 7. Edit your ``/etc/hosts`` file and include the following line:
     .. code-block::
@@ -48,4 +59,4 @@ Installation/Setup (Devel system)
         127.0.0.1 authentik.orthos2.test orthos2.orthos2.test cobbler.orthos2.test netbox.orthos2.test testmachine.orthos2.test
 
 8.  Open your browser and go to `http://orthos2.orthos2.test <http://orthos2.orthos2.test>`_ (use the superuser login 
-    here). The login password for the admin user you can find in ``docker/orthos/orthos2.env``.
+    here). The login password for the admin user you can find in ``docker/orthos/orthos2dev.env``.
