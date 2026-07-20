@@ -21,6 +21,7 @@ RUN --mount=type=secret,id=SCCcredentials,target=/etc/zypp/credentials.d/SCCcred
     curl
 
 COPY production-server.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 # Create required directories
 RUN mkdir -p /var/log/orthos2 /srv/www/orthos2
 RUN chown -R orthos:orthos /var/log/orthos2 /srv/www/orthos2
