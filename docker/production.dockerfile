@@ -12,7 +12,7 @@ LABEL org.opencontainers.image.description="Production Image for the Orthos 2 We
 LABEL org.opencontainers.image.version="%%PKG_VERSION%%"
 LABEL org.openbuildservice.disturl="%DISTURL%"
 LABEL org.opencontainers.image.created="%BUILDTIME%"
-RUN --mount=type=secret,id=SCCcredentials,target=/etc/zypp/credentials.d/SCCcredentials,required=false \
+RUN --mount=type=secret,id=SCCcredentials,target=/etc/zypp/credentials.d/SCCcredentials,required=false true && \
     zypper --non-interactive addrepo --refresh "https://download.opensuse.org/repositories/systemsmanagement:orthos2:${PROJECT}/15.7/" "Orthos 2 ${PROJECT}" && \
     zypper --non-interactive --gpg-auto-import-keys refresh && \
     zypper update -y && \
