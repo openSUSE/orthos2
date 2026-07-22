@@ -1,20 +1,17 @@
-# Local dev stack: builds docker/develop.dockerfile.
-# Combine with the shared services in compose.common.yaml:
-#   docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml up -d
+# Local dev stack: uses docker/develop.dockerfile.
+# Combine with the shared services in compose.common.yaml via the Makefile, which also
+# builds the orthos2/orthos2-static images in the required order before starting:
+#   make up-dev
 services:
   orthos2:
-    build:
-      context: .
-      dockerfile: docker/develop.dockerfile
-      secrets:
-        - SCCcredentials
+    image: orthos2:dev-latest
     env_file:
       - "docker/orthos/orthos2dev.env"
   orthos2_taskmanager:
-    build:
-      context: .
-      dockerfile: docker/develop.dockerfile
-      secrets:
-        - SCCcredentials
+    image: orthos2:dev-latest
     env_file:
       - "docker/orthos/orthos2dev.env"
+  orthos2_nginx:
+    image: orthos2-static:dev-latest
+    depends_on:
+      - orthos2

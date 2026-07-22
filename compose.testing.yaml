@@ -1,15 +1,10 @@
 # This file is specifically to test the production dockerfile, without needing to already have a netbox, postgres, test machine, and cobbler on hand
-# Combine with the shared services in compose.common.yaml:
-#   docker compose -f compose.common.yaml -f compose.testing.yaml -f compose.dev.override.yml up -d
+# Combine with the shared services in compose.common.yaml via the Makefile, which also
+# builds the orthos2/orthos2-static images in the required order before starting:
+#   make up-testing
 services:
   orthos2:
-    build:
-      context: docker
-      dockerfile: production.dockerfile
-      secrets:
-        - SCCcredentials
-      args:
-        PROJECT: "${PROJECT:-production}"
+    image: orthos2:latest
     secrets:
       - NetboxToken
       - OrthosKey
@@ -18,13 +13,7 @@ services:
       - ".env"
       - "docker/orthos/orthos2dev.env"
   orthos2_taskmanager:
-    build:
-      context: docker
-      dockerfile: production.dockerfile
-      secrets:
-        - SCCcredentials
-      args:
-        PROJECT: "${PROJECT:-production}"
+    image: orthos2:latest
     secrets:
       - NetboxToken
       - OrthosKey
@@ -32,6 +21,19 @@ services:
     env_file:
       - ".env"
       - "docker/orthos/orthos2dev.env"
+  orthos2_nginx:
+    image: orthos2-static:latest
+    depends_on:
+      - orthos2
+    env_file:
+      - ".env"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nginx-static.rule=Host(`${FQDN:?error}`) && PathPrefix(`/static/`)"
+      - "traefik.http.routers.nginx-static.entrypoints=websecure"
+      - "traefik.http.routers.nginx-static.tls=true"
+      - "traefik.http.services.nginx-static.loadbalancer.server.port=80"
+      - "traefik.http.routers.nginx-static.priority=100"
 
 secrets:
   NetboxToken:

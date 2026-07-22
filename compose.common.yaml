@@ -1,8 +1,10 @@
 # Shared services for the local, self-contained stack (dev and testing variants).
 # This file is never used on its own - always combine it with either compose.dev.yaml
-# or compose.testing.yaml, plus compose.dev.override.yml, e.g.:
-#   docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml up -d
-#   docker compose -f compose.common.yaml -f compose.testing.yaml -f compose.dev.override.yml up -d
+# or compose.testing.yaml, plus compose.dev.override.yml. Use the Makefile rather than
+# calling docker compose directly, since it also builds the orthos2/orthos2-static
+# images in the required order (see docker/compose#6332):
+#   make up-dev
+#   make up-testing
 #
 # compose.dev.override.yml (Traefik routing for the "netbox" service pulled in via the
 # include: below) must stay a separate -f layer rather than a service block in this file:
@@ -12,8 +14,9 @@
 #
 # Compose merges services across -f files: plain lists (env_file, cap_add) are appended,
 # secrets/volumes/ports merge by their unique key (target/mount path), and mappings
-# (build, environment, labels) are merged key-by-key. See compose.dev.yaml/compose.testing.yaml
-# for the orthos2/orthos2_taskmanager fields (build, env_file, secrets) that vary per variant.
+# (environment, labels) are merged key-by-key. See compose.dev.yaml/compose.testing.yaml
+# for the orthos2/orthos2_taskmanager/orthos2_nginx fields (image, env_file, secrets) that
+# vary per variant - their images are built by the Makefile, not by compose's build:.
 #
 # For the hostnames to work an entry in /etc/hosts is needed:
 # 127.0.0.1 authentik.orthos2.test orthos2.orthos2.test cobbler.orthos2.test netbox.orthos2.test testmachine.orthos2.test
@@ -163,7 +166,17 @@ services:
         - SCCcredentials
     depends_on:
       orthos2_database:
-        condition: service_healthy
+        condition: service_healthy  
+  orthos2_nginx:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nginx-static.rule=Host(`orthos2.orthos2.test`) && PathPrefix(`/static/`)"
+      - "traefik.http.routers.nginx-static.entrypoints=websecure"
+      - "traefik.http.routers.nginx-static.tls=true"
+      - "traefik.http.services.nginx-static.loadbalancer.server.port=80"
+      - "traefik.http.routers.nginx-static.priority=100"
+    networks:
+      - orthos
 
 secrets:
   SCCcredentials:
