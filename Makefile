@@ -10,7 +10,7 @@ COMPOSE_PROD := docker compose -f compose.yaml
 
 .PHONY: help \
 	build-dev up-dev down-dev logs-dev clean-dev test-dev \
-	pull-testing build-testing up-testing down-testing logs-testing clean-testing \
+	pull-testing build-testing netbox-token up-testing down-testing logs-testing clean-testing \
 	pull-prod up-prod down-prod logs-prod
 
 help:
@@ -58,7 +58,10 @@ build-testing:
 		--build-arg BASE_IMAGE=orthos2:latest docker/nginx
 	$(COMPOSE_TESTING) build
 
-up-testing: build-testing
+netbox-token:
+	./docker/get-netbox-token.sh
+
+up-testing: build-testing netbox-token
 	$(COMPOSE_TESTING) up -d
 
 down-testing:

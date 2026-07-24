@@ -146,9 +146,8 @@ netbox_api_pepper = "".join(secrets.choice(netbox_pepper_charset) for _ in range
 # OrthosKey and OIDCsecret mirror the values written to orthos2dev.env above so the
 # production entrypoint (docker/production-server.sh) sees the same secrets as the
 # devel entrypoint. NetboxToken can't be generated here: it's provisioned by calling
-# a running Netbox instance's API (see get_netbox_token() in docker/devel-server.sh),
-# so it must be created manually before starting the testing stack, e.g.:
-#   echo "<token>" > docker/secrets/NetboxToken
+# a running Netbox instance's API (see get_netbox_token() in docker/devel-server.sh).
+# `make up-testing` handles this automatically via docker/get-netbox-token.sh.
 
 (script_directory / "secrets" / "OrthosKey").write_text(orthos2_secret_key)
 (script_directory / "secrets" / "OIDCsecret").write_text(oidc_secret)
