@@ -58,6 +58,15 @@ services:
     depends_on:
       orthos2:
         condition: service_healthy
+  orthos2_nginx:
+    image: registry.opensuse.org/systemsmanagement/orthos2/containers/orthos2-static:1.13
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nginx-static.rule=Host(`${FQDN:?error}`) && PathPrefix(`/static/`)"
+      - "traefik.http.routers.nginx-static.entrypoints=websecure"
+      - "traefik.http.routers.nginx-static.tls=true"
+      - "traefik.http.services.nginx-static.loadbalancer.server.port=80"
+      - "traefik.http.routers.nginx-static.priority=100"
 
 secrets:
   NetboxToken:
@@ -66,6 +75,3 @@ secrets:
     file: docker/secrets/OrthosKey
   OIDCsecret:
     file: docker/secrets/OIDCsecret
-volumes:
-  database:
-    driver: local

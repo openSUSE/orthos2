@@ -41,17 +41,15 @@ jobs:
           echo "$SCC_CREDENTIALS" > docker/secrets/SCCcredentials
       - name: Build images
         run: |
-          docker compose -f compose.common.yaml -f compose.dev.yaml build
+          make build-dev
       - name: Start Compose Stack
         env:
           NETBOX_START_PERIOD: 480s
         run: |
-          docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml up -d
+          make up-dev
       - name: Run Tests
         run: |
-          docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml exec -it orthos2 bash -c 'coverage run --source="." -m pytest orthos2'
-          docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml exec -it orthos2 bash -c 'coverage report'
-          docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml exec -it orthos2 bash -c 'coverage xml'
+          make test-dev
       - name: Upload coverage
         if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork) }}
         uses: codacy/codacy-coverage-reporter-action@v1.3.0

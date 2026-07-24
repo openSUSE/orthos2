@@ -5,7 +5,7 @@ Installation/Setup (Devel system)
 1. Prepare your local system:
     .. code-block::
 
-        $ sudo zypper in docker docker-compose gcc python3-devel
+        $ sudo zypper in docker docker-compose gcc python3-devel jq
 
 
 2. Check out the sources:
@@ -42,16 +42,12 @@ Installation/Setup (Devel system)
 
         docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml up -d
 
-    If you wish to test for the production environment instead, first bring up the dev stack once
-    (as above) to obtain a Netbox API token, then supply it as a Docker secret:
+    If you wish to test for the production environment instead, use the ``Makefile`` target below.
+    It automatically provisions a NetBox API token as the ``docker/secrets/NetboxToken`` Docker
+    secret before starting the stack, so no manual steps are needed:
     .. code-block::
 
-        echo "<token from ORTHOS2_NETBOX_TOKEN in the running orthos2 container>" > docker/secrets/NetboxToken
-
-    and run
-    .. code-block::
-
-        docker compose -f compose.common.yaml -f compose.testing.yaml -f compose.dev.override.yml up -d
+        make up-testing
 
 7. Edit your ``/etc/hosts`` file and include the following line:
     .. code-block::
