@@ -21,7 +21,7 @@
 %endif
 
 Name:           orthos2
-Version:        1.15
+Version:        1.16
 Release:        0
 Summary:        Machine administration
 Url:            https://github.com/openSUSE/orthos2
@@ -71,6 +71,8 @@ Requires:  %{python3_pkgversion}-uritemplate
 Requires:  logrotate
 Requires:  nginx
 Requires:  ansible
+Requires:  openssh-clients
+Requires:  iputils
 Requires(pre): system-user-orthos
 Requires(post): sudo
 
