@@ -11,7 +11,3 @@ services:
     image: orthos2:dev-latest
     env_file:
       - "docker/orthos/orthos2dev.env"
-  orthos2_nginx:
-    image: orthos2-static:dev-latest
-    depends_on:
-      - orthos2

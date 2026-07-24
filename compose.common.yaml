@@ -15,8 +15,13 @@
 # Compose merges services across -f files: plain lists (env_file, cap_add) are appended,
 # secrets/volumes/ports merge by their unique key (target/mount path), and mappings
 # (environment, labels) are merged key-by-key. See compose.dev.yaml/compose.testing.yaml
-# for the orthos2/orthos2_taskmanager/orthos2_nginx fields (image, env_file, secrets) that
-# vary per variant - their images are built by the Makefile, not by compose's build:.
+# for the orthos2/orthos2_taskmanager fields (image, env_file, secrets) that vary per
+# variant - their images are built by the Makefile, not by compose's build:.
+#
+# orthos2_nginx (serves collected static files in front of the production image) is only
+# needed by compose.testing.yaml, which exercises the production dockerfile - the dev
+# stack serves static files directly via Django's runserver (DEBUG=True), so it's defined
+# entirely there rather than here.
 #
 # For the hostnames to work an entry in /etc/hosts is needed:
 # 127.0.0.1 authentik.orthos2.test orthos2.orthos2.test cobbler.orthos2.test netbox.orthos2.test testmachine.orthos2.test
@@ -166,17 +171,7 @@ services:
         - SCCcredentials
     depends_on:
       orthos2_database:
-        condition: service_healthy  
-  orthos2_nginx:
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.nginx-static.rule=Host(`orthos2.orthos2.test`) && PathPrefix(`/static/`)"
-      - "traefik.http.routers.nginx-static.entrypoints=websecure"
-      - "traefik.http.routers.nginx-static.tls=true"
-      - "traefik.http.services.nginx-static.loadbalancer.server.port=80"
-      - "traefik.http.routers.nginx-static.priority=100"
-    networks:
-      - orthos
+        condition: service_healthy
 
 secrets:
   SCCcredentials:
