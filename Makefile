@@ -22,8 +22,6 @@ help:
 build-dev:
 	$(DOCKER_BUILD) -f docker/develop.dockerfile -t orthos2:dev-latest \
 		--secret id=SCCcredentials,src=docker/secrets/SCCcredentials .
-	$(DOCKER_BUILD) -f docker/nginx/nginx.dockerfile -t orthos2-static:dev-latest \
-		--build-arg BASE_IMAGE=orthos2:dev-latest docker/nginx
 	$(COMPOSE_DEV) build
 
 up-dev: build-dev
@@ -36,7 +34,7 @@ logs-dev:
 	$(COMPOSE_DEV) logs -f
 
 clean-dev: down-dev
-	docker image rm -f orthos2:dev-latest orthos2-static:dev-latest
+	docker image rm -f orthos2:dev-latest
 
 test-dev:
 	$(COMPOSE_DEV) exec -it orthos2 bash -c 'coverage run --source="." -m pytest orthos2'

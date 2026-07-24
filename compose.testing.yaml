@@ -27,6 +27,8 @@ services:
       - orthos2
     env_file:
       - ".env"
+    networks:
+      - orthos
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.nginx-static.rule=Host(`${FQDN:?error}`) && PathPrefix(`/static/`)"
