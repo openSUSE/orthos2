@@ -5,10 +5,11 @@ Installation/Setup (Production system)
 Install the main server
 #######################
 
-1. Install the orthos2 package:
+1. Install the orthos2 package (and, for the nginx reverse-proxy config,
+   orthos2-nginx):
     .. code-block::
 
-        $ zypper install orthos2
+        $ zypper install orthos2 orthos2-nginx
 
 2. Enter the correct server name to the nginx server conf:
     In ``/etc/nginx/conf.d/orthos2_nginx.conf`` replace ``127.0.0.1`` in the ``server_name`` directive with the fqdn of
