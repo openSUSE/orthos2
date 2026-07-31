@@ -1,4 +1,4 @@
-# Local dev stack: uses docker/develop.dockerfile.
+# Local dev stack: uses docker/orthos/develop.dockerfile.
 # Combine with the shared services in compose.common.yaml via the Makefile, which also
 # builds the orthos2/orthos2-static images in the required order before starting:
 #   make up-dev

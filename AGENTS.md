@@ -62,10 +62,10 @@ The project ships three Docker Compose entry points, sharing services defined in
 # Production: proxy + orthos2 + orthos2_taskmanager, using the prebuilt registry image
 docker compose up -d
 
-# Full local dev stack: builds docker/develop.dockerfile, plus Netbox/Cobbler/Authentik/etc.
+# Full local dev stack: builds docker/orthos/develop.dockerfile, plus Netbox/Cobbler/Authentik/etc.
 docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml up -d
 
-# Local stack that builds and exercises docker/production.dockerfile instead
+# Local stack that builds and exercises docker/orthos/production.dockerfile instead
 docker compose -f compose.common.yaml -f compose.testing.yaml -f compose.dev.override.yml up -d
 
 # Access services at (dev/testing stacks only):
@@ -127,7 +127,7 @@ Pre-commit hooks automatically run `black` and `isort` on commit.
 
 ```bash
 # Run development server (works only in the container and is automatically started)
-docker/devel-server.sh
+docker/orthos/devel-server.sh
 
 # Create migrations
 python manage.py makemigrations
@@ -156,6 +156,16 @@ docker compose build
 # Run Docker Compose stack
 docker compose up -d
 ```
+
+### OBS Dockerfile Builds
+
+`docker/orthos/production.dockerfile` (package `orthos2`) and `docker/nginx/nginx.dockerfile` (package `orthos2-static`)
+are built directly by the openSUSE Build Service (OBS) from their `#!BuildTag` headers. OBS uses only the directory a
+Dockerfile lives in as its build context — it cannot reach into parent or sibling directories. Every file a Dockerfile
+`COPY`s or `ADD`s (other than multi-stage `COPY --from=`) must therefore live in the same folder as that Dockerfile.
+This is why `docker/orthos/` bundles `production.dockerfile`/`develop.dockerfile` together with their entrypoint
+scripts and config (`production-server.sh`, `devel-server.sh`, `settings`, etc.) — keep any new Orthos2-specific
+Docker files there, and any new `COPY` sources as siblings of the Dockerfile that references them.
 
 ## Configuration
 

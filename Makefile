@@ -18,9 +18,9 @@ help:
 	@echo "Set NO_CACHE=1 to force --no-cache on any build-* target."
 	@echo "Run pull-testing/pull-prod first to fetch OBS images rebuilt under the same tag before building/starting."
 
-# --- dev stack (docker/develop.dockerfile) ---
+# --- dev stack (docker/orthos/develop.dockerfile) ---
 build-dev:
-	$(DOCKER_BUILD) -f docker/develop.dockerfile -t orthos2:dev-latest \
+	$(DOCKER_BUILD) -f docker/orthos/develop.dockerfile -t orthos2:dev-latest \
 		--secret id=SCCcredentials,src=docker/secrets/SCCcredentials .
 	$(COMPOSE_DEV) build
 
@@ -41,7 +41,7 @@ test-dev:
 	$(COMPOSE_DEV) exec -it orthos2 bash -c 'coverage report'
 	$(COMPOSE_DEV) exec -it orthos2 bash -c 'coverage xml'
 
-# --- testing stack (docker/production.dockerfile, exercised without a full prod env) ---
+# --- testing stack (docker/orthos/production.dockerfile, exercised without a full prod env) ---
 # OBS rebuilds these base images on transitive dependency changes without changing the
 # tag, so `docker build` alone won't notice new content - pull explicitly to refresh them.
 pull-testing:
@@ -49,15 +49,15 @@ pull-testing:
 	docker pull registry.suse.com/suse/nginx:1.27
 
 build-testing:
-	$(DOCKER_BUILD) -f docker/production.dockerfile -t orthos2:latest \
+	$(DOCKER_BUILD) -f docker/orthos/production.dockerfile -t orthos2:latest \
 		--secret id=SCCcredentials,src=docker/secrets/SCCcredentials \
-		--build-arg PROJECT=$(PROJECT) docker
+		--build-arg PROJECT=$(PROJECT) docker/orthos
 	$(DOCKER_BUILD) -f docker/nginx/nginx.dockerfile -t orthos2-static:latest \
 		--build-arg BASE_IMAGE=orthos2:latest docker/nginx
 	$(COMPOSE_TESTING) build
 
 netbox-token:
-	./docker/get-netbox-token.sh
+	./docker/orthos/get-netbox-token.sh
 
 up-testing: build-testing netbox-token
 	$(COMPOSE_TESTING) up -d

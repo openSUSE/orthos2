@@ -24,7 +24,7 @@ RUN --mount=type=secret,id=SCCcredentials,target=/etc/zypp/credentials.d/SCCcred
 # console handler stays the only one active. RPM/bare-metal installs are unaffected since this only rewrites the file
 # inside the image; compose.yaml/compose.testing.yaml bind-mount over the same path to let operators supply their own
 # overrides without rebuilding the image.
-COPY orthos/settings /etc/orthos2/settings
+COPY settings /etc/orthos2/settings
 
 COPY production-server.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

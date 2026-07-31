@@ -66,5 +66,5 @@ EXPOSE 8000
 USER orthos
 
 # Set entrypoint for development
-CMD ["/code/docker/devel-server.sh"]
+CMD ["/code/docker/orthos/devel-server.sh"]
 

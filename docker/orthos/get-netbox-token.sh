@@ -8,7 +8,7 @@
 # go stale after a `down`/`up` cycle - this always (re)provisions rather than trying to
 # detect staleness.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 
 ENV_FILE="docker/orthos/orthos2dev.env"
 TOKEN_FILE="docker/secrets/NetboxToken"
