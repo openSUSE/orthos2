@@ -16,7 +16,7 @@ server_start() {
     # Setup NetBox
     ORTHOS2_NETBOX_TOKEN=$(get_netbox_token)
     export ORTHOS2_NETBOX_TOKEN
-    python3.11 manage.py shell </code/docker/setup_netbox.py
+    python3.11 manage.py shell </code/docker/orthos/setup_netbox.py
     # Setup Orthos 2
     git config --global --add safe.directory /code
     OLD_BRANCH=$(git branch --show-current)
@@ -34,7 +34,7 @@ server_start() {
     python3.11 manage.py loaddata orthos2/data/fixtures/tests/test_domain_orthos2test.json || true
     python3.11 manage.py loaddata orthos2/data/fixtures/tests/test_machine_docker.json || true
     DJANGO_SUPERUSER_PASSWORD="$ORTHOS2_SUPERUSER_PASSWORD" python3.11 manage.py createsuperuser --noinput --username admin --email admin@example.com
-    python3.11 manage.py shell </code/docker/django-generate-admin-token
+    python3.11 manage.py shell </code/docker/orthos/django-generate-admin-token
     python3.11 manage.py runserver 0.0.0.0:8000
 }
 

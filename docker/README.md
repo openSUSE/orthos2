@@ -3,7 +3,7 @@
 The workflow is as follows (from the project root folder):
 
 ```shell
-podman build -f docker/develop.dockerfile -t orthos2-dev:latest .
+podman build -f docker/orthos/develop.dockerfile -t orthos2-dev:latest .
 podman run -it --entrypoint="/bin/bash" -v $PWD:/code --rm -p 8000:8000 localhost/orthos2-dev:latest
 ```
 
@@ -16,7 +16,7 @@ python3 manage.py test
 Now if you want to serve the webinterface you need to do something a little weird:
 
 ```shell
-/code/docker/devel-server.sh
+/code/docker/orthos/devel-server.sh
 ```
 
 If you messed something up just hit "Ctrl + C" and "Ctrl + D" and use the `podman run ...` command to spawn a new
