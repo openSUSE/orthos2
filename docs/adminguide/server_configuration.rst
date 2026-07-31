@@ -11,6 +11,13 @@ For the settings to take effect, a restart of both Orthos 2 and the Orthos 2 Tas
 All defaults are set inside the ``settings.py`` file which is contained in the Python package.
 To override them please use the file ``/etc/orthos2/settings``. The settings files follow the Python 3 syntax.
 
+In the Docker-based deployment (``compose.yaml``/``compose.testing.yaml``), ``/etc/orthos2/settings``
+is bind-mounted from ``docker/orthos/settings`` into the ``orthos2`` and ``orthos2_taskmanager``
+containers. Edit that host file and restart the containers to apply overrides - no image rebuild is
+required. Note that the production image disables the file logging handler by default (logs go to
+stdout only, for the container runtime to collect); this differs from RPM/bare-metal installs, which
+still log to ``/var/log/orthos2/default.log`` by default.
+
 NETBOX_URL
 ==========
 

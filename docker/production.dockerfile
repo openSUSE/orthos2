@@ -20,11 +20,17 @@ RUN --mount=type=secret,id=SCCcredentials,target=/etc/zypp/credentials.d/SCCcred
     orthos2 \
     curl
 
+# Containers log to stdout, not to a file - replace the RPM's file-logging override with the header-only template so the
+# console handler stays the only one active. RPM/bare-metal installs are unaffected since this only rewrites the file
+# inside the image; compose.yaml/compose.testing.yaml bind-mount over the same path to let operators supply their own
+# overrides without rebuilding the image.
+COPY orthos/settings /etc/orthos2/settings
+
 COPY production-server.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 # Create required directories
-RUN mkdir -p /var/log/orthos2 /srv/www/orthos2
-RUN chown -R orthos:orthos /var/log/orthos2 /srv/www/orthos2
+RUN mkdir -p /srv/www/orthos2
+RUN chown -R orthos:orthos /srv/www/orthos2
 
 RUN orthos-admin collectstatic
 EXPOSE 8000

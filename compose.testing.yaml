@@ -12,6 +12,8 @@ services:
     env_file:
       - ".env"
       - "docker/orthos/orthos2dev.env"
+    volumes:
+      - ./docker/orthos/settings:/etc/orthos2/settings:ro,z
   orthos2_taskmanager:
     image: orthos2:latest
     secrets:
@@ -21,6 +23,8 @@ services:
     env_file:
       - ".env"
       - "docker/orthos/orthos2dev.env"
+    volumes:
+      - ./docker/orthos/settings:/etc/orthos2/settings:ro,z
   orthos2_nginx:
     image: orthos2-static:latest
     depends_on:

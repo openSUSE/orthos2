@@ -21,7 +21,7 @@
 %endif
 
 Name:           orthos2
-Version:        1.16
+Version:        1.17
 Release:        0
 Summary:        Machine administration
 Url:            https://github.com/openSUSE/orthos2
@@ -38,8 +38,6 @@ BuildArch:      noarch
 
 BuildRequires:  fdupes
 BuildRequires:  systemd-rpm-macros
-# For /etc/nginx{,/conf.d} creation
-BuildRequires:  nginx
 BuildRequires:  python-rpm-macros
 BuildRequires:  sysuser-tools
 BuildRequires:  %{python_module devel}
@@ -69,7 +67,6 @@ Requires:  %{python3_pkgversion}-PyYAML
 Requires:  %{python3_pkgversion}-uritemplate
 # Needed to install /etc/logrotate.d/orthos2
 Requires:  logrotate
-Requires:  nginx
 Requires:  ansible
 Requires:  openssh-clients
 Requires:  iputils
@@ -96,6 +93,16 @@ Group:          System
 
 %description -n system-user-orthos
 Orthos user and group required by orthos2 package
+
+%package nginx
+Summary:        Nginx configuration for %{name}
+BuildRequires:  nginx
+Requires:       %{name} = %{version}
+Requires:       nginx
+Supplements:    (nginx and %{name})
+
+%description nginx
+This subpackage contains the nginx configuration file for Orthos 2.
 
 %prep
 %autosetup
@@ -138,7 +145,6 @@ mkdir -p %{buildroot}%{_prefix}/bin
 %dir %{_sysconfdir}/%{name}
 %config %{_sysconfdir}/%{name}/settings
 %config %{_sysconfdir}/logrotate.d/%{name}
-%config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
 %dir %{_prefix}/lib/%{name}
 %dir %{_prefix}/lib/%{name}/scripts
 %{_prefix}/lib/%{name}/scripts/*.sh
@@ -152,6 +158,9 @@ mkdir -p %{buildroot}%{_prefix}/bin
 
 %files -n system-user-orthos
 %{_sysusersdir}/system-user-orthos.conf
+
+%files nginx
+%config(noreplace) %{_sysconfdir}/nginx/conf.d/orthos2_nginx.conf
 
 %changelog
 * Tue Sep 15 00:26:20 UTC 2020 - Thomas Renninger <trenn@suse.de>

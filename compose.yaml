@@ -26,6 +26,8 @@ services:
       - OIDCsecret
     env_file:
       - ".env"
+    volumes:
+      - ./docker/orthos/settings:/etc/orthos2/settings:ro,z
     cap_add:
       - NET_RAW
     healthcheck:
@@ -53,6 +55,8 @@ services:
       ORTHOS2_MODE: "taskmanager"
     env_file:
       - ".env"
+    volumes:
+      - ./docker/orthos/settings:/etc/orthos2/settings:ro,z
     cap_add:
       - NET_RAW
     depends_on:

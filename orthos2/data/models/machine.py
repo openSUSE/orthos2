@@ -916,7 +916,7 @@ class Machine(models.Model):
                 fence_name = mgmt_interface.get("custom_fields", {}).get(
                     "fence_agent", ""
                 )
-                if fence_name == "":
+                if fence_name is None or fence_name == "":
                     logger.warning(
                         "Skipped because BMC interface has no fence name set!"
                     )
@@ -939,7 +939,14 @@ class Machine(models.Model):
                     bmc.fqdn = ipv4_addresses[0].get("dns_name")  # type: ignore
                 else:
                     bmc.fqdn = ipv6_addresses[0].get("dns_name")  # type: ignore
-                bmc.fence_agent = RemotePowerType.objects.get(name=fence_name)
+                try:
+                    bmc.fence_agent = RemotePowerType.objects.get(name=fence_name)
+                except RemotePowerType.DoesNotExist:
+                    logger.warning(
+                        'Skipped because fence agent "%s" is unknown to Orthos!',
+                        fence_name,
+                    )
+                    continue
                 bmc.mac = primary_mac.get("mac_address")
                 if ipv4_address_count > 0:
                     bmc.ip_address_v4 = str(
