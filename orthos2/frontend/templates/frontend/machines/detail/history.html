@@ -4,7 +4,6 @@
 <table class="table table-bordered small">
   <thead class="thead-default">
     <tr>
-      <th>User</th>
       <th>At</th>
       <th>Until</th>
       <th>Reason</th>
@@ -13,7 +12,6 @@
   <tbody>
     {% for reservation in machine.reservationhistory_set.all|dictsortreversed:"created" %}
     <tr>
-      <td width="10%">{{ reservation.reserved_by }}</td>
       <td width="10%">{{ reservation.reserved_at }}</td>
       <td width="10%">{{ reservation.reserved_until }}</td>
       <td>{{ reservation.reserved_reason }}</td>

@@ -1311,12 +1311,9 @@ class Machine(models.Model):
         if self.reserved_by and (self.reserved_by not in {user, reserve_for_user}):
             reservationhistory = ReservationHistory(  # type: ignore
                 machine=self,
-                reserved_by=self.reserved_by,
                 reserved_at=self.reserved_at,
                 reserved_until=timezone.now(),
-                reserved_reason="{} (taken away by {})".format(
-                    self.reserved_reason, user
-                ),
+                reserved_reason="{} (taken away)".format(self.reserved_reason),
             )
             reservationhistory.save()
             self.reserved_at = None
@@ -1365,7 +1362,6 @@ class Machine(models.Model):
 
         reservationhistory = ReservationHistory(  # type: ignore
             machine=self,
-            reserved_by=self.reserved_by,
             reserved_at=self.reserved_at,
             reserved_until=timezone.now(),
             reserved_reason=self.reserved_reason,

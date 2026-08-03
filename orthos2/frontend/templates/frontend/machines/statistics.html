@@ -61,7 +61,6 @@
         <table class="table table-striped table-bordered small">
           <thead class="thead-default">
             <th>FQDN</th>
-            <th>Owner</th>
             <th>At</th>
             <th>Until</th>
             <th>Reason</th>
@@ -70,7 +69,6 @@
           {% for reservation in data.released_reservations %}
             <tr>
               <td><a href="{% url 'frontend:detail' reservation.machine.id %}">{{ reservation.machine.fqdn }}</a></td>
-              <td>{{ reservation.reserved_by }}</td>
               <td>{{ reservation.reserved_at }}</td>
               <td>{{ reservation.reserved_until }}</td>
               <td>{{ reservation.reserved_reason }}</td>

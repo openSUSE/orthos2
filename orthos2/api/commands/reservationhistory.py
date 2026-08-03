@@ -60,7 +60,6 @@ Example:
             return InfoMessage("No history available yet.").as_json
 
         theader = [
-            {"user": "User"},
             {"at": "Reserved at"},
             {"until": "Reserved until"},
             {"reason": "Reason"},
@@ -73,7 +72,6 @@ Example:
         for item in history:
             response["data"].append(
                 {
-                    "user": item.reserved_by,
                     "at": item.reserved_at,
                     "until": item.reserved_until,
                     "reason": item.reserved_reason.replace("\n", ""),

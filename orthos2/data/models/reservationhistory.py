@@ -18,12 +18,6 @@ class ReservationHistory(models.Model):
         on_delete=models.CASCADE,
     )
 
-    reserved_by: "models.CharField[str, str]" = models.CharField(
-        max_length=200,
-        blank=False,
-        null=False,
-    )
-
     reserved_at: "MandatoryDateTimeField" = models.DateTimeField(
         blank=False,
         null=False,
@@ -52,4 +46,6 @@ class ReservationHistory(models.Model):
     )
 
     def __str__(self) -> str:
-        return "{} ({})".format(self.reserved_by, self.machine.fqdn)
+        return "{} ({} - {})".format(
+            self.machine.fqdn, self.reserved_at, self.reserved_until
+        )
