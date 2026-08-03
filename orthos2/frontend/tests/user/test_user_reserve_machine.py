@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from orthos2.data.models import BMC, Machine, ServerConfig
+from orthos2.data.models import BMC, Machine, ReservationHistory, ServerConfig
 
 
 class UserReserveMachineViewTest(TestCase):
@@ -137,3 +137,54 @@ class UserReserveMachineViewTest(TestCase):
         self.assertEqual(self.machine.reserved_by, self.target_user)
         self.assertTrue(self.machine.reserved_permanently)
         self.assertIsNone(self.machine.reserved_until)
+
+    def test_reserve_takeover_creates_history_without_username(self) -> None:
+        future_date = datetime.date.today() + datetime.timedelta(days=7)
+        self.machine.reserve(
+            "Original reservation reason",
+            future_date,
+            user=None,
+            reserve_for_user=self.regular_user,
+        )
+
+        self.client.force_login(self.superuser)
+        later_date = (datetime.date.today() + datetime.timedelta(days=14)).strftime(
+            "%Y-%m-%d"
+        )
+        response = self.client.post(
+            self._reserve_url(self.target_user.pk),
+            {
+                "machine": self.machine.fqdn,
+                "reason": "New owner needs this machine",
+                "until": later_date,
+            },
+        )
+
+        self.assertRedirects(response, self._detail_url(self.target_user.pk))
+        history = ReservationHistory.objects.filter(machine=self.machine).latest(
+            "created"
+        )
+        self.assertFalse(hasattr(history, "reserved_by"))
+        self.assertTrue(history.reserved_reason.endswith("(taken away)"))
+        self.assertNotIn(self.regular_user.username, history.reserved_reason)
+        self.assertNotIn(self.superuser.username, history.reserved_reason)
+        self.assertNotIn(self.target_user.username, history.reserved_reason)
+
+    def test_release_creates_history_without_username(self) -> None:
+        future_date = datetime.date.today() + datetime.timedelta(days=7)
+        self.machine.reserve(
+            "Reason for release test",
+            future_date,
+            user=None,
+            reserve_for_user=self.target_user,
+        )
+
+        self.machine.release(user=self.superuser)
+
+        history = ReservationHistory.objects.filter(machine=self.machine).latest(
+            "created"
+        )
+        self.assertFalse(hasattr(history, "reserved_by"))
+        self.assertEqual(history.reserved_reason, "Reason for release test")
+        self.assertNotIn(self.target_user.username, history.reserved_reason)
+        self.assertNotIn(self.superuser.username, history.reserved_reason)
