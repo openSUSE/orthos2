@@ -160,6 +160,6 @@ package-lock.json
 /docker/secrets/*
 !/docker/secrets/.keep
 
-
-# Ignore vscode AI rules
+# Ignore AI stuff
 .github/instructions/codacy.instructions.md
+.claude
