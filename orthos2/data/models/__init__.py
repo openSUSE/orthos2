@@ -13,7 +13,6 @@ from .machine import (
     check_permission,
     validate_dns,
 )
-from .machinegroup import MachineGroup, MachineGroupMembership
 from .netboxorthoscomparision import (
     NetboxOrthosComparisionResult,
     NetboxOrthosComparisionRun,
@@ -46,8 +45,6 @@ __all__ = [
     "ViewManager",
     "check_permission",
     "validate_dns",
-    "MachineGroup",
-    "MachineGroupMembership",
     "NetboxOrthosComparisionRun",
     "NetboxOrthosComparisionResult",
     "NetworkInterface",

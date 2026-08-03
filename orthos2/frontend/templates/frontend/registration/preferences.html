@@ -27,21 +27,6 @@
               <td>{{ user.is_superuser|boolean_image:15|safe }}</td>
             </tr>
             <tr>
-              <td class="th fw-bold">Groups</td>
-              <td>
-                {% for membership in user.memberships.all %}
-                  {% if membership.is_privileged %}
-                    <a href="{% url 'admin:data_machine_changelist' %}"
-                      >{{ membership.group.name }} (privileged)</a
-                    >
-                  {% else %}
-                    {{ membership.group.name }}
-                  {% endif %}
-                  {% if not forloop.last %},{% endif %}
-                {% endfor %}
-              </td>
-            </tr>
-            <tr>
               <td class="th fw-bold">Registration date</td>
               <td>{{ user.date_joined }}</td>
             </tr>

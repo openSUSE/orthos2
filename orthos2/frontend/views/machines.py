@@ -14,7 +14,7 @@ from django.shortcuts import redirect, render  # type: ignore
 from django.utils.decorators import method_decorator  # type: ignore
 from django.views.generic import ListView
 
-from orthos2.data.models import Architecture, Domain, Machine, MachineGroup
+from orthos2.data.models import Architecture, Domain, Machine
 from orthos2.frontend.forms.search import SearchForm
 
 
@@ -46,9 +46,6 @@ class MachineListView(ListView):  # type: ignore
 
         if self.request.GET.get("domain"):
             filters.append(Q(fqdn_domain__name=self.request.GET.get("domain")))
-
-        if self.request.GET.get("machinegroup"):
-            filters.append(Q(group__name=self.request.GET.get("machinegroup")))
 
         status = self.request.GET.get("status")
         if status and status == "ping":
@@ -99,7 +96,6 @@ class MachineListView(ListView):  # type: ignore
         context["architectures"] = Architecture.objects.all()
         context["domains"] = Domain.objects.all()
         context["machines"] = machines
-        context["machinegroups"] = MachineGroup.objects.all()
         context["paginator"] = paginator
         return context
 

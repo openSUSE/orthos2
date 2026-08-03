@@ -62,13 +62,11 @@ def get_tftp_server(machine: "Machine") -> Optional["Machine"]:
     """
     Return the corresponding tftp server attribute for the DHCP record.
 
-    Machine > Group > Domain
+    Machine > Domain
     """
 
     if machine.tftp_server:
         server = machine.tftp_server
-    elif machine.group and machine.group.tftp_server:
-        server = machine.group.tftp_server
     elif machine.fqdn_domain.tftp_server:
         server = machine.fqdn_domain.tftp_server
     else:
@@ -80,14 +78,12 @@ def get_filename(machine: "Machine") -> Optional[str]:
     """
     Return the corresponding filename attribute for the DHCP record.
 
-    Machine > Group > Architecture > None
+    Machine > Architecture > None
     """
     context = Context({"machine": machine})
 
     if machine.dhcp_filename:
         filename = machine.dhcp_filename
-    elif machine.group and machine.group.dhcp_filename:
-        filename = Template(machine.group.dhcp_filename).render(context)
     elif machine.architecture.dhcp_filename:
         filename = Template(machine.architecture.dhcp_filename).render(context)
     else:

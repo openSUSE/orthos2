@@ -125,15 +125,6 @@ def get_current_platform_filter(request: HttpRequest) -> str:
 
 
 @register.simple_tag
-def get_current_machinegroup_filter(request: HttpRequest) -> str:
-    """Return the current machine group from GET (if available)."""
-    group = request.GET.get("machinegroup", None)
-    if (not group) or (group == ""):
-        group = "All Machine Groups"
-    return group
-
-
-@register.simple_tag
 def status_ipv4(machine: Machine) -> SafeString:
     if machine.check_connectivity < Machine.Connectivity.PING:
         return mark_safe(
