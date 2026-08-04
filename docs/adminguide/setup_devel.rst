@@ -40,7 +40,7 @@ Installation/Setup (Devel system)
 6. Run the test server:
     .. code-block::
 
-        docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml up -d
+        make up-dev
 
     If you wish to test for the production environment instead, use the ``Makefile`` target below.
     It automatically provisions a NetBox API token as the ``docker/secrets/NetboxToken`` Docker
