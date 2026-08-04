@@ -82,5 +82,12 @@ Installation/Setup (Devel system)
 
       127.0.0.1 authentik.orthos2.test orthos2.orthos2.test cobbler.orthos2.test netbox.orthos2.test testmachine.orthos2.test
 
-10.  Open your browser and go to `http://orthos2.orthos2.test <http://orthos2.orthos2.test>`_ (use the superuser login
-    here). The login password for the admin user you can find in ``docker/orthos/orthos2dev.env``.
+10. Open your browser and go to `http://orthos2.orthos2.test <http://orthos2.orthos2.test>`_.
+     Now you have to change the URL from:
+        "https://orthos2.orthos2.test/login/?next=/machines/free"
+     to:
+        "https://orthos2.orthos2.test/login/?builtin=true"
+
+11. LogIn:
+    you can find the login password for the admin user in ``./docker/orthos/orthos2dev.env``
+    Enjoy.
