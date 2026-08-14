@@ -373,24 +373,25 @@ class AddMachineCommand(BaseAPIView):
             del cleaned_data["hypervisor_fqdn"]
             new_machine = Machine(**cleaned_data)
             new_machine.hypervisor = hypervisor
-            new_primary_interface = new_machine.get_primary_networkinterface()
-            if new_primary_interface is None:
-                new_primary_interface = NetworkInterface(primary=True)
-            new_primary_interface.mac_address = mac_address
-            if new_machine.domain_set.enable_v4:
-                new_primary_interface.ip_address_v4 = suggest_host_ip(
-                    4, new_machine.domain_set
-                )
-            if new_machine.domain_set.enable_v6:
-                new_primary_interface.ip_address_v6 = suggest_host_ip(
-                    6, new_machine.domain_set
-                )
-            new_primary_interface.save()
             try:
                 new_machine.save()
             except Exception as e:
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json
+            # Machine.save() resolves fqdn_domain from the fqdn, and
+            # new_primary_interface.machine requires new_machine to already have a
+            # primary key - both only become available after new_machine.save().
+            new_primary_interface = NetworkInterface(machine=new_machine, primary=True)
+            new_primary_interface.mac_address = mac_address
+            if new_machine.fqdn_domain.enable_v4:
+                new_primary_interface.ip_address_v4 = suggest_host_ip(
+                    4, new_machine.fqdn_domain
+                )
+            if new_machine.fqdn_domain.enable_v6:
+                new_primary_interface.ip_address_v6 = suggest_host_ip(
+                    6, new_machine.fqdn_domain
+                )
+            new_primary_interface.save()
 
             return Message("Ok.").as_json
 
