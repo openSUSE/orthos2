@@ -516,6 +516,18 @@ class BMCAPIForm(forms.Form, BaseAPIForm):
         """Return input order."""
         return self._query_fields
 
+    def clean(self) -> Dict[str, Any]:
+        cleaned_data = super().clean() or self.cleaned_data
+        # A BMC saves directly, bypassing Machine.save()'s own "{system} systems
+        # cannot use a BMC" check - without this, a disallowed BMC could be
+        # attached here and then permanently block every future save() of the
+        # machine it's attached to.
+        if self.machine is not None and not self.machine.bmc_allowed():
+            raise forms.ValidationError(
+                "{} systems cannot use a BMC".format(self.machine.system.name)
+            )
+        return cleaned_data
+
 
 class RemotePowerAPIForm(forms.Form, BaseAPIForm):
     def __init__(self, *args: Any, **kwargs: Any) -> None:

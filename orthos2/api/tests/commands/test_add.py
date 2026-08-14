@@ -9,7 +9,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
-from orthos2.data.models import BMC, Machine, ServerConfig
+from orthos2.data.models import BMC, Machine, ServerConfig, System
 from orthos2.data.models.remotepowertype import RemotePowerType
 
 
@@ -28,6 +28,9 @@ class AddBMCTest(APITestCase):
         )
         auth_token, _ = Token.objects.get_or_create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION="Token " + auth_token.key)
+        # test.testing.suse.de's System (fixture default: allowBMC=False) must
+        # allow a BMC, or BMCAPIForm's bmc_allowed() check rejects the add.
+        System.objects.filter(pk=1).update(allowBMC=True)
 
     def test_add_bmc_get(self) -> None:
         # Arrange
