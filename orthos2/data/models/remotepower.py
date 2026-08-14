@@ -113,7 +113,7 @@ class RemotePower(models.Model):
 
         errors: List[ValidationError] = []
         fence = self.get_remotepower_fence()
-        if fence.device == "rpower_device":
+        if fence.device == "rpowerdevice":
             if fence.use_port:
                 if self.port is None:  # test for None, as port may be 0
                     errors.append(ValidationError("Please provide a port!"))
@@ -143,9 +143,7 @@ class RemotePower(models.Model):
         else:
             errors.append(
                 ValidationError(
-                    "{} is not a valid switching device".format(
-                        fence["switching_device"]  # type: ignore
-                    )
+                    "{} is not a valid switching device".format(fence.device)
                 )
             )
 
