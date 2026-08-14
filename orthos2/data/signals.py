@@ -153,6 +153,24 @@ def remote_power_device_post_save(
     TaskManager.add(task)
 
 
+@receiver(pre_delete, sender=RemotePowerDevice)
+def remote_power_device_pre_delete(
+    sender: Any, instance: RemotePowerDevice, *args: Any, **kwargs: Any
+) -> None:
+    """
+    Remove the Cobbler system for a given RemotePowerDevice before it is deleted.
+    """
+    try:
+        server = CobblerServer(instance.domain)
+        server.remove_by_name(instance.fqdn)
+    except Exception:
+        logger.warning(
+            "Failed to remove remote power device '%s' from Cobbler, skipping.",
+            instance.fqdn,
+            exc_info=True,
+        )
+
+
 @receiver(post_save, sender=SerialConsole)
 def serialconsole_post_save(
     sender: Any, instance: SerialConsole, *args: Any, **kwargs: Any

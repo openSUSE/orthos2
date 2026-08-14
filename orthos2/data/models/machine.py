@@ -1102,12 +1102,36 @@ class Machine(models.Model):
 
             if self.fqdn_domain != self._original.fqdn_domain:
                 logger.info("Domain change for: %s", self.fqdn)
-                # TODO: add error handling (checking whether the signal went through)
-                # Not removing the machine from the original Cobbler system, because there is no easy remove signal
-                # and it's probably not even necessary
-                # Add the machine to the new Cobbler system
-                # TODO: check if machine is known to us, and also a cobbler server
+                # Remove the machine from the original Cobbler system - it belongs to the new domain's Cobbler server.
+                from orthos2.utils.cobbler import CobblerServer
+
+                try:
+                    old_server = CobblerServer(self._original.fqdn_domain)
+                    old_server.remove_by_name(self._original.fqdn)
+                except Exception:
+                    logger.warning(
+                        "Failed to remove machine '%s' from the previous Cobbler server"
+                        " of domain '%s', skipping.",
+                        self._original.fqdn,
+                        self._original.fqdn_domain.name,
+                        exc_info=True,
+                    )
+
+                # Add the machine to the new Cobbler system - unless it *is* that
+                # domain's Cobbler server: a Cobbler server has no business being
+                # registered as a managed system on itself, and syncing DHCP for it
+                # here would be equally pointless (nothing about it as a Cobbler
+                # system changed - only its own domain assignment did).
                 new_domain_id = self.fqdn_domain.pk
+                if self.fqdn_domain.cobbler_server_id == self.pk:
+                    logger.info(
+                        "Skipping Cobbler update/DHCP sync for '%s': it is the"
+                        " Cobbler server for domain '%s'.",
+                        self.fqdn,
+                        self.fqdn_domain.name,
+                    )
+                    return
+
                 from orthos2.data.signals import signal_cobbler_machine_update
 
                 signal_cobbler_machine_update.send(  # type: ignore
