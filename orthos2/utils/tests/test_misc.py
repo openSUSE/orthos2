@@ -169,6 +169,33 @@ class MiscSuggestIpTests(TestCase):
         # Assert
         self.assertEqual(suggested_ip, "::1")
 
+    def test_suggest_host_ip_v6_small_network_value(self) -> None:
+        """
+        netaddr.IPAddress() infers version 4 for any integer that fits in 32
+        bits. A small-valued IPv6 network (e.g. "::1/64", as used by some test/
+        dev domain fixtures) must still produce a valid IPv6 address, not a
+        bogus dotted-decimal string like "0.0.0.2".
+        """
+        # Arrange
+        small_domain = Domain(
+            name="small.example.de",
+            ip_v4="192.168.179.0",
+            ip_v6="::1",
+            subnet_mask_v4=29,
+            subnet_mask_v6=64,
+            dynamic_range_v4_start="192.168.179.6",
+            dynamic_range_v4_end="192.168.179.6",
+            dynamic_range_v6_start="::1",
+            dynamic_range_v6_end="::1",
+        )
+        small_domain.save()
+
+        # Act
+        suggested_ip = suggest_host_ip(6, small_domain)
+
+        # Assert
+        self.assertEqual(suggested_ip, "::2")
+
 
 class ChecksMethodTests(TestCase):
     @mock.patch("orthos2.utils.misc.subprocess.Popen")

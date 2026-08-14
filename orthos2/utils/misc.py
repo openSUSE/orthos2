@@ -370,7 +370,10 @@ def suggest_host_ip(protocol: Literal[4, 6], domain: "Domain") -> str:
             idx += dyn_range_end
             continue
 
-        next_ip = IPAddress(network_ip + idx)
+        # netaddr.IPAddress() infers version 4 for any value that fits in 32 bits,
+        # which silently mangles small-valued IPv6 networks (e.g. "::1/64") into a
+        # bogus dotted-decimal string - pass the network's own version explicitly.
+        next_ip = IPAddress(network_ip + idx, version=net.version)
 
         if (
             # IP must not be already in use.
