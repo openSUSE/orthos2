@@ -16,6 +16,7 @@ from django.template.defaultfilters import slugify
 
 from orthos2.data.models import (
     Architecture,
+    Domain,
     Enclosure,
     Machine,
     MachineGroup,
@@ -31,7 +32,7 @@ from orthos2.data.models.domain import validate_domain_ending
 from orthos2.data.validators import validate_mac_address
 from orthos2.frontend.forms.reservemachine import ReserveMachineForm
 from orthos2.frontend.forms.virtualmachine import VirtualMachineForm
-from orthos2.utils.misc import is_unique_mac_address
+from orthos2.utils.misc import get_domain, is_unique_mac_address
 
 logger = logging.getLogger("api")
 
@@ -570,7 +571,15 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
 class RemotePowerDeviceAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
     class Meta:  # type: ignore
         model = RemotePowerDevice
-        fields = ["fqdn", "mac", "username", "password", "fence_agent", "url"]
+        fields = [
+            "fqdn",
+            "mac",
+            "username",
+            "password",
+            "fence_agent",
+            "url",
+            "architecture",
+        ]
 
     password = forms.CharField(
         label="Password",
@@ -578,6 +587,21 @@ class RemotePowerDeviceAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
         required=True,
         widget=forms.PasswordInput(render_value=True),
     )
+
+    # architecture has no DB default and isn't derivable from any other field
+    # here (the frontend's NetBox-backed flow fills it from a NetBox custom
+    # field instead) - without this, form.save() left it unset and every
+    # API-driven RemotePowerDevice creation failed with an IntegrityError.
+    architecture = forms.ModelChoiceField(
+        queryset=Architecture.objects.all(),
+        label="Architecture",
+    )
+
+    def save(self, commit: bool = True) -> RemotePowerDevice:
+        # domain is required but not user-supplied - resolve it from fqdn,
+        # same as the frontend's RemotePowerDevice creation view does.
+        self.instance.domain = Domain.objects.get(name=get_domain(self.instance.fqdn))
+        return super().save(commit=commit)  # type: ignore
 
 
 class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):

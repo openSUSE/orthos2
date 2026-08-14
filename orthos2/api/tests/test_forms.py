@@ -196,6 +196,7 @@ class RemotePowerDeviceAPIFormTests(TestCase):
                 "mac": "AA:BB:CC:DD:EE:FF",
                 "username": "TODO",
                 "fence_agent": agent.id,
+                "architecture": 1,
             }
         )
 
