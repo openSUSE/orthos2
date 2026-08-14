@@ -1102,9 +1102,21 @@ class Machine(models.Model):
 
             if self.fqdn_domain != self._original.fqdn_domain:
                 logger.info("Domain change for: %s", self.fqdn)
-                # TODO: add error handling (checking whether the signal went through)
-                # Not removing the machine from the original Cobbler system, because there is no easy remove signal
-                # and it's probably not even necessary
+                # Remove the machine from the original Cobbler system - it belongs to the new domain's Cobbler server.
+                from orthos2.utils.cobbler import CobblerServer
+
+                try:
+                    old_server = CobblerServer(self._original.fqdn_domain)
+                    old_server.remove_by_name(self._original.fqdn)
+                except Exception:
+                    logger.warning(
+                        "Failed to remove machine '%s' from the previous Cobbler server"
+                        " of domain '%s', skipping.",
+                        self._original.fqdn,
+                        self._original.fqdn_domain.name,
+                        exc_info=True,
+                    )
+
                 # Add the machine to the new Cobbler system
                 # TODO: check if machine is known to us, and also a cobbler server
                 new_domain_id = self.fqdn_domain.pk
