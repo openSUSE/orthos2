@@ -173,6 +173,33 @@ class MachineDomainChangeSignalTests(TestCase):
         if machine.has_bmc():
             machine.bmc.delete()
 
+    def test_domain_change_skips_signals_when_new_domain_cobbler_server_is_self(
+        self,
+    ) -> None:
+        """
+        If the machine being moved to a new domain *is* that domain's Cobbler
+        server, it must not be added to Cobbler (a Cobbler server has no business
+        managing itself as a system) and must not trigger a DHCP sync either.
+        """
+        machine = Machine.objects.get(fqdn="testsys.orthos2.test")
+        new_domain = Domain.objects.get(name="other.orthos2.test")
+        new_domain.cobbler_server = machine
+        new_domain.save()
+
+        with mock.patch(
+            "orthos2.data.signals.signal_cobbler_machine_update.send"
+        ) as mock_update_send, mock.patch(
+            "orthos2.data.signals.signal_cobbler_sync_dhcp.send"
+        ) as mock_sync_send:
+            machine.fqdn = "testsys.other.orthos2.test"
+            machine.save()
+
+        mock_update_send.assert_not_called()
+        mock_sync_send.assert_not_called()
+        self.assertTrue(
+            Machine.objects.filter(fqdn="testsys.other.orthos2.test").exists()
+        )
+
     def _switch_machine_to_new_domain(self, machine: Machine) -> None:
         """Give the old domain a configured Cobbler server, then move the machine to
         the new domain - this is what actually exercises the old-domain removal code

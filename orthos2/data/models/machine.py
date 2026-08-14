@@ -1117,9 +1117,21 @@ class Machine(models.Model):
                         exc_info=True,
                     )
 
-                # Add the machine to the new Cobbler system
-                # TODO: check if machine is known to us, and also a cobbler server
+                # Add the machine to the new Cobbler system - unless it *is* that
+                # domain's Cobbler server: a Cobbler server has no business being
+                # registered as a managed system on itself, and syncing DHCP for it
+                # here would be equally pointless (nothing about it as a Cobbler
+                # system changed - only its own domain assignment did).
                 new_domain_id = self.fqdn_domain.pk
+                if self.fqdn_domain.cobbler_server_id == self.pk:
+                    logger.info(
+                        "Skipping Cobbler update/DHCP sync for '%s': it is the"
+                        " Cobbler server for domain '%s'.",
+                        self.fqdn,
+                        self.fqdn_domain.name,
+                    )
+                    return
+
                 from orthos2.data.signals import signal_cobbler_machine_update
 
                 signal_cobbler_machine_update.send(  # type: ignore
