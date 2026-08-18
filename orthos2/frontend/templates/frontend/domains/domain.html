@@ -1,0 +1,44 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+{% load tags %}
+{% load filters %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="row">
+      <main class="col-12">
+        <ul class="nav nav-tabs gray">
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'domain_detail' %}"
+              href="{% url 'frontend:domain_detail' domain.pk %}"
+              >Overview</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'domain_architectures' %}"
+              href="{% url 'frontend:domain_architectures' domain.pk %}"
+              >Supported Architectures</a
+            >
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          {% block tabcontent %}
+          {% endblock %}
+        </div>
+        <span style="font-size: 0.7em; font-family: Monospace;"
+          >Edit:
+          <a href="{% url 'frontend:edit_domain' domain.id %}"
+            >{% url 'frontend:edit_domain' domain.id %}</a
+          ></span
+        >
+      </main>
+    </div>
+  </div>
+{% endblock %}

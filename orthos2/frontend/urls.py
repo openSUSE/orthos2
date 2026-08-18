@@ -514,6 +514,24 @@ urlpatterns = [
         views.DeleteServerConfig.as_view(),
         name="delete_serverconfig",
     ),
+    # Domains
+    path("domains", views.DomainListView.as_view(), name="domains"),
+    re_path(
+        r"^domain/(?P<id>[0-9]+)/detail$",
+        views.domain_detail,
+        name="domain_detail",
+    ),
+    path("domains/new", views.NewDomain.as_view(), name="new_domain"),
+    path(
+        "domains/edit/<int:pk>/",
+        views.DomainDetailedEdit.as_view(),
+        name="edit_domain",
+    ),
+    path(
+        "domains/delete/<int:pk>/",
+        views.DeleteDomain.as_view(),
+        name="delete_domain",
+    ),
     # Domain Architectures (DomainAdmin model)
     path(
         "domain/<int:domain_id>/architectures",

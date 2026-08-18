@@ -15,6 +15,7 @@ from orthos2.api.commands.base import (
 from orthos2.api.serializers.architecture import ArchitectureSerializer
 from orthos2.api.serializers.dailytask import DailyTaskSerializer
 from orthos2.api.serializers.devicetype import DeviceTypeSerializer
+from orthos2.api.serializers.domain import DomainSerializer
 from orthos2.api.serializers.domainarchitecture import DomainArchitectureSerializer
 from orthos2.api.serializers.enclosure import EnclosureSerializer
 from orthos2.api.serializers.machine import MachineSerializer
@@ -32,6 +33,7 @@ from orthos2.api.serializers.system import SystemSerializer
 from orthos2.data.models import (
     Architecture,
     DeviceType,
+    Domain,
     DomainAdmin,
     Machine,
     Manufacturer,
@@ -988,6 +990,91 @@ Example:
                 "No supported architecture entry for domain '{}' and "
                 "architecture '{}'!".format(domain, arch)
             ).as_json
+        except Exception:
+            return ErrorMessage(getException()).as_json
+
+        return JsonResponse(response)
+
+
+class DomainInfoCommand(BaseAPIView):
+
+    METHOD = "GET"
+    URL = "/domain"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Retrieve information about a domain."
+    HELP = """Command to get information about a domain.
+
+Usage:
+    INFO domain <name>
+
+Arguments:
+    name - Name of the domain. If omitted, all domains are listed.
+
+Example:
+    INFO domain foo.domain.tld
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(r"^domain$", DomainInfoCommand.as_view(), name="domain"),
+        ]
+
+    @staticmethod
+    def get_tabcompletion() -> List[str]:
+        return list(Domain.objects.all().values_list("name", flat=True))
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return domain information."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        name = request.GET.get("name", "")
+
+        try:
+            if name:
+                domain = Domain.objects.get(name__iexact=name)
+                serialized_domain = DomainSerializer(domain)
+                response = {
+                    "header": {
+                        "type": "INFO",
+                        "order": [
+                            "id",
+                            "name",
+                            "cobbler_server",
+                            "cobbler_server_username",
+                            "tftp_server",
+                            "cscreen_server",
+                            "ip_v4",
+                            "ip_v6",
+                            "subnet_mask_v4",
+                            "subnet_mask_v6",
+                            "enable_v4",
+                            "enable_v6",
+                            "dynamic_range_v4_start",
+                            "dynamic_range_v4_end",
+                            "dynamic_range_v6_start",
+                            "dynamic_range_v6_end",
+                        ],
+                    },
+                    "data": serialized_domain.data_info,
+                }
+            else:
+                domains = Domain.objects.all()
+                serialized_domains = DomainSerializer(domains, many=True)
+                theader = [{"id": "ID"}, {"name": "Name"}, {"ip_v4": "IPv4"}]
+                response = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": serialized_domains.data,
+                }
+        except Domain.DoesNotExist:
+            return ErrorMessage("Domain '{}' does not exist!".format(name)).as_json
         except Exception:
             return ErrorMessage(getException()).as_json
 

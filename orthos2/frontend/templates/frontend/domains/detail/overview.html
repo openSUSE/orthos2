@@ -1,0 +1,65 @@
+{% extends 'frontend/domains/domain.html' %}
+
+{% block tabcontent %}
+  <div class="row">
+    <div class="col-10">
+      <div class="container-fluid">
+        <div class="title">
+          <h5>{{ domain.name }}</h5>
+        </div>
+
+        <table class="table table-striped table-bordered small">
+          <tbody class="thead-default">
+            <tr>
+              <td class="th fw-bold" width="200px">Name</td>
+              <td>{{ domain.name }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Cobbler Server</td>
+              <td>{{ domain.cobbler_server|default_if_none:"-" }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">TFTP Server</td>
+              <td>{{ domain.tftp_server|default_if_none:"-" }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">CScreen Server</td>
+              <td>{{ domain.cscreen_server|default_if_none:"-" }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">IPv4</td>
+              <td>{{ domain.ip_v4 }}/{{ domain.subnet_mask_v4 }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">IPv6</td>
+              <td>{{ domain.ip_v6 }}/{{ domain.subnet_mask_v6 }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">IPv4 Enabled</td>
+              <td>{{ domain.enable_v4 }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">IPv6 Enabled</td>
+              <td>{{ domain.enable_v6 }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Dynamic Range v4</td>
+              <td>{{ domain.dynamic_range_v4_start }} - {{ domain.dynamic_range_v4_end }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Dynamic Range v6</td>
+              <td>{{ domain.dynamic_range_v6_start }} - {{ domain.dynamic_range_v6_end }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Machines</td>
+              <td>{{ domain.get_machine_count }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-2">
+      {% include 'frontend/domains/detail/actions.html' %}
+    </div>
+  </div>
+{% endblock %}

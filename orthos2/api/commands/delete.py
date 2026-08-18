@@ -18,6 +18,7 @@ from orthos2.api.forms import (
     DeleteArchitectureAPIForm,
     DeleteDailyTaskAPIForm,
     DeleteDeviceTypeAPIForm,
+    DeleteDomainAPIForm,
     DeleteDomainArchitectureAPIForm,
     DeleteEnclosureAPIForm,
     DeleteMachineAPIForm,
@@ -39,6 +40,7 @@ from orthos2.api.serializers.misc import (
 from orthos2.data.models import (
     Architecture,
     DeviceType,
+    Domain,
     DomainAdmin,
     Enclosure,
     Machine,
@@ -70,6 +72,7 @@ class Delete:
     SERVERCONFIG = "serverconfig"
     ENCLOSURE = "enclosure"
     DOMAINARCHITECTURE = "domainarchitecture"
+    DOMAIN = "domain"
 
     as_list = [
         MACHINE,
@@ -85,6 +88,7 @@ class Delete:
         SERVERCONFIG,
         ENCLOSURE,
         DOMAINARCHITECTURE,
+        DOMAIN,
     ]
 
 
@@ -120,6 +124,7 @@ Arguments:
              enclosure          : Delete an enclosure (superusers only).
              domainarchitecture : Delete a supported architecture entry for a
                                     domain (superusers only).
+             domain             : Delete a domain (superusers only).
 
 Example:
     DELETE machine
@@ -249,6 +254,12 @@ Example:
                 ).as_json
 
             return redirect(reverse("api:domainarchitecture_delete"))
+
+        elif item == Delete.DOMAIN:
+            if sub_arguments:
+                return ErrorMessage("Invalid number of arguments for 'domain'!").as_json
+
+            return redirect(reverse("api:domain_delete"))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -1479,6 +1490,87 @@ class DeleteDomainArchitectureCommand(BaseAPIView):
                     )
                 return JsonResponse(response)
 
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
+
+
+class DeleteDomainCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/domain/delete"
+    URL_POST = "/domain/delete"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Deletes a domain from the database."
+    HELP = """Deletes a domain from the database (superusers only).
+
+    Usage:
+        DELETE domain <name>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^domain/delete",
+                DeleteDomainCommand.as_view(),
+                name="domain_delete",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for deleting a domain."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = DeleteDomainAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Delete domain."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = DeleteDomainAPIForm(data)
+
+        if form.is_valid():
+            try:
+                cleaned_data = form.cleaned_data
+
+                domain = Domain.objects.get(name__iexact=cleaned_data["name"])
+
+                result = domain.delete()
+
+                theader = [
+                    {"objects": "Deleted objects"},
+                    {"count": "#"},
+                ]
+
+                response: Dict[str, Any] = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": [],
+                }
+                for key, value in result[1].items():
+                    response["data"].append(  # type: ignore
+                        {"objects": key.replace("data.", ""), "count": value}
+                    )
+                return JsonResponse(response)
+
+            except ValidationError as e:
+                return ErrorMessage(str(e.message)).as_json
             except Exception as e:
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json

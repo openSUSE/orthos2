@@ -837,33 +837,3 @@ class MachineAdmin(admin.ModelAdmin):  # type: ignore
 
 
 admin.site.register(Machine, MachineAdmin)  # type: ignore
-
-
-class DomainAdminAdmin(admin.ModelAdmin):  # type: ignore
-    list_display = ("name", "cobbler_server_list", "tftp_server", "cscreen_server")
-
-    def cobbler_server_list(self, obj: "Domain"):
-        """Return DHCP server FQDN as string."""
-        cobbler_server = obj.cobbler_server
-        return cobbler_server.fqdn if cobbler_server else "-"
-
-    def delete_model(
-        self, request: HttpRequest, obj: Optional["Domain"] = None
-    ) -> None:
-        if obj is None:
-            messages.error(request, "You must specify a Domain to delete.")
-            return
-        try:
-            obj.delete()
-        except ValidationError as e:
-            messages.error(request, e.message)
-
-    def has_delete_permission(
-        self, request: HttpRequest, obj: Optional["Domain"] = None
-    ) -> bool:
-        if obj is not None and obj.machine_set.count() > 0:
-            return False
-        return super().has_delete_permission(request, obj=obj)  # type: ignore
-
-
-admin.site.register(Domain, DomainAdminAdmin)  # type: ignore

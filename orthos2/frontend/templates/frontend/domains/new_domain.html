@@ -1,0 +1,268 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="mb-3">
+      <form
+        class="pt-3"
+        method="post"
+        {% if action == 'new' %}
+          action="{% url 'frontend:new_domain' %}"
+        {% elif action == 'edit' %}
+          action="{% url 'frontend:edit_domain' object.id %}"
+        {% endif %}
+      >
+        {% csrf_token %}
+
+        {{ form.name.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.name.id_for_label }}">
+              {{ form.name.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.name }}
+            <small class="form-text text-muted">
+              {{ form.name.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.cobbler_server.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.cobbler_server.id_for_label }}">
+              {{ form.cobbler_server.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.cobbler_server }}
+            <small class="form-text text-muted">
+              {{ form.cobbler_server.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.cobbler_server_username.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.cobbler_server_username.id_for_label }}">
+              {{ form.cobbler_server_username.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.cobbler_server_username }}
+            <small class="form-text text-muted">
+              {{ form.cobbler_server_username.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.cobbler_server_password.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.cobbler_server_password.id_for_label }}">
+              {{ form.cobbler_server_password.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.cobbler_server_password }}
+            <small class="form-text text-muted">
+              {{ form.cobbler_server_password.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.tftp_server.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.tftp_server.id_for_label }}">
+              {{ form.tftp_server.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.tftp_server }}
+            <small class="form-text text-muted">
+              {{ form.tftp_server.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.cscreen_server.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.cscreen_server.id_for_label }}">
+              {{ form.cscreen_server.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.cscreen_server }}
+            <small class="form-text text-muted">
+              {{ form.cscreen_server.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.ip_v4.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.ip_v4.id_for_label }}">
+              {{ form.ip_v4.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.ip_v4 }}
+            <small class="form-text text-muted">
+              {{ form.ip_v4.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.ip_v6.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.ip_v6.id_for_label }}">
+              {{ form.ip_v6.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.ip_v6 }}
+            <small class="form-text text-muted">
+              {{ form.ip_v6.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.subnet_mask_v4.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.subnet_mask_v4.id_for_label }}">
+              {{ form.subnet_mask_v4.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.subnet_mask_v4 }}
+            <small class="form-text text-muted">
+              {{ form.subnet_mask_v4.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.subnet_mask_v6.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.subnet_mask_v6.id_for_label }}">
+              {{ form.subnet_mask_v6.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.subnet_mask_v6 }}
+            <small class="form-text text-muted">
+              {{ form.subnet_mask_v6.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.enable_v4.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.enable_v4.id_for_label }}">
+              {{ form.enable_v4.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.enable_v4 }}
+            <small class="form-text text-muted">
+              {{ form.enable_v4.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.enable_v6.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.enable_v6.id_for_label }}">
+              {{ form.enable_v6.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.enable_v6 }}
+            <small class="form-text text-muted">
+              {{ form.enable_v6.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.dynamic_range_v4_start.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.dynamic_range_v4_start.id_for_label }}">
+              {{ form.dynamic_range_v4_start.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.dynamic_range_v4_start }}
+            <small class="form-text text-muted">
+              {{ form.dynamic_range_v4_start.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.dynamic_range_v4_end.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.dynamic_range_v4_end.id_for_label }}">
+              {{ form.dynamic_range_v4_end.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.dynamic_range_v4_end }}
+            <small class="form-text text-muted">
+              {{ form.dynamic_range_v4_end.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.dynamic_range_v6_start.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.dynamic_range_v6_start.id_for_label }}">
+              {{ form.dynamic_range_v6_start.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.dynamic_range_v6_start }}
+            <small class="form-text text-muted">
+              {{ form.dynamic_range_v6_start.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.dynamic_range_v6_end.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.dynamic_range_v6_end.id_for_label }}">
+              {{ form.dynamic_range_v6_end.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.dynamic_range_v6_end }}
+            <small class="form-text text-muted">
+              {{ form.dynamic_range_v6_end.help_text }}
+            </small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm w-100">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

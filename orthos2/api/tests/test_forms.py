@@ -10,6 +10,7 @@ from orthos2.api.forms import (
     DeleteArchitectureAPIForm,
     DeleteDailyTaskAPIForm,
     DeleteDeviceTypeAPIForm,
+    DeleteDomainAPIForm,
     DeleteDomainArchitectureAPIForm,
     DeleteEnclosureAPIForm,
     DeleteMachineAPIForm,
@@ -22,6 +23,7 @@ from orthos2.api.forms import (
     DeleteSingleTaskAPIForm,
     DeleteSystemAPIForm,
     DeviceTypeAPIForm,
+    DomainAPIForm,
     DomainArchitectureAPIForm,
     EnclosureAPIForm,
     MachineAPIForm,
@@ -814,6 +816,78 @@ class DeleteDomainArchitectureAPIFormTests(TestCase):
         form = DeleteDomainArchitectureAPIForm(
             {"domain": self.domain.name, "arch": self.architecture.name}
         )
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DomainAPIFormTests(TestCase):
+    def setUp(self) -> None:
+        ServerConfig.objects.create(key="domain.validendings", value="orthos2.test")
+
+    def _payload(self, **overrides) -> dict:
+        payload = {
+            "name": "orthos2.test",
+            "cobbler_server_username": "cobbler",
+            "cobbler_server_password": "cobbler",
+            "ip_v4": "127.0.0.1",
+            "ip_v6": "::1",
+            "subnet_mask_v4": 24,
+            "subnet_mask_v6": 64,
+            "enable_v4": True,
+            "enable_v6": True,
+            "dynamic_range_v4_start": "127.0.0.1",
+            "dynamic_range_v4_end": "127.0.0.1",
+            "dynamic_range_v6_start": "::1",
+            "dynamic_range_v6_end": "::1",
+        }
+        payload.update(overrides)
+        return payload
+
+    def test_form(self) -> None:
+        """Test the domain creation API form"""
+        # Arrange & Act
+        form = DomainAPIForm(self._payload())
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_requires_name(self) -> None:
+        """Test that the domain creation API form requires a name"""
+        # Arrange & Act
+        form = DomainAPIForm(self._payload(name=""))
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DeleteDomainAPIFormTests(TestCase):
+    def setUp(self) -> None:
+        ServerConfig.objects.create(key="domain.validendings", value="orthos2.test")
+
+    def test_form(self) -> None:
+        """Test the domain deletion API form"""
+        # Arrange
+        Domain.objects.create(
+            name="orthos2.test",
+            ip_v4="127.0.0.1",
+            ip_v6="::1",
+            dynamic_range_v4_start="127.0.0.1",
+            dynamic_range_v4_end="127.0.0.1",
+            dynamic_range_v6_start="::1",
+            dynamic_range_v6_end="::1",
+        )
+
+        # Act
+        form = DeleteDomainAPIForm({"name": "orthos2.test"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_rejects_nonexistent_domain(self) -> None:
+        """Test that the domain deletion API form rejects an unknown name"""
+        # Arrange & Act
+        form = DeleteDomainAPIForm({"name": "Nonexistent"})
 
         # Assert
         self.assertFalse(form.is_valid())

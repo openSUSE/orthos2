@@ -1004,3 +1004,67 @@ class DeleteDomainArchitectureAPIForm(forms.Form, BaseAPIForm):
             "domain",
             "arch",
         ]
+
+
+class DomainAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = Domain
+        fields = [
+            "name",
+            "cobbler_server",
+            "cobbler_server_username",
+            "cobbler_server_password",
+            "tftp_server",
+            "cscreen_server",
+            "ip_v4",
+            "ip_v6",
+            "subnet_mask_v4",
+            "subnet_mask_v6",
+            "enable_v4",
+            "enable_v6",
+            "dynamic_range_v4_start",
+            "dynamic_range_v4_end",
+            "dynamic_range_v6_start",
+            "dynamic_range_v6_end",
+        ]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "name",
+            "cobbler_server",
+            "cobbler_server_username",
+            "cobbler_server_password",
+            "tftp_server",
+            "cscreen_server",
+            "ip_v4",
+            "ip_v6",
+            "subnet_mask_v4",
+            "subnet_mask_v6",
+            "enable_v4",
+            "enable_v6",
+            "dynamic_range_v4_start",
+            "dynamic_range_v4_end",
+            "dynamic_range_v6_start",
+            "dynamic_range_v6_end",
+        ]
+
+
+class DeleteDomainAPIForm(forms.Form, BaseAPIForm):
+    def clean_name(self) -> str:
+        """Check whether a domain with `name` exists."""
+        name = self.cleaned_data["name"]
+        if Domain.objects.filter(name__iexact=name).count() == 0:
+            self.add_error("name", "No domain with this name")
+        return name
+
+    name = forms.CharField(
+        label="Name",
+        max_length=200,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "name",
+        ]
