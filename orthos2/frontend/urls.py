@@ -401,4 +401,22 @@ urlpatterns = [
         views.DeleteSystem.as_view(),
         name="delete_system",
     ),
+    # Architectures
+    path("architectures", views.ArchitectureListView.as_view(), name="architectures"),
+    re_path(
+        r"^architecture/(?P<id>[0-9]+)/detail$",
+        views.architecture_detail,
+        name="architecture_detail",
+    ),
+    path("architectures/new", views.NewArchitecture.as_view(), name="new_architecture"),
+    path(
+        "architectures/edit/<int:pk>/",
+        views.ArchitectureDetailedEdit.as_view(),
+        name="edit_architecture",
+    ),
+    path(
+        "architectures/delete/<int:pk>/",
+        views.DeleteArchitecture.as_view(),
+        name="delete_architecture",
+    ),
 ]

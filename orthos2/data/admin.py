@@ -990,29 +990,6 @@ class ServerConfigAdmin(admin.ModelAdmin):  # type: ignore
 admin.site.register(ServerConfig, ServerConfigAdmin)  # type: ignore
 
 
-class ArchitectureAdmin(admin.ModelAdmin):  # type: ignore
-    list_display = ("name", "get_machine_count", "dhcp_filename")
-
-    def delete_model(
-        self, request: HttpRequest, obj: Optional["Architecture"] = None
-    ) -> None:
-        if obj is None:
-            messages.error(request, "You must specify an Architecture to delete.")
-            return
-        try:
-            obj.delete()
-        except ValidationError as e:
-            messages.error(request, e.message)
-
-    def has_delete_permission(self, request: HttpRequest, obj: Any = None) -> bool:
-        if obj is not None and obj.machine_set.count() > 0:
-            return False
-        return super(ArchitectureAdmin, self).has_delete_permission(request, obj=obj)  # type: ignore
-
-
-admin.site.register(Architecture, ArchitectureAdmin)  # type: ignore
-
-
 class RemotePowerTypeAdmin(admin.ModelAdmin):  # type: ignore
     list_display = ("name", "device")
 

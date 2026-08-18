@@ -1,0 +1,41 @@
+{% extends 'frontend/architectures/architecture.html' %}
+
+{% block tabcontent %}
+  <div class="row">
+    <div class="col-10">
+      <div class="container-fluid">
+        <div class="title">
+          <h5>{{ architecture.name }}</h5>
+        </div>
+
+        <table class="table table-striped table-bordered small">
+          <tbody class="thead-default">
+            <tr>
+              <td class="th fw-bold" width="150px">Name</td>
+              <td>{{ architecture.name }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">DHCP Filename</td>
+              <td>{{ architecture.dhcp_filename }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Contact Email</td>
+              <td>{{ architecture.contact_email }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Default Profile</td>
+              <td>{{ architecture.default_profile }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Machines</td>
+              <td>{{ architecture.get_machine_count }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-2">
+      {% include 'frontend/architectures/detail/actions.html' %}
+    </div>
+  </div>
+{% endblock %}

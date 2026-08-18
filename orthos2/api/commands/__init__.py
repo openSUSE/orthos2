@@ -1,6 +1,7 @@
 from orthos2.api.commands.add import (
     AddAnnotationCommandGet,
     AddAnnotationCommandPost,
+    AddArchitectureCommand,
     AddBMCCommandGet,
     AddBMCCommandPost,
     AddCommand,
@@ -18,6 +19,7 @@ from orthos2.api.commands.add import (
     AddVMCommandPost,
 )
 from orthos2.api.commands.delete import (
+    DeleteArchitectureCommand,
     DeleteCommand,
     DeleteDeviceTypeCommand,
     DeleteMachineCommand,
@@ -30,6 +32,7 @@ from orthos2.api.commands.delete import (
     DeleteSystemCommand,
 )
 from orthos2.api.commands.edit import (
+    EditArchitectureCommand,
     EditCommand,
     EditDeviceTypeCommand,
     EditManufacturerCommand,
@@ -37,6 +40,7 @@ from orthos2.api.commands.edit import (
     EditSystemCommand,
 )
 from orthos2.api.commands.info import (
+    ArchitectureInfoCommand,
     DeviceTypeInfoCommand,
     EnclosureInfoCommand,
     InfoCommand,
@@ -62,6 +66,7 @@ __all__ = [
     "DeviceTypeInfoCommand",
     "SerialConsoleTypeInfoCommand",
     "SystemInfoCommand",
+    "ArchitectureInfoCommand",
     "InfoCommand",
     "QueryCommand",
     "ReserveCommandGet",
@@ -105,4 +110,7 @@ __all__ = [
     "AddSystemCommand",
     "DeleteSystemCommand",
     "EditSystemCommand",
+    "AddArchitectureCommand",
+    "DeleteArchitectureCommand",
+    "EditArchitectureCommand",
 ]

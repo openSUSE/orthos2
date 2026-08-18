@@ -742,3 +742,33 @@ class DeleteSystemAPIForm(forms.Form, BaseAPIForm):
         return [
             "name",
         ]
+
+
+class ArchitectureAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = Architecture
+        fields = ["name", "dhcp_filename", "contact_email", "default_profile"]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return ["name", "dhcp_filename", "contact_email", "default_profile"]
+
+
+class DeleteArchitectureAPIForm(forms.Form, BaseAPIForm):
+    def clean_name(self) -> str:
+        """Check whether an architecture with `name` exists."""
+        name = self.cleaned_data["name"]
+        if Architecture.objects.filter(name__iexact=name).count() == 0:
+            self.add_error("name", "No architecture with this name")
+        return name
+
+    name = forms.CharField(
+        label="Name",
+        max_length=200,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "name",
+        ]

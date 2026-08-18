@@ -15,6 +15,7 @@ from rest_framework.request import Request
 from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.forms import (
     AnnotationAPIForm,
+    ArchitectureAPIForm,
     BMCAPIForm,
     DeviceTypeAPIForm,
     MachineAPIForm,
@@ -58,6 +59,7 @@ class Add:
     DEVICETYPE = "devicetype"
     SERIALCONSOLETYPE = "serialconsoletype"
     SYSTEM = "system"
+    ARCHITECTURE = "architecture"
 
     as_list = [
         MACHINE,
@@ -71,6 +73,7 @@ class Add:
         DEVICETYPE,
         SERIALCONSOLETYPE,
         SYSTEM,
+        ARCHITECTURE,
     ]
 
 
@@ -104,6 +107,8 @@ class AddCommand(BaseAPIView):
                 serialconsoletype <name>      : Add a serial console type
                                                 (superusers only).
                 system <name>                 : Add a system (superusers only).
+                architecture <name>           : Add an architecture
+                                                (superusers only).
 
     Example:
         ADD machine
@@ -116,6 +121,7 @@ class AddCommand(BaseAPIView):
         ADD devicetype PowerEdge
         ADD serialconsoletype Telnet
         ADD system BareMetal
+        ADD architecture x86_64
     """
 
     @staticmethod
@@ -228,6 +234,13 @@ class AddCommand(BaseAPIView):
             if sub_arguments:
                 return ErrorMessage("Invalid number of arguments for 'system'!").as_json
             return redirect(reverse("api:system_add"))
+
+        elif item == Add.ARCHITECTURE:
+            if sub_arguments:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'architecture'!"
+                ).as_json
+            return redirect(reverse("api:architecture_add"))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -1130,6 +1143,67 @@ class AddSystemCommand(BaseAPIView):
 
         data = json.loads(request.body.decode("utf-8"))["form"]
         form = SystemAPIForm(data)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json  # type: ignore
+
+
+class AddArchitectureCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/architecture/add"
+    URL_POST = "/architecture/add"
+    ARGUMENTS = (["name", "dhcp_filename", "contact_email", "default_profile"],)
+
+    HELP_SHORT = "Adds an architecture to the database."
+    HELP = """Adds an architecture to the database (superusers only).
+
+    Usage:
+        ADD architecture <name>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^architecture/add",
+                AddArchitectureCommand.as_view(),
+                name="architecture_add",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for adding an architecture."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = ArchitectureAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Add architecture."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = ArchitectureAPIForm(data)
 
         if form.is_valid():
             try:

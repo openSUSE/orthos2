@@ -11,6 +11,13 @@ from .ansible_results import (
     ansible_result_detail,
     machine_ansible_results,
 )
+from .architecture import (
+    ArchitectureDetailedEdit,
+    ArchitectureListView,
+    DeleteArchitecture,
+    NewArchitecture,
+    architecture_detail,
+)
 from .auth import deprecate_current_app, login
 from .compare_netbox import (
     NetboxOrthosComparisionRunListView,
@@ -215,4 +222,9 @@ __all__ = [
     "SystemDetailedEdit",
     "DeleteSystem",
     "system_detail",
+    "ArchitectureListView",
+    "NewArchitecture",
+    "ArchitectureDetailedEdit",
+    "DeleteArchitecture",
+    "architecture_detail",
 ]

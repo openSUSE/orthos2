@@ -4,7 +4,9 @@ from django.test import TestCase
 
 from orthos2.api.forms import (
     AnnotationAPIForm,
+    ArchitectureAPIForm,
     BMCAPIForm,
+    DeleteArchitectureAPIForm,
     DeleteDeviceTypeAPIForm,
     DeleteMachineAPIForm,
     DeleteManufacturerAPIForm,
@@ -23,7 +25,13 @@ from orthos2.api.forms import (
     SystemAPIForm,
     VirtualMachineAPIForm,
 )
-from orthos2.data.models import DeviceType, Manufacturer, SerialConsoleType, System
+from orthos2.data.models import (
+    Architecture,
+    DeviceType,
+    Manufacturer,
+    SerialConsoleType,
+    System,
+)
 from orthos2.data.models.machine import Machine
 from orthos2.data.models.remotepowertype import RemotePowerType
 
@@ -401,6 +409,45 @@ class DeleteSystemAPIFormTests(TestCase):
         """Test that the system deletion API form rejects an unknown name"""
         # Arrange & Act
         form = DeleteSystemAPIForm({"name": "Nonexistent"})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class ArchitectureAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the architecture creation API form"""
+        # Arrange & Act
+        form = ArchitectureAPIForm({"name": "AcmeArchitecture"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_requires_name(self) -> None:
+        """Test that the architecture creation API form requires a name"""
+        # Arrange & Act
+        form = ArchitectureAPIForm({"name": ""})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DeleteArchitectureAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the architecture deletion API form"""
+        # Arrange
+        Architecture.objects.create(name="AcmeArchitecture")
+
+        # Act
+        form = DeleteArchitectureAPIForm({"name": "AcmeArchitecture"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_rejects_nonexistent_architecture(self) -> None:
+        """Test that the architecture deletion API form rejects an unknown name"""
+        # Arrange & Act
+        form = DeleteArchitectureAPIForm({"name": "Nonexistent"})
 
         # Assert
         self.assertFalse(form.is_valid())
