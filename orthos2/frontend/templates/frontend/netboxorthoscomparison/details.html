@@ -20,15 +20,15 @@
   <table class="table table-striped table-bordered small">
     <tbody class="thead-default">
       <tr>
-        <td class="th" width="150px">Comparison run at:</td>
+        <td class="th fw-bold" width="150px">Comparison run at:</td>
         <td>{{ run.compare_timestamp }}</td>
       </tr>
       <tr>
-        <td class="th" width="150px">Object type:</td>
+        <td class="th fw-bold" width="150px">Object type:</td>
         <td>{{ run.object_type }}</td>
       </tr>
       <tr>
-        <td class="th" width="150px">Object Name:</td>
+        <td class="th fw-bold" width="150px">Object Name:</td>
         {% if run.object_type == "bmc" %}
         <td>{{ run.object_bmc.fqdn }}</td>
         {% elif run.object_type == "enclosure" %}

@@ -20,19 +20,19 @@
         </thead>
         <tbody>
           <tr>
-            <td class="th" width="100px">Login</td>
+            <td class="th fw-bold" width="100px">Login</td>
             <td>{{ user.username }}</td>
           </tr>
           <tr>
-            <td class="th">E-Mail</td>
+            <td class="th fw-bold">E-Mail</td>
             <td>{{ user.email }}</td>
           </tr>
           <tr>
-            <td class="th">Superuser</td>
+            <td class="th fw-bold">Superuser</td>
             <td>{{ user.is_superuser|boolean_image:15|safe }}</td>
           </tr>
           <tr>
-            <td class="th">Groups</td>
+            <td class="th fw-bold">Groups</td>
             <td>
             {% for membership in user.memberships.all %}
               {% if membership.is_privileged %}
@@ -45,11 +45,11 @@
             </td>
           </tr>
           <tr>
-            <td class="th">Registration date</td>
+            <td class="th fw-bold">Registration date</td>
             <td>{{ user.date_joined }}</td>
           </tr>
           <tr>
-            <td class="th">API token</td>
+            <td class="th fw-bold">API token</td>
             {% if user.auth_token.key %}
             <td><code>{{ user.auth_token.key }}</code> (created: {{ user.auth_token.created }})</td>
             {% else %}
@@ -57,7 +57,7 @@
             {% endif %}
           </tr>
           <tr>
-            <td class="th"><a class="button" href="{% url 'frontend:preferences_user'  %}?action=generate_token">Create New Token</a></td>
+            <td class="th fw-bold"><a class="button" href="{% url 'frontend:preferences_user'  %}?action=generate_token">Create New Token</a></td>
             <td></td>
           </tr>
         </tbody>

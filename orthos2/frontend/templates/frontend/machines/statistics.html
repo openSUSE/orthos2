@@ -26,25 +26,25 @@
           </thead>
           <tbody class="thead-default">
             <tr>
-              <td class="th">Number of all machines</td>
+              <td class="th fw-bold">Number of all machines</td>
               {% for number in data.matrix.0 %}
               <td>{{ number }}</td>
               {% endfor %}
             </tr>
             <tr>
-              <td class="th">Number of free machines</td>
+              <td class="th fw-bold">Number of free machines</td>
               {% for number in data.matrix.1 %}
               <td>{{ number }}</td>
               {% endfor %}
             </tr>
             <tr>
-              <td class="th">Number of machines where Login works</td>
+              <td class="th fw-bold">Number of machines where Login works</td>
               {% for number in data.matrix.2 %}
               <td>{{ number }}</td>
               {% endfor %}
             </tr>
             <tr>
-              <td class="th">Number of infinite reservations</td>
+              <td class="th fw-bold">Number of infinite reservations</td>
               {% for number in data.matrix.3 %}
               <td>{{ number }}</td>
               {% endfor %}

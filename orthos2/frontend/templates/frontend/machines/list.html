@@ -40,15 +40,15 @@
         <th scope="row">
           <a href="{% url 'frontend:detail' machine.id %}" class="text-muted">{{ machine.fqdn }}</a>
           {% if machine.administrative or machine.system.administrative %}
-            <span class="spacer-05"/>
+            <span class="ms-2"/>
             <span class="hint"><i class="fa-solid fa-star" title="Adminsitrative Machine"></i></span>
           {% endif %}
           {% if machine.system.virtual %}
-            <span class="spacer-05"/>
+            <span class="ms-2"/>
             <span class="hint"><i class="fa-solid fa-cloud" title="Virtual Machine"></i></span>
           {% endif %}
           {% if machine.is_bmc %}
-            <span class="spacer-05"/>
+            <span class="ms-2"/>
             <span class="hint"><i class="fa-solid fa-heart-pulse" title="BMC"></i></span>
           {% endif %}
         </th>

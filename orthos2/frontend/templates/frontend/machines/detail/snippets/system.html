@@ -6,57 +6,57 @@
 <table class="table table-striped small" style="border: 1px solid #ddd">
   <tbody class="thead-default">
     <tr>
-      <td class="th" width="150px">MAC Address</td>
+      <td class="th fw-bold" width="150px">MAC Address</td>
       <td>{{ machine.mac_address }}</td>
     </tr>
     <tr>
-      <td class="th">CPU Sockets / Cores / Threads</td>
+      <td class="th fw-bold">CPU Sockets / Cores / Threads</td>
       <td>{{ machine.cpu_physical }} / {{ machine.cpu_cores }} / {{ machine.cpu_threads }}</td>
     </tr>
     <tr>
-      <td class="th">RAM (GB)</td>
+      <td class="th fw-bold">RAM (GB)</td>
       <td>{{ machine.ram_amount|divide:1024 }}</td>
     </tr>
     <tr>
-      <td class="th">BIOS Version</td>
+      <td class="th fw-bold">BIOS Version</td>
       <td>{{ machine.bios_version }}</td>
     </tr>
     <tr>
-      <td class="th">BIOS Date</td>
+      <td class="th fw-bold">BIOS Date</td>
       <td>{{ machine.bios_date }}</td>
     </tr>
     <tr>
-      <td class="th">IPMI Supported</td>
+      <td class="th fw-bold">IPMI Supported</td>
       <td>{{ machine.ipmi|boolean_image:15|safe }}</td>
     </tr>
     <tr>
-      <td class="th">EFI Booted</td>
+      <td class="th fw-bold">EFI Booted</td>
       <td>{{ machine.efi|boolean_image:15|safe }}</td>
     </tr>
     <tr>
-      <td class="th">VM Capable</td>
+      <td class="th fw-bold">VM Capable</td>
       <td>{{ machine.vm_capable|boolean_image:15|safe }}</td>
     </tr>
     <tr>
-      <td class="th">Dedicated VM Host</td>
+      <td class="th fw-bold">Dedicated VM Host</td>
       <td>{{ machine.vm_dedicated_host|boolean_image:15|safe }}</td>
     </tr>
     <tr>
-      <td class="th">Installed Distribution</td>
+      <td class="th fw-bold">Installed Distribution</td>
       <td>{{ machine.get_active_distribution.distribution }}</td>
     </tr>
     {% if machine.is_virtual_machine and machine.hypervisor and machine.hypervisor.virtualization_api != None %}
     <tr>
-      <td class="th">Hypervisor</td>
+      <td class="th fw-bold">Hypervisor</td>
       <td><a href="{% url 'frontend:virtualization' machine.hypervisor.pk %}">{{ machine.hypervisor }}</a> ({{ machine.hypervisor.virtualization_api }})</td>
     </tr>
     {% endif %}
     <tr>
-      <td class="th">Kernel Options (Passed to Cobbler)</td>
+      <td class="th fw-bold">Kernel Options (Passed to Cobbler)</td>
       <td><code>{{ machine.kernel_options }}</code></td>
     </tr>
     <tr>
-      <td class="th">Kernel Options (Discovered)</td>
+      <td class="th fw-bold">Kernel Options (Discovered)</td>
       <td><code>{{ machine.kernel_options_discovered }}</code></td>
     </tr>
   </tbody>
