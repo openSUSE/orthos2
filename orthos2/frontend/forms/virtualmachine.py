@@ -57,7 +57,14 @@ class VirtualMachineForm(forms.Form):
 
         return cleaned_data
 
-    uefi_boot = forms.BooleanField(label="Use UEFI boot", required=False, initial=False)
+    uefi_boot = forms.BooleanField(
+        label="Use UEFI boot",
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(
+            attrs={"class": "form-check-input", "role": "switch"}
+        ),
+    )
 
     ram_amount = forms.DecimalField(
         label="Memory (MB)",
@@ -113,4 +120,11 @@ class VirtualMachineForm(forms.Form):
         widget=forms.NumberInput(attrs={"class": "form-control"}),
     )
 
-    vnc = forms.BooleanField(label="Enable VNC", required=False, initial=False)
+    vnc = forms.BooleanField(
+        label="Enable VNC",
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(
+            attrs={"class": "form-check-input", "role": "switch"}
+        ),
+    )

@@ -111,23 +111,21 @@ def get_current_machinegroup_filter(request: HttpRequest) -> str:
 def status_ipv4(machine: Machine) -> SafeString:
     if machine.check_connectivity < Machine.Connectivity.PING:
         return mark_safe(
-            '<td class="blue"><span class="text-small">Disabled</span></td>'
+            '<td class="blue text-center"><span class="text-small">Disabled</span></td>'
         )
 
     text = dict(Machine.StatusIP.CHOICE).get(machine.status_ipv4)
 
     if machine.status_ipv4 == Machine.StatusIP.UNREACHABLE:
-        result = '<td class="red" title="{}"><i class="fa-solid fa-xmark"></i></td>'
+        result = '<td class="red text-center" title="{}"><i class="fa-solid fa-xmark"></i></td>'
     elif machine.status_ipv4 == Machine.StatusIP.REACHABLE:
-        result = '<td class="green" title="{}">(<i class="fa-solid fa-check"></i>)</td>'
+        result = '<td class="green text-center" title="{}">(<i class="fa-solid fa-check"></i>)</td>'
     elif machine.status_ipv4 == Machine.StatusIP.CONFIRMED:
-        result = '<td class="green" title="{}"><i class="fa-solid fa-check"></i></td>'
+        result = '<td class="green text-center" title="{}"><i class="fa-solid fa-check"></i></td>'
     elif machine.status_ipv6 == Machine.StatusIP.AF_DISABLED:
-        result = (
-            '<td class="green" title="{}"><i class="fa-solid fa-circle-minus"></i></td>'
-        )
+        result = '<td class="green text-center" title="{}"><i class="fa-solid fa-circle-minus"></i></td>'
     else:
-        result = '<td class="yellow" title="{}"><i class="fa-solid fa-triangle-exclamation"></i></td>'
+        result = '<td class="bg-warning text-center" title="{}"><i class="fa-solid fa-triangle-exclamation"></i></td>'
 
     return mark_safe(result.format(text))
 
@@ -136,23 +134,21 @@ def status_ipv4(machine: Machine) -> SafeString:
 def status_ipv6(machine: Machine) -> SafeString:
     if machine.check_connectivity < Machine.Connectivity.PING:
         return mark_safe(
-            '<td class="blue"><span class="text-small">Disabled</span></td>'
+            '<td class="blue text-center"><span class="text-small">Disabled</span></td>'
         )
 
     text = dict(Machine.StatusIP.CHOICE).get(machine.status_ipv6)
 
     if machine.status_ipv6 == Machine.StatusIP.UNREACHABLE:
-        result = '<td class="red" title="{}"><i class="fa-solid fa-xmark"></i></td>'
+        result = '<td class="red text-center" title="{}"><i class="fa-solid fa-xmark"></i></td>'
     elif machine.status_ipv6 == Machine.StatusIP.REACHABLE:
-        result = '<td class="green" title="{}">(<i class="fa-solid fa-check"></i>)</td>'
+        result = '<td class="green text-center" title="{}">(<i class="fa-solid fa-check"></i>)</td>'
     elif machine.status_ipv6 == Machine.StatusIP.CONFIRMED:
-        result = '<td class="green" title="{}"><i class="fa-solid fa-check"></i></td>'
+        result = '<td class="green text-center" title="{}"><i class="fa-solid fa-check"></i></td>'
     elif machine.status_ipv6 == Machine.StatusIP.AF_DISABLED:
-        result = (
-            '<td class="green" title="{}"><i class="fa-solid fa-circle-minus"></i></td>'
-        )
+        result = '<td class="green text-center" title="{}"><i class="fa-solid fa-circle-minus"></i></td>'
     else:
-        result = '<td class="yellow" title="{}"><i class="fa-solid fa-triangle-exclamation"></i></td>'
+        result = '<td class="bg-warning text-center" title="{}"><i class="fa-solid fa-triangle-exclamation"></i></td>'
 
     return mark_safe(result.format(text))
 
@@ -161,13 +157,13 @@ def status_ipv6(machine: Machine) -> SafeString:
 def status_ssh(machine: Machine) -> SafeString:
     if machine.check_connectivity < Machine.Connectivity.SSH:
         return mark_safe(
-            '<td class="blue"><span class="text-small">Disabled</span></td>'
+            '<td class="blue text-center"><span class="text-small">Disabled</span></td>'
         )
 
     if machine.status_ssh:
-        result = '<td class="green" title="SSH port open"><i class="fa-solid fa-check"></i></td>'
+        result = '<td class="green text-center" title="SSH port open"><i class="fa-solid fa-check"></i></td>'
     else:
-        result = '<td class="red" title="SSH port not open"><i class="fa-solid fa-xmark"></i></td>'
+        result = '<td class="red text-center" title="SSH port not open"><i class="fa-solid fa-xmark"></i></td>'
 
     return mark_safe(result)
 
@@ -176,13 +172,13 @@ def status_ssh(machine: Machine) -> SafeString:
 def status_login(machine: Machine) -> SafeString:
     if machine.check_connectivity < Machine.Connectivity.ALL:
         return mark_safe(
-            '<td class="blue"><span class="text-small">Disabled</span></td>'
+            '<td class="blue text-center"><span class="text-small">Disabled</span></td>'
         )
 
     if machine.status_login:
-        result = '<td class="green" title="Login was successful"><i class="fa-solid fa-check"></i></td>'
+        result = '<td class="green text-center" title="Login was successful"><i class="fa-solid fa-check"></i></td>'
     else:
-        result = '<td class="red" title="Login was not successful"><i class="fa-solid fa-xmark"></i></td>'
+        result = '<td class="red text-center" title="Login was not successful"><i class="fa-solid fa-xmark"></i></td>'
 
     return mark_safe(result)
 

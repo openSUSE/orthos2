@@ -59,7 +59,7 @@ def pcihooks(lspci: str) -> SafeString:
     """
     result = re.sub(
         r"([a-fA-F0-9]+:[a-fA-F0-9]+.[a-fA-F0-9]+) (.*)",
-        r'<a name="\1" class="monospace">\1</a> \2',
+        r'<a name="\1" class="font-monospace">\1</a> \2',
         str(escape(lspci)),
     )
     return mark_safe(result)

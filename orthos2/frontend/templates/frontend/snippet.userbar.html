@@ -30,7 +30,7 @@
 
     {% if user.is_authenticated %}
     <span class="spacer-20"></span>
-    <form id="logout-form" method="post" action="{% url 'frontend:logout' %}">
+    <form id="logout-form" class="d-inline" method="post" action="{% url 'frontend:logout' %}">
       {% csrf_token %}
       <button type="submit"><i class="fa-solid fa-right-from-bracket fa-lg"></i> Logout</button>
     </form>

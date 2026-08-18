@@ -3,16 +3,16 @@
 
 {% block navbar %}
   <ul class="navbar-nav me-auto">
-    <li class="nav-item {% active_view request 'login' %}">
+    <li class="nav-item position-relative {% active_view request 'login' %}">
       <a class="nav-link" href="{% url 'frontend:login' %}">Login</a>
     </li>
     {% if account_creation and show_builtin_form %}
-      <li class="nav-item {% active_view request 'create_user' %}">
+      <li class="nav-item position-relative {% active_view request 'create_user' %}">
         <a class="nav-link" href="{% url 'frontend:create_user' %}"
           >Create Account</a
         >
       </li>
-      <li class="nav-item {% active_view request 'password_restore' %}">
+      <li class="nav-item position-relative {% active_view request 'password_restore' %}">
         <a class="nav-link" href="{% url 'frontend:password_restore' %}"
           >Restore Password</a
         >
