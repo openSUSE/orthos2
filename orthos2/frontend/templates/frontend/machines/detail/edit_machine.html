@@ -1,0 +1,87 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="mb-3">
+      <form
+        class="pt-3"
+        method="post"
+        action="{% url 'frontend:edit_machine' object.pk %}"
+      >
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+
+        {% for field in form %}
+          {% if field.name == "check_connectivity" %}
+            <h5>MACHINE CHECKS</h5>
+          {% elif field.name == "tftp_server" %}
+            <h5>DHCP</h5>
+          {% endif %}
+
+          {% if field.name == "vm_dedicated_host" or field.name == "vm_auto_delete" or field.name == "vm_max" or field.name == "virt_api_int" %}
+            {% if object.system.allowHypervisor %}
+              {% if field.name == "vm_dedicated_host" %}
+                <h5>VIRTUALIZATION SERVER</h5>
+              {% endif %}
+              {{ field.errors }}
+              <div class="row" style="margin: 5px;">
+                <div class="col-3">
+                  <label for="{{ field.id_for_label }}"
+                    >{{ field.label }}:</label
+                  >
+                </div>
+                <div class="col-9">
+                  {{ field }}
+                  <small class="form-text text-muted"
+                    >{{ field.help_text }}</small
+                  >
+                </div>
+              </div>
+            {% endif %}
+          {% elif field.name == "hypervisor" %}
+            {% if object.system.virtual %}
+              <h5>VIRTUALIZATION CLIENT</h5>
+              {{ field.errors }}
+              <div class="row" style="margin: 5px;">
+                <div class="col-3">
+                  <label for="{{ field.id_for_label }}"
+                    >{{ field.label }}:</label
+                  >
+                </div>
+                <div class="col-9">
+                  {{ field }}
+                  <small class="form-text text-muted"
+                    >{{ field.help_text }}</small
+                  >
+                </div>
+              </div>
+            {% endif %}
+          {% else %}
+            {{ field.errors }}
+            <div class="row" style="margin: 5px;">
+              <div class="col-3">
+                <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+              </div>
+              <div class="col-9">
+                {{ field }}
+                <small class="form-text text-muted"
+                  >{{ field.help_text }}</small
+                >
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        <button type="submit" class="btn btn-secondary btn-sm w-100">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

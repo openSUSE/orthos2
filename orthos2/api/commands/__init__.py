@@ -62,6 +62,8 @@ from orthos2.api.commands.edit import (
     EditDomainArchitectureCommand,
     EditDomainCommand,
     EditEnclosureCommand,
+    EditMachineCommandGet,
+    EditMachineCommandPost,
     EditManufacturerCommand,
     EditNetworkInterfaceCommand,
     EditRemotePowerCommandGet,
@@ -193,4 +195,6 @@ __all__ = [
     "DeleteBMCCommand",
     "EditBMCCommand",
     "DeleteAnnotationCommand",
+    "EditMachineCommandGet",
+    "EditMachineCommandPost",
 ]

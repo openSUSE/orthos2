@@ -105,6 +105,11 @@ urlpatterns = [
     path("machine/add", views.machine_add, name="machine_add"),
     re_path(r"^machine/(?P<id>[0-9]+)/$", views.machine, name="detail"),
     re_path(r"^machine/(?P<id>[0-9]+)/detail$", views.machine, name="detail"),
+    path(
+        "machine/edit/<int:pk>/",
+        views.MachineDetailedEdit.as_view(),
+        name="edit_machine",
+    ),
     re_path(r"^machine/(?P<id>[0-9]+)/cpu$", views.cpu, name="cpu"),
     re_path(
         r"^machine/(?P<id>[0-9]+)/networkinterfaces$",
