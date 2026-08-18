@@ -23,12 +23,14 @@ from orthos2.api.serializers.misc import (
 )
 from orthos2.api.serializers.remotepowerdevice import RemotePowerDeviceSerializer
 from orthos2.api.serializers.serialconsoletype import SerialConsoleTypeSerializer
+from orthos2.api.serializers.system import SystemSerializer
 from orthos2.data.models import (
     DeviceType,
     Machine,
     Manufacturer,
     RemotePowerDevice,
     SerialConsoleType,
+    System,
 )
 from orthos2.data.models.enclosure import Enclosure
 
@@ -489,6 +491,81 @@ Example:
             return ErrorMessage(
                 "Serial console type '{}' does not exist!".format(name)
             ).as_json
+        except Exception:
+            return ErrorMessage(getException()).as_json
+
+        return JsonResponse(response)
+
+
+class SystemInfoCommand(BaseAPIView):
+
+    METHOD = "GET"
+    URL = "/system"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Retrieve information about a system."
+    HELP = """Command to get information about a system.
+
+Usage:
+    INFO system <name>
+
+Arguments:
+    name - Name of the system. If omitted, all systems are listed.
+
+Example:
+    INFO system BareMetal
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(r"^system$", SystemInfoCommand.as_view(), name="system"),
+        ]
+
+    @staticmethod
+    def get_tabcompletion() -> List[str]:
+        return list(System.objects.all().values_list("name", flat=True))
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return system information."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        name = request.GET.get("name", "")
+
+        try:
+            if name:
+                system = System.objects.get(name__iexact=name)
+                serialized_system = SystemSerializer(system)
+                response = {
+                    "header": {
+                        "type": "INFO",
+                        "order": [
+                            "id",
+                            "name",
+                            "virtual",
+                            "allowBMC",
+                            "allowHypervisor",
+                            "administrative",
+                        ],
+                    },
+                    "data": serialized_system.data_info,
+                }
+            else:
+                systems = System.objects.all()
+                serialized_systems = SystemSerializer(systems, many=True)
+                theader = [{"id": "ID"}, {"name": "Name"}, {"virtual": "Virtual"}]
+                response = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": serialized_systems.data,
+                }
+        except System.DoesNotExist:
+            return ErrorMessage("System '{}' does not exist!".format(name)).as_json
         except Exception:
             return ErrorMessage(getException()).as_json
 

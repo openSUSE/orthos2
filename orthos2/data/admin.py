@@ -1013,13 +1013,6 @@ class ArchitectureAdmin(admin.ModelAdmin):  # type: ignore
 admin.site.register(Architecture, ArchitectureAdmin)  # type: ignore
 
 
-class SystemAdmin(admin.ModelAdmin):  # type: ignore
-    list_display = ("name", "virtual", "administrative")
-
-
-admin.site.register(System, SystemAdmin)  # type: ignore
-
-
 class RemotePowerTypeAdmin(admin.ModelAdmin):  # type: ignore
     list_display = ("name", "device")
 

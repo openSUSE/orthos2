@@ -105,6 +105,13 @@ from .serialconsoletype import (
     serialconsoletype_detail,
 )
 from .statistics import statistics
+from .system import (
+    DeleteSystem,
+    NewSystem,
+    SystemDetailedEdit,
+    SystemListView,
+    system_detail,
+)
 from .user import users_create, users_password_restore, users_preferences
 from .users import UserListView, user_detail, user_reservations, user_reserve_machine
 
@@ -203,4 +210,9 @@ __all__ = [
     "SerialConsoleTypeDetailedEdit",
     "DeleteSerialConsoleType",
     "serialconsoletype_detail",
+    "SystemListView",
+    "NewSystem",
+    "SystemDetailedEdit",
+    "DeleteSystem",
+    "system_detail",
 ]

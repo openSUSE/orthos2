@@ -383,4 +383,22 @@ urlpatterns = [
         views.DeleteSerialConsoleType.as_view(),
         name="delete_serialconsoletype",
     ),
+    # Systems
+    path("systems", views.SystemListView.as_view(), name="systems"),
+    re_path(
+        r"^system/(?P<id>[0-9]+)/detail$",
+        views.system_detail,
+        name="system_detail",
+    ),
+    path("systems/new", views.NewSystem.as_view(), name="new_system"),
+    path(
+        "systems/edit/<int:pk>/",
+        views.SystemDetailedEdit.as_view(),
+        name="edit_system",
+    ),
+    path(
+        "systems/delete/<int:pk>/",
+        views.DeleteSystem.as_view(),
+        name="delete_system",
+    ),
 ]

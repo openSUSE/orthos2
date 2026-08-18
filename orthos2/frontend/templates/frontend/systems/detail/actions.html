@@ -1,0 +1,22 @@
+{% load filters %}
+<div class="title">
+  <h5>Actions</h5>
+</div>
+
+<div class="btn-group-vertical d-flex">
+  <a
+    class="btn btn-warning btn-sm"
+    href="{% url 'frontend:edit_system' system.pk %}"
+    role="button"
+    >Edit System</a
+  >
+</div>
+<br />
+<div class="btn-group-vertical d-flex">
+  <a
+    class="btn btn-danger btn-sm"
+    href="{% url 'frontend:delete_system' system.pk %}"
+    role="button"
+    >Delete System</a
+  >
+</div>

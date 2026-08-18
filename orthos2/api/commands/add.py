@@ -23,6 +23,7 @@ from orthos2.api.forms import (
     RemotePowerDeviceAPIForm,
     SerialConsoleAPIForm,
     SerialConsoleTypeAPIForm,
+    SystemAPIForm,
     VirtualMachineAPIForm,
 )
 from orthos2.api.serializers.misc import (
@@ -56,6 +57,7 @@ class Add:
     MANUFACTURER = "manufacturer"
     DEVICETYPE = "devicetype"
     SERIALCONSOLETYPE = "serialconsoletype"
+    SYSTEM = "system"
 
     as_list = [
         MACHINE,
@@ -68,6 +70,7 @@ class Add:
         MANUFACTURER,
         DEVICETYPE,
         SERIALCONSOLETYPE,
+        SYSTEM,
     ]
 
 
@@ -100,6 +103,7 @@ class AddCommand(BaseAPIView):
                 devicetype <name>             : Add a device type (superusers only).
                 serialconsoletype <name>      : Add a serial console type
                                                 (superusers only).
+                system <name>                 : Add a system (superusers only).
 
     Example:
         ADD machine
@@ -111,6 +115,7 @@ class AddCommand(BaseAPIView):
         ADD manufacturer Dell
         ADD devicetype PowerEdge
         ADD serialconsoletype Telnet
+        ADD system BareMetal
     """
 
     @staticmethod
@@ -218,6 +223,11 @@ class AddCommand(BaseAPIView):
                     "Invalid number of arguments for 'serialconsoletype'!"
                 ).as_json
             return redirect(reverse("api:serialconsoletype_add"))
+
+        elif item == Add.SYSTEM:
+            if sub_arguments:
+                return ErrorMessage("Invalid number of arguments for 'system'!").as_json
+            return redirect(reverse("api:system_add"))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -1059,6 +1069,67 @@ class AddSerialConsoleTypeCommand(BaseAPIView):
 
         data = json.loads(request.body.decode("utf-8"))["form"]
         form = SerialConsoleTypeAPIForm(data)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json  # type: ignore
+
+
+class AddSystemCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/system/add"
+    URL_POST = "/system/add"
+    ARGUMENTS = (["name", "virtual", "allowBMC", "allowHypervisor", "administrative"],)
+
+    HELP_SHORT = "Adds a system to the database."
+    HELP = """Adds a system to the database (superusers only).
+
+    Usage:
+        ADD system <name>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^system/add",
+                AddSystemCommand.as_view(),
+                name="system_add",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for adding a system."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = SystemAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Add system."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = SystemAPIForm(data)
 
         if form.is_valid():
             try:

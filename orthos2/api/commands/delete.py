@@ -21,6 +21,7 @@ from orthos2.api.forms import (
     DeleteRemotePowerDeviceAPIForm,
     DeleteSerialConsoleAPIForm,
     DeleteSerialConsoleTypeAPIForm,
+    DeleteSystemAPIForm,
 )
 from orthos2.api.serializers.misc import (
     AuthRequiredSerializer,
@@ -34,6 +35,7 @@ from orthos2.data.models import (
     NetworkInterface,
     RemotePowerDevice,
     SerialConsoleType,
+    System,
 )
 from orthos2.utils.misc import format_cli_form_errors
 
@@ -48,6 +50,7 @@ class Delete:
     MANUFACTURER = "manufacturer"
     DEVICETYPE = "devicetype"
     SERIALCONSOLETYPE = "serialconsoletype"
+    SYSTEM = "system"
 
     as_list = [
         MACHINE,
@@ -57,6 +60,7 @@ class Delete:
         MANUFACTURER,
         DEVICETYPE,
         SERIALCONSOLETYPE,
+        SYSTEM,
     ]
 
 
@@ -84,6 +88,7 @@ Arguments:
              manufacturer       : Delete a manufacturer (superusers only).
              devicetype         : Delete a device type (superusers only).
              serialconsoletype  : Delete a serial console type (superusers only).
+             system             : Delete a system (superusers only).
 
 Example:
     DELETE machine
@@ -167,6 +172,12 @@ Example:
                 ).as_json
 
             return redirect(reverse("api:serialconsoletype_delete"))
+
+        elif item == Delete.SYSTEM:
+            if sub_arguments:
+                return ErrorMessage("Invalid number of arguments for 'system'!").as_json
+
+            return redirect(reverse("api:system_delete"))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -740,6 +751,85 @@ class DeleteSerialConsoleTypeCommand(BaseAPIView):
                 )
 
                 result = serialconsoletype.delete()
+
+                theader = [
+                    {"objects": "Deleted objects"},
+                    {"count": "#"},
+                ]
+
+                response: Dict[str, Any] = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": [],
+                }
+                for key, value in result[1].items():
+                    response["data"].append(  # type: ignore
+                        {"objects": key.replace("data.", ""), "count": value}
+                    )
+                return JsonResponse(response)
+
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
+
+
+class DeleteSystemCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/system/delete"
+    URL_POST = "/system/delete"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Deletes a system from the database."
+    HELP = """Deletes a system from the database (superusers only).
+
+    Usage:
+        DELETE system <name>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^system/delete",
+                DeleteSystemCommand.as_view(),
+                name="system_delete",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for deleting a system."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = DeleteSystemAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Delete system."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = DeleteSystemAPIForm(data)
+
+        if form.is_valid():
+            try:
+                cleaned_data = form.cleaned_data
+
+                system = System.objects.get(name__iexact=cleaned_data["name"])
+
+                result = system.delete()
 
                 theader = [
                     {"objects": "Deleted objects"},

@@ -11,6 +11,7 @@ from orthos2.api.forms import (
     DeleteRemotePowerAPIForm,
     DeleteRemotePowerDeviceAPIForm,
     DeleteSerialConsoleTypeAPIForm,
+    DeleteSystemAPIForm,
     DeviceTypeAPIForm,
     MachineAPIForm,
     ManufacturerAPIForm,
@@ -19,6 +20,7 @@ from orthos2.api.forms import (
     ReserveMachineAPIForm,
     SerialConsoleAPIForm,
     SerialConsoleTypeAPIForm,
+    SystemAPIForm,
     VirtualMachineAPIForm,
 )
 from orthos2.data.models import DeviceType, Manufacturer, SerialConsoleType, System
@@ -360,6 +362,45 @@ class DeleteSerialConsoleTypeAPIFormTests(TestCase):
         """Test that the serial console type deletion API form rejects an unknown name"""
         # Arrange & Act
         form = DeleteSerialConsoleTypeAPIForm({"name": "Nonexistent"})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class SystemAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the system creation API form"""
+        # Arrange & Act
+        form = SystemAPIForm({"name": "AcmeSystem"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_requires_name(self) -> None:
+        """Test that the system creation API form requires a name"""
+        # Arrange & Act
+        form = SystemAPIForm({"name": ""})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DeleteSystemAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the system deletion API form"""
+        # Arrange
+        System.objects.create(name="AcmeSystem")
+
+        # Act
+        form = DeleteSystemAPIForm({"name": "AcmeSystem"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_rejects_nonexistent_system(self) -> None:
+        """Test that the system deletion API form rejects an unknown name"""
+        # Arrange & Act
+        form = DeleteSystemAPIForm({"name": "Nonexistent"})
 
         # Assert
         self.assertFalse(form.is_valid())

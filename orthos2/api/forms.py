@@ -712,3 +712,33 @@ class DeleteSerialConsoleTypeAPIForm(forms.Form, BaseAPIForm):
         return [
             "name",
         ]
+
+
+class SystemAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = System
+        fields = ["name", "virtual", "allowBMC", "allowHypervisor", "administrative"]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return ["name", "virtual", "allowBMC", "allowHypervisor", "administrative"]
+
+
+class DeleteSystemAPIForm(forms.Form, BaseAPIForm):
+    def clean_name(self) -> str:
+        """Check whether a system with `name` exists."""
+        name = self.cleaned_data["name"]
+        if System.objects.filter(name__iexact=name).count() == 0:
+            self.add_error("name", "No system with this name")
+        return name
+
+    name = forms.CharField(
+        label="Name",
+        max_length=200,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "name",
+        ]

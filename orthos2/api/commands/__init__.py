@@ -13,6 +13,7 @@ from orthos2.api.commands.add import (
     AddSerialConsoleCommandGet,
     AddSerialConsoleCommandPost,
     AddSerialConsoleTypeCommand,
+    AddSystemCommand,
     AddVMCommandGet,
     AddVMCommandPost,
 )
@@ -26,12 +27,14 @@ from orthos2.api.commands.delete import (
     DeleteRemotePowerDeviceCommand,
     DeleteSerialConsoleCommand,
     DeleteSerialConsoleTypeCommand,
+    DeleteSystemCommand,
 )
 from orthos2.api.commands.edit import (
     EditCommand,
     EditDeviceTypeCommand,
     EditManufacturerCommand,
     EditSerialConsoleTypeCommand,
+    EditSystemCommand,
 )
 from orthos2.api.commands.info import (
     DeviceTypeInfoCommand,
@@ -40,6 +43,7 @@ from orthos2.api.commands.info import (
     ManufacturerInfoCommand,
     RemotePowerDeviceInfoCommand,
     SerialConsoleTypeInfoCommand,
+    SystemInfoCommand,
 )
 from orthos2.api.commands.power import PowerCommand
 from orthos2.api.commands.query import QueryCommand
@@ -57,6 +61,7 @@ __all__ = [
     "ManufacturerInfoCommand",
     "DeviceTypeInfoCommand",
     "SerialConsoleTypeInfoCommand",
+    "SystemInfoCommand",
     "InfoCommand",
     "QueryCommand",
     "ReserveCommandGet",
@@ -97,4 +102,7 @@ __all__ = [
     "AddSerialConsoleTypeCommand",
     "DeleteSerialConsoleTypeCommand",
     "EditSerialConsoleTypeCommand",
+    "AddSystemCommand",
+    "DeleteSystemCommand",
+    "EditSystemCommand",
 ]

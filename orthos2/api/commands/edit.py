@@ -21,6 +21,7 @@ from orthos2.api.forms import (
     DeviceTypeAPIForm,
     ManufacturerAPIForm,
     SerialConsoleTypeAPIForm,
+    SystemAPIForm,
 )
 from orthos2.api.serializers.misc import (
     AuthRequiredSerializer,
@@ -28,7 +29,7 @@ from orthos2.api.serializers.misc import (
     InputSerializer,
     Message,
 )
-from orthos2.data.models import DeviceType, Manufacturer, SerialConsoleType
+from orthos2.data.models import DeviceType, Manufacturer, SerialConsoleType, System
 from orthos2.utils.misc import format_cli_form_errors
 
 logger = logging.getLogger("api")
@@ -38,8 +39,9 @@ class Edit:
     MANUFACTURER = "manufacturer"
     DEVICETYPE = "devicetype"
     SERIALCONSOLETYPE = "serialconsoletype"
+    SYSTEM = "system"
 
-    as_list = [MANUFACTURER, DEVICETYPE, SERIALCONSOLETYPE]
+    as_list = [MANUFACTURER, DEVICETYPE, SERIALCONSOLETYPE, SYSTEM]
 
 
 class EditCommand(BaseAPIView):
@@ -61,11 +63,13 @@ class EditCommand(BaseAPIView):
                 devicetype <id>        : Edit a device type (superusers only).
                 serialconsoletype <id> : Edit a serial console type
                                          (superusers only).
+                system <id>            : Edit a system (superusers only).
 
     Example:
         EDIT manufacturer 1
         EDIT devicetype 1
         EDIT serialconsoletype 1
+        EDIT system 1
     """
 
     @staticmethod
@@ -121,6 +125,14 @@ class EditCommand(BaseAPIView):
                 "{}?id={}".format(
                     reverse("api:serialconsoletype_edit"), sub_arguments[0]
                 )
+            )
+
+        elif item == Edit.SYSTEM:
+            if len(sub_arguments) != 1:
+                return ErrorMessage("Invalid number of arguments for 'system'!").as_json
+
+            return redirect(
+                "{}?id={}".format(reverse("api:system_edit"), sub_arguments[0])
             )
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
@@ -373,6 +385,94 @@ class EditSerialConsoleTypeCommand(BaseAPIView):
             ).as_json
 
         form = SerialConsoleTypeAPIForm(data, instance=serialconsoletype)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage(
+            "\n{}".format(format_cli_form_errors(form))  # type: ignore[arg-type]
+        ).as_json
+
+
+class EditSystemCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/system/edit"
+    URL_POST = "/system/edit"
+    ARGUMENTS = (
+        ["id", "name", "virtual", "allowBMC", "allowHypervisor", "administrative"],
+    )
+
+    HELP_SHORT = "Edits a system in the database."
+    HELP = """Edits a system in the database (superusers only).
+
+    Usage:
+        EDIT system <id>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^system/edit",
+                EditSystemCommand.as_view(),
+                name="system_edit",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for editing a system."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        system_id = request.GET.get("id")
+        try:
+            system = System.objects.get(pk=system_id)  # type: ignore[misc]
+        except (System.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "System with id '{}' does not exist!".format(system_id)
+            ).as_json
+
+        form = SystemAPIForm(instance=system)
+        fields = form.as_dict()
+        fields["id"] = {
+            "type": "INTEGER",
+            "prompt": "ID",
+            "initial": system.pk,
+            "required": True,
+        }
+
+        input = InputSerializer(fields, self.URL_POST, ["id"] + form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Edit system."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        system_id = data.get("id")
+        try:
+            system = System.objects.get(pk=system_id)
+        except (System.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "System with id '{}' does not exist!".format(system_id)
+            ).as_json
+
+        form = SystemAPIForm(data, instance=system)
 
         if form.is_valid():
             try:
