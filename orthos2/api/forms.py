@@ -580,11 +580,38 @@ class RemotePowerDeviceAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
         label="Architecture",
     )
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        # Editing doesn't require resubmitting architecture (it's not part of
+        # EditRemotePowerDeviceCommand.ARGUMENTS) - only Add needs it.
+        if self.instance.pk:
+            self.fields["architecture"].required = False
+
+    def clean_architecture(self) -> Architecture:
+        architecture = self.cleaned_data.get("architecture")
+        if architecture is None:
+            # Only reachable when editing (required=False above) - Add
+            # still enforces the field before this method is even called.
+            return self.instance.architecture  # type: ignore[no-any-return]
+        return architecture
+
     def save(self, commit: bool = True) -> RemotePowerDevice:
         # domain is required but not user-supplied - resolve it from fqdn,
         # same as the frontend's RemotePowerDevice creation view does.
         self.instance.domain = Domain.objects.get(name=get_domain(self.instance.fqdn))
         return super().save(commit=commit)  # type: ignore
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "fqdn",
+            "mac",
+            "username",
+            "password",
+            "fence_agent",
+            "url",
+            "architecture",
+        ]
 
 
 class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):

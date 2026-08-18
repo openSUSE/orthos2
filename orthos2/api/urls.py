@@ -106,3 +106,4 @@ urlpatterns += EditRemotePowerTypeCommand.get_urls()  # noqa: F405
 urlpatterns += EditArchitectureCommand.get_urls()  # noqa: F405
 urlpatterns += EditServerConfigCommand.get_urls()  # noqa: F405
 urlpatterns += EditEnclosureCommand.get_urls()  # noqa: F405
+urlpatterns += EditRemotePowerDeviceCommand.get_urls()  # noqa: F405

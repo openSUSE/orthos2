@@ -23,6 +23,7 @@ from orthos2.api.forms import (
     DeviceTypeAPIForm,
     EnclosureAPIForm,
     ManufacturerAPIForm,
+    RemotePowerDeviceAPIForm,
     RemotePowerTypeAPIForm,
     SerialConsoleTypeAPIForm,
     ServerConfigAPIForm,
@@ -40,6 +41,7 @@ from orthos2.data.models import (
     DeviceType,
     Enclosure,
     Manufacturer,
+    RemotePowerDevice,
     RemotePowerType,
     SerialConsoleType,
     ServerConfig,
@@ -60,6 +62,7 @@ class Edit:
     ARCHITECTURE = "architecture"
     SERVERCONFIG = "serverconfig"
     ENCLOSURE = "enclosure"
+    REMOTEPOWERDEVICE = "remotepowerdevice"
 
     as_list = [
         MANUFACTURER,
@@ -70,6 +73,7 @@ class Edit:
         ARCHITECTURE,
         SERVERCONFIG,
         ENCLOSURE,
+        REMOTEPOWERDEVICE,
     ]
 
 
@@ -99,6 +103,8 @@ class EditCommand(BaseAPIView):
                 serverconfig <id>      : Edit a server configuration entry
                                          (superusers only).
                 enclosure <id>         : Edit an enclosure (superusers only).
+                remotepowerdevice <id> : Edit a remote power device
+                                         (superusers only).
 
     Example:
         EDIT manufacturer 1
@@ -109,6 +115,7 @@ class EditCommand(BaseAPIView):
         EDIT architecture 1
         EDIT serverconfig 1
         EDIT enclosure 1
+        EDIT remotepowerdevice 1
     """
 
     @staticmethod
@@ -212,6 +219,18 @@ class EditCommand(BaseAPIView):
 
             return redirect(
                 "{}?id={}".format(reverse("api:enclosure_edit"), sub_arguments[0])
+            )
+
+        elif item == Edit.REMOTEPOWERDEVICE:
+            if len(sub_arguments) != 1:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'remotepowerdevice'!"
+                ).as_json
+
+            return redirect(
+                "{}?id={}".format(
+                    reverse("api:remotepowerdevice_edit"), sub_arguments[0]
+                )
             )
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
@@ -1089,6 +1108,96 @@ class EditEnclosureCommand(BaseAPIView):
             ).as_json
 
         form = EnclosureAPIForm(data, instance=enclosure)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage(
+            "\n{}".format(format_cli_form_errors(form))  # type: ignore[arg-type]
+        ).as_json
+
+
+class EditRemotePowerDeviceCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/remotepowerdevice/edit"
+    URL_POST = "/remotepowerdevice/edit"
+    ARGUMENTS = (["id", "fqdn", "mac", "username", "password", "fence_agent", "url"],)
+
+    HELP_SHORT = "Edits a remote power device in the database."
+    HELP = """Edits a remote power device in the database (superusers only).
+
+    Usage:
+        EDIT remotepowerdevice <id>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^remotepowerdevice/edit",
+                EditRemotePowerDeviceCommand.as_view(),
+                name="remotepowerdevice_edit",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for editing a remote power device."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        remotepowerdevice_id = request.GET.get("id")
+        try:
+            remotepowerdevice = RemotePowerDevice.objects.get(pk=remotepowerdevice_id)  # type: ignore[misc]
+        except (RemotePowerDevice.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Remote power device with id '{}' does not exist!".format(
+                    remotepowerdevice_id
+                )
+            ).as_json
+
+        form = RemotePowerDeviceAPIForm(instance=remotepowerdevice)
+        fields = form.as_dict()
+        fields["id"] = {
+            "type": "INTEGER",
+            "prompt": "ID",
+            "initial": remotepowerdevice.pk,
+            "required": True,
+        }
+
+        input = InputSerializer(fields, self.URL_POST, ["id"] + form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Edit remote power device."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        remotepowerdevice_id = data.get("id")
+        try:
+            remotepowerdevice = RemotePowerDevice.objects.get(pk=remotepowerdevice_id)
+        except (RemotePowerDevice.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Remote power device with id '{}' does not exist!".format(
+                    remotepowerdevice_id
+                )
+            ).as_json
+
+        form = RemotePowerDeviceAPIForm(data, instance=remotepowerdevice)
 
         if form.is_valid():
             try:

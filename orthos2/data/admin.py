@@ -9,7 +9,6 @@ from django.db.models import Q, QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 
-from orthos2.api.forms import RemotePowerDeviceAPIForm
 from orthos2.data.models import (
     BMC,
     Annotation,
@@ -878,11 +877,3 @@ class DomainAdminAdmin(admin.ModelAdmin):  # type: ignore
 
 
 admin.site.register(Domain, DomainAdminAdmin)  # type: ignore
-
-
-class RemotePowerDeviceAdmin(admin.ModelAdmin):  # type: ignore
-    form = RemotePowerDeviceAPIForm
-    list_display = ["fqdn", "fence_agent"]  # type: ignore
-
-
-admin.site.register(RemotePowerDevice, RemotePowerDeviceAdmin)  # type: ignore
