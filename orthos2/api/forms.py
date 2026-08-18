@@ -18,6 +18,7 @@ from orthos2.data.models import (
     Architecture,
     DeviceType,
     Domain,
+    DomainAdmin,
     Enclosure,
     Machine,
     Manufacturer,
@@ -957,4 +958,49 @@ class DeleteEnclosureAPIForm(forms.Form, BaseAPIForm):
         """Return input order."""
         return [
             "name",
+        ]
+
+
+class DomainArchitectureAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = DomainAdmin
+        fields = ["domain", "arch", "contact_email"]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return ["domain", "arch", "contact_email"]
+
+
+class DeleteDomainArchitectureAPIForm(forms.Form, BaseAPIForm):
+    def clean(self) -> Optional[Dict[str, Any]]:
+        """Check whether a domain architecture entry for `domain`/`arch` exists."""
+        cleaned_data = super().clean()
+        if cleaned_data is None:
+            return None
+        domain = cleaned_data.get("domain")
+        arch = cleaned_data.get("arch")
+        if domain and arch:
+            if not DomainAdmin.objects.filter(
+                domain__name__iexact=domain, arch__name__iexact=arch
+            ).exists():
+                self.add_error(
+                    None, "No supported architecture entry for this domain/arch"
+                )
+        return cleaned_data
+
+    domain = forms.CharField(
+        label="Domain",
+        max_length=200,
+    )
+
+    arch = forms.CharField(
+        label="Architecture",
+        max_length=200,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "domain",
+            "arch",
         ]

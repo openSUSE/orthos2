@@ -19,6 +19,7 @@ from orthos2.api.forms import (
     BMCAPIForm,
     DailyTaskAPIForm,
     DeviceTypeAPIForm,
+    DomainArchitectureAPIForm,
     EnclosureAPIForm,
     MachineAPIForm,
     ManufacturerAPIForm,
@@ -68,6 +69,7 @@ class Add:
     ARCHITECTURE = "architecture"
     SERVERCONFIG = "serverconfig"
     ENCLOSURE = "enclosure"
+    DOMAINARCHITECTURE = "domainarchitecture"
 
     as_list = [
         MACHINE,
@@ -85,6 +87,7 @@ class Add:
         ARCHITECTURE,
         SERVERCONFIG,
         ENCLOSURE,
+        DOMAINARCHITECTURE,
     ]
 
 
@@ -125,6 +128,8 @@ class AddCommand(BaseAPIView):
                 serverconfig <key> <value>    : Add a server configuration entry
                                                 (superusers only).
                 enclosure <name>              : Add an enclosure (superusers only).
+                domainarchitecture            : Add a supported architecture entry
+                                                for a domain (superusers only).
 
     Example:
         ADD machine
@@ -141,6 +146,7 @@ class AddCommand(BaseAPIView):
         ADD architecture x86_64
         ADD serverconfig foo.bar baz
         ADD enclosure Rack01
+        ADD domainarchitecture
     """
 
     @staticmethod
@@ -281,6 +287,13 @@ class AddCommand(BaseAPIView):
                     "Invalid number of arguments for 'enclosure'!"
                 ).as_json
             return redirect(reverse("api:enclosure_add"))
+
+        elif item == Add.DOMAINARCHITECTURE:
+            if sub_arguments:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'domainarchitecture'!"
+                ).as_json
+            return redirect(reverse("api:domainarchitecture_add"))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -1561,6 +1574,67 @@ class AddEnclosureCommand(BaseAPIView):
 
         data = json.loads(request.body.decode("utf-8"))["form"]
         form = EnclosureAPIForm(data)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json  # type: ignore
+
+
+class AddDomainArchitectureCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/domainarchitecture/add"
+    URL_POST = "/domainarchitecture/add"
+    ARGUMENTS = (["domain", "arch", "contact_email"],)
+
+    HELP_SHORT = "Adds a supported architecture entry for a domain."
+    HELP = """Adds a supported architecture entry for a domain (superusers only).
+
+    Usage:
+        ADD domainarchitecture
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^domainarchitecture/add",
+                AddDomainArchitectureCommand.as_view(),
+                name="domainarchitecture_add",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for adding a supported architecture entry for a domain."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = DomainArchitectureAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Add supported architecture entry for a domain."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = DomainArchitectureAPIForm(data)
 
         if form.is_valid():
             try:

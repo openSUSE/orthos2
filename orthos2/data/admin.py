@@ -14,7 +14,6 @@ from orthos2.data.models import (
     Annotation,
     Architecture,
     Domain,
-    DomainAdmin,
     Machine,
     NetworkInterface,
     RemotePower,
@@ -840,17 +839,8 @@ class MachineAdmin(admin.ModelAdmin):  # type: ignore
 admin.site.register(Machine, MachineAdmin)  # type: ignore
 
 
-class ArchsInline(admin.TabularInline):  # type: ignore
-    model = DomainAdmin
-    fields = (
-        "arch",
-        "contact_email",
-    )
-
-
 class DomainAdminAdmin(admin.ModelAdmin):  # type: ignore
     list_display = ("name", "cobbler_server_list", "tftp_server", "cscreen_server")
-    inlines = (ArchsInline,)
 
     def cobbler_server_list(self, obj: "Domain"):
         """Return DHCP server FQDN as string."""

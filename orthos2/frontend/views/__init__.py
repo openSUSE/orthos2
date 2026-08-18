@@ -42,6 +42,12 @@ from .devicetype import (
     devicetype_fetch_netbox,
     devicetype_netboxcomparison,
 )
+from .domainarchitecture import (
+    DeleteDomainArchitecture,
+    DomainArchitectureDetailedEdit,
+    DomainArchitectureListView,
+    NewDomainArchitecture,
+)
 from .enclosures import (
     DeleteEnclosure,
     EnclosureDetailedEdit,
@@ -281,4 +287,8 @@ __all__ = [
     "ServerConfigDetailedEdit",
     "DeleteServerConfig",
     "serverconfig_detail",
+    "DomainArchitectureListView",
+    "NewDomainArchitecture",
+    "DomainArchitectureDetailedEdit",
+    "DeleteDomainArchitecture",
 ]

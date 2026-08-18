@@ -15,6 +15,7 @@ from orthos2.api.commands.base import (
 from orthos2.api.serializers.architecture import ArchitectureSerializer
 from orthos2.api.serializers.dailytask import DailyTaskSerializer
 from orthos2.api.serializers.devicetype import DeviceTypeSerializer
+from orthos2.api.serializers.domainarchitecture import DomainArchitectureSerializer
 from orthos2.api.serializers.enclosure import EnclosureSerializer
 from orthos2.api.serializers.machine import MachineSerializer
 from orthos2.api.serializers.manufacturer import ManufacturerSerializer
@@ -31,6 +32,7 @@ from orthos2.api.serializers.system import SystemSerializer
 from orthos2.data.models import (
     Architecture,
     DeviceType,
+    DomainAdmin,
     Machine,
     Manufacturer,
     RemotePowerDevice,
@@ -901,6 +903,90 @@ Example:
         except (DailyTask.DoesNotExist, ValueError, TypeError):
             return ErrorMessage(
                 "Daily task with id '{}' does not exist!".format(dailytask_id)
+            ).as_json
+        except Exception:
+            return ErrorMessage(getException()).as_json
+
+        return JsonResponse(response)
+
+
+class DomainArchitectureInfoCommand(BaseAPIView):
+
+    METHOD = "GET"
+    URL = "/domainarchitecture"
+    ARGUMENTS = (["domain", "arch"],)
+
+    HELP_SHORT = "Retrieve information about a domain's supported architectures."
+    HELP = """Command to get information about a domain's supported architectures.
+
+Usage:
+    INFO domainarchitecture <domain> <arch>
+
+Arguments:
+    domain - Name of the domain.
+    arch   - Name of the architecture. If omitted (along with domain), all
+             entries are listed.
+
+Example:
+    INFO domainarchitecture orthos2.test x86_64
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^domainarchitecture$",
+                DomainArchitectureInfoCommand.as_view(),
+                name="domainarchitecture",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return domain architecture information."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        domain = request.GET.get("domain", "")
+        arch = request.GET.get("arch", "")
+
+        try:
+            if domain and arch:
+                domainarchitecture = DomainAdmin.objects.get(
+                    domain__name__iexact=domain, arch__name__iexact=arch
+                )
+                serialized_domainarchitecture = DomainArchitectureSerializer(
+                    domainarchitecture
+                )
+                response = {
+                    "header": {
+                        "type": "INFO",
+                        "order": ["id", "domain", "arch", "contact_email"],
+                    },
+                    "data": serialized_domainarchitecture.data_info,
+                }
+            else:
+                domainarchitectures = DomainAdmin.objects.all()
+                serialized_domainarchitectures = DomainArchitectureSerializer(
+                    domainarchitectures, many=True
+                )
+                theader = [
+                    {"id": "ID"},
+                    {"domain": "Domain"},
+                    {"arch": "Architecture"},
+                ]
+                response = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": serialized_domainarchitectures.data,
+                }
+        except DomainAdmin.DoesNotExist:
+            return ErrorMessage(
+                "No supported architecture entry for domain '{}' and "
+                "architecture '{}'!".format(domain, arch)
             ).as_json
         except Exception:
             return ErrorMessage(getException()).as_json

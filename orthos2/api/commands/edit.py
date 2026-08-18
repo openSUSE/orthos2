@@ -21,6 +21,7 @@ from orthos2.api.forms import (
     ArchitectureAPIForm,
     DailyTaskAPIForm,
     DeviceTypeAPIForm,
+    DomainArchitectureAPIForm,
     EnclosureAPIForm,
     ManufacturerAPIForm,
     RemotePowerDeviceAPIForm,
@@ -39,6 +40,7 @@ from orthos2.api.serializers.misc import (
 from orthos2.data.models import (
     Architecture,
     DeviceType,
+    DomainAdmin,
     Enclosure,
     Manufacturer,
     RemotePowerDevice,
@@ -63,6 +65,7 @@ class Edit:
     SERVERCONFIG = "serverconfig"
     ENCLOSURE = "enclosure"
     REMOTEPOWERDEVICE = "remotepowerdevice"
+    DOMAINARCHITECTURE = "domainarchitecture"
 
     as_list = [
         MANUFACTURER,
@@ -74,6 +77,7 @@ class Edit:
         SERVERCONFIG,
         ENCLOSURE,
         REMOTEPOWERDEVICE,
+        DOMAINARCHITECTURE,
     ]
 
 
@@ -105,6 +109,8 @@ class EditCommand(BaseAPIView):
                 enclosure <id>         : Edit an enclosure (superusers only).
                 remotepowerdevice <id> : Edit a remote power device
                                          (superusers only).
+                domainarchitecture <id> : Edit a supported architecture entry
+                                         for a domain (superusers only).
 
     Example:
         EDIT manufacturer 1
@@ -116,6 +122,7 @@ class EditCommand(BaseAPIView):
         EDIT serverconfig 1
         EDIT enclosure 1
         EDIT remotepowerdevice 1
+        EDIT domainarchitecture 1
     """
 
     @staticmethod
@@ -230,6 +237,18 @@ class EditCommand(BaseAPIView):
             return redirect(
                 "{}?id={}".format(
                     reverse("api:remotepowerdevice_edit"), sub_arguments[0]
+                )
+            )
+
+        elif item == Edit.DOMAINARCHITECTURE:
+            if len(sub_arguments) != 1:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'domainarchitecture'!"
+                ).as_json
+
+            return redirect(
+                "{}?id={}".format(
+                    reverse("api:domainarchitecture_edit"), sub_arguments[0]
                 )
             )
 
@@ -1198,6 +1217,96 @@ class EditRemotePowerDeviceCommand(BaseAPIView):
             ).as_json
 
         form = RemotePowerDeviceAPIForm(data, instance=remotepowerdevice)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage(
+            "\n{}".format(format_cli_form_errors(form))  # type: ignore[arg-type]
+        ).as_json
+
+
+class EditDomainArchitectureCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/domainarchitecture/edit"
+    URL_POST = "/domainarchitecture/edit"
+    ARGUMENTS = (["id", "domain", "arch", "contact_email"],)
+
+    HELP_SHORT = "Edits a supported architecture entry for a domain."
+    HELP = """Edits a supported architecture entry for a domain (superusers only).
+
+    Usage:
+        EDIT domainarchitecture <id>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^domainarchitecture/edit",
+                EditDomainArchitectureCommand.as_view(),
+                name="domainarchitecture_edit",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for editing a supported architecture entry for a domain."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        domainarchitecture_id = request.GET.get("id")
+        try:
+            domainarchitecture = DomainAdmin.objects.get(pk=domainarchitecture_id)  # type: ignore[misc]
+        except (DomainAdmin.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Domain architecture entry with id '{}' does not exist!".format(
+                    domainarchitecture_id
+                )
+            ).as_json
+
+        form = DomainArchitectureAPIForm(instance=domainarchitecture)
+        fields = form.as_dict()
+        fields["id"] = {
+            "type": "INTEGER",
+            "prompt": "ID",
+            "initial": domainarchitecture.pk,
+            "required": True,
+        }
+
+        input = InputSerializer(fields, self.URL_POST, ["id"] + form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Edit supported architecture entry for a domain."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        domainarchitecture_id = data.get("id")
+        try:
+            domainarchitecture = DomainAdmin.objects.get(pk=domainarchitecture_id)
+        except (DomainAdmin.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Domain architecture entry with id '{}' does not exist!".format(
+                    domainarchitecture_id
+                )
+            ).as_json
+
+        form = DomainArchitectureAPIForm(data, instance=domainarchitecture)
 
         if form.is_valid():
             try:

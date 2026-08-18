@@ -1,0 +1,58 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="mb-3">
+      <form
+        class="pt-3"
+        method="post"
+        {% if action == 'new' %}
+          action="{% url 'frontend:new_domain_architecture' domain.pk %}"
+        {% elif action == 'edit' %}
+          action="{% url 'frontend:edit_domain_architecture' object.id %}"
+        {% endif %}
+      >
+        {% csrf_token %}
+
+        {{ form.arch.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.arch.id_for_label }}">
+              {{ form.arch.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.arch }}
+            <small class="form-text text-muted">
+              {{ form.arch.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.contact_email.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.contact_email.id_for_label }}">
+              {{ form.contact_email.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.contact_email }}
+            <small class="form-text text-muted">
+              {{ form.contact_email.help_text }}
+            </small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm w-100">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
