@@ -16,6 +16,7 @@ from rest_framework.request import Request
 from orthos2.api.commands.base import BaseAPIView
 from orthos2.api.forms import (
     DeleteArchitectureAPIForm,
+    DeleteDailyTaskAPIForm,
     DeleteDeviceTypeAPIForm,
     DeleteMachineAPIForm,
     DeleteManufacturerAPIForm,
@@ -43,7 +44,7 @@ from orthos2.data.models import (
     ServerConfig,
     System,
 )
-from orthos2.taskmanager.models import SingleTask
+from orthos2.taskmanager.models import DailyTask, SingleTask
 from orthos2.utils.misc import format_cli_form_errors
 
 logger = logging.getLogger("api")
@@ -1022,6 +1023,85 @@ class DeleteServerConfigCommand(BaseAPIView):
                 serverconfig = ServerConfig.objects.get(key__iexact=cleaned_data["key"])
 
                 result = serverconfig.delete()
+
+                theader = [
+                    {"objects": "Deleted objects"},
+                    {"count": "#"},
+                ]
+
+                response: Dict[str, Any] = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": [],
+                }
+                for key, value in result[1].items():
+                    response["data"].append(  # type: ignore
+                        {"objects": key.replace("data.", ""), "count": value}
+                    )
+                return JsonResponse(response)
+
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
+
+
+class DeleteDailyTaskCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/dailytask/delete"
+    URL_POST = "/dailytask/delete"
+    ARGUMENTS = (["id"],)
+
+    HELP_SHORT = "Deletes a daily task from the database."
+    HELP = """Deletes a daily task from the database (superusers only).
+
+    Usage:
+        DELETE dailytask <id>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^dailytask/delete",
+                DeleteDailyTaskCommand.as_view(),
+                name="dailytask_delete",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for deleting a daily task."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = DeleteDailyTaskAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Delete daily task."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = DeleteDailyTaskAPIForm(data)
+
+        if form.is_valid():
+            try:
+                cleaned_data = form.cleaned_data
+
+                dailytask = DailyTask.objects.get(pk=cleaned_data["id"])
+
+                result = dailytask.delete()
 
                 theader = [
                     {"objects": "Deleted objects"},

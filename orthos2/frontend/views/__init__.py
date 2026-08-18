@@ -23,6 +23,15 @@ from .compare_netbox import (
     NetboxOrthosComparisionRunListView,
     netboxorthoscomparisonrun,
 )
+from .dailytask import (
+    DailyTaskDetailedEdit,
+    DailyTaskListView,
+    DeleteDailyTask,
+    NewDailyTask,
+    dailytask_detail,
+    dailytask_execute,
+    dailytask_switch,
+)
 from .devicetype import (
     DeleteDeviceType,
     DeviceTypeDetailedEdit,
@@ -241,6 +250,13 @@ __all__ = [
     "SingleTaskDetailedEdit",
     "DeleteSingleTask",
     "singletask_detail",
+    "DailyTaskListView",
+    "NewDailyTask",
+    "DailyTaskDetailedEdit",
+    "DeleteDailyTask",
+    "dailytask_detail",
+    "dailytask_execute",
+    "dailytask_switch",
     "ArchitectureListView",
     "NewArchitecture",
     "ArchitectureDetailedEdit",

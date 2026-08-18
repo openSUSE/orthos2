@@ -17,6 +17,7 @@ from orthos2.api.forms import (
     AnnotationAPIForm,
     ArchitectureAPIForm,
     BMCAPIForm,
+    DailyTaskAPIForm,
     DeviceTypeAPIForm,
     MachineAPIForm,
     ManufacturerAPIForm,
@@ -1279,6 +1280,67 @@ class AddServerConfigCommand(BaseAPIView):
 
         data = json.loads(request.body.decode("utf-8"))["form"]
         form = ServerConfigAPIForm(data)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json  # type: ignore
+
+
+class AddDailyTaskCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/dailytask/add"
+    URL_POST = "/dailytask/add"
+    ARGUMENTS = (["name", "module", "arguments", "priority", "enabled"],)
+
+    HELP_SHORT = "Adds a daily task to the database."
+    HELP = """Adds a daily task to the database (superusers only).
+
+    Usage:
+        ADD dailytask <name>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^dailytask/add",
+                AddDailyTaskCommand.as_view(),
+                name="dailytask_add",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for adding a daily task."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = DailyTaskAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Add daily task."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = DailyTaskAPIForm(data)
 
         if form.is_valid():
             try:

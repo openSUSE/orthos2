@@ -19,6 +19,7 @@ from rest_framework.request import Request
 from orthos2.api.commands.base import BaseAPIView
 from orthos2.api.forms import (
     ArchitectureAPIForm,
+    DailyTaskAPIForm,
     DeviceTypeAPIForm,
     ManufacturerAPIForm,
     SerialConsoleTypeAPIForm,
@@ -40,7 +41,7 @@ from orthos2.data.models import (
     ServerConfig,
     System,
 )
-from orthos2.taskmanager.models import SingleTask
+from orthos2.taskmanager.models import DailyTask, SingleTask
 from orthos2.utils.misc import format_cli_form_errors
 
 logger = logging.getLogger("api")
@@ -694,6 +695,92 @@ class EditServerConfigCommand(BaseAPIView):
             ).as_json
 
         form = ServerConfigAPIForm(data, instance=serverconfig)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage(
+            "\n{}".format(format_cli_form_errors(form))  # type: ignore[arg-type]
+        ).as_json
+
+
+class EditDailyTaskCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/dailytask/edit"
+    URL_POST = "/dailytask/edit"
+    ARGUMENTS = (["id", "name", "module", "arguments", "priority", "enabled"],)
+
+    HELP_SHORT = "Edits a daily task in the database."
+    HELP = """Edits a daily task in the database (superusers only).
+
+    Usage:
+        EDIT dailytask <id>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^dailytask/edit",
+                EditDailyTaskCommand.as_view(),
+                name="dailytask_edit",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for editing a daily task."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        dailytask_id = request.GET.get("id")
+        try:
+            dailytask = DailyTask.objects.get(pk=dailytask_id)  # type: ignore[misc]
+        except (DailyTask.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Daily task with id '{}' does not exist!".format(dailytask_id)
+            ).as_json
+
+        form = DailyTaskAPIForm(instance=dailytask)
+        fields = form.as_dict()
+        fields["id"] = {
+            "type": "INTEGER",
+            "prompt": "ID",
+            "initial": dailytask.pk,
+            "required": True,
+        }
+
+        input = InputSerializer(fields, self.URL_POST, ["id"] + form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Edit daily task."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        dailytask_id = data.get("id")
+        try:
+            dailytask = DailyTask.objects.get(pk=dailytask_id)
+        except (DailyTask.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Daily task with id '{}' does not exist!".format(dailytask_id)
+            ).as_json
+
+        form = DailyTaskAPIForm(data, instance=dailytask)
 
         if form.is_valid():
             try:

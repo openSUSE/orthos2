@@ -6,7 +6,9 @@ from orthos2.api.forms import (
     AnnotationAPIForm,
     ArchitectureAPIForm,
     BMCAPIForm,
+    DailyTaskAPIForm,
     DeleteArchitectureAPIForm,
+    DeleteDailyTaskAPIForm,
     DeleteDeviceTypeAPIForm,
     DeleteMachineAPIForm,
     DeleteManufacturerAPIForm,
@@ -39,7 +41,7 @@ from orthos2.data.models import (
 )
 from orthos2.data.models.machine import Machine
 from orthos2.data.models.remotepowertype import RemotePowerType
-from orthos2.taskmanager.models import SingleTask
+from orthos2.taskmanager.models import DailyTask, SingleTask
 
 
 class ReserveMachineAPIFormTests(TestCase):
@@ -541,6 +543,55 @@ class DeleteSingleTaskAPIFormTests(TestCase):
         """Test that the single task deletion API form rejects an unknown id"""
         # Arrange & Act
         form = DeleteSingleTaskAPIForm({"id": 99999})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DailyTaskAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the daily task creation API form"""
+        # Arrange & Act
+        form = DailyTaskAPIForm(
+            {
+                "name": "AcmeDailyTask",
+                "module": "acme.module",
+                "arguments": "[[], {}]",
+                "priority": 10,
+                "enabled": True,
+            }
+        )
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_requires_name(self) -> None:
+        """Test that the daily task creation API form requires a name"""
+        # Arrange & Act
+        form = DailyTaskAPIForm({"name": "", "module": "acme.module", "priority": 10})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DeleteDailyTaskAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the daily task deletion API form"""
+        # Arrange
+        dailytask = DailyTask.objects.create(
+            name="AcmeDailyTask", module="acme.module", arguments="[[], {}]"
+        )
+
+        # Act
+        form = DeleteDailyTaskAPIForm({"id": dailytask.pk})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_rejects_nonexistent_dailytask(self) -> None:
+        """Test that the daily task deletion API form rejects an unknown id"""
+        # Arrange & Act
+        form = DeleteDailyTaskAPIForm({"id": 99999})
 
         # Assert
         self.assertFalse(form.is_valid())

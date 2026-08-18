@@ -5,6 +5,7 @@ from orthos2.api.commands.add import (
     AddBMCCommandGet,
     AddBMCCommandPost,
     AddCommand,
+    AddDailyTaskCommand,
     AddDeviceTypeCommand,
     AddMachineCommand,
     AddManufacturerCommand,
@@ -20,9 +21,14 @@ from orthos2.api.commands.add import (
     AddVMCommandGet,
     AddVMCommandPost,
 )
+from orthos2.api.commands.dailytask import (
+    ExecuteDailyTaskCommand,
+    SwitchDailyTaskCommand,
+)
 from orthos2.api.commands.delete import (
     DeleteArchitectureCommand,
     DeleteCommand,
+    DeleteDailyTaskCommand,
     DeleteDeviceTypeCommand,
     DeleteMachineCommand,
     DeleteManufacturerCommand,
@@ -38,6 +44,7 @@ from orthos2.api.commands.delete import (
 from orthos2.api.commands.edit import (
     EditArchitectureCommand,
     EditCommand,
+    EditDailyTaskCommand,
     EditDeviceTypeCommand,
     EditManufacturerCommand,
     EditSerialConsoleTypeCommand,
@@ -47,6 +54,7 @@ from orthos2.api.commands.edit import (
 )
 from orthos2.api.commands.info import (
     ArchitectureInfoCommand,
+    DailyTaskInfoCommand,
     DeviceTypeInfoCommand,
     EnclosureInfoCommand,
     InfoCommand,
@@ -73,6 +81,7 @@ __all__ = [
     "DeviceTypeInfoCommand",
     "SerialConsoleTypeInfoCommand",
     "SingleTaskInfoCommand",
+    "DailyTaskInfoCommand",
     "SystemInfoCommand",
     "ArchitectureInfoCommand",
     "InfoCommand",
@@ -121,6 +130,11 @@ __all__ = [
     "AddSingleTaskCommand",
     "DeleteSingleTaskCommand",
     "EditSingleTaskCommand",
+    "AddDailyTaskCommand",
+    "DeleteDailyTaskCommand",
+    "EditDailyTaskCommand",
+    "ExecuteDailyTaskCommand",
+    "SwitchDailyTaskCommand",
     "AddArchitectureCommand",
     "DeleteArchitectureCommand",
     "EditArchitectureCommand",

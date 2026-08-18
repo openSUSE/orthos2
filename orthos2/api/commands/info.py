@@ -13,6 +13,7 @@ from orthos2.api.commands.base import (
     getException,
 )
 from orthos2.api.serializers.architecture import ArchitectureSerializer
+from orthos2.api.serializers.dailytask import DailyTaskSerializer
 from orthos2.api.serializers.devicetype import DeviceTypeSerializer
 from orthos2.api.serializers.enclosure import EnclosureSerializer
 from orthos2.api.serializers.machine import MachineSerializer
@@ -36,7 +37,7 @@ from orthos2.data.models import (
     System,
 )
 from orthos2.data.models.enclosure import Enclosure
-from orthos2.taskmanager.models import SingleTask
+from orthos2.taskmanager.models import DailyTask, SingleTask
 
 
 class InfoCommand(BaseAPIView):
@@ -729,6 +730,88 @@ Example:
         except (SingleTask.DoesNotExist, ValueError, TypeError):
             return ErrorMessage(
                 "Single task with id '{}' does not exist!".format(singletask_id)
+            ).as_json
+        except Exception:
+            return ErrorMessage(getException()).as_json
+
+        return JsonResponse(response)
+
+
+class DailyTaskInfoCommand(BaseAPIView):
+
+    METHOD = "GET"
+    URL = "/dailytask"
+    ARGUMENTS = (["id"],)
+
+    HELP_SHORT = "Retrieve information about a daily task."
+    HELP = """Command to get information about a daily task.
+
+Usage:
+    INFO dailytask <id>
+
+Arguments:
+    id - ID of the daily task. If omitted, all daily tasks are listed.
+
+Example:
+    INFO dailytask 1
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(r"^dailytask$", DailyTaskInfoCommand.as_view(), name="dailytask"),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return daily task information."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        dailytask_id = request.GET.get("id")
+
+        try:
+            if dailytask_id:
+                dailytask = DailyTask.objects.get(pk=dailytask_id)
+                serialized_dailytask = DailyTaskSerializer(dailytask)
+                response = {
+                    "header": {
+                        "type": "INFO",
+                        "order": [
+                            "id",
+                            "name",
+                            "module",
+                            "arguments",
+                            "priority",
+                            "enabled",
+                            "executed_at",
+                            "hash",
+                            "running",
+                            "created",
+                        ],
+                    },
+                    "data": serialized_dailytask.data_info,
+                }
+            else:
+                dailytasks = DailyTask.objects.all()
+                serialized_dailytasks = DailyTaskSerializer(dailytasks, many=True)
+                theader = [
+                    {"id": "ID"},
+                    {"name": "Name"},
+                    {"enabled": "Enabled"},
+                    {"running": "Running"},
+                ]
+                response = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": serialized_dailytasks.data,
+                }
+        except (DailyTask.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Daily task with id '{}' does not exist!".format(dailytask_id)
             ).as_json
         except Exception:
             return ErrorMessage(getException()).as_json
