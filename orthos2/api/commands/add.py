@@ -18,6 +18,7 @@ from orthos2.api.forms import (
     BMCAPIForm,
     MachineAPIForm,
     ManufacturerAPIForm,
+    PlatformAPIForm,
     RemotePowerAPIForm,
     RemotePowerDeviceAPIForm,
     SerialConsoleAPIForm,
@@ -52,6 +53,7 @@ class Add:
     BMC = "bmc"
     REMOTEPOWERDEVICE = "remotepowerdevice"
     MANUFACTURER = "manufacturer"
+    PLATFORM = "platform"
 
     as_list = [
         MACHINE,
@@ -62,6 +64,7 @@ class Add:
         BMC,
         REMOTEPOWERDEVICE,
         MANUFACTURER,
+        PLATFORM,
     ]
 
 
@@ -91,6 +94,7 @@ class AddCommand(BaseAPIView):
                                                 architecture.
                 bmc <fqdn>                    : Add a bmc to a machine.
                 manufacturer <name>           : Add a manufacturer (superusers only).
+                platform <name>               : Add a platform (superusers only).
 
     Example:
         ADD machine
@@ -100,6 +104,7 @@ class AddCommand(BaseAPIView):
         ADD annotation foo.domain.tld
         ADD bmc foo.domain.tld
         ADD manufacturer Dell
+        ADD platform PowerEdge
     """
 
     @staticmethod
@@ -193,6 +198,13 @@ class AddCommand(BaseAPIView):
                     "Invalid number of arguments for 'manufacturer'!"
                 ).as_json
             return redirect(reverse("api:manufacturer_add"))
+
+        elif item == Add.PLATFORM:
+            if sub_arguments:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'platform'!"
+                ).as_json
+            return redirect(reverse("api:platform_add"))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -912,6 +924,67 @@ class AddManufacturerCommand(BaseAPIView):
 
         data = json.loads(request.body.decode("utf-8"))["form"]
         form = ManufacturerAPIForm(data)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json  # type: ignore
+
+
+class AddPlatformCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/platform/add"
+    URL_POST = "/platform/add"
+    ARGUMENTS = (["name", "manufacturer", "is_cartridge", "description"],)
+
+    HELP_SHORT = "Adds a platform to the database."
+    HELP = """Adds a platform to the database (superusers only).
+
+    Usage:
+        ADD platform <name>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^platform/add",
+                AddPlatformCommand.as_view(),
+                name="platform_add",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for adding a platform."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = PlatformAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Add platform."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = PlatformAPIForm(data)
 
         if form.is_valid():
             try:

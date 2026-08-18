@@ -69,6 +69,13 @@ from .manufacturer import (
     manufacturer_netboxcomparison,
     manufacturer_platforms,
 )
+from .platform import (
+    DeletePlatform,
+    NewPlatform,
+    PlatformDetailedEdit,
+    PlatformListView,
+    platform_detail,
+)
 from .regenerate import (
     regenerate_cobbler,
     regenerate_domain_cobbler,
@@ -173,4 +180,9 @@ __all__ = [
     "manufacturer_fetch_netbox",
     "manufacturer_netboxcomparison",
     "manufacturer_compare_netbox",
+    "PlatformListView",
+    "NewPlatform",
+    "PlatformDetailedEdit",
+    "DeletePlatform",
+    "platform_detail",
 ]

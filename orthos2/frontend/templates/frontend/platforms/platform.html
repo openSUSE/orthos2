@@ -1,0 +1,41 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+{% load tags %}
+{% load filters %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="row">
+      <main class="col-12">
+        <ul class="nav nav-tabs gray">
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'platform_detail' %}"
+              href="{% url 'frontend:platform_detail' platform.pk %}"
+              >Overview</a
+            >
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          {% block tabcontent %}
+          {% endblock %}
+        </div>
+        <span style="font-size: 0.7em; font-family: Monospace;"
+          >API:
+          <a href="{% url 'api:platform' %}?name={{ platform.name }}"
+            >{% url 'api:platform' %}?name={{ platform.name }}</a
+          >
+          | Edit:
+          <a href="{% url 'frontend:edit_platform' platform.id %}"
+            >{% url 'frontend:edit_platform' platform.id %}</a
+          ></span
+        >
+      </main>
+    </div>
+  </div>
+{% endblock %}

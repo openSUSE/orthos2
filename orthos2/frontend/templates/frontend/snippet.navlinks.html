@@ -101,7 +101,7 @@
     <a class="nav-link" href="/api/schema" target="_blank">REST API</a>
   </li>
   {% if request.user.is_superuser %}
-    {% active_group request 'users' as admin_open %}
+    {% active_group request 'users' 'platforms' as admin_open %}
     <li class="nav-item">
       <a
         class="nav-link"
@@ -116,6 +116,11 @@
       <ul class="collapse nav flex-column flex-nowrap ms-3 {{ admin_open }}" id="nav-administration">
         <li class="nav-item">
           <a class="nav-link" href="{% url 'admin:index' %}">Django Admin</a>
+        </li>
+        <li
+          class="nav-item position-relative {% active_view request 'platforms' %}"
+        >
+          <a class="nav-link" href="{% url 'frontend:platforms' %}">Platforms</a>
         </li>
         <li
           class="nav-item position-relative {% active_view request 'users' %}"

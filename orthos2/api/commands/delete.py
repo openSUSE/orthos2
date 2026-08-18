@@ -16,6 +16,7 @@ from orthos2.api.commands.base import BaseAPIView
 from orthos2.api.forms import (
     DeleteMachineAPIForm,
     DeleteManufacturerAPIForm,
+    DeletePlatformAPIForm,
     DeleteRemotePowerAPIForm,
     DeleteRemotePowerDeviceAPIForm,
     DeleteSerialConsoleAPIForm,
@@ -29,6 +30,7 @@ from orthos2.data.models import (
     Machine,
     Manufacturer,
     NetworkInterface,
+    Platform,
     RemotePowerDevice,
 )
 from orthos2.utils.misc import format_cli_form_errors
@@ -42,8 +44,16 @@ class Delete:
     REMOTEPOWER = "remotepower"
     REMOTEPOWERDEVICE = "remotepowerdevice"
     MANUFACTURER = "manufacturer"
+    PLATFORM = "platform"
 
-    as_list = [MACHINE, SERIALCONSOLE, REMOTEPOWER, REMOTEPOWERDEVICE, MANUFACTURER]
+    as_list = [
+        MACHINE,
+        SERIALCONSOLE,
+        REMOTEPOWER,
+        REMOTEPOWERDEVICE,
+        MANUFACTURER,
+        PLATFORM,
+    ]
 
 
 class DeleteCommand(BaseAPIView):
@@ -68,6 +78,7 @@ Arguments:
                                     (superusers only).
              remotepowerdevice  : Delete a remotepower device (superusers only).
              manufacturer       : Delete a manufacturer (superusers only).
+             platform           : Delete a platform (superusers only).
 
 Example:
     DELETE machine
@@ -135,6 +146,14 @@ Example:
                 ).as_json
 
             return redirect(reverse("api:manufacturer_delete"))
+
+        elif item == Delete.PLATFORM:
+            if sub_arguments:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'platform'!"
+                ).as_json
+
+            return redirect(reverse("api:platform_delete"))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -548,6 +567,85 @@ class DeleteManufacturerCommand(BaseAPIView):
                 )
 
                 result = manufacturer.delete()
+
+                theader = [
+                    {"objects": "Deleted objects"},
+                    {"count": "#"},
+                ]
+
+                response: Dict[str, Any] = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": [],
+                }
+                for key, value in result[1].items():
+                    response["data"].append(  # type: ignore
+                        {"objects": key.replace("data.", ""), "count": value}
+                    )
+                return JsonResponse(response)
+
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
+
+
+class DeletePlatformCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/platform/delete"
+    URL_POST = "/platform/delete"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Deletes a platform from the database."
+    HELP = """Deletes a platform from the database (superusers only).
+
+    Usage:
+        DELETE platform <name>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^platform/delete",
+                DeletePlatformCommand.as_view(),
+                name="platform_delete",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for deleting a platform."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = DeletePlatformAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Delete platform."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = DeletePlatformAPIForm(data)
+
+        if form.is_valid():
+            try:
+                cleaned_data = form.cleaned_data
+
+                platform = Platform.objects.get(name__iexact=cleaned_data["name"])
+
+                result = platform.delete()
 
                 theader = [
                     {"objects": "Deleted objects"},

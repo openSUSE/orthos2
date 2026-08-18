@@ -7,17 +7,19 @@ from orthos2.api.forms import (
     BMCAPIForm,
     DeleteMachineAPIForm,
     DeleteManufacturerAPIForm,
+    DeletePlatformAPIForm,
     DeleteRemotePowerAPIForm,
     DeleteRemotePowerDeviceAPIForm,
     MachineAPIForm,
     ManufacturerAPIForm,
+    PlatformAPIForm,
     RemotePowerAPIForm,
     RemotePowerDeviceAPIForm,
     ReserveMachineAPIForm,
     SerialConsoleAPIForm,
     VirtualMachineAPIForm,
 )
-from orthos2.data.models import Manufacturer, System
+from orthos2.data.models import Manufacturer, Platform, System
 from orthos2.data.models.machine import Machine
 from orthos2.data.models.remotepowertype import RemotePowerType
 
@@ -269,6 +271,54 @@ class DeleteManufacturerAPIFormTests(TestCase):
         """Test that the manufacturer deletion API form rejects an unknown name"""
         # Arrange & Act
         form = DeleteManufacturerAPIForm({"name": "Nonexistent"})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class PlatformAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the platform creation API form"""
+        # Arrange
+        manufacturer = Manufacturer.objects.create(name="AcmeCorp")
+
+        # Act
+        form = PlatformAPIForm(
+            {"name": "AcmePlatform", "manufacturer": manufacturer.pk}
+        )
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_requires_name(self) -> None:
+        """Test that the platform creation API form requires a name"""
+        # Arrange
+        manufacturer = Manufacturer.objects.create(name="AcmeCorp")
+
+        # Act
+        form = PlatformAPIForm({"name": "", "manufacturer": manufacturer.pk})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DeletePlatformAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the platform deletion API form"""
+        # Arrange
+        manufacturer = Manufacturer.objects.create(name="AcmeCorp")
+        Platform.objects.create(name="AcmePlatform", manufacturer=manufacturer)
+
+        # Act
+        form = DeletePlatformAPIForm({"name": "AcmePlatform"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_rejects_nonexistent_platform(self) -> None:
+        """Test that the platform deletion API form rejects an unknown name"""
+        # Arrange & Act
+        form = DeletePlatformAPIForm({"name": "Nonexistent"})
 
         # Assert
         self.assertFalse(form.is_valid())

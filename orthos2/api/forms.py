@@ -21,6 +21,7 @@ from orthos2.data.models import (
     Machine,
     Manufacturer,
     NetworkInterface,
+    Platform,
     RemotePower,
     RemotePowerDevice,
     RemotePowerType,
@@ -644,6 +645,36 @@ class DeleteManufacturerAPIForm(forms.Form, BaseAPIForm):
     name = forms.CharField(
         label="Name",
         max_length=100,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "name",
+        ]
+
+
+class PlatformAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = Platform
+        fields = ["name", "manufacturer", "is_cartridge", "description"]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return ["name", "manufacturer", "is_cartridge", "description"]
+
+
+class DeletePlatformAPIForm(forms.Form, BaseAPIForm):
+    def clean_name(self) -> str:
+        """Check whether a platform with `name` exists."""
+        name = self.cleaned_data["name"]
+        if Platform.objects.filter(name__iexact=name).count() == 0:
+            self.add_error("name", "No platform with this name")
+        return name
+
+    name = forms.CharField(
+        label="Name",
+        max_length=200,
     )
 
     def get_order(self) -> List[str]:

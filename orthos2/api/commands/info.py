@@ -20,8 +20,9 @@ from orthos2.api.serializers.misc import (
     ErrorMessage,
     Serializer,
 )
+from orthos2.api.serializers.platform import PlatformSerializer
 from orthos2.api.serializers.remotepowerdevice import RemotePowerDeviceSerializer
-from orthos2.data.models import Machine, Manufacturer, RemotePowerDevice
+from orthos2.data.models import Machine, Manufacturer, Platform, RemotePowerDevice
 from orthos2.data.models.enclosure import Enclosure
 
 
@@ -322,6 +323,84 @@ Example:
             return ErrorMessage(
                 "Manufacturer '{}' does not exist!".format(name)
             ).as_json
+        except Exception:
+            return ErrorMessage(getException()).as_json
+
+        return JsonResponse(response)
+
+
+class PlatformInfoCommand(BaseAPIView):
+
+    METHOD = "GET"
+    URL = "/platform"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Retrieve information about a platform."
+    HELP = """Command to get information about a platform.
+
+Usage:
+    INFO platform <name>
+
+Arguments:
+    name - Name of the platform. If omitted, all platforms are listed.
+
+Example:
+    INFO platform PowerEdge
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(r"^platform$", PlatformInfoCommand.as_view(), name="platform"),
+        ]
+
+    @staticmethod
+    def get_tabcompletion() -> List[str]:
+        return list(Platform.objects.all().values_list("name", flat=True))
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return platform information."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        name = request.GET.get("name", "")
+
+        try:
+            if name:
+                platform = Platform.objects.get(name__iexact=name)
+                serialized_platform = PlatformSerializer(platform)
+                response = {
+                    "header": {
+                        "type": "INFO",
+                        "order": [
+                            "id",
+                            "name",
+                            "manufacturer",
+                            "is_cartridge",
+                            "description",
+                        ],
+                    },
+                    "data": serialized_platform.data_info,
+                }
+            else:
+                platforms = Platform.objects.all()
+                serialized_platforms = PlatformSerializer(platforms, many=True)
+                theader = [
+                    {"id": "ID"},
+                    {"name": "Name"},
+                    {"manufacturer": "Manufacturer"},
+                ]
+                response = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": serialized_platforms.data,
+                }
+        except Platform.DoesNotExist:
+            return ErrorMessage("Platform '{}' does not exist!".format(name)).as_json
         except Exception:
             return ErrorMessage(getException()).as_json
 

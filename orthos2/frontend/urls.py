@@ -324,4 +324,22 @@ urlpatterns = [
         views.DeleteManufacturer.as_view(),
         name="delete_manufacturer",
     ),
+    # Platforms
+    path("platforms", views.PlatformListView.as_view(), name="platforms"),
+    re_path(
+        r"^platform/(?P<id>[0-9]+)/detail$",
+        views.platform_detail,
+        name="platform_detail",
+    ),
+    path("platforms/new", views.NewPlatform.as_view(), name="new_platform"),
+    path(
+        "platforms/edit/<int:pk>/",
+        views.PlatformDetailedEdit.as_view(),
+        name="edit_platform",
+    ),
+    path(
+        "platforms/delete/<int:pk>/",
+        views.DeletePlatform.as_view(),
+        name="delete_platform",
+    ),
 ]

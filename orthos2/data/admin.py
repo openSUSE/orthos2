@@ -23,7 +23,6 @@ from orthos2.data.models import (
     Enclosure,
     Machine,
     NetworkInterface,
-    Platform,
     RemotePower,
     RemotePowerDevice,
     RemotePowerType,
@@ -990,17 +989,6 @@ class ServerConfigAdmin(admin.ModelAdmin):  # type: ignore
 
 
 admin.site.register(ServerConfig, ServerConfigAdmin)  # type: ignore
-
-
-class PlatformAdmin(admin.ModelAdmin):  # type: ignore
-    list_display = ("name", "get_manufacturer", "get_enclosure_count", "is_cartridge")
-    list_per_page = 50
-    search_fields = ("name",)
-    show_full_result_count = True
-    list_max_show_all = 1000
-
-
-admin.site.register(Platform, PlatformAdmin)  # type: ignore
 
 
 class ArchitectureAdmin(admin.ModelAdmin):  # type: ignore
