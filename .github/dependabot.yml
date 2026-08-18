@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      dependabot:
+        applies-to: version-updates
+        patterns:
+          - "github/codeql-action/*"
+    commit-message:
+      prefix: "build"
+      prefix-development: "chore"
+      include: "scope"
