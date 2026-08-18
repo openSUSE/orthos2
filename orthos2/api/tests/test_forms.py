@@ -13,6 +13,7 @@ from orthos2.api.forms import (
     DeleteRemotePowerAPIForm,
     DeleteRemotePowerDeviceAPIForm,
     DeleteSerialConsoleTypeAPIForm,
+    DeleteServerConfigAPIForm,
     DeleteSystemAPIForm,
     DeviceTypeAPIForm,
     MachineAPIForm,
@@ -22,6 +23,7 @@ from orthos2.api.forms import (
     ReserveMachineAPIForm,
     SerialConsoleAPIForm,
     SerialConsoleTypeAPIForm,
+    ServerConfigAPIForm,
     SystemAPIForm,
     VirtualMachineAPIForm,
 )
@@ -30,6 +32,7 @@ from orthos2.data.models import (
     DeviceType,
     Manufacturer,
     SerialConsoleType,
+    ServerConfig,
     System,
 )
 from orthos2.data.models.machine import Machine
@@ -448,6 +451,45 @@ class DeleteArchitectureAPIFormTests(TestCase):
         """Test that the architecture deletion API form rejects an unknown name"""
         # Arrange & Act
         form = DeleteArchitectureAPIForm({"name": "Nonexistent"})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class ServerConfigAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the server configuration creation API form"""
+        # Arrange & Act
+        form = ServerConfigAPIForm({"key": "acme.test.key", "value": "acme-value"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_requires_key(self) -> None:
+        """Test that the server configuration creation API form requires a key"""
+        # Arrange & Act
+        form = ServerConfigAPIForm({"key": "", "value": "acme-value"})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DeleteServerConfigAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the server configuration deletion API form"""
+        # Arrange
+        ServerConfig.objects.create(key="acme.test.key", value="acme-value")
+
+        # Act
+        form = DeleteServerConfigAPIForm({"key": "acme.test.key"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_rejects_nonexistent_key(self) -> None:
+        """Test that the server configuration deletion API form rejects an unknown key"""
+        # Arrange & Act
+        form = DeleteServerConfigAPIForm({"key": "nonexistent.key"})
 
         # Assert
         self.assertFalse(form.is_valid())

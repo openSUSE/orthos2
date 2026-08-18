@@ -24,6 +24,7 @@ from orthos2.api.forms import (
     RemotePowerDeviceAPIForm,
     SerialConsoleAPIForm,
     SerialConsoleTypeAPIForm,
+    ServerConfigAPIForm,
     SystemAPIForm,
     VirtualMachineAPIForm,
 )
@@ -60,6 +61,7 @@ class Add:
     SERIALCONSOLETYPE = "serialconsoletype"
     SYSTEM = "system"
     ARCHITECTURE = "architecture"
+    SERVERCONFIG = "serverconfig"
 
     as_list = [
         MACHINE,
@@ -74,6 +76,7 @@ class Add:
         SERIALCONSOLETYPE,
         SYSTEM,
         ARCHITECTURE,
+        SERVERCONFIG,
     ]
 
 
@@ -109,6 +112,8 @@ class AddCommand(BaseAPIView):
                 system <name>                 : Add a system (superusers only).
                 architecture <name>           : Add an architecture
                                                 (superusers only).
+                serverconfig <key> <value>    : Add a server configuration entry
+                                                (superusers only).
 
     Example:
         ADD machine
@@ -122,6 +127,7 @@ class AddCommand(BaseAPIView):
         ADD serialconsoletype Telnet
         ADD system BareMetal
         ADD architecture x86_64
+        ADD serverconfig foo.bar baz
     """
 
     @staticmethod
@@ -241,6 +247,13 @@ class AddCommand(BaseAPIView):
                     "Invalid number of arguments for 'architecture'!"
                 ).as_json
             return redirect(reverse("api:architecture_add"))
+
+        elif item == Add.SERVERCONFIG:
+            if sub_arguments:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'serverconfig'!"
+                ).as_json
+            return redirect(reverse("api:serverconfig_add"))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -1204,6 +1217,67 @@ class AddArchitectureCommand(BaseAPIView):
 
         data = json.loads(request.body.decode("utf-8"))["form"]
         form = ArchitectureAPIForm(data)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json  # type: ignore
+
+
+class AddServerConfigCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/serverconfig/add"
+    URL_POST = "/serverconfig/add"
+    ARGUMENTS = (["key", "value"],)
+
+    HELP_SHORT = "Adds a server configuration entry to the database."
+    HELP = """Adds a server configuration entry to the database (superusers only).
+
+    Usage:
+        ADD serverconfig <key> <value>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^serverconfig/add",
+                AddServerConfigCommand.as_view(),
+                name="serverconfig_add",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for adding a server configuration entry."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = ServerConfigAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Add server configuration entry."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = ServerConfigAPIForm(data)
 
         if form.is_valid():
             try:

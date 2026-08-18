@@ -419,4 +419,22 @@ urlpatterns = [
         views.DeleteArchitecture.as_view(),
         name="delete_architecture",
     ),
+    # Server Configuration
+    path("serverconfigs", views.ServerConfigListView.as_view(), name="serverconfigs"),
+    re_path(
+        r"^serverconfig/(?P<id>[0-9]+)/detail$",
+        views.serverconfig_detail,
+        name="serverconfig_detail",
+    ),
+    path("serverconfigs/new", views.NewServerConfig.as_view(), name="new_serverconfig"),
+    path(
+        "serverconfigs/edit/<int:pk>/",
+        views.ServerConfigDetailedEdit.as_view(),
+        name="edit_serverconfig",
+    ),
+    path(
+        "serverconfigs/delete/<int:pk>/",
+        views.DeleteServerConfig.as_view(),
+        name="delete_serverconfig",
+    ),
 ]

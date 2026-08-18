@@ -14,6 +14,7 @@ from orthos2.api.commands.add import (
     AddSerialConsoleCommandGet,
     AddSerialConsoleCommandPost,
     AddSerialConsoleTypeCommand,
+    AddServerConfigCommand,
     AddSystemCommand,
     AddVMCommandGet,
     AddVMCommandPost,
@@ -29,6 +30,7 @@ from orthos2.api.commands.delete import (
     DeleteRemotePowerDeviceCommand,
     DeleteSerialConsoleCommand,
     DeleteSerialConsoleTypeCommand,
+    DeleteServerConfigCommand,
     DeleteSystemCommand,
 )
 from orthos2.api.commands.edit import (
@@ -37,6 +39,7 @@ from orthos2.api.commands.edit import (
     EditDeviceTypeCommand,
     EditManufacturerCommand,
     EditSerialConsoleTypeCommand,
+    EditServerConfigCommand,
     EditSystemCommand,
 )
 from orthos2.api.commands.info import (
@@ -113,4 +116,7 @@ __all__ = [
     "AddArchitectureCommand",
     "DeleteArchitectureCommand",
     "EditArchitectureCommand",
+    "AddServerConfigCommand",
+    "DeleteServerConfigCommand",
+    "EditServerConfigCommand",
 ]

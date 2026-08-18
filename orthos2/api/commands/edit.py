@@ -22,6 +22,7 @@ from orthos2.api.forms import (
     DeviceTypeAPIForm,
     ManufacturerAPIForm,
     SerialConsoleTypeAPIForm,
+    ServerConfigAPIForm,
     SystemAPIForm,
 )
 from orthos2.api.serializers.misc import (
@@ -35,6 +36,7 @@ from orthos2.data.models import (
     DeviceType,
     Manufacturer,
     SerialConsoleType,
+    ServerConfig,
     System,
 )
 from orthos2.utils.misc import format_cli_form_errors
@@ -48,6 +50,7 @@ class Edit:
     SERIALCONSOLETYPE = "serialconsoletype"
     SYSTEM = "system"
     ARCHITECTURE = "architecture"
+    SERVERCONFIG = "serverconfig"
 
     as_list = [
         MANUFACTURER,
@@ -55,6 +58,7 @@ class Edit:
         SERIALCONSOLETYPE,
         SYSTEM,
         ARCHITECTURE,
+        SERVERCONFIG,
     ]
 
 
@@ -79,6 +83,8 @@ class EditCommand(BaseAPIView):
                                          (superusers only).
                 system <id>            : Edit a system (superusers only).
                 architecture <id>      : Edit an architecture (superusers only).
+                serverconfig <id>      : Edit a server configuration entry
+                                         (superusers only).
 
     Example:
         EDIT manufacturer 1
@@ -86,6 +92,7 @@ class EditCommand(BaseAPIView):
         EDIT serialconsoletype 1
         EDIT system 1
         EDIT architecture 1
+        EDIT serverconfig 1
     """
 
     @staticmethod
@@ -159,6 +166,16 @@ class EditCommand(BaseAPIView):
 
             return redirect(
                 "{}?id={}".format(reverse("api:architecture_edit"), sub_arguments[0])
+            )
+
+        elif item == Edit.SERVERCONFIG:
+            if len(sub_arguments) != 1:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'serverconfig'!"
+                ).as_json
+
+            return redirect(
+                "{}?id={}".format(reverse("api:serverconfig_edit"), sub_arguments[0])
             )
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
@@ -585,6 +602,96 @@ class EditArchitectureCommand(BaseAPIView):
             ).as_json
 
         form = ArchitectureAPIForm(data, instance=architecture)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage(
+            "\n{}".format(format_cli_form_errors(form))  # type: ignore[arg-type]
+        ).as_json
+
+
+class EditServerConfigCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/serverconfig/edit"
+    URL_POST = "/serverconfig/edit"
+    ARGUMENTS = (["id", "key", "value"],)
+
+    HELP_SHORT = "Edits a server configuration entry in the database."
+    HELP = """Edits a server configuration entry in the database (superusers only).
+
+    Usage:
+        EDIT serverconfig <id>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^serverconfig/edit",
+                EditServerConfigCommand.as_view(),
+                name="serverconfig_edit",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for editing a server configuration entry."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        serverconfig_id = request.GET.get("id")
+        try:
+            serverconfig = ServerConfig.objects.get(pk=serverconfig_id)  # type: ignore[misc]
+        except (ServerConfig.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Server configuration entry with id '{}' does not exist!".format(
+                    serverconfig_id
+                )
+            ).as_json
+
+        form = ServerConfigAPIForm(instance=serverconfig)
+        fields = form.as_dict()
+        fields["id"] = {
+            "type": "INTEGER",
+            "prompt": "ID",
+            "initial": serverconfig.pk,
+            "required": True,
+        }
+
+        input = InputSerializer(fields, self.URL_POST, ["id"] + form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Edit server configuration entry."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        serverconfig_id = data.get("id")
+        try:
+            serverconfig = ServerConfig.objects.get(pk=serverconfig_id)
+        except (ServerConfig.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Server configuration entry with id '{}' does not exist!".format(
+                    serverconfig_id
+                )
+            ).as_json
+
+        form = ServerConfigAPIForm(data, instance=serverconfig)
 
         if form.is_valid():
             try:

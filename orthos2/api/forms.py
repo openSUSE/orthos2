@@ -27,6 +27,7 @@ from orthos2.data.models import (
     RemotePowerType,
     SerialConsole,
     SerialConsoleType,
+    ServerConfig,
     System,
 )
 from orthos2.data.models.domain import validate_domain_ending
@@ -771,4 +772,34 @@ class DeleteArchitectureAPIForm(forms.Form, BaseAPIForm):
         """Return input order."""
         return [
             "name",
+        ]
+
+
+class ServerConfigAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = ServerConfig
+        fields = ["key", "value"]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return ["key", "value"]
+
+
+class DeleteServerConfigAPIForm(forms.Form, BaseAPIForm):
+    def clean_key(self) -> str:
+        """Check whether a server configuration entry with `key` exists."""
+        key = self.cleaned_data["key"]
+        if ServerConfig.objects.filter(key__iexact=key).count() == 0:
+            self.add_error("key", "No server configuration entry with this key")
+        return key
+
+    key = forms.CharField(
+        label="Key",
+        max_length=100,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "key",
         ]

@@ -23,6 +23,7 @@ from orthos2.api.forms import (
     DeleteRemotePowerDeviceAPIForm,
     DeleteSerialConsoleAPIForm,
     DeleteSerialConsoleTypeAPIForm,
+    DeleteServerConfigAPIForm,
     DeleteSystemAPIForm,
 )
 from orthos2.api.serializers.misc import (
@@ -38,6 +39,7 @@ from orthos2.data.models import (
     NetworkInterface,
     RemotePowerDevice,
     SerialConsoleType,
+    ServerConfig,
     System,
 )
 from orthos2.utils.misc import format_cli_form_errors
@@ -55,6 +57,7 @@ class Delete:
     SERIALCONSOLETYPE = "serialconsoletype"
     SYSTEM = "system"
     ARCHITECTURE = "architecture"
+    SERVERCONFIG = "serverconfig"
 
     as_list = [
         MACHINE,
@@ -66,6 +69,7 @@ class Delete:
         SERIALCONSOLETYPE,
         SYSTEM,
         ARCHITECTURE,
+        SERVERCONFIG,
     ]
 
 
@@ -95,6 +99,8 @@ Arguments:
              serialconsoletype  : Delete a serial console type (superusers only).
              system             : Delete a system (superusers only).
              architecture       : Delete an architecture (superusers only).
+             serverconfig       : Delete a server configuration entry
+                                    (superusers only).
 
 Example:
     DELETE machine
@@ -192,6 +198,14 @@ Example:
                 ).as_json
 
             return redirect(reverse("api:architecture_delete"))
+
+        elif item == Delete.SERVERCONFIG:
+            if sub_arguments:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'serverconfig'!"
+                ).as_json
+
+            return redirect(reverse("api:serverconfig_delete"))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -943,6 +957,85 @@ class DeleteArchitectureCommand(BaseAPIView):
 
             except ValidationError as e:
                 return ErrorMessage(str(e.message)).as_json
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
+
+
+class DeleteServerConfigCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/serverconfig/delete"
+    URL_POST = "/serverconfig/delete"
+    ARGUMENTS = (["key"],)
+
+    HELP_SHORT = "Deletes a server configuration entry from the database."
+    HELP = """Deletes a server configuration entry from the database (superusers only).
+
+    Usage:
+        DELETE serverconfig <key>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^serverconfig/delete",
+                DeleteServerConfigCommand.as_view(),
+                name="serverconfig_delete",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for deleting a server configuration entry."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = DeleteServerConfigAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Delete server configuration entry."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = DeleteServerConfigAPIForm(data)
+
+        if form.is_valid():
+            try:
+                cleaned_data = form.cleaned_data
+
+                serverconfig = ServerConfig.objects.get(key__iexact=cleaned_data["key"])
+
+                result = serverconfig.delete()
+
+                theader = [
+                    {"objects": "Deleted objects"},
+                    {"count": "#"},
+                ]
+
+                response: Dict[str, Any] = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": [],
+                }
+                for key, value in result[1].items():
+                    response["data"].append(  # type: ignore
+                        {"objects": key.replace("data.", ""), "count": value}
+                    )
+                return JsonResponse(response)
+
             except Exception as e:
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json

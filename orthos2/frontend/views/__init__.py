@@ -111,6 +111,13 @@ from .serialconsoletype import (
     SerialConsoleTypeListView,
     serialconsoletype_detail,
 )
+from .serverconfig import (
+    DeleteServerConfig,
+    NewServerConfig,
+    ServerConfigDetailedEdit,
+    ServerConfigListView,
+    serverconfig_detail,
+)
 from .statistics import statistics
 from .system import (
     DeleteSystem,
@@ -227,4 +234,9 @@ __all__ = [
     "ArchitectureDetailedEdit",
     "DeleteArchitecture",
     "architecture_detail",
+    "ServerConfigListView",
+    "NewServerConfig",
+    "ServerConfigDetailedEdit",
+    "DeleteServerConfig",
+    "serverconfig_detail",
 ]

@@ -4,14 +4,10 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin import ModelAdmin
-from django.contrib.admin.templatetags.admin_list import _boolean_icon  # type: ignore
 from django.core.exceptions import ValidationError
 from django.db.models import Q, QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
-from django.shortcuts import redirect  # type: ignore
 from django.template.response import TemplateResponse
-from django.urls import URLPattern, re_path, reverse  # type: ignore
-from django.utils.html import format_html
 
 from orthos2.api.forms import RemotePowerDeviceAPIForm
 from orthos2.data.models import (
@@ -27,7 +23,6 @@ from orthos2.data.models import (
     RemotePowerDevice,
     RemotePowerType,
     SerialConsole,
-    ServerConfig,
     System,
 )
 from orthos2.utils.misc import get_domain, is_unique_mac_address, suggest_host_ip
@@ -919,75 +914,6 @@ class RemotePowerDeviceAdmin(admin.ModelAdmin):  # type: ignore
 
 
 admin.site.register(RemotePowerDevice, RemotePowerDeviceAdmin)  # type: ignore
-
-
-class ServerConfigAdmin(admin.ModelAdmin):  # type: ignore
-    list_display = ("key", "augmented_value")
-    search_fields = ("key", "value")
-
-    # https://medium.com/@hakibenita/how-to-add-custom-action-buttons-to-django-admin-8d266f5b0d41
-    def get_urls(self) -> List[URLPattern]:
-        """Add custom URLs to server configuration admin view."""
-        urls = super(ServerConfigAdmin, self).get_urls()
-        custom_urls = [
-            re_path(
-                r"^(?P<serverconfig_id>.+)/switch/$",
-                self.admin_site.admin_view(self.process_boolean_switch),  # type: ignore
-                name="boolean_switch",
-            ),
-        ]
-        return custom_urls + urls
-
-    def process_boolean_switch(
-        self, request: HttpRequest, serverconfig_id: int, *args: Any, **kwargs: Any
-    ) -> HttpResponseRedirect:
-        """Enable/disable value."""
-        action = request.GET.get("action", None)
-
-        if (action is not None) and (action in {"enable", "disable"}):
-            try:
-                configuration = ServerConfig.objects.get(pk=serverconfig_id)
-
-                if action == "enable":
-                    configuration.value = "bool:true"
-                elif action == "disable":
-                    configuration.value = "bool:false"
-
-                configuration.save()
-                messages.info(
-                    request, "Successfully {}d: '{}'.".format(action, configuration.key)
-                )
-
-            except Exception as e:
-                messages.error(request, str(e), extra_tags="error")
-
-        return redirect("admin:data_serverconfig_changelist")
-
-    def augmented_value(self, obj: "ServerConfig"):
-        """Add buttons for boolean values ('bool:true' or 'bool:false')."""
-        if obj.value.lower() == "bool:false":
-            button = _boolean_icon(False)  # type: ignore
-            button += (  # type: ignore
-                ' <span class="help">(<a href="{}?action=enable">Enable</a>)</span>'
-            )
-            return format_html(
-                button,  # type: ignore
-                reverse("admin:boolean_switch", args=[obj.pk]),
-            )
-        elif obj.value.lower() == "bool:true":
-            button = _boolean_icon(True)  # type: ignore
-            button += (  # type: ignore
-                ' <span class="help">(<a href="{}?action=disable">Disable</a>)</span>'
-            )
-            return format_html(
-                button,  # type: ignore
-                reverse("admin:boolean_switch", args=[obj.pk]),
-            )
-
-        return obj.value
-
-
-admin.site.register(ServerConfig, ServerConfigAdmin)  # type: ignore
 
 
 class RemotePowerTypeAdmin(admin.ModelAdmin):  # type: ignore
