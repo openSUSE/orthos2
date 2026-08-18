@@ -11,7 +11,6 @@ body {
 }
 
 .navbar-nav > li {
-  float: left;
   position: relative;
 }
 
