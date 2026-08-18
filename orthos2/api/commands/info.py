@@ -22,7 +22,14 @@ from orthos2.api.serializers.misc import (
     Serializer,
 )
 from orthos2.api.serializers.remotepowerdevice import RemotePowerDeviceSerializer
-from orthos2.data.models import DeviceType, Machine, Manufacturer, RemotePowerDevice
+from orthos2.api.serializers.serialconsoletype import SerialConsoleTypeSerializer
+from orthos2.data.models import (
+    DeviceType,
+    Machine,
+    Manufacturer,
+    RemotePowerDevice,
+    SerialConsoleType,
+)
 from orthos2.data.models.enclosure import Enclosure
 
 
@@ -403,6 +410,85 @@ Example:
                 }
         except DeviceType.DoesNotExist:
             return ErrorMessage("Device Type '{}' does not exist!".format(name)).as_json
+        except Exception:
+            return ErrorMessage(getException()).as_json
+
+        return JsonResponse(response)
+
+
+class SerialConsoleTypeInfoCommand(BaseAPIView):
+
+    METHOD = "GET"
+    URL = "/serialconsoletype"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Retrieve information about a serial console type."
+    HELP = """Command to get information about a serial console type.
+
+Usage:
+    INFO serialconsoletype <name>
+
+Arguments:
+    name - Name of the serial console type. If omitted, all serial console
+           types are listed.
+
+Example:
+    INFO serialconsoletype Telnet
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^serialconsoletype$",
+                SerialConsoleTypeInfoCommand.as_view(),
+                name="serialconsoletype",
+            ),
+        ]
+
+    @staticmethod
+    def get_tabcompletion() -> List[str]:
+        return list(SerialConsoleType.objects.all().values_list("name", flat=True))
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return serial console type information."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        name = request.GET.get("name", "")
+
+        try:
+            if name:
+                serialconsoletype = SerialConsoleType.objects.get(name__iexact=name)
+                serialized_serialconsoletype = SerialConsoleTypeSerializer(
+                    serialconsoletype
+                )
+                response = {
+                    "header": {
+                        "type": "INFO",
+                        "order": ["id", "name", "command", "comment", "has_ipmi_sol"],
+                    },
+                    "data": serialized_serialconsoletype.data_info,
+                }
+            else:
+                serialconsoletypes = SerialConsoleType.objects.all()
+                serialized_serialconsoletypes = SerialConsoleTypeSerializer(
+                    serialconsoletypes, many=True
+                )
+                theader = [{"id": "ID"}, {"name": "Name"}, {"command": "Command"}]
+                response = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": serialized_serialconsoletypes.data,
+                }
+        except SerialConsoleType.DoesNotExist:
+            return ErrorMessage(
+                "Serial console type '{}' does not exist!".format(name)
+            ).as_json
         except Exception:
             return ErrorMessage(getException()).as_json
 

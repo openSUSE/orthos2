@@ -97,6 +97,13 @@ from .remotepowerdevice import (
     remotepowerdevice_fetch_netbox,
     remotepowerdevice_netboxcomparison,
 )
+from .serialconsoletype import (
+    DeleteSerialConsoleType,
+    NewSerialConsoleType,
+    SerialConsoleTypeDetailedEdit,
+    SerialConsoleTypeListView,
+    serialconsoletype_detail,
+)
 from .statistics import statistics
 from .user import users_create, users_password_restore, users_preferences
 from .users import UserListView, user_detail, user_reservations, user_reserve_machine
@@ -191,4 +198,9 @@ __all__ = [
     "devicetype_fetch_netbox",
     "devicetype_netboxcomparison",
     "devicetype_compare_netbox",
+    "SerialConsoleTypeListView",
+    "NewSerialConsoleType",
+    "SerialConsoleTypeDetailedEdit",
+    "DeleteSerialConsoleType",
+    "serialconsoletype_detail",
 ]

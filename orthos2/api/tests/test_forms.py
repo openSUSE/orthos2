@@ -10,6 +10,7 @@ from orthos2.api.forms import (
     DeleteManufacturerAPIForm,
     DeleteRemotePowerAPIForm,
     DeleteRemotePowerDeviceAPIForm,
+    DeleteSerialConsoleTypeAPIForm,
     DeviceTypeAPIForm,
     MachineAPIForm,
     ManufacturerAPIForm,
@@ -17,9 +18,10 @@ from orthos2.api.forms import (
     RemotePowerDeviceAPIForm,
     ReserveMachineAPIForm,
     SerialConsoleAPIForm,
+    SerialConsoleTypeAPIForm,
     VirtualMachineAPIForm,
 )
-from orthos2.data.models import DeviceType, Manufacturer, System
+from orthos2.data.models import DeviceType, Manufacturer, SerialConsoleType, System
 from orthos2.data.models.machine import Machine
 from orthos2.data.models.remotepowertype import RemotePowerType
 
@@ -319,6 +321,45 @@ class DeleteDeviceTypeAPIFormTests(TestCase):
         """Test that the device type deletion API form rejects an unknown name"""
         # Arrange & Act
         form = DeleteDeviceTypeAPIForm({"name": "Nonexistent"})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class SerialConsoleTypeAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the serial console type creation API form"""
+        # Arrange & Act
+        form = SerialConsoleTypeAPIForm({"name": "AcmeConsole"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_requires_name(self) -> None:
+        """Test that the serial console type creation API form requires a name"""
+        # Arrange & Act
+        form = SerialConsoleTypeAPIForm({"name": ""})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DeleteSerialConsoleTypeAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the serial console type deletion API form"""
+        # Arrange
+        SerialConsoleType.objects.create(name="AcmeConsole")
+
+        # Act
+        form = DeleteSerialConsoleTypeAPIForm({"name": "AcmeConsole"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_rejects_nonexistent_serialconsoletype(self) -> None:
+        """Test that the serial console type deletion API form rejects an unknown name"""
+        # Arrange & Act
+        form = DeleteSerialConsoleTypeAPIForm({"name": "Nonexistent"})
 
         # Assert
         self.assertFalse(form.is_valid())

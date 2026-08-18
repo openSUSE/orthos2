@@ -357,4 +357,30 @@ urlpatterns = [
         views.DeleteDeviceType.as_view(),
         name="delete_devicetype",
     ),
+    # Serial Console Types
+    path(
+        "serialconsoletypes",
+        views.SerialConsoleTypeListView.as_view(),
+        name="serialconsoletypes",
+    ),
+    re_path(
+        r"^serialconsoletype/(?P<id>[0-9]+)/detail$",
+        views.serialconsoletype_detail,
+        name="serialconsoletype_detail",
+    ),
+    path(
+        "serialconsoletypes/new",
+        views.NewSerialConsoleType.as_view(),
+        name="new_serialconsoletype",
+    ),
+    path(
+        "serialconsoletypes/edit/<int:pk>/",
+        views.SerialConsoleTypeDetailedEdit.as_view(),
+        name="edit_serialconsoletype",
+    ),
+    path(
+        "serialconsoletypes/delete/<int:pk>/",
+        views.DeleteSerialConsoleType.as_view(),
+        name="delete_serialconsoletype",
+    ),
 ]

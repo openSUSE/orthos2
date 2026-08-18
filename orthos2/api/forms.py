@@ -682,3 +682,33 @@ class DeleteDeviceTypeAPIForm(forms.Form, BaseAPIForm):
         return [
             "name",
         ]
+
+
+class SerialConsoleTypeAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = SerialConsoleType
+        fields = ["name", "command", "comment", "has_ipmi_sol"]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return ["name", "command", "comment", "has_ipmi_sol"]
+
+
+class DeleteSerialConsoleTypeAPIForm(forms.Form, BaseAPIForm):
+    def clean_name(self) -> str:
+        """Check whether a serial console type with `name` exists."""
+        name = self.cleaned_data["name"]
+        if SerialConsoleType.objects.filter(name__iexact=name).count() == 0:
+            self.add_error("name", "No serial console type with this name")
+        return name
+
+    name = forms.CharField(
+        label="Name",
+        max_length=100,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "name",
+        ]

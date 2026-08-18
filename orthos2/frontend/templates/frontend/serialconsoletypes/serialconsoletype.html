@@ -1,0 +1,42 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+{% load tags %}
+{% load filters %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="row">
+      <main class="col-12">
+        <ul class="nav nav-tabs gray">
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'serialconsoletype_detail' %}"
+              href="{% url 'frontend:serialconsoletype_detail' serialconsoletype.pk %}"
+              >Overview</a
+            >
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          {% block tabcontent %}
+          {% endblock %}
+        </div>
+        <span style="font-size: 0.7em; font-family: Monospace;"
+          >API:
+          <a
+            href="{% url 'api:serialconsoletype' %}?name={{ serialconsoletype.name }}"
+            >{% url 'api:serialconsoletype' %}?name={{ serialconsoletype.name }}</a
+          >
+          | Edit:
+          <a href="{% url 'frontend:edit_serialconsoletype' serialconsoletype.id %}"
+            >{% url 'frontend:edit_serialconsoletype' serialconsoletype.id %}</a
+          ></span
+        >
+      </main>
+    </div>
+  </div>
+{% endblock %}

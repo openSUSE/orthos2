@@ -27,7 +27,6 @@ from orthos2.data.models import (
     RemotePowerDevice,
     RemotePowerType,
     SerialConsole,
-    SerialConsoleType,
     ServerConfig,
     System,
 )
@@ -1012,13 +1011,6 @@ class ArchitectureAdmin(admin.ModelAdmin):  # type: ignore
 
 
 admin.site.register(Architecture, ArchitectureAdmin)  # type: ignore
-
-
-class SerialConsoleTypeAdmin(admin.ModelAdmin):  # type: ignore
-    list_display = ("name", "command")
-
-
-admin.site.register(SerialConsoleType, SerialConsoleTypeAdmin)  # type: ignore
 
 
 class SystemAdmin(admin.ModelAdmin):  # type: ignore

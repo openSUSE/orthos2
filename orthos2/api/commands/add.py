@@ -22,6 +22,7 @@ from orthos2.api.forms import (
     RemotePowerAPIForm,
     RemotePowerDeviceAPIForm,
     SerialConsoleAPIForm,
+    SerialConsoleTypeAPIForm,
     VirtualMachineAPIForm,
 )
 from orthos2.api.serializers.misc import (
@@ -54,6 +55,7 @@ class Add:
     REMOTEPOWERDEVICE = "remotepowerdevice"
     MANUFACTURER = "manufacturer"
     DEVICETYPE = "devicetype"
+    SERIALCONSOLETYPE = "serialconsoletype"
 
     as_list = [
         MACHINE,
@@ -65,6 +67,7 @@ class Add:
         REMOTEPOWERDEVICE,
         MANUFACTURER,
         DEVICETYPE,
+        SERIALCONSOLETYPE,
     ]
 
 
@@ -95,6 +98,8 @@ class AddCommand(BaseAPIView):
                 bmc <fqdn>                    : Add a bmc to a machine.
                 manufacturer <name>           : Add a manufacturer (superusers only).
                 devicetype <name>             : Add a device type (superusers only).
+                serialconsoletype <name>      : Add a serial console type
+                                                (superusers only).
 
     Example:
         ADD machine
@@ -105,6 +110,7 @@ class AddCommand(BaseAPIView):
         ADD bmc foo.domain.tld
         ADD manufacturer Dell
         ADD devicetype PowerEdge
+        ADD serialconsoletype Telnet
     """
 
     @staticmethod
@@ -205,6 +211,13 @@ class AddCommand(BaseAPIView):
                     "Invalid number of arguments for 'devicetype'!"
                 ).as_json
             return redirect(reverse("api:devicetype_add"))
+
+        elif item == Add.SERIALCONSOLETYPE:
+            if sub_arguments:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'serialconsoletype'!"
+                ).as_json
+            return redirect(reverse("api:serialconsoletype_add"))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -985,6 +998,67 @@ class AddDeviceTypeCommand(BaseAPIView):
 
         data = json.loads(request.body.decode("utf-8"))["form"]
         form = DeviceTypeAPIForm(data)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json  # type: ignore
+
+
+class AddSerialConsoleTypeCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/serialconsoletype/add"
+    URL_POST = "/serialconsoletype/add"
+    ARGUMENTS = (["name", "command", "comment", "has_ipmi_sol"],)
+
+    HELP_SHORT = "Adds a serial console type to the database."
+    HELP = """Adds a serial console type to the database (superusers only).
+
+    Usage:
+        ADD serialconsoletype <name>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^serialconsoletype/add",
+                AddSerialConsoleTypeCommand.as_view(),
+                name="serialconsoletype_add",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for adding a serial console type."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = SerialConsoleTypeAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Add serial console type."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = SerialConsoleTypeAPIForm(data)
 
         if form.is_valid():
             try:

@@ -17,14 +17,18 @@ from django.urls import URLPattern, re_path, reverse  # type: ignore
 from rest_framework.request import Request
 
 from orthos2.api.commands.base import BaseAPIView
-from orthos2.api.forms import DeviceTypeAPIForm, ManufacturerAPIForm
+from orthos2.api.forms import (
+    DeviceTypeAPIForm,
+    ManufacturerAPIForm,
+    SerialConsoleTypeAPIForm,
+)
 from orthos2.api.serializers.misc import (
     AuthRequiredSerializer,
     ErrorMessage,
     InputSerializer,
     Message,
 )
-from orthos2.data.models import DeviceType, Manufacturer
+from orthos2.data.models import DeviceType, Manufacturer, SerialConsoleType
 from orthos2.utils.misc import format_cli_form_errors
 
 logger = logging.getLogger("api")
@@ -33,8 +37,9 @@ logger = logging.getLogger("api")
 class Edit:
     MANUFACTURER = "manufacturer"
     DEVICETYPE = "devicetype"
+    SERIALCONSOLETYPE = "serialconsoletype"
 
-    as_list = [MANUFACTURER, DEVICETYPE]
+    as_list = [MANUFACTURER, DEVICETYPE, SERIALCONSOLETYPE]
 
 
 class EditCommand(BaseAPIView):
@@ -52,12 +57,15 @@ class EditCommand(BaseAPIView):
     Arguments:
         item - Specify the item which should be edited. Items are:
 
-                manufacturer <id> : Edit a manufacturer (superusers only).
-                devicetype <id>   : Edit a device type (superusers only).
+                manufacturer <id>      : Edit a manufacturer (superusers only).
+                devicetype <id>        : Edit a device type (superusers only).
+                serialconsoletype <id> : Edit a serial console type
+                                         (superusers only).
 
     Example:
         EDIT manufacturer 1
         EDIT devicetype 1
+        EDIT serialconsoletype 1
     """
 
     @staticmethod
@@ -101,6 +109,18 @@ class EditCommand(BaseAPIView):
 
             return redirect(
                 "{}?id={}".format(reverse("api:devicetype_edit"), sub_arguments[0])
+            )
+
+        elif item == Edit.SERIALCONSOLETYPE:
+            if len(sub_arguments) != 1:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'serialconsoletype'!"
+                ).as_json
+
+            return redirect(
+                "{}?id={}".format(
+                    reverse("api:serialconsoletype_edit"), sub_arguments[0]
+                )
             )
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
@@ -263,6 +283,96 @@ class EditDeviceTypeCommand(BaseAPIView):
             ).as_json
 
         form = DeviceTypeAPIForm(data, instance=devicetype)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage(
+            "\n{}".format(format_cli_form_errors(form))  # type: ignore[arg-type]
+        ).as_json
+
+
+class EditSerialConsoleTypeCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/serialconsoletype/edit"
+    URL_POST = "/serialconsoletype/edit"
+    ARGUMENTS = (["id", "name", "command", "comment", "has_ipmi_sol"],)
+
+    HELP_SHORT = "Edits a serial console type in the database."
+    HELP = """Edits a serial console type in the database (superusers only).
+
+    Usage:
+        EDIT serialconsoletype <id>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^serialconsoletype/edit",
+                EditSerialConsoleTypeCommand.as_view(),
+                name="serialconsoletype_edit",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for editing a serial console type."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        serialconsoletype_id = request.GET.get("id")
+        try:
+            serialconsoletype = SerialConsoleType.objects.get(pk=serialconsoletype_id)  # type: ignore[misc]
+        except (SerialConsoleType.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Serial console type with id '{}' does not exist!".format(
+                    serialconsoletype_id
+                )
+            ).as_json
+
+        form = SerialConsoleTypeAPIForm(instance=serialconsoletype)
+        fields = form.as_dict()
+        fields["id"] = {
+            "type": "INTEGER",
+            "prompt": "ID",
+            "initial": serialconsoletype.pk,
+            "required": True,
+        }
+
+        input = InputSerializer(fields, self.URL_POST, ["id"] + form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Edit serial console type."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        serialconsoletype_id = data.get("id")
+        try:
+            serialconsoletype = SerialConsoleType.objects.get(pk=serialconsoletype_id)
+        except (SerialConsoleType.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Serial console type with id '{}' does not exist!".format(
+                    serialconsoletype_id
+                )
+            ).as_json
+
+        form = SerialConsoleTypeAPIForm(data, instance=serialconsoletype)
 
         if form.is_valid():
             try:
