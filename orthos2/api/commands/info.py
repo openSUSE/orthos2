@@ -24,6 +24,7 @@ from orthos2.api.serializers.misc import (
 )
 from orthos2.api.serializers.remotepowerdevice import RemotePowerDeviceSerializer
 from orthos2.api.serializers.serialconsoletype import SerialConsoleTypeSerializer
+from orthos2.api.serializers.singletask import SingleTaskSerializer
 from orthos2.api.serializers.system import SystemSerializer
 from orthos2.data.models import (
     Architecture,
@@ -35,6 +36,7 @@ from orthos2.data.models import (
     System,
 )
 from orthos2.data.models.enclosure import Enclosure
+from orthos2.taskmanager.models import SingleTask
 
 
 class InfoCommand(BaseAPIView):
@@ -650,6 +652,83 @@ Example:
         except Architecture.DoesNotExist:
             return ErrorMessage(
                 "Architecture '{}' does not exist!".format(name)
+            ).as_json
+        except Exception:
+            return ErrorMessage(getException()).as_json
+
+        return JsonResponse(response)
+
+
+class SingleTaskInfoCommand(BaseAPIView):
+
+    METHOD = "GET"
+    URL = "/singletask"
+    ARGUMENTS = (["id"],)
+
+    HELP_SHORT = "Retrieve information about a single task."
+    HELP = """Command to get information about a single task.
+
+Usage:
+    INFO singletask <id>
+
+Arguments:
+    id - ID of the single task. If omitted, all single tasks are listed.
+
+Example:
+    INFO singletask 1
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^singletask$", SingleTaskInfoCommand.as_view(), name="singletask"
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return single task information."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        singletask_id = request.GET.get("id")
+
+        try:
+            if singletask_id:
+                singletask = SingleTask.objects.get(pk=singletask_id)
+                serialized_singletask = SingleTaskSerializer(singletask)
+                response = {
+                    "header": {
+                        "type": "INFO",
+                        "order": [
+                            "id",
+                            "name",
+                            "module",
+                            "arguments",
+                            "priority",
+                            "hash",
+                            "running",
+                            "created",
+                        ],
+                    },
+                    "data": serialized_singletask.data_info,
+                }
+            else:
+                singletasks = SingleTask.objects.all()
+                serialized_singletasks = SingleTaskSerializer(singletasks, many=True)
+                theader = [{"id": "ID"}, {"name": "Name"}, {"running": "Running"}]
+                response = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": serialized_singletasks.data,
+                }
+        except (SingleTask.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Single task with id '{}' does not exist!".format(singletask_id)
             ).as_json
         except Exception:
             return ErrorMessage(getException()).as_json

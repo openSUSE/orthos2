@@ -25,6 +25,7 @@ from orthos2.api.forms import (
     SerialConsoleAPIForm,
     SerialConsoleTypeAPIForm,
     ServerConfigAPIForm,
+    SingleTaskAPIForm,
     SystemAPIForm,
     VirtualMachineAPIForm,
 )
@@ -1278,6 +1279,67 @@ class AddServerConfigCommand(BaseAPIView):
 
         data = json.loads(request.body.decode("utf-8"))["form"]
         form = ServerConfigAPIForm(data)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json  # type: ignore
+
+
+class AddSingleTaskCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/singletask/add"
+    URL_POST = "/singletask/add"
+    ARGUMENTS = (["name", "module", "arguments", "priority"],)
+
+    HELP_SHORT = "Adds a single task to the database."
+    HELP = """Adds a single task to the database (superusers only).
+
+    Usage:
+        ADD singletask <name>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^singletask/add",
+                AddSingleTaskCommand.as_view(),
+                name="singletask_add",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for adding a single task."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = SingleTaskAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Add single task."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = SingleTaskAPIForm(data)
 
         if form.is_valid():
             try:

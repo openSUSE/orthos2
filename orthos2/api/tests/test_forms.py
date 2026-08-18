@@ -14,6 +14,7 @@ from orthos2.api.forms import (
     DeleteRemotePowerDeviceAPIForm,
     DeleteSerialConsoleTypeAPIForm,
     DeleteServerConfigAPIForm,
+    DeleteSingleTaskAPIForm,
     DeleteSystemAPIForm,
     DeviceTypeAPIForm,
     MachineAPIForm,
@@ -24,6 +25,7 @@ from orthos2.api.forms import (
     SerialConsoleAPIForm,
     SerialConsoleTypeAPIForm,
     ServerConfigAPIForm,
+    SingleTaskAPIForm,
     SystemAPIForm,
     VirtualMachineAPIForm,
 )
@@ -37,6 +39,7 @@ from orthos2.data.models import (
 )
 from orthos2.data.models.machine import Machine
 from orthos2.data.models.remotepowertype import RemotePowerType
+from orthos2.taskmanager.models import SingleTask
 
 
 class ReserveMachineAPIFormTests(TestCase):
@@ -490,6 +493,54 @@ class DeleteServerConfigAPIFormTests(TestCase):
         """Test that the server configuration deletion API form rejects an unknown key"""
         # Arrange & Act
         form = DeleteServerConfigAPIForm({"key": "nonexistent.key"})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class SingleTaskAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the single task creation API form"""
+        # Arrange & Act
+        form = SingleTaskAPIForm(
+            {
+                "name": "AcmeTask",
+                "module": "acme.module",
+                "arguments": "[[], {}]",
+                "priority": 10,
+            }
+        )
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_requires_name(self) -> None:
+        """Test that the single task creation API form requires a name"""
+        # Arrange & Act
+        form = SingleTaskAPIForm({"name": "", "module": "acme.module"})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DeleteSingleTaskAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the single task deletion API form"""
+        # Arrange
+        singletask = SingleTask.objects.create(
+            name="AcmeTask", module="acme.module", arguments="[[], {}]"
+        )
+
+        # Act
+        form = DeleteSingleTaskAPIForm({"id": singletask.pk})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_rejects_nonexistent_singletask(self) -> None:
+        """Test that the single task deletion API form rejects an unknown id"""
+        # Arrange & Act
+        form = DeleteSingleTaskAPIForm({"id": 99999})
 
         # Assert
         self.assertFalse(form.is_valid())

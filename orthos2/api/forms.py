@@ -34,6 +34,7 @@ from orthos2.data.models.domain import validate_domain_ending
 from orthos2.data.validators import validate_mac_address
 from orthos2.frontend.forms.reservemachine import ReserveMachineForm
 from orthos2.frontend.forms.virtualmachine import VirtualMachineForm
+from orthos2.taskmanager.models import SingleTask
 from orthos2.utils.misc import get_domain, is_unique_mac_address
 
 logger = logging.getLogger("api")
@@ -802,4 +803,31 @@ class DeleteServerConfigAPIForm(forms.Form, BaseAPIForm):
         """Return input order."""
         return [
             "key",
+        ]
+
+
+class SingleTaskAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = SingleTask
+        fields = ["name", "module", "arguments", "priority"]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return ["name", "module", "arguments", "priority"]
+
+
+class DeleteSingleTaskAPIForm(forms.Form, BaseAPIForm):
+    def clean_id(self) -> int:
+        """Check whether a single task with `id` exists."""
+        task_id = self.cleaned_data["id"]
+        if not SingleTask.objects.filter(pk=task_id).exists():
+            self.add_error("id", "No single task with this id")
+        return task_id
+
+    id = forms.IntegerField(label="ID")
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "id",
         ]

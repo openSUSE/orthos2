@@ -1,0 +1,56 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+{% load tags %}
+
+{% block navbar %}
+{% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+
+{% include 'frontend/singletasks/singletasks_filterbar.html' %}
+{% include 'frontend/snippet.paginator.html' %}
+
+<div class="container-fluid">
+  {% if page_obj %}
+    <table class="table table-striped table-bordered table-fixed">
+      <thead class="thead-default">
+        <tr style="border: 1px solid #ddd;">
+          <th>Name {% order_list request 'name' %}</th>
+          <th>Module</th>
+          <th>Running</th>
+          <th width="80px">&nbsp;</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for singletask in page_obj %}
+          <tr>
+            <td>
+              <a
+                href="{% url 'frontend:singletask_detail' singletask.pk %}"
+                class="text-muted"
+                >{{ singletask.name }}</a
+              >
+            </td>
+            <td>{{ singletask.module }}</td>
+            <td>{{ singletask.running }}</td>
+            <td>
+              <a
+                href="{% url 'frontend:delete_singletask' singletask.pk %}"
+                class="btn btn-danger btn-sm"
+              >
+                Delete
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% include 'frontend/snippet.paginator.html' %}
+  {% else %}
+    <div class="alert alert-info">No single tasks found!</div>
+  {% endif %}
+</div>
+{% endblock %}

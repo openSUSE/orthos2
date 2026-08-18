@@ -1,0 +1,53 @@
+{% extends 'frontend/singletasks/singletask.html' %}
+
+{% block tabcontent %}
+  <div class="row">
+    <div class="col-10">
+      <div class="container-fluid">
+        <div class="title">
+          <h5>{{ singletask.name }}</h5>
+        </div>
+
+        <table class="table table-striped table-bordered small">
+          <tbody class="thead-default">
+            <tr>
+              <td class="th fw-bold" width="150px">Name</td>
+              <td>{{ singletask.name }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Module</td>
+              <td>{{ singletask.module }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Arguments</td>
+              <td>{{ singletask.arguments }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Priority</td>
+              <td>{{ singletask.get_priority_display }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Running</td>
+              <td>{{ singletask.running }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Hash</td>
+              <td>{{ singletask.hash }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Created</td>
+              <td>{{ singletask.created }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Updated</td>
+              <td>{{ singletask.updated }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-2">
+      {% include 'frontend/singletasks/detail/actions.html' %}
+    </div>
+  </div>
+{% endblock %}

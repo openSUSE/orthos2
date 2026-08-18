@@ -1,0 +1,22 @@
+{% load filters %}
+<div class="title">
+  <h5>Actions</h5>
+</div>
+
+<div class="btn-group-vertical d-flex">
+  <a
+    class="btn btn-warning btn-sm"
+    href="{% url 'frontend:edit_singletask' singletask.pk %}"
+    role="button"
+    >Edit Single Task</a
+  >
+</div>
+<br />
+<div class="btn-group-vertical d-flex">
+  <a
+    class="btn btn-danger btn-sm"
+    href="{% url 'frontend:delete_singletask' singletask.pk %}"
+    role="button"
+    >Delete Single Task</a
+  >
+</div>

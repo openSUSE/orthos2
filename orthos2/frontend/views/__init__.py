@@ -118,6 +118,13 @@ from .serverconfig import (
     ServerConfigListView,
     serverconfig_detail,
 )
+from .singletask import (
+    DeleteSingleTask,
+    NewSingleTask,
+    SingleTaskDetailedEdit,
+    SingleTaskListView,
+    singletask_detail,
+)
 from .statistics import statistics
 from .system import (
     DeleteSystem,
@@ -229,6 +236,11 @@ __all__ = [
     "SystemDetailedEdit",
     "DeleteSystem",
     "system_detail",
+    "SingleTaskListView",
+    "NewSingleTask",
+    "SingleTaskDetailedEdit",
+    "DeleteSingleTask",
+    "singletask_detail",
     "ArchitectureListView",
     "NewArchitecture",
     "ArchitectureDetailedEdit",

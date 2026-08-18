@@ -401,6 +401,24 @@ urlpatterns = [
         views.DeleteSystem.as_view(),
         name="delete_system",
     ),
+    # Single Tasks
+    path("singletasks", views.SingleTaskListView.as_view(), name="singletasks"),
+    re_path(
+        r"^singletask/(?P<id>[0-9]+)/detail$",
+        views.singletask_detail,
+        name="singletask_detail",
+    ),
+    path("singletasks/new", views.NewSingleTask.as_view(), name="new_singletask"),
+    path(
+        "singletasks/edit/<int:pk>/",
+        views.SingleTaskDetailedEdit.as_view(),
+        name="edit_singletask",
+    ),
+    path(
+        "singletasks/delete/<int:pk>/",
+        views.DeleteSingleTask.as_view(),
+        name="delete_singletask",
+    ),
     # Architectures
     path("architectures", views.ArchitectureListView.as_view(), name="architectures"),
     re_path(
