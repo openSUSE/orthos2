@@ -117,15 +117,17 @@ def status_ipv4(machine: Machine) -> SafeString:
     text = dict(Machine.StatusIP.CHOICE).get(machine.status_ipv4)
 
     if machine.status_ipv4 == Machine.StatusIP.UNREACHABLE:
-        result = '<td class="red" title="{}"><i class="fa fa-close"></i></td>'
+        result = '<td class="red" title="{}"><i class="fa-solid fa-xmark"></i></td>'
     elif machine.status_ipv4 == Machine.StatusIP.REACHABLE:
-        result = '<td class="green" title="{}">(<i class="fa fa-check"></i>)</td>'
+        result = '<td class="green" title="{}">(<i class="fa-solid fa-check"></i>)</td>'
     elif machine.status_ipv4 == Machine.StatusIP.CONFIRMED:
-        result = '<td class="green" title="{}"><i class="fa fa-check"></i></td>'
+        result = '<td class="green" title="{}"><i class="fa-solid fa-check"></i></td>'
     elif machine.status_ipv6 == Machine.StatusIP.AF_DISABLED:
-        result = '<td class="green" title="{}"><i class="fa fa-minus-circle"></i></td>'
+        result = (
+            '<td class="green" title="{}"><i class="fa-solid fa-circle-minus"></i></td>'
+        )
     else:
-        result = '<td class="yellow" title="{}"><i class="fa fa-exclamation-triangle"></i></td>'
+        result = '<td class="yellow" title="{}"><i class="fa-solid fa-triangle-exclamation"></i></td>'
 
     return mark_safe(result.format(text))
 
@@ -140,15 +142,17 @@ def status_ipv6(machine: Machine) -> SafeString:
     text = dict(Machine.StatusIP.CHOICE).get(machine.status_ipv6)
 
     if machine.status_ipv6 == Machine.StatusIP.UNREACHABLE:
-        result = '<td class="red" title="{}"><i class="fa fa-close"></i></td>'
+        result = '<td class="red" title="{}"><i class="fa-solid fa-xmark"></i></td>'
     elif machine.status_ipv6 == Machine.StatusIP.REACHABLE:
-        result = '<td class="green" title="{}">(<i class="fa fa-check"></i>)</td>'
+        result = '<td class="green" title="{}">(<i class="fa-solid fa-check"></i>)</td>'
     elif machine.status_ipv6 == Machine.StatusIP.CONFIRMED:
-        result = '<td class="green" title="{}"><i class="fa fa-check"></i></td>'
+        result = '<td class="green" title="{}"><i class="fa-solid fa-check"></i></td>'
     elif machine.status_ipv6 == Machine.StatusIP.AF_DISABLED:
-        result = '<td class="green" title="{}"><i class="fa fa-minus-circle"></i></td>'
+        result = (
+            '<td class="green" title="{}"><i class="fa-solid fa-circle-minus"></i></td>'
+        )
     else:
-        result = '<td class="yellow" title="{}"><i class="fa fa-exclamation-triangle"></i></td>'
+        result = '<td class="yellow" title="{}"><i class="fa-solid fa-triangle-exclamation"></i></td>'
 
     return mark_safe(result.format(text))
 
@@ -161,13 +165,9 @@ def status_ssh(machine: Machine) -> SafeString:
         )
 
     if machine.status_ssh:
-        result = (
-            '<td class="green" title="SSH port open"><i class="fa fa-check"></i></td>'
-        )
+        result = '<td class="green" title="SSH port open"><i class="fa-solid fa-check"></i></td>'
     else:
-        result = (
-            '<td class="red" title="SSH port not open"><i class="fa fa-close"></i></td>'
-        )
+        result = '<td class="red" title="SSH port not open"><i class="fa-solid fa-xmark"></i></td>'
 
     return mark_safe(result)
 
@@ -180,9 +180,9 @@ def status_login(machine: Machine) -> SafeString:
         )
 
     if machine.status_login:
-        result = '<td class="green" title="Login was successful"><i class="fa fa-check"></i></td>'
+        result = '<td class="green" title="Login was successful"><i class="fa-solid fa-check"></i></td>'
     else:
-        result = '<td class="red" title="Login was not successful"><i class="fa fa-close"></i></td>'
+        result = '<td class="red" title="Login was not successful"><i class="fa-solid fa-xmark"></i></td>'
 
     return mark_safe(result)
 
@@ -190,8 +190,8 @@ def status_login(machine: Machine) -> SafeString:
 @register.simple_tag
 def order_list(request: HttpRequest, field: str) -> SafeString:
     """Return ordering arrows."""
-    up = '<i class="fa fa-caret-down"></i>'
-    down = '<i class="fa fa-caret-up"></i>'
+    up = '<i class="fa-solid fa-caret-down"></i>'
+    down = '<i class="fa-solid fa-caret-up"></i>'
 
     params = request.GET.copy()
     params["order_by"] = field
@@ -217,7 +217,7 @@ def vm_record(request: HttpRequest, vm: Machine) -> SafeString:
         button += ' onClick="delete_vm({})">'.format(vm.pk)
     else:
         button = '<a class="btn btn-sm btn-danger disabled" href="#">'
-    button += '<i class="fa fa-trash-o"></i> Delete</a>'
+    button += '<i class="fa-solid fa-trash"></i> Delete</a>'
 
     result = "<tr>"
     result += '  <td><a href="{url}">{vm.fqdn}</a></td>'

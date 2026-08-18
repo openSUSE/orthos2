@@ -4,15 +4,15 @@
   <h5>General Information
     {% if machine.bmc %}
     <span class="spacer-05" />
-    <i class="fa fa-heartbeat" title="Machine has BMC: {{ machine.bmc.fqdn}}"></i>
+    <i class="fa-solid fa-heart-pulse" title="Machine has BMC: {{ machine.bmc.fqdn}}"></i>
     {% endif %}
     {% if machine.serialconsole %}
     <span class="spacer-05" />
-    <i class="fa fa-desktop" title="Machine has serial console ({{ machine.serialconsole.type.name }})"></i>
+    <i class="fa-solid fa-desktop" title="Machine has serial console ({{ machine.serialconsole.type.name }})"></i>
     {% endif %}
     {% if machine.remotepower %}
     <span class="spacer-05" />
-    <i class="fa fa-plug" title="Machine has remote power ({{ machine.remotepower.name }})"></i>
+    <i class="fa-solid fa-plug" title="Machine has remote power ({{ machine.remotepower.name }})"></i>
     {% endif %}
   </h5>
 </div>

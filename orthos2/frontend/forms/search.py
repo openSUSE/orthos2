@@ -125,31 +125,31 @@ class SearchForm(forms.Form):
     enclosure__platform__vendor = forms.ChoiceField(
         required=False,
         choices=get_vendors,
-        widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
 
     enclosure__platform = forms.ChoiceField(
         required=False,
         choices=get_platforms,
-        widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
 
     platform = forms.ChoiceField(
         required=False,
         choices=get_cartridge_platforms,
-        widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
 
     system = forms.ChoiceField(
         required=False,
         choices=get_systems,
-        widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
 
     architecture = forms.ChoiceField(
         required=False,
         choices=get_architectures,
-        widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
 
     fqdn = forms.CharField(
@@ -180,7 +180,7 @@ class SearchForm(forms.Form):
         choices=(("__gt", ">"), ("__exact", "="), ("__lt", "<")),
         required=False,
         initial="__gt",
-        widget=forms.RadioSelect(attrs={"autocomplete": "off"}),
+        widget=forms.RadioSelect(attrs={"autocomplete": "off", "class": "btn-check"}),
     )
 
     cpu_cores = forms.DecimalField(
@@ -192,7 +192,7 @@ class SearchForm(forms.Form):
         choices=(("__gt", ">"), ("__exact", "="), ("__lt", "<")),
         required=False,
         initial="__gt",
-        widget=forms.RadioSelect(attrs={"autocomplete": "off"}),
+        widget=forms.RadioSelect(attrs={"autocomplete": "off", "class": "btn-check"}),
     )
 
     hwinfo = forms.CharField(
@@ -227,13 +227,13 @@ class SearchForm(forms.Form):
     installations__distribution = forms.ChoiceField(
         required=False,
         choices=(get_distributions),
-        widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
 
     reserved_by = forms.ChoiceField(
         required=False,
         choices=(("__False", "yes"), ("__True", "no"), ("", "not relevant")),
-        widget=forms.RadioSelect(attrs={"autocomplete": "off"}),
+        widget=forms.RadioSelect(attrs={"autocomplete": "off", "class": "btn-check"}),
     )
     reserved_by__operator = forms.CharField(
         initial="__isnull", widget=forms.HiddenInput()
@@ -242,13 +242,13 @@ class SearchForm(forms.Form):
     ipmi = forms.ChoiceField(
         required=False,
         choices=(("__True", "yes"), ("__False", "no"), ("", "not relevant")),
-        widget=forms.RadioSelect(attrs={"autocomplete": "off"}),
+        widget=forms.RadioSelect(attrs={"autocomplete": "off", "class": "btn-check"}),
     )
 
     efi = forms.ChoiceField(
         required=False,
         choices=(("__True", "yes"), ("__False", "no"), ("", "not relevant")),
-        widget=forms.RadioSelect(attrs={"autocomplete": "off"}),
+        widget=forms.RadioSelect(attrs={"autocomplete": "off", "class": "btn-check"}),
     )
 
     networkinterfaces__mac_address = forms.CharField(
@@ -261,7 +261,7 @@ class SearchForm(forms.Form):
     serialconsole = forms.ChoiceField(
         required=False,
         choices=(("__False", "yes"), ("__True", "no"), ("", "not relevant")),
-        widget=forms.RadioSelect(attrs={"autocomplete": "off"}),
+        widget=forms.RadioSelect(attrs={"autocomplete": "off", "class": "btn-check"}),
     )
     serialconsole__operator = forms.CharField(
         initial="__isnull", widget=forms.HiddenInput()
@@ -270,7 +270,7 @@ class SearchForm(forms.Form):
     remotepower = forms.ChoiceField(
         required=False,
         choices=(("__False", "yes"), ("__True", "no"), ("", "not relevant")),
-        widget=forms.RadioSelect(attrs={"autocomplete": "off"}),
+        widget=forms.RadioSelect(attrs={"autocomplete": "off", "class": "btn-check"}),
     )
     remotepower__operator = forms.CharField(
         initial="__isnull", widget=forms.HiddenInput()
@@ -281,7 +281,7 @@ class SearchForm(forms.Form):
         choices=Machine._meta.get_field("status_ipv4").get_choices(  # type: ignore
             blank_choice=[("", "Not relevant")]
         ),
-        widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
 
     status_ipv6 = forms.ChoiceField(
@@ -289,17 +289,17 @@ class SearchForm(forms.Form):
         choices=Machine._meta.get_field("status_ipv6").get_choices(  # type: ignore
             blank_choice=[("", "Not relevant")]
         ),
-        widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
 
     status_ssh = forms.ChoiceField(
         required=False,
         choices=(("__True", "yes"), ("__False", "no"), ("", "not relevant")),
-        widget=forms.RadioSelect(attrs={"autocomplete": "off"}),
+        widget=forms.RadioSelect(attrs={"autocomplete": "off", "class": "btn-check"}),
     )
 
     status_login = forms.ChoiceField(
         required=False,
         choices=(("__True", "yes"), ("__False", "no"), ("", "not relevant")),
-        widget=forms.RadioSelect(attrs={"autocomplete": "off"}),
+        widget=forms.RadioSelect(attrs={"autocomplete": "off", "class": "btn-check"}),
     )

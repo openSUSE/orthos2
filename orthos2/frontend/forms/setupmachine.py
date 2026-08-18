@@ -118,14 +118,14 @@ class SetupMachineForm(forms.Form):
     distro = forms.ChoiceField(
         required=True,
         choices=[],
-        widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        widget=forms.Select(attrs={"class": "form-select"}),
         label="Distribution",
     )
 
     profile = forms.ChoiceField(
         required=True,
         choices=[],
-        widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        widget=forms.Select(attrs={"class": "form-select"}),
         label="Profile",
     )
 

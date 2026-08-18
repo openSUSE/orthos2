@@ -41,16 +41,16 @@
               <td>{{ user.email }}</td>
               <td>
                 {% if user.is_staff %}
-                  <span class="badge badge-success">Yes</span>
+                  <span class="badge bg-success">Yes</span>
                 {% else %}
-                  <span class="badge badge-secondary">No</span>
+                  <span class="badge bg-secondary">No</span>
                 {% endif %}
               </td>
               <td>
                 {% if user.is_superuser %}
-                  <span class="badge badge-danger">Yes</span>
+                  <span class="badge bg-danger">Yes</span>
                 {% else %}
-                  <span class="badge badge-secondary">No</span>
+                  <span class="badge bg-secondary">No</span>
                 {% endif %}
               </td>
             </tr>

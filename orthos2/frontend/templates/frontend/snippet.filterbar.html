@@ -24,7 +24,7 @@
       <span class="spacer-05"/>
 
       <div class="dropdown" style="display: inline-block;">
-        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           {% get_current_domain_filter request %}
         </button>
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -39,7 +39,7 @@
       <span class="spacer-05"/>
 
       <div class="dropdown" style="display: inline-block;">
-        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           {% get_current_machinegroup_filter request %}
         </button>
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -59,7 +59,7 @@
       </div>
 
       {% if perms.data and perms.data.add_machine %}
-      <a class="nav-link ml-auto" href="{% url 'frontend:machine_add' %}">
+      <a class="nav-link ms-auto" href="{% url 'frontend:machine_add' %}">
         <button type="button" class="btn btn-success">+</button>
       </a>
       {% endif %}

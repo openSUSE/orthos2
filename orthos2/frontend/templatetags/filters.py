@@ -46,7 +46,7 @@ def vendor_image(cpu_model: str, size: int = 25) -> SafeString:
     if "power" in cpu_model:
         return mark_safe(img.format(static("frontend/images/ibm.png")))
 
-    return mark_safe('<i class="fa fa-question"></i>')
+    return mark_safe('<i class="fa-solid fa-question"></i>')
 
 
 @register.filter

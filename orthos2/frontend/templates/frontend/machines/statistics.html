@@ -119,7 +119,7 @@
         <div class="title">
           <h5>Network Domains</h5>
         </div>
-        <div>
+        <div style="position: relative; height: 260px;">
           <canvas id="domainChart"></canvas>
         </div>
       </div>
@@ -128,7 +128,7 @@
         <div class="title">
           <h5>Machine Status</h5>{{ data.total }} Machines
         </div>
-        <div>
+        <div style="position: relative; height: 260px;">
           <canvas id="statusChart"></canvas>
         </div>
       </div>
@@ -186,18 +186,16 @@ new Chart(document.getElementById("statusChart"),{
   },
   options: {
     scales: {
-      yAxes: [
-        {
-          display: true,
-          ticks: {
-            beginAtZero: true,
-            max: {{ data.status.max }}
-          }
-        }
-      ],
+      y: {
+        display: true,
+        beginAtZero: true,
+        max: {{ data.status.max }}
+      }
     },
-    legend: {
-      display: false
+    plugins: {
+      legend: {
+        display: false
+      }
     }
   }
 });
@@ -217,7 +215,7 @@ new Chart(document.getElementById("domainChart"),{
       }
     ]
   },
-  options: []
+  options: {}
 });
 </script>
 {% endblock %}

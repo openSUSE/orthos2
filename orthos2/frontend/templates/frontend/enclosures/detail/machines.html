@@ -29,37 +29,37 @@
           <a href="{% url 'frontend:detail' machine.id %}" class="text-muted">{{ machine.fqdn }}</a>
           {% if machine.administrative or machine.system.administrative %}
             <span class="spacer-05"/>
-            <span class="hint"><i class="fa fa-star" title="Adminsitrative Machine"></i></span>
+            <span class="hint"><i class="fa-solid fa-star" title="Adminsitrative Machine"></i></span>
           {% endif %}
           {% if machine.system.virtual %}
             <span class="spacer-05"/>
-            <span class="hint"><i class="fa fa-cloud" title="Virtual Machine"></i></span>
+            <span class="hint"><i class="fa-solid fa-cloud" title="Virtual Machine"></i></span>
           {% endif %}
           {% if machine.is_bmc %}
             <span class="spacer-05"/>
-            <span class="hint"><i class="fa fa-heartbeat" title="BMC"></i></span>
+            <span class="hint"><i class="fa-solid fa-heart-pulse" title="BMC"></i></span>
           {% endif %}
         </th>
         {% if view == 'virtual' %}
         <td>
           {% if machine.vm_dedicated_host %}
-          <a href="{% url 'frontend:virtualization_add' machine.id %}"><i class="fa fa-plus" title="Add virtual machine to {{ machine.hostname }}"/></i></a>
+          <a href="{% url 'frontend:virtualization_add' machine.id %}"><i class="fa-solid fa-plus" title="Add virtual machine to {{ machine.hostname }}"/></i></a>
           {% endif %}
         </td>
         {% endif %}
         <td>
         {% if machine.bmc %}
-          <i class="fa fa-heartbeat" title="Machine has BMC: {{ machine.bmc.fqdn }}"></i>
+          <i class="fa-solid fa-heart-pulse" title="Machine has BMC: {{ machine.bmc.fqdn }}"></i>
         {% endif %}
         </td>
         <td>
         {% if machine.serialconsole %}
-          <i class="fa fa-desktop" title="Machine has serial console ({{ machine.serialconsole.type.name }})"></i>
+          <i class="fa-solid fa-desktop" title="Machine has serial console ({{ machine.serialconsole.type.name }})"></i>
         {% endif %}
         </td>
         <td>
         {% if machine.remotepower %}
-          <i class="fa fa-plug" title="Machine has remote power ({{ machine.remotepower.name }})"></i>
+          <i class="fa-solid fa-plug" title="Machine has remote power ({{ machine.remotepower.name }})"></i>
         {% endif %}
         </td>
         <td>{{ machine.get_active_distribution.distribution|truncatechars:50 }}</td>

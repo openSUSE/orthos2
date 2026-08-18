@@ -6,7 +6,7 @@
 
       <div>
       <div class="dropdown" style="display: inline-block;">
-        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           {% get_current_platform_filter request %}
         </button>
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -23,7 +23,7 @@
       </div>
       </div>
 
-      <a class="nav-link ml-auto" href="{% url 'frontend:new_enclosure' %}">
+      <a class="nav-link ms-auto" href="{% url 'frontend:new_enclosure' %}">
         <button type="button" class="btn btn-success">+</button>
       </a>
 

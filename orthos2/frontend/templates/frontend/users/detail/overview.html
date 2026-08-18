@@ -30,9 +30,9 @@
               <td class="th">Active</td>
               <td>
                 {% if user_obj.is_active %}
-                  <span class="badge badge-success">Yes</span>
+                  <span class="badge bg-success">Yes</span>
                 {% else %}
-                  <span class="badge badge-secondary">No</span>
+                  <span class="badge bg-secondary">No</span>
                 {% endif %}
               </td>
             </tr>
@@ -40,9 +40,9 @@
               <td class="th">Staff</td>
               <td>
                 {% if user_obj.is_staff %}
-                  <span class="badge badge-success">Yes</span>
+                  <span class="badge bg-success">Yes</span>
                 {% else %}
-                  <span class="badge badge-secondary">No</span>
+                  <span class="badge bg-secondary">No</span>
                 {% endif %}
               </td>
             </tr>
@@ -50,9 +50,9 @@
               <td class="th">Superuser</td>
               <td>
                 {% if user_obj.is_superuser %}
-                  <span class="badge badge-danger">Yes</span>
+                  <span class="badge bg-danger">Yes</span>
                 {% else %}
-                  <span class="badge badge-secondary">No</span>
+                  <span class="badge bg-secondary">No</span>
                 {% endif %}
               </td>
             </tr>
@@ -81,7 +81,7 @@
               <td class="th" width="150px">Groups</td>
               <td>
                 {% for group in user_obj.groups.all %}
-                  <span class="badge badge-info">{{ group.name }}</span>
+                  <span class="badge bg-info">{{ group.name }}</span>
                 {% empty %}
                   <span class="text-muted">None</span>
                 {% endfor %}
@@ -91,7 +91,7 @@
               <td class="th">Permissions</td>
               <td>
                 {% for perm in user_obj.user_permissions.all %}
-                  <span class="badge badge-secondary" style="margin: 1px;">{{ perm.codename }}</span>
+                  <span class="badge bg-secondary" style="margin: 1px;">{{ perm.codename }}</span>
                 {% empty %}
                   <span class="text-muted">None</span>
                 {% endfor %}

@@ -72,7 +72,7 @@ class VirtualMachineForm(forms.Form):
     image = forms.ChoiceField(
         required=True,
         choices=[],
-        widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
 
     networkinterfaces = forms.DecimalField(
@@ -92,14 +92,14 @@ class VirtualMachineForm(forms.Form):
     system = forms.ChoiceField(
         required=True,
         choices=[],
-        widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        widget=forms.Select(attrs={"class": "form-select"}),
         initial=0,
     )
 
     architecture = forms.ChoiceField(
         required=True,
         choices=[],
-        widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        widget=forms.Select(attrs={"class": "form-select"}),
         initial=0,
     )
 

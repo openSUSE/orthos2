@@ -86,6 +86,12 @@ body {
   color: rgba(255, 255, 255, 0.5);
 }
 
+.header .small {
+  /* Bootstrap 5's .small is 87.5% (was 80% in Bootstrap 4); restore the
+     original size here so the userbar links keep fitting on one line. */
+  font-size: 80%;
+}
+
 .tab-content th, .tab-content td {
     padding: 5px;
     text-align: left;
