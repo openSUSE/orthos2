@@ -68,6 +68,8 @@ from .enclosures import (
 )
 from .machine import (
     DeleteNetworkInterface,
+    NetworkInterfaceDetailedEdit,
+    NewNetworkInterface,
     cobbler_cleanup,
     compare_netbox,
     cpu,
@@ -185,6 +187,8 @@ __all__ = [
     "cpu",
     "networkinterfaces",
     "DeleteNetworkInterface",
+    "NewNetworkInterface",
+    "NetworkInterfaceDetailedEdit",
     "installations",
     "usb",
     "scsi",

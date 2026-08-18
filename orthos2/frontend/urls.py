@@ -116,6 +116,16 @@ urlpatterns = [
         views.DeleteNetworkInterface.as_view(),
         name="delete_networkinterface",
     ),
+    path(
+        "machine/<int:machine_id>/networkinterfaces/new",
+        views.NewNetworkInterface.as_view(),
+        name="new_networkinterface",
+    ),
+    path(
+        "networkinterface/edit/<int:pk>/",
+        views.NetworkInterfaceDetailedEdit.as_view(),
+        name="edit_networkinterface",
+    ),
     re_path(r"^machine/(?P<id>[0-9]+)/pci$", views.pci, name="pci"),
     re_path(
         r"^machine/(?P<id>[0-9]+)/installations$",

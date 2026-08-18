@@ -1,0 +1,88 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="mb-3">
+      <form
+        class="pt-3"
+        method="post"
+        {% if action == 'new' %}
+          action="{% url 'frontend:new_networkinterface' machine.pk %}"
+        {% elif action == 'edit' %}
+          action="{% url 'frontend:edit_networkinterface' object.id %}"
+        {% endif %}
+      >
+        {% csrf_token %}
+
+        {{ form.primary.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.primary.id_for_label }}">
+              {{ form.primary.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.primary }}
+            <small class="form-text text-muted">
+              {{ form.primary.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.mac_address.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.mac_address.id_for_label }}">
+              {{ form.mac_address.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.mac_address }}
+            <small class="form-text text-muted">
+              {{ form.mac_address.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.ip_address_v4.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.ip_address_v4.id_for_label }}">
+              {{ form.ip_address_v4.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.ip_address_v4 }}
+            <small class="form-text text-muted">
+              {{ form.ip_address_v4.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.ip_address_v6.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.ip_address_v6.id_for_label }}">
+              {{ form.ip_address_v6.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.ip_address_v6 }}
+            <small class="form-text text-muted">
+              {{ form.ip_address_v6.help_text }}
+            </small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm w-100">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

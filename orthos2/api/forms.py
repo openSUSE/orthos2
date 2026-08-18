@@ -1068,3 +1068,13 @@ class DeleteDomainAPIForm(forms.Form, BaseAPIForm):
         return [
             "name",
         ]
+
+
+class NetworkInterfaceAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = NetworkInterface
+        fields = ["primary", "mac_address", "ip_address_v4", "ip_address_v6"]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return ["primary", "mac_address", "ip_address_v4", "ip_address_v6"]
