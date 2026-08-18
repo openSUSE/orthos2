@@ -19,6 +19,7 @@ from orthos2.api.forms import (
     BMCAPIForm,
     DailyTaskAPIForm,
     DeviceTypeAPIForm,
+    EnclosureAPIForm,
     MachineAPIForm,
     ManufacturerAPIForm,
     RemotePowerAPIForm,
@@ -66,6 +67,7 @@ class Add:
     REMOTEPOWERTYPE = "remotepowertype"
     ARCHITECTURE = "architecture"
     SERVERCONFIG = "serverconfig"
+    ENCLOSURE = "enclosure"
 
     as_list = [
         MACHINE,
@@ -82,6 +84,7 @@ class Add:
         REMOTEPOWERTYPE,
         ARCHITECTURE,
         SERVERCONFIG,
+        ENCLOSURE,
     ]
 
 
@@ -121,6 +124,7 @@ class AddCommand(BaseAPIView):
                                                 (superusers only).
                 serverconfig <key> <value>    : Add a server configuration entry
                                                 (superusers only).
+                enclosure <name>              : Add an enclosure (superusers only).
 
     Example:
         ADD machine
@@ -136,6 +140,7 @@ class AddCommand(BaseAPIView):
         ADD remotepowertype "Dummy BMC"
         ADD architecture x86_64
         ADD serverconfig foo.bar baz
+        ADD enclosure Rack01
     """
 
     @staticmethod
@@ -269,6 +274,13 @@ class AddCommand(BaseAPIView):
                     "Invalid number of arguments for 'serverconfig'!"
                 ).as_json
             return redirect(reverse("api:serverconfig_add"))
+
+        elif item == Add.ENCLOSURE:
+            if sub_arguments:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'enclosure'!"
+                ).as_json
+            return redirect(reverse("api:enclosure_add"))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -1488,6 +1500,67 @@ class AddSingleTaskCommand(BaseAPIView):
 
         data = json.loads(request.body.decode("utf-8"))["form"]
         form = SingleTaskAPIForm(data)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json  # type: ignore
+
+
+class AddEnclosureCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/enclosure/add"
+    URL_POST = "/enclosure/add"
+    ARGUMENTS = (["name", "platform", "netbox_id", "description", "is_virtual"],)
+
+    HELP_SHORT = "Adds an enclosure to the database."
+    HELP = """Adds an enclosure to the database (superusers only).
+
+    Usage:
+        ADD enclosure <name>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^enclosure/add",
+                AddEnclosureCommand.as_view(),
+                name="enclosure_add",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for adding an enclosure."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = EnclosureAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Add enclosure."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = EnclosureAPIForm(data)
 
         if form.is_valid():
             try:

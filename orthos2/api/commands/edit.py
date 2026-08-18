@@ -21,6 +21,7 @@ from orthos2.api.forms import (
     ArchitectureAPIForm,
     DailyTaskAPIForm,
     DeviceTypeAPIForm,
+    EnclosureAPIForm,
     ManufacturerAPIForm,
     RemotePowerTypeAPIForm,
     SerialConsoleTypeAPIForm,
@@ -37,6 +38,7 @@ from orthos2.api.serializers.misc import (
 from orthos2.data.models import (
     Architecture,
     DeviceType,
+    Enclosure,
     Manufacturer,
     RemotePowerType,
     SerialConsoleType,
@@ -57,6 +59,7 @@ class Edit:
     REMOTEPOWERTYPE = "remotepowertype"
     ARCHITECTURE = "architecture"
     SERVERCONFIG = "serverconfig"
+    ENCLOSURE = "enclosure"
 
     as_list = [
         MANUFACTURER,
@@ -66,6 +69,7 @@ class Edit:
         REMOTEPOWERTYPE,
         ARCHITECTURE,
         SERVERCONFIG,
+        ENCLOSURE,
     ]
 
 
@@ -94,6 +98,7 @@ class EditCommand(BaseAPIView):
                 architecture <id>      : Edit an architecture (superusers only).
                 serverconfig <id>      : Edit a server configuration entry
                                          (superusers only).
+                enclosure <id>         : Edit an enclosure (superusers only).
 
     Example:
         EDIT manufacturer 1
@@ -103,6 +108,7 @@ class EditCommand(BaseAPIView):
         EDIT remotepowertype 1
         EDIT architecture 1
         EDIT serverconfig 1
+        EDIT enclosure 1
     """
 
     @staticmethod
@@ -196,6 +202,16 @@ class EditCommand(BaseAPIView):
 
             return redirect(
                 "{}?id={}".format(reverse("api:serverconfig_edit"), sub_arguments[0])
+            )
+
+        elif item == Edit.ENCLOSURE:
+            if len(sub_arguments) != 1:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'enclosure'!"
+                ).as_json
+
+            return redirect(
+                "{}?id={}".format(reverse("api:enclosure_edit"), sub_arguments[0])
             )
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
@@ -987,6 +1003,92 @@ class EditSingleTaskCommand(BaseAPIView):
             ).as_json
 
         form = SingleTaskAPIForm(data, instance=singletask)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage(
+            "\n{}".format(format_cli_form_errors(form))  # type: ignore[arg-type]
+        ).as_json
+
+
+class EditEnclosureCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/enclosure/edit"
+    URL_POST = "/enclosure/edit"
+    ARGUMENTS = (["id", "name", "platform", "netbox_id", "description", "is_virtual"],)
+
+    HELP_SHORT = "Edits an enclosure in the database."
+    HELP = """Edits an enclosure in the database (superusers only).
+
+    Usage:
+        EDIT enclosure <id>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^enclosure/edit",
+                EditEnclosureCommand.as_view(),
+                name="enclosure_edit",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for editing an enclosure."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        enclosure_id = request.GET.get("id")
+        try:
+            enclosure = Enclosure.objects.get(pk=enclosure_id)  # type: ignore[misc]
+        except (Enclosure.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Enclosure with id '{}' does not exist!".format(enclosure_id)
+            ).as_json
+
+        form = EnclosureAPIForm(instance=enclosure)
+        fields = form.as_dict()
+        fields["id"] = {
+            "type": "INTEGER",
+            "prompt": "ID",
+            "initial": enclosure.pk,
+            "required": True,
+        }
+
+        input = InputSerializer(fields, self.URL_POST, ["id"] + form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Edit enclosure."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        enclosure_id = data.get("id")
+        try:
+            enclosure = Enclosure.objects.get(pk=enclosure_id)
+        except (Enclosure.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Enclosure with id '{}' does not exist!".format(enclosure_id)
+            ).as_json
+
+        form = EnclosureAPIForm(data, instance=enclosure)
 
         if form.is_valid():
             try:

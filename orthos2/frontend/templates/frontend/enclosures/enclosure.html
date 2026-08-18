@@ -41,8 +41,8 @@
             >{% url 'api:enclosure' %}?name={{ enclosure.name }}</a
           >
           | Edit:
-          <a href="{% url 'admin:data_enclosure_change' enclosure.id %}"
-            >{% url 'admin:data_enclosure_change' enclosure.id %}</a
+          <a href="{% url 'frontend:edit_enclosure' enclosure.id %}"
+            >{% url 'frontend:edit_enclosure' enclosure.id %}</a
           ></span
         >
       </main>
