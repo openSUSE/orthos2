@@ -93,10 +93,9 @@
             <label>{{ form.uefi_boot.label }}:</label>
           </div>
           <div class="col-8">
-            <label class="switch">
+            <div class="form-check form-switch">
               {{ form.uefi_boot }}
-              <span class="slider"></span>
-            </label>
+            </div>
             <small class="form-text text-muted">{{ form.uefi_boot.help_text }}</small>
           </div>
         </div>
@@ -107,10 +106,9 @@
             <label>{{ form.vnc.label }}:</label>
           </div>
           <div class="col-8">
-            <label class="switch">
+            <div class="form-check form-switch">
               {{ form.vnc }}
-              <span class="slider"></span>
-            </label>
+            </div>
             <small class="form-text text-muted">{{ form.vnc.help_text }}</small>
           </div>
         </div>

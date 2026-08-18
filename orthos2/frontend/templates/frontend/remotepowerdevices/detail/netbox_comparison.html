@@ -3,8 +3,8 @@
 
 {% block tabcontent %}
 <div style="display: table; width: 100%;">
-<div style="display: table-row;" class="float-right">
-  <a class="text-right btn btn-secondary btn-sm" href="{% url 'frontend:remotepowerdevice_netbox_compare' remotepowerdevice.id %}" role="button">Preview and Compare data with NetBox</a>
+<div style="display: table-row;" class="float-end">
+  <a class="text-end btn btn-secondary btn-sm" href="{% url 'frontend:remotepowerdevice_netbox_compare' remotepowerdevice.id %}" role="button">Preview and Compare data with NetBox</a>
 </div>
 </div>
 
@@ -16,7 +16,7 @@
 <p>Data fetched at: {{ remotepowerdevice_run.compare_timestamp }}</p>
 
 <table class="table table-bordered small table-hover">
-  <thead class="thead-default">
+  <thead class="thead-default text-start">
     <th>Property Name</th>
     <th>Orthos</th>
     <th>NetBox</th>

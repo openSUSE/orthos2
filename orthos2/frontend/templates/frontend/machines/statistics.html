@@ -26,25 +26,25 @@
           </thead>
           <tbody class="thead-default">
             <tr>
-              <td class="th">Number of all machines</td>
+              <td class="th fw-bold">Number of all machines</td>
               {% for number in data.matrix.0 %}
               <td>{{ number }}</td>
               {% endfor %}
             </tr>
             <tr>
-              <td class="th">Number of free machines</td>
+              <td class="th fw-bold">Number of free machines</td>
               {% for number in data.matrix.1 %}
               <td>{{ number }}</td>
               {% endfor %}
             </tr>
             <tr>
-              <td class="th">Number of machines where Login works</td>
+              <td class="th fw-bold">Number of machines where Login works</td>
               {% for number in data.matrix.2 %}
               <td>{{ number }}</td>
               {% endfor %}
             </tr>
             <tr>
-              <td class="th">Number of infinite reservations</td>
+              <td class="th fw-bold">Number of infinite reservations</td>
               {% for number in data.matrix.3 %}
               <td>{{ number }}</td>
               {% endfor %}
@@ -119,7 +119,7 @@
         <div class="title">
           <h5>Network Domains</h5>
         </div>
-        <div>
+        <div style="position: relative; height: 260px;">
           <canvas id="domainChart"></canvas>
         </div>
       </div>
@@ -128,7 +128,7 @@
         <div class="title">
           <h5>Machine Status</h5>{{ data.total }} Machines
         </div>
-        <div>
+        <div style="position: relative; height: 260px;">
           <canvas id="statusChart"></canvas>
         </div>
       </div>
@@ -186,18 +186,16 @@ new Chart(document.getElementById("statusChart"),{
   },
   options: {
     scales: {
-      yAxes: [
-        {
-          display: true,
-          ticks: {
-            beginAtZero: true,
-            max: {{ data.status.max }}
-          }
-        }
-      ],
+      y: {
+        display: true,
+        beginAtZero: true,
+        max: {{ data.status.max }}
+      }
     },
-    legend: {
-      display: false
+    plugins: {
+      legend: {
+        display: false
+      }
     }
   }
 });
@@ -217,7 +215,7 @@ new Chart(document.getElementById("domainChart"),{
       }
     ]
   },
-  options: []
+  options: {}
 });
 </script>
 {% endblock %}

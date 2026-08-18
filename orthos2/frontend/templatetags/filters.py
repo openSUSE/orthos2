@@ -46,7 +46,7 @@ def vendor_image(cpu_model: str, size: int = 25) -> SafeString:
     if "power" in cpu_model:
         return mark_safe(img.format(static("frontend/images/ibm.png")))
 
-    return mark_safe('<i class="fa fa-question"></i>')
+    return mark_safe('<i class="fa-solid fa-question"></i>')
 
 
 @register.filter
@@ -59,7 +59,7 @@ def pcihooks(lspci: str) -> SafeString:
     """
     result = re.sub(
         r"([a-fA-F0-9]+:[a-fA-F0-9]+.[a-fA-F0-9]+) (.*)",
-        r'<a name="\1" class="monospace">\1</a> \2',
+        r'<a name="\1" class="font-monospace">\1</a> \2',
         str(escape(lspci)),
     )
     return mark_safe(result)

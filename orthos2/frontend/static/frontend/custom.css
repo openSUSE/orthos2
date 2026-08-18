@@ -2,27 +2,6 @@ body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-.spacer-05 {
-  margin-left: 0.5em;
-}
-
-.spacer-10 {
-  margin-left: 1.0em;
-}
-
-.spacer-15 {
-  margin-left: 1.5em;
-}
-
-.spacer-20 {
-  margin-left: 2.0em;
-}
-
-.navbar-nav > li {
-  float: left;
-  position: relative;
-}
-
 .navbar-nav .active a::after {
   border-bottom: 5px solid #02D35F;
   bottom: -8px;
@@ -32,29 +11,19 @@ body {
   right: 0;
 }
 
-.page-item.active .page-link {
-  z-index: 2;
-  color: #fff;
-  background-color: #5F5F5F;
-  border-color: #5F5F5F;
-}
-
-.page-link:focus, .page-link:hover {
-  color: #5F5F5F;
-  text-decoration: none;
-  background-color: #e9ecef;
-  border-color: #ddd;
-}
-
-.page-link {
-  position: relative;
-  display: block;
-  padding: 0.5rem 0.75rem;
-  margin-left: -1px;
-  line-height: 1.25;
-  color: #5F5F5F;
-  background-color: #fff;
-  border: 1px solid #ddd;
+.pagination {
+  /* Bootstrap 5.3's pagination is variable-driven; override the
+     variables instead of re-declaring every property to get the
+     app's gray theme instead of Bootstrap's default blue. */
+  --bs-pagination-color: #5F5F5F;
+  --bs-pagination-border-color: #ddd;
+  --bs-pagination-hover-color: #5F5F5F;
+  --bs-pagination-hover-bg: #e9ecef;
+  --bs-pagination-hover-border-color: #ddd;
+  --bs-pagination-focus-color: #5F5F5F;
+  --bs-pagination-active-color: #fff;
+  --bs-pagination-active-bg: #5F5F5F;
+  --bs-pagination-active-border-color: #5F5F5F;
 }
 
 .tab-content {
@@ -65,30 +34,14 @@ body {
   padding: 10px;
 }
 
-.nav-tabs {
-  margin-bottom: 0;
-}
-
-.header a:link {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.header a:hover {
-  color: rgba(255, 255, 255, 0.75);
-  text-decoration: none;
-}
-
-.header a:active {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.header a:visited {
-  color: rgba(255, 255, 255, 0.5);
+.header .small {
+  /* Bootstrap 5's .small is 87.5% (was 80% in Bootstrap 4); restore the
+     original size here so the userbar links keep fitting on one line. */
+  font-size: 80%;
 }
 
 .tab-content th, .tab-content td {
     padding: 5px;
-    text-align: left;
 }
 
 table.table-fixed {
@@ -97,27 +50,14 @@ table.table-fixed {
 
 td.red {
     background-color: #ffb3b3;
-    text-align: center;
 }
 
 td.green {
     background-color: #ccffcc;
-    text-align: center;
 }
 
 td.blue {
     background-color: #71D6E0;
-    text-align: center;
-}
-
-td.gray {
-    background-color: #868e96;
-    text-align: center;
-}
-
-td.yellow {
-    background-color: #ffc107;
-    text-align: center;
 }
 
 span.hint {
@@ -137,12 +77,7 @@ span.hint {
   margin-right: 0.5em;
 }
 
-.monospace {
-  font-family: Monospace;
-}
-
 .scrolltablecontainer {
-  overflow-y: auto;
   height: 150px;
   border: 1px solid #ddd;
 }
@@ -173,31 +108,7 @@ span.hint {
 td.th {
   background-color: #e9ecef;
   color: #495057;
-  font-weight: bold;
   border-bottom: 1px solid #ddd;
-}
-
-.leftnav {
-  background: #0D2C40;
-  margin-top: -15px;
-  padding: 10px;
-}
-
-.leftnav a:link {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.leftnav a:hover {
-  color: rgba(255, 255, 255, 0.75);
-  text-decoration: none;
-}
-
-.leftnav a:active {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.leftnav a:visited {
-  color: rgba(255, 255, 255, 0.5);
 }
 
 .gray a:link {
@@ -218,66 +129,11 @@ td.th {
 }
 
 .machine-statusbar {
-  float: right;
   font-size: 12px;
 }
 
 .spinner {
   margin-left: 1em;
-  display: block;
-}
-
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 18px;
-}
-
-/* Hide default HTML checkbox */
-.switch input {display:none;}
-
-/* The slider */
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 10px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-input:checked + .slider {
-  background-color: #2196F3;
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px #2196F3;
-}
-
-input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
-}
-
-.text-small {
-  font-size: 9px;
 }
 
 .text-small {
@@ -293,15 +149,9 @@ ul.errorlist {
   list-style: none;
 }
 
-#logout-form {
-  display: inline;
-}
-
 #logout-form button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  color: rgba(255, 255, 255, 0.5);
-  text-decoration: underline;
+  /* .btn-link covers background/border/cursor/underline natively;
+     only the header's custom link color needs to stay here. */
+  --bs-btn-color: rgba(255, 255, 255, 0.5);
+  --bs-btn-hover-color: rgba(255, 255, 255, 0.75);
 }

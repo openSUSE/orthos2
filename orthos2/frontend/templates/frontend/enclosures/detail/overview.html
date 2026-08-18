@@ -12,11 +12,11 @@
         <table class="table table-striped table-bordered small">
           <tbody class="thead-default">
             <tr>
-              <td class="th" width="150px">Name</td>
+              <td class="th fw-bold" width="150px">Name</td>
               <td>{{ enclosure.name }}</td>
             </tr>
             <tr>
-              <td class="th">Platform</td>
+              <td class="th fw-bold">Platform</td>
               {% if enclosure.platform == None %}
                 <td></td>
               {% else %}
@@ -24,16 +24,16 @@
               {% endif %}
             </tr>
             <tr>
-              <td class="th">Description</td>
+              <td class="th fw-bold">Description</td>
               <td>{{ enclosure.description }}</td>
             </tr>
             {% if enclosure.netbox_id > 0 %}
               <tr>
-                <td class="th">Is VM in NetBox?</td>
+                <td class="th fw-bold">Is VM in NetBox?</td>
                 <td>{{ enclosure.is_virtual }}</td>
               </tr>  
               <tr>
-                <td class="th">NetBox URL</td>
+                <td class="th fw-bold">NetBox URL</td>
                 <td>
                   <a
                     href="{{ NETBOX_URL }}/dcim/devices/{{ enclosure.netbox_id }}/"
@@ -43,7 +43,7 @@
               </tr>
             {% endif %}
             <tr>
-              <td class="th">Location</td>
+              <td class="th fw-bold">Location</td>
               <td>
                 <!-- TODO: Make this look nice when empty or not set -->
                 {{ enclosure.location_site }} &gt; {{ enclosure.location_room }}

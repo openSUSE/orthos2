@@ -57,7 +57,14 @@ class VirtualMachineForm(forms.Form):
 
         return cleaned_data
 
-    uefi_boot = forms.BooleanField(label="Use UEFI boot", required=False, initial=False)
+    uefi_boot = forms.BooleanField(
+        label="Use UEFI boot",
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(
+            attrs={"class": "form-check-input", "role": "switch"}
+        ),
+    )
 
     ram_amount = forms.DecimalField(
         label="Memory (MB)",
@@ -72,7 +79,7 @@ class VirtualMachineForm(forms.Form):
     image = forms.ChoiceField(
         required=True,
         choices=[],
-        widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
 
     networkinterfaces = forms.DecimalField(
@@ -92,14 +99,14 @@ class VirtualMachineForm(forms.Form):
     system = forms.ChoiceField(
         required=True,
         choices=[],
-        widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        widget=forms.Select(attrs={"class": "form-select"}),
         initial=0,
     )
 
     architecture = forms.ChoiceField(
         required=True,
         choices=[],
-        widget=forms.Select(attrs={"class": "custom-select form-control"}),
+        widget=forms.Select(attrs={"class": "form-select"}),
         initial=0,
     )
 
@@ -113,4 +120,11 @@ class VirtualMachineForm(forms.Form):
         widget=forms.NumberInput(attrs={"class": "form-control"}),
     )
 
-    vnc = forms.BooleanField(label="Enable VNC", required=False, initial=False)
+    vnc = forms.BooleanField(
+        label="Enable VNC",
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(
+            attrs={"class": "form-check-input", "role": "switch"}
+        ),
+    )

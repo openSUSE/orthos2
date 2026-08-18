@@ -37,11 +37,10 @@
             <label for="{{ form.ram_amount.id_for_label }}">RAM (MB)</label>
           </div>
           <div class="col-2" align="center">
-            <div class="btn-group" data-toggle="buttons">
+            <div class="btn-group">
             {% for radio in form.ram_amount__operator %}
-              <label class="btn btn-secondary btn-sm{% if forloop.first %} active{% endif %}">
-                {{ radio.tag }} {{ radio.choice_label }}
-              </label>
+              {{ radio.tag }}
+              <label class="btn btn-outline-secondary btn-sm" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
             {% endfor %}
             </div>
           </div>
@@ -71,11 +70,10 @@
             <label for="{{ form.cpu_cores.id_for_label }}">CPU cores</label>
           </div>
           <div class="col-2" align="center">
-            <div class="btn-group" data-toggle="buttons">
+            <div class="btn-group">
             {% for radio in form.cpu_cores__operator %}
-              <label class="btn btn-secondary btn-sm{% if forloop.first %} active{% endif %}">
-                {{ radio.tag }} {{ radio.choice_label }}
-              </label>
+              {{ radio.tag }}
+              <label class="btn btn-outline-secondary btn-sm" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
             {% endfor %}
             </div>
           </div>
@@ -229,7 +227,7 @@
           <div class="card" style="margin-bottom: 5px;">
             <div class="card-header" role="tab" id="headingOne">
               <span class="mb-0">
-                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+                <a data-bs-toggle="collapse" data-bs-parent="#accordion" href="#collapseOne">
                   Platform
                 </a>
                 <small class="form-text text-muted">Vendor, Platform</small>
@@ -285,7 +283,7 @@
           <div class="card" style="margin-bottom: 5px;">
             <div class="card-header" role="tab" id="headingTwo">
               <span class="mb-0">
-                <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+                <a data-bs-toggle="collapse" data-bs-parent="#accordion" href="#collapseTwo">
                   Switches
                 </a>
                 <small class="form-text text-muted">Reserved, IPMI, EFI, ...</small>
@@ -303,11 +301,10 @@
                   <div class="col-2" align="center">
                   </div>
                   <div class="col-6">
-                    <div class="btn-group" data-toggle="buttons">
+                    <div class="btn-group">
                     {% for radio in form.reserved_by %}
-                      <label class="btn btn-secondary btn-sm{% if forloop.last %} active{% endif %}">
-                        {{ radio.tag }} {{ radio.choice_label }}
-                      </label>
+                      {{ radio.tag }}
+                      <label class="btn btn-outline-secondary btn-sm" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
                     {% endfor %}
                     </div>
                   </div>
@@ -322,11 +319,10 @@
                   <div class="col-2" align="center">
                   </div>
                   <div class="col-6">
-                    <div class="btn-group" data-toggle="buttons">
+                    <div class="btn-group">
                     {% for radio in form.ipmi %}
-                      <label class="btn btn-secondary btn-sm{% if forloop.last %} active{% endif %}">
-                        {{ radio.tag }} {{ radio.choice_label }}
-                      </label>
+                      {{ radio.tag }}
+                      <label class="btn btn-outline-secondary btn-sm" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
                     {% endfor %}
                     </div>
                   </div>
@@ -340,11 +336,10 @@
                   <div class="col-2" align="center">
                   </div>
                   <div class="col-6">
-                    <div class="btn-group" data-toggle="buttons">
+                    <div class="btn-group">
                     {% for radio in form.efi %}
-                      <label class="btn btn-secondary btn-sm{% if forloop.last %} active{% endif %}">
-                        {{ radio.tag }} {{ radio.choice_label }}
-                      </label>
+                      {{ radio.tag }}
+                      <label class="btn btn-outline-secondary btn-sm" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
                     {% endfor %}
                     </div>
                   </div>
@@ -359,11 +354,10 @@
                     available
                   </div>
                   <div class="col-6">
-                    <div class="btn-group" data-toggle="buttons">
+                    <div class="btn-group">
                     {% for radio in form.serialconsole %}
-                      <label class="btn btn-secondary btn-sm{% if forloop.last %} active{% endif %}">
-                        {{ radio.tag }} {{ radio.choice_label }}
-                      </label>
+                      {{ radio.tag }}
+                      <label class="btn btn-outline-secondary btn-sm" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
                     {% endfor %}
                     </div>
                   </div>
@@ -379,11 +373,10 @@
                     available
                   </div>
                   <div class="col-6">
-                    <div class="btn-group" data-toggle="buttons">
+                    <div class="btn-group">
                     {% for radio in form.remotepower %}
-                      <label class="btn btn-secondary btn-sm{% if forloop.last %} active{% endif %}">
-                        {{ radio.tag }} {{ radio.choice_label }}
-                      </label>
+                      {{ radio.tag }}
+                      <label class="btn btn-outline-secondary btn-sm" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
                     {% endfor %}
                     </div>
                   </div>
@@ -397,7 +390,7 @@
           <div class="card" style="margin-bottom: 5px;">
             <div class="card-header" role="tab" id="headingThree">
               <span class="mb-0">
-                <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree">
+                <a data-bs-toggle="collapse" data-bs-parent="#accordion" href="#collapseThree">
                   Machine Status
                 </a>
                 <small class="form-text text-muted">Ping, SSH, Login</small>
@@ -440,11 +433,10 @@
                   <div class="col-2" align="center">
                   </div>
                   <div class="col-6">
-                    <div class="btn-group" data-toggle="buttons">
+                    <div class="btn-group">
                     {% for radio in form.status_ssh %}
-                      <label class="btn btn-secondary btn-sm{% if forloop.last %} active{% endif %}">
-                        {{ radio.tag }} {{ radio.choice_label }}
-                      </label>
+                      {{ radio.tag }}
+                      <label class="btn btn-outline-secondary btn-sm" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
                     {% endfor %}
                     </div>
                   </div>
@@ -458,11 +450,10 @@
                   <div class="col-2" align="center">
                   </div>
                   <div class="col-6">
-                    <div class="btn-group" data-toggle="buttons">
+                    <div class="btn-group">
                     {% for radio in form.status_login %}
-                      <label class="btn btn-secondary btn-sm{% if forloop.last %} active{% endif %}">
-                        {{ radio.tag }} {{ radio.choice_label }}
-                      </label>
+                      {{ radio.tag }}
+                      <label class="btn btn-outline-secondary btn-sm" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
                     {% endfor %}
                     </div>
                   </div>

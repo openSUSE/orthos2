@@ -1,1 +1,1 @@
-Chart.min.js
+chart-4.5.1.umd.min.js
