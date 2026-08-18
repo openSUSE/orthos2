@@ -20,6 +20,7 @@ from orthos2.api.forms import (
     RemotePowerAPIForm,
     RemotePowerDeviceAPIForm,
     SerialConsoleAPIForm,
+    VendorAPIForm,
     VirtualMachineAPIForm,
 )
 from orthos2.api.serializers.misc import (
@@ -50,6 +51,7 @@ class Add:
     REMOTEPOWER = "remotepower"
     BMC = "bmc"
     REMOTEPOWERDEVICE = "remotepowerdevice"
+    VENDOR = "vendor"
 
     as_list = [
         MACHINE,
@@ -59,6 +61,7 @@ class Add:
         REMOTEPOWER,
         BMC,
         REMOTEPOWERDEVICE,
+        VENDOR,
     ]
 
 
@@ -87,6 +90,7 @@ class AddCommand(BaseAPIView):
                 virtualmachine <architecture> : Add a virtual machine on a specific
                                                 architecture.
                 bmc <fqdn>                    : Add a bmc to a machine.
+                vendor <name>                 : Add a vendor (superusers only).
 
     Example:
         ADD machine
@@ -95,6 +99,7 @@ class AddCommand(BaseAPIView):
         ADD remotepower foo.domain.tld
         ADD annotation foo.domain.tld
         ADD bmc foo.domain.tld
+        ADD vendor Dell
     """
 
     @staticmethod
@@ -181,6 +186,11 @@ class AddCommand(BaseAPIView):
             return redirect(
                 "{}?fqdn={}".format(reverse("api:bmc_add_get"), sub_arguments[0])
             )
+
+        elif item == Add.VENDOR:
+            if sub_arguments:
+                return ErrorMessage("Invalid number of arguments for 'vendor'!").as_json
+            return redirect(reverse("api:vendor_add"))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -839,6 +849,67 @@ class AddRemotePowerDeviceCommand(BaseAPIView):
 
         data = json.loads(request.body.decode("utf-8"))["form"]
         form = RemotePowerDeviceAPIForm(data)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json  # type: ignore
+
+
+class AddVendorCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/vendor/add"
+    URL_POST = "/vendor/add"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Adds a vendor to the database."
+    HELP = """Adds a vendor to the database (superusers only).
+
+    Usage:
+        ADD vendor <name>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^vendor/add",
+                AddVendorCommand.as_view(),
+                name="vendor_add",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for adding a vendor."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = VendorAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Add vendor."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = VendorAPIForm(data)
 
         if form.is_valid():
             try:

@@ -1,5 +1,6 @@
 from typing import Any, List, Union
 
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import URLPattern, re_path
 from rest_framework.request import Request
@@ -13,9 +14,14 @@ from orthos2.api.commands.base import (
 )
 from orthos2.api.serializers.enclosure import EnclosureSerializer
 from orthos2.api.serializers.machine import MachineSerializer
-from orthos2.api.serializers.misc import ErrorMessage, Serializer
+from orthos2.api.serializers.misc import (
+    AuthRequiredSerializer,
+    ErrorMessage,
+    Serializer,
+)
 from orthos2.api.serializers.remotepowerdevice import RemotePowerDeviceSerializer
-from orthos2.data.models import Machine, RemotePowerDevice
+from orthos2.api.serializers.vendor import VendorSerializer
+from orthos2.data.models import Machine, RemotePowerDevice, Vendor
 from orthos2.data.models.enclosure import Enclosure
 
 
@@ -248,6 +254,71 @@ class RemotePowerDeviceInfoCommand(BaseAPIView):
 
             response["header"] = {"type": "INFO", "order": order}
             response["data"] = serialzed_enclosure.data_info  # type: ignore
+        except Exception:
+            return ErrorMessage(getException()).as_json
+
+        return JsonResponse(response)
+
+
+class VendorInfoCommand(BaseAPIView):
+
+    METHOD = "GET"
+    URL = "/vendor"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Retrieve information about a vendor."
+    HELP = """Command to get information about a vendor.
+
+Usage:
+    INFO vendor <name>
+
+Arguments:
+    name - Name of the vendor. If omitted, all vendors are listed.
+
+Example:
+    INFO vendor Dell
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(r"^vendor$", VendorInfoCommand.as_view(), name="vendor"),
+        ]
+
+    @staticmethod
+    def get_tabcompletion() -> List[str]:
+        return list(Vendor.objects.all().values_list("name", flat=True))
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return vendor information."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        name = request.GET.get("name", "")
+
+        try:
+            if name:
+                vendor = Vendor.objects.get(name__iexact=name)
+                serialized_vendor = VendorSerializer(vendor)
+                response = {
+                    "header": {"type": "INFO", "order": ["id", "name"]},
+                    "data": serialized_vendor.data_info,
+                }
+            else:
+                vendors = Vendor.objects.all()
+                serialized_vendors = VendorSerializer(vendors, many=True)
+                theader = [{"id": "ID"}, {"name": "Name"}]
+                response = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": serialized_vendors.data,
+                }
+        except Vendor.DoesNotExist:
+            return ErrorMessage("Vendor '{}' does not exist!".format(name)).as_json
         except Exception:
             return ErrorMessage(getException()).as_json
 

@@ -1046,4 +1046,3 @@ class RemotePowerTypeAdmin(admin.ModelAdmin):  # type: ignore
 
 
 admin.site.register(RemotePowerType, RemotePowerTypeAdmin)  # type: ignore
-admin.site.register(Vendor)  # type: ignore

@@ -10,6 +10,7 @@ from orthos2.api.commands.add import (
     AddRemotePowerDeviceCommand,
     AddSerialConsoleCommandGet,
     AddSerialConsoleCommandPost,
+    AddVendorCommand,
     AddVMCommandGet,
     AddVMCommandPost,
 )
@@ -20,11 +21,14 @@ from orthos2.api.commands.delete import (
     DeleteRemotePowerCommand,
     DeleteRemotePowerDeviceCommand,
     DeleteSerialConsoleCommand,
+    DeleteVendorCommand,
 )
+from orthos2.api.commands.edit import EditCommand, EditVendorCommand
 from orthos2.api.commands.info import (
     EnclosureInfoCommand,
     InfoCommand,
     RemotePowerDeviceInfoCommand,
+    VendorInfoCommand,
 )
 from orthos2.api.commands.power import PowerCommand
 from orthos2.api.commands.query import QueryCommand
@@ -39,6 +43,7 @@ from orthos2.api.commands.setup import SetupCommand
 __all__ = [
     "EnclosureInfoCommand",
     "RemotePowerDeviceInfoCommand",
+    "VendorInfoCommand",
     "InfoCommand",
     "QueryCommand",
     "ReserveCommandGet",
@@ -69,4 +74,8 @@ __all__ = [
     "AddBMCCommandPost",
     "AddBMCCommandGet",
     "AddRemotePowerDeviceCommand",
+    "AddVendorCommand",
+    "DeleteVendorCommand",
+    "EditCommand",
+    "EditVendorCommand",
 ]

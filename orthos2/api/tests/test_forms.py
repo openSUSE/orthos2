@@ -8,14 +8,16 @@ from orthos2.api.forms import (
     DeleteMachineAPIForm,
     DeleteRemotePowerAPIForm,
     DeleteRemotePowerDeviceAPIForm,
+    DeleteVendorAPIForm,
     MachineAPIForm,
     RemotePowerAPIForm,
     RemotePowerDeviceAPIForm,
     ReserveMachineAPIForm,
     SerialConsoleAPIForm,
+    VendorAPIForm,
     VirtualMachineAPIForm,
 )
-from orthos2.data.models import System
+from orthos2.data.models import System, Vendor
 from orthos2.data.models.machine import Machine
 from orthos2.data.models.remotepowertype import RemotePowerType
 
@@ -231,3 +233,42 @@ class DeleteRemotePowerDeviceAPIFormTests(TestCase):
 
         # Assert
         self.assertTrue(form.is_valid())
+
+
+class VendorAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the vendor creation API form"""
+        # Arrange & Act
+        form = VendorAPIForm({"name": "AcmeCorp"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_requires_name(self) -> None:
+        """Test that the vendor creation API form requires a name"""
+        # Arrange & Act
+        form = VendorAPIForm({"name": ""})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DeleteVendorAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the vendor deletion API form"""
+        # Arrange
+        Vendor.objects.create(name="AcmeCorp")
+
+        # Act
+        form = DeleteVendorAPIForm({"name": "AcmeCorp"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_rejects_nonexistent_vendor(self) -> None:
+        """Test that the vendor deletion API form rejects an unknown name"""
+        # Arrange & Act
+        form = DeleteVendorAPIForm({"name": "Nonexistent"})
+
+        # Assert
+        self.assertFalse(form.is_valid())

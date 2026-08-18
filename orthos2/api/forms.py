@@ -26,6 +26,7 @@ from orthos2.data.models import (
     SerialConsole,
     SerialConsoleType,
     System,
+    Vendor,
 )
 from orthos2.data.models.domain import validate_domain_ending
 from orthos2.data.validators import validate_mac_address
@@ -619,4 +620,34 @@ class DeleteRemotePowerDeviceAPIForm(forms.Form, BaseAPIForm):
         """Return input order."""
         return [
             "fqdn",
+        ]
+
+
+class VendorAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = Vendor
+        fields = ["name"]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return ["name"]
+
+
+class DeleteVendorAPIForm(forms.Form, BaseAPIForm):
+    def clean_name(self) -> str:
+        """Check whether a vendor with `name` exists."""
+        name = self.cleaned_data["name"]
+        if Vendor.objects.filter(name__iexact=name).count() == 0:
+            self.add_error("name", "No vendor with this name")
+        return name
+
+    name = forms.CharField(
+        label="Name",
+        max_length=100,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "name",
         ]
