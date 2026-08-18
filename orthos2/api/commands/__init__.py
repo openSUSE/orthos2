@@ -63,6 +63,8 @@ from orthos2.api.commands.edit import (
     EditNetworkInterfaceCommand,
     EditRemotePowerDeviceCommand,
     EditRemotePowerTypeCommand,
+    EditSerialConsoleCommandGet,
+    EditSerialConsoleCommandPost,
     EditSerialConsoleTypeCommand,
     EditServerConfigCommand,
     EditSingleTaskCommand,
@@ -179,4 +181,6 @@ __all__ = [
     "AddNetworkInterfaceCommandGet",
     "AddNetworkInterfaceCommandPost",
     "EditNetworkInterfaceCommand",
+    "EditSerialConsoleCommandGet",
+    "EditSerialConsoleCommandPost",
 ]

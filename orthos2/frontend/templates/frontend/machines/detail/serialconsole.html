@@ -1,0 +1,61 @@
+{% extends 'frontend/machines/machine.html' %}
+{% load filters %}
+
+{% block tabcontent %}
+<div class="title d-flex align-items-center">
+  <h5>Serial Console</h5>
+  {% if request.user.is_superuser and not machine.has_serialconsole %}
+  <a class="btn btn-success btn-sm ms-auto" href="{% url 'frontend:new_serialconsole' machine.pk %}">+</a>
+  {% endif %}
+</div>
+
+{% if machine.has_serialconsole %}
+  <table class="table table-bordered small">
+    <tbody class="thead-default">
+      <tr>
+        <td class="th fw-bold" width="200px">Type</td>
+        <td>{{ machine.serialconsole.stype.name }}</td>
+      </tr>
+      <tr>
+        <td class="th fw-bold">Console Server</td>
+        <td>{{ machine.serialconsole.console_server }}</td>
+      </tr>
+      <tr>
+        <td class="th fw-bold">Port</td>
+        <td>{{ machine.serialconsole.port }}</td>
+      </tr>
+      <tr>
+        <td class="th fw-bold">Command</td>
+        <td>{{ machine.serialconsole.command }}</td>
+      </tr>
+      <tr>
+        <td class="th fw-bold">Comment</td>
+        <td>{{ machine.serialconsole.comment }}</td>
+      </tr>
+      <tr>
+        <td class="th fw-bold">Baud Rate</td>
+        <td>{{ machine.serialconsole.baud_rate }}</td>
+      </tr>
+      <tr>
+        <td class="th fw-bold">Kernel Device</td>
+        <td>{{ machine.serialconsole.kernel_device }}{{ machine.serialconsole.kernel_device_num }}</td>
+      </tr>
+      <tr>
+        <td class="th fw-bold">Rendered Command</td>
+        <td>{{ machine.serialconsole.rendered_command }}</td>
+      </tr>
+    </tbody>
+  </table>
+  {% if request.user.is_superuser %}
+  <div class="btn-group-vertical d-flex" style="max-width: 200px;">
+    <a class="btn btn-warning btn-sm" href="{% url 'frontend:edit_serialconsole' machine.pk %}">Edit Serial Console</a>
+  </div>
+  <br/>
+  <div class="btn-group-vertical d-flex" style="max-width: 200px;">
+    <a class="btn btn-danger btn-sm" href="{% url 'frontend:delete_serialconsole' machine.pk %}">Delete Serial Console</a>
+  </div>
+  {% endif %}
+{% else %}
+  <div class="alert alert-info">No serial console configured for this machine!</div>
+{% endif %}
+{% endblock %}

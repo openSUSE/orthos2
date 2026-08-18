@@ -208,7 +208,9 @@ class AddCommand(BaseAPIView):
                 ).as_json
 
             return redirect(
-                "{}?fqdn={}".format(reverse("api:serialconsole_add"), sub_arguments[0])
+                "{}?fqdn={}".format(
+                    reverse("api:serialconsole_add_get"), sub_arguments[0]
+                )
             )
 
         elif item == Add.ANNOTATION:
@@ -658,7 +660,7 @@ class AddSerialConsoleCommandGet(BaseAPIView):
         fqdn = request.GET.get("fqdn", "")
         try:
             result = get_machine(
-                fqdn, redirect_to="api:serialconsole_add", data=request.GET
+                fqdn, redirect_to="api:serialconsole_add_get", data=request.GET
             )
             if isinstance(result, Serializer):
                 return result.as_json
@@ -712,7 +714,7 @@ class AddSerialConsoleCommandPost(BaseAPIView):
 
         try:
             result = get_machine(
-                fqdn, redirect_to="api:serialconsole_add", data=request.GET
+                fqdn, redirect_to="api:serialconsole_add_get", data=request.GET
             )
             if isinstance(result, Serializer):
                 return result.as_json

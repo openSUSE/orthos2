@@ -126,6 +126,26 @@ urlpatterns = [
         views.NetworkInterfaceDetailedEdit.as_view(),
         name="edit_networkinterface",
     ),
+    re_path(
+        r"^machine/(?P<id>[0-9]+)/serialconsole$",
+        views.serialconsole,
+        name="serialconsole",
+    ),
+    path(
+        "machine/<int:machine_id>/serialconsole/new",
+        views.NewSerialConsole.as_view(),
+        name="new_serialconsole",
+    ),
+    path(
+        "serialconsole/edit/<int:pk>/",
+        views.SerialConsoleDetailedEdit.as_view(),
+        name="edit_serialconsole",
+    ),
+    path(
+        "serialconsole/delete/<int:pk>/",
+        views.DeleteSerialConsole.as_view(),
+        name="delete_serialconsole",
+    ),
     re_path(r"^machine/(?P<id>[0-9]+)/pci$", views.pci, name="pci"),
     re_path(
         r"^machine/(?P<id>[0-9]+)/installations$",

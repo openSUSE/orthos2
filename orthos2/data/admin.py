@@ -18,7 +18,6 @@ from orthos2.data.models import (
     NetworkInterface,
     RemotePower,
     RemotePowerDevice,
-    SerialConsole,
     System,
 )
 from orthos2.utils.misc import get_domain, is_unique_mac_address, suggest_host_ip
@@ -158,33 +157,6 @@ class BMCInline(admin.StackedInline):  # type: ignore
         self.machine = obj
         formset = super(BMCInline, self).get_formset(request, obj, **kwargs)  # type: ignore
         return formset  # type: ignore
-
-
-class SerialConsoleInline(admin.StackedInline):  # type: ignore
-    model = SerialConsole
-    extra = 0
-    fk_name = "machine"
-    verbose_name = "Serial Console"
-    verbose_name_plural = "Serial Console"
-    fields = (
-        "stype",
-        "baud_rate",
-        "kernel_device",
-        "kernel_device_num",
-        "console_server",
-        "port",
-        "command",
-        "comment",
-        "rendered_command",
-    )
-    readonly_fields = ("rendered_command",)
-
-    def get_formset(  # type: ignore
-        self, request: HttpRequest, obj: Optional["Machine"] = None, **kwargs: Any
-    ):
-        """Set machine object for `formfield_for_foreignkey` method."""
-        self.machine = obj
-        return super(SerialConsoleInline, self).get_formset(request, obj, **kwargs)  # type: ignore
 
 
 class RemotePowerInlineFormset(forms.models.BaseInlineFormSet):  # type: ignore
@@ -606,7 +578,7 @@ class MachineAdmin(admin.ModelAdmin):  # type: ignore
                 extra_tags="error",
             )
 
-        MachineAdmin.inlines = (SerialConsoleInline,)
+        MachineAdmin.inlines = ()
 
         if machine.bmc_allowed():
             MachineAdmin.inlines += (BMCInline,)

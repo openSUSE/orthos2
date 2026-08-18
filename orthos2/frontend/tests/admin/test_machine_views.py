@@ -110,7 +110,6 @@ class ChangeView(WebTest):
         )
 
         # Assert
-        self.assertContains(page, "Add another Serial Console")  # type: ignore
         self.assertContains(page, "Remote Power")  # type: ignore
 
     def test_visible_fieldsets_administrative_systems(self) -> None:
@@ -131,7 +130,6 @@ class ChangeView(WebTest):
         )
 
         # Assert
-        self.assertContains(page, "Add another Serial Console")  # type: ignore
         self.assertContains(page, "Remote Power")  # type: ignore
 
     def test_deactivate_sol_button_visible_for_ipmi_console(self) -> None:

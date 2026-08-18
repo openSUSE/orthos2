@@ -1,0 +1,148 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="mb-3">
+      <form
+        class="pt-3"
+        method="post"
+        {% if action == 'new' %}
+          action="{% url 'frontend:new_serialconsole' machine.pk %}"
+        {% elif action == 'edit' %}
+          action="{% url 'frontend:edit_serialconsole' object.machine_id %}"
+        {% endif %}
+      >
+        {% csrf_token %}
+
+        {{ form.stype.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.stype.id_for_label }}">
+              {{ form.stype.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.stype }}
+            <small class="form-text text-muted">
+              {{ form.stype.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.baud_rate.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.baud_rate.id_for_label }}">
+              {{ form.baud_rate.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.baud_rate }}
+            <small class="form-text text-muted">
+              {{ form.baud_rate.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.kernel_device.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.kernel_device.id_for_label }}">
+              {{ form.kernel_device.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.kernel_device }}
+            <small class="form-text text-muted">
+              {{ form.kernel_device.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.kernel_device_num.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.kernel_device_num.id_for_label }}">
+              {{ form.kernel_device_num.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.kernel_device_num }}
+            <small class="form-text text-muted">
+              {{ form.kernel_device_num.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.console_server.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.console_server.id_for_label }}">
+              {{ form.console_server.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.console_server }}
+            <small class="form-text text-muted">
+              {{ form.console_server.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.port.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.port.id_for_label }}">
+              {{ form.port.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.port }}
+            <small class="form-text text-muted">
+              {{ form.port.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.command.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.command.id_for_label }}">
+              {{ form.command.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.command }}
+            <small class="form-text text-muted">
+              {{ form.command.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.comment.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.comment.id_for_label }}">
+              {{ form.comment.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.comment }}
+            <small class="form-text text-muted">
+              {{ form.comment.help_text }}
+            </small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm w-100">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
