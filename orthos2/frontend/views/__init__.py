@@ -68,6 +68,7 @@ from .enclosures import (
 )
 from .machine import (
     BMCDetailedEdit,
+    DeleteAnnotation,
     DeleteBMC,
     DeleteNetworkInterface,
     DeleteRemotePower,
@@ -203,6 +204,7 @@ __all__ = [
     "NewBMC",
     "BMCDetailedEdit",
     "DeleteBMC",
+    "DeleteAnnotation",
     "serialconsole",
     "NewSerialConsole",
     "SerialConsoleDetailedEdit",

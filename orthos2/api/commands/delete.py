@@ -40,6 +40,7 @@ from orthos2.api.serializers.misc import (
 )
 from orthos2.data.models import (
     BMC,
+    Annotation,
     Architecture,
     DeviceType,
     Domain,
@@ -1666,3 +1667,68 @@ class DeleteBMCCommand(BaseAPIView):
                 return ErrorMessage("Something went wrong!").as_json
 
         return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
+
+
+class DeleteAnnotationCommand(BaseAPIView):
+
+    METHOD = "DELETE"
+    URL = "/annotation/{id}"
+    ARGUMENTS = (["id"],)
+
+    HELP_SHORT = "Deletes an annotation from the database."
+    HELP = """Deletes an annotation from the database (superusers only).
+
+    Usage:
+        DELETE annotation <id>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^annotation/(?P<id>[0-9]+)$",
+                DeleteAnnotationCommand.as_view(),
+                name="annotation_delete",
+            ),
+        ]
+
+    def delete(
+        self, request: Request, id: int, *args: Any, **kwargs: Any
+    ) -> JsonResponse:
+        """Delete an annotation by ID."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        try:
+            annotation = Annotation.objects.get(pk=id)
+        except Annotation.DoesNotExist:
+            return ErrorMessage(
+                "Annotation with id '{}' does not exist!".format(id)
+            ).as_json
+
+        try:
+            result = annotation.delete()
+
+            theader = [
+                {"objects": "Deleted objects"},
+                {"count": "#"},
+            ]
+
+            response: Dict[str, Any] = {
+                "header": {"type": "TABLE", "theader": theader},
+                "data": [],
+            }
+            for key, value in result[1].items():
+                response["data"].append(  # type: ignore
+                    {"objects": key.replace("data.", ""), "count": value}
+                )
+            return JsonResponse(response)
+
+        except Exception as e:
+            logger.exception(e)
+            return ErrorMessage("Something went wrong!").as_json

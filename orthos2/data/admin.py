@@ -8,27 +8,10 @@ from django.db.models import Q, QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 
-from orthos2.data.models import (
-    Annotation,
-    Architecture,
-    Domain,
-    Machine,
-    System,
-)
+from orthos2.data.models import Architecture, Domain, Machine, System
 
 if TYPE_CHECKING:
     from django.contrib.auth.models import User
-
-
-class AnnotationInline(admin.TabularInline):  # type: ignore
-    model = Annotation
-    extra = 0
-    fk_name = "machine"
-    readonly_fields = ("text", "reporter", "created")
-
-    def has_add_permission(self, request: HttpRequest, obj=None):  # type: ignore
-        """Annotations are added at machine detail view."""
-        return False
 
 
 class MachineAdminForm(forms.ModelForm):  # type: ignore
@@ -332,9 +315,7 @@ class MachineAdmin(admin.ModelAdmin):  # type: ignore
         form_url: str = "",
         extra_context: Optional[Dict[str, Any]] = None,
     ) -> Union[HttpResponseRedirect, TemplateResponse, HttpResponse]:
-        """Return changes view with inlines for non-administrative systems."""
-        machine = Machine.objects.get(pk=object_id)
-
+        """Return changes view without inlines."""
         if not self.get_object(request, object_id):
             messages.add_message(
                 request,
@@ -344,9 +325,6 @@ class MachineAdmin(admin.ModelAdmin):  # type: ignore
             )
 
         MachineAdmin.inlines = ()
-
-        if not machine.system.administrative:
-            MachineAdmin.inlines += (AnnotationInline,)
 
         return super(MachineAdmin, self).change_view(
             request, object_id, form_url, extra_context

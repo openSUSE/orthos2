@@ -22,6 +22,7 @@ from django.views.generic import CreateView, DeleteView, UpdateView
 
 from orthos2.data.models import (
     BMC,
+    Annotation,
     Machine,
     NetworkInterface,
     RemotePower,
@@ -905,4 +906,17 @@ class DeleteRemotePower(SuperuserRequiredMixin, DeleteView):  # type: ignore
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["title"] = "Delete Remote Power"
+        return context
+
+
+class DeleteAnnotation(SuperuserRequiredMixin, DeleteView):  # type: ignore
+    model = Annotation
+    template_name = "frontend/machines/detail/annotation_confirm_deletion.html"
+
+    def get_success_url(self) -> str:
+        return reverse_lazy("frontend:detail", kwargs={"id": self.object.machine_id})
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Delete Annotation"
         return context

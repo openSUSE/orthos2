@@ -32,6 +32,7 @@ from orthos2.api.commands.dailytask import (
     SwitchDailyTaskCommand,
 )
 from orthos2.api.commands.delete import (
+    DeleteAnnotationCommand,
     DeleteArchitectureCommand,
     DeleteBMCCommand,
     DeleteCommand,
@@ -191,4 +192,5 @@ __all__ = [
     "EditRemotePowerCommandPost",
     "DeleteBMCCommand",
     "EditBMCCommand",
+    "DeleteAnnotationCommand",
 ]

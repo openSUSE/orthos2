@@ -220,7 +220,7 @@ class AddCommand(BaseAPIView):
                 ).as_json
 
             return redirect(
-                "{}?fqdn={}".format(reverse("api:annotation_add"), sub_arguments[0])
+                "{}?fqdn={}".format(reverse("api:annotation_add_get"), sub_arguments[0])
             )
 
         elif item == Add.REMOTEPOWER:
@@ -768,7 +768,7 @@ class AddAnnotationCommandGet(BaseAPIView):
         fqdn = request.GET.get("fqdn", "")
         try:
             result = get_machine(
-                fqdn, redirect_to="api:annotation_add", data=request.GET
+                fqdn, redirect_to="api:annotation_add_get", data=request.GET
             )
             if isinstance(result, Serializer):
                 return result.as_json
@@ -809,7 +809,7 @@ class AddAnnotationCommandPost(BaseAPIView):
         """Add annotation to machine."""
         try:
             result = get_machine(
-                fqdn, redirect_to="api:annotation_add", data=request.GET
+                fqdn, redirect_to="api:annotation_add_get", data=request.GET
             )
             if isinstance(result, Serializer):
                 return result.as_json

@@ -181,6 +181,11 @@ urlpatterns = [
         views.DeleteRemotePower.as_view(),
         name="delete_remotepower",
     ),
+    path(
+        "annotation/delete/<int:pk>/",
+        views.DeleteAnnotation.as_view(),
+        name="delete_annotation",
+    ),
     re_path(r"^machine/(?P<id>[0-9]+)/pci$", views.pci, name="pci"),
     re_path(
         r"^machine/(?P<id>[0-9]+)/installations$",

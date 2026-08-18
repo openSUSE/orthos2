@@ -102,6 +102,7 @@ urlpatterns += DeleteEnclosureCommand.get_urls()  # noqa: F405
 urlpatterns += DeleteDomainArchitectureCommand.get_urls()  # noqa: F405
 urlpatterns += DeleteDomainCommand.get_urls()  # noqa: F405
 urlpatterns += DeleteBMCCommand.get_urls()  # noqa: F405
+urlpatterns += DeleteAnnotationCommand.get_urls()  # noqa: F405
 urlpatterns += EditCommand.get_urls()  # noqa: F405
 urlpatterns += EditManufacturerCommand.get_urls()  # noqa: F405
 urlpatterns += EditDeviceTypeCommand.get_urls()  # noqa: F405
