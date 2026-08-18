@@ -1,3 +1,5 @@
+default_install_hook_types: [pre-commit, commit-msg]
+
 repos:
   - repo: https://github.com/psf/black
     rev: 22.3.0
@@ -16,3 +18,11 @@ repos:
     hooks:
       - id: isort
         args: ["--filter-files"]
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+    # Lints commit messages against commitlint.config.js (Conventional Commits).
+    # Also enforced in CI by the "commitlint" job in .github/workflows/lint.yml
+    rev: v9.26.0
+    hooks:
+      - id: commitlint
+        stages: [commit-msg]
+        additional_dependencies: ['@commitlint/config-conventional']

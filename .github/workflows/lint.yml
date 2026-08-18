@@ -173,3 +173,13 @@ jobs:
       - name: Run Prettier
         run: |
           npx prettier --check *.json ./**/*.json
+  commitlint:
+    name: commitlint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Lint commit messages
+        uses: wagoid/commitlint-github-action@v6

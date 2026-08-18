@@ -182,6 +182,13 @@ Docker files there, and any new `COPY` sources as siblings of the Dockerfile tha
 
 ## Important Development Notes
 
+### Tooling/CI Config Precedent
+
+- `.github/workflows/lint.yml` ("Coding Style") is the single consolidated lint workflow — add new lint/CI checks
+  as a job there rather than a new workflow file.
+- `npm view`/`npm install` can fail in sandboxed shells with `EROFS` on the npm cache; use `gh api` (e.g.
+  `gh api repos/<owner>/<repo>/releases/latest`) to check package/action versions instead.
+
 ### Taskmanager Service
 
 The taskmanager runs as a **separate process** (`ORTHOS2_MODE=taskmanager`). When modifying tasks:
