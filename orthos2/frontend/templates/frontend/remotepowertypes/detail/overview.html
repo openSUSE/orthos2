@@ -1,0 +1,61 @@
+{% extends 'frontend/remotepowertypes/remotepowertype.html' %}
+
+{% block tabcontent %}
+  <div class="row">
+    <div class="col-10">
+      <div class="container-fluid">
+        <div class="title">
+          <h5>{{ remotepowertype.name }}</h5>
+        </div>
+
+        <table class="table table-striped table-bordered small">
+          <tbody class="thead-default">
+            <tr>
+              <td class="th fw-bold" width="150px">Name</td>
+              <td>{{ remotepowertype.name }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Device</td>
+              <td>{{ remotepowertype.get_device_display }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Username</td>
+              <td>{{ remotepowertype.username }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Identity File</td>
+              <td>{{ remotepowertype.identity_file }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Supported Architectures</td>
+              <td>
+                {% for architecture in remotepowertype.architectures.all %}
+                  {{ architecture }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+              </td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Supported Systems</td>
+              <td>
+                {% for system in remotepowertype.systems.all %}
+                  {{ system }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+              </td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Use Port</td>
+              <td>{{ remotepowertype.use_port }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Use Hostname as Port</td>
+              <td>{{ remotepowertype.use_hostname_as_port }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-2">
+      {% include 'frontend/remotepowertypes/detail/actions.html' %}
+    </div>
+  </div>
+{% endblock %}

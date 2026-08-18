@@ -777,6 +777,56 @@ class DeleteArchitectureAPIForm(forms.Form, BaseAPIForm):
         ]
 
 
+class RemotePowerTypeAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = RemotePowerType
+        fields = [
+            "name",
+            "device",
+            "username",
+            "password",
+            "identity_file",
+            "architectures",
+            "systems",
+            "use_port",
+            "use_hostname_as_port",
+        ]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "name",
+            "device",
+            "username",
+            "password",
+            "identity_file",
+            "architectures",
+            "systems",
+            "use_port",
+            "use_hostname_as_port",
+        ]
+
+
+class DeleteRemotePowerTypeAPIForm(forms.Form, BaseAPIForm):
+    def clean_name(self) -> str:
+        """Check whether a remote power type with `name` exists."""
+        name = self.cleaned_data["name"]
+        if RemotePowerType.objects.filter(name__iexact=name).count() == 0:
+            self.add_error("name", "No remote power type with this name")
+        return name
+
+    name = forms.CharField(
+        label="Name",
+        max_length=255,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "name",
+        ]
+
+
 class ServerConfigAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
     class Meta:  # type: ignore
         model = ServerConfig

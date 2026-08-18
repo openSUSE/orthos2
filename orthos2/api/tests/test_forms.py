@@ -14,6 +14,7 @@ from orthos2.api.forms import (
     DeleteManufacturerAPIForm,
     DeleteRemotePowerAPIForm,
     DeleteRemotePowerDeviceAPIForm,
+    DeleteRemotePowerTypeAPIForm,
     DeleteSerialConsoleTypeAPIForm,
     DeleteServerConfigAPIForm,
     DeleteSingleTaskAPIForm,
@@ -23,6 +24,7 @@ from orthos2.api.forms import (
     ManufacturerAPIForm,
     RemotePowerAPIForm,
     RemotePowerDeviceAPIForm,
+    RemotePowerTypeAPIForm,
     ReserveMachineAPIForm,
     SerialConsoleAPIForm,
     SerialConsoleTypeAPIForm,
@@ -456,6 +458,45 @@ class DeleteArchitectureAPIFormTests(TestCase):
         """Test that the architecture deletion API form rejects an unknown name"""
         # Arrange & Act
         form = DeleteArchitectureAPIForm({"name": "Nonexistent"})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class RemotePowerTypeAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the remote power type creation API form"""
+        # Arrange & Act
+        form = RemotePowerTypeAPIForm({"name": "AcmeRemotePowerType", "device": "bmc"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_requires_name(self) -> None:
+        """Test that the remote power type creation API form requires a name"""
+        # Arrange & Act
+        form = RemotePowerTypeAPIForm({"name": "", "device": "bmc"})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DeleteRemotePowerTypeAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the remote power type deletion API form"""
+        # Arrange
+        RemotePowerType.objects.create(name="AcmeRemotePowerType")
+
+        # Act
+        form = DeleteRemotePowerTypeAPIForm({"name": "AcmeRemotePowerType"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_rejects_nonexistent_remotepowertype(self) -> None:
+        """Test that the remote power type deletion API form rejects an unknown name"""
+        # Arrange & Act
+        form = DeleteRemotePowerTypeAPIForm({"name": "Nonexistent"})
 
         # Assert
         self.assertFalse(form.is_valid())

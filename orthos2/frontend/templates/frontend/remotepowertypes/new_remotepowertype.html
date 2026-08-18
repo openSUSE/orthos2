@@ -1,0 +1,163 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="mb-3">
+      <form
+        class="pt-3"
+        method="post"
+        {% if action == 'new' %}
+          action="{% url 'frontend:new_remotepowertype' %}"
+        {% elif action == 'edit' %}
+          action="{% url 'frontend:edit_remotepowertype' object.id %}"
+        {% endif %}
+      >
+        {% csrf_token %}
+
+        {{ form.name.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.name.id_for_label }}">
+              {{ form.name.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.name }}
+            <small class="form-text text-muted">
+              {{ form.name.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.device.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.device.id_for_label }}">
+              {{ form.device.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.device }}
+            <small class="form-text text-muted">
+              {{ form.device.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.username.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.username.id_for_label }}">
+              {{ form.username.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.username }}
+            <small class="form-text text-muted">
+              {{ form.username.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.password.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.password.id_for_label }}">
+              {{ form.password.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.password }}
+            <small class="form-text text-muted">
+              {{ form.password.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.identity_file.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.identity_file.id_for_label }}">
+              {{ form.identity_file.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.identity_file }}
+            <small class="form-text text-muted">
+              {{ form.identity_file.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.architectures.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.architectures.id_for_label }}">
+              {{ form.architectures.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.architectures }}
+            <small class="form-text text-muted">
+              {{ form.architectures.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.systems.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.systems.id_for_label }}">
+              {{ form.systems.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.systems }}
+            <small class="form-text text-muted">
+              {{ form.systems.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.use_port.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.use_port.id_for_label }}">
+              {{ form.use_port.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.use_port }}
+            <small class="form-text text-muted">
+              {{ form.use_port.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.use_hostname_as_port.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.use_hostname_as_port.id_for_label }}">
+              {{ form.use_hostname_as_port.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.use_hostname_as_port }}
+            <small class="form-text text-muted">
+              {{ form.use_hostname_as_port.help_text }}
+            </small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm w-100">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

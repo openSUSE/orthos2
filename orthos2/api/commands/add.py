@@ -23,6 +23,7 @@ from orthos2.api.forms import (
     ManufacturerAPIForm,
     RemotePowerAPIForm,
     RemotePowerDeviceAPIForm,
+    RemotePowerTypeAPIForm,
     SerialConsoleAPIForm,
     SerialConsoleTypeAPIForm,
     ServerConfigAPIForm,
@@ -62,6 +63,7 @@ class Add:
     DEVICETYPE = "devicetype"
     SERIALCONSOLETYPE = "serialconsoletype"
     SYSTEM = "system"
+    REMOTEPOWERTYPE = "remotepowertype"
     ARCHITECTURE = "architecture"
     SERVERCONFIG = "serverconfig"
 
@@ -77,6 +79,7 @@ class Add:
         DEVICETYPE,
         SERIALCONSOLETYPE,
         SYSTEM,
+        REMOTEPOWERTYPE,
         ARCHITECTURE,
         SERVERCONFIG,
     ]
@@ -112,6 +115,8 @@ class AddCommand(BaseAPIView):
                 serialconsoletype <name>      : Add a serial console type
                                                 (superusers only).
                 system <name>                 : Add a system (superusers only).
+                remotepowertype <name>        : Add a remote power type
+                                                (superusers only).
                 architecture <name>           : Add an architecture
                                                 (superusers only).
                 serverconfig <key> <value>    : Add a server configuration entry
@@ -128,6 +133,7 @@ class AddCommand(BaseAPIView):
         ADD devicetype PowerEdge
         ADD serialconsoletype Telnet
         ADD system BareMetal
+        ADD remotepowertype "Dummy BMC"
         ADD architecture x86_64
         ADD serverconfig foo.bar baz
     """
@@ -242,6 +248,13 @@ class AddCommand(BaseAPIView):
             if sub_arguments:
                 return ErrorMessage("Invalid number of arguments for 'system'!").as_json
             return redirect(reverse("api:system_add"))
+
+        elif item == Add.REMOTEPOWERTYPE:
+            if sub_arguments:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'remotepowertype'!"
+                ).as_json
+            return redirect(reverse("api:remotepowertype_add"))
 
         elif item == Add.ARCHITECTURE:
             if sub_arguments:
@@ -1158,6 +1171,79 @@ class AddSystemCommand(BaseAPIView):
 
         data = json.loads(request.body.decode("utf-8"))["form"]
         form = SystemAPIForm(data)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json  # type: ignore
+
+
+class AddRemotePowerTypeCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/remotepowertype/add"
+    URL_POST = "/remotepowertype/add"
+    ARGUMENTS = (
+        [
+            "name",
+            "device",
+            "username",
+            "password",
+            "identity_file",
+            "architectures",
+            "systems",
+            "use_port",
+            "use_hostname_as_port",
+        ],
+    )
+
+    HELP_SHORT = "Adds a remote power type to the database."
+    HELP = """Adds a remote power type to the database (superusers only).
+
+    Usage:
+        ADD remotepowertype <name>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^remotepowertype/add",
+                AddRemotePowerTypeCommand.as_view(),
+                name="remotepowertype_add",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for adding a remote power type."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = RemotePowerTypeAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Add remote power type."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = RemotePowerTypeAPIForm(data)
 
         if form.is_valid():
             try:

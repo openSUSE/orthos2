@@ -21,7 +21,6 @@ from orthos2.data.models import (
     NetworkInterface,
     RemotePower,
     RemotePowerDevice,
-    RemotePowerType,
     SerialConsole,
     System,
 )
@@ -914,10 +913,3 @@ class RemotePowerDeviceAdmin(admin.ModelAdmin):  # type: ignore
 
 
 admin.site.register(RemotePowerDevice, RemotePowerDeviceAdmin)  # type: ignore
-
-
-class RemotePowerTypeAdmin(admin.ModelAdmin):  # type: ignore
-    list_display = ("name", "device")
-
-
-admin.site.register(RemotePowerType, RemotePowerTypeAdmin)  # type: ignore

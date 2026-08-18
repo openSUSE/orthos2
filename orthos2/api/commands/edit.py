@@ -22,6 +22,7 @@ from orthos2.api.forms import (
     DailyTaskAPIForm,
     DeviceTypeAPIForm,
     ManufacturerAPIForm,
+    RemotePowerTypeAPIForm,
     SerialConsoleTypeAPIForm,
     ServerConfigAPIForm,
     SingleTaskAPIForm,
@@ -37,6 +38,7 @@ from orthos2.data.models import (
     Architecture,
     DeviceType,
     Manufacturer,
+    RemotePowerType,
     SerialConsoleType,
     ServerConfig,
     System,
@@ -52,6 +54,7 @@ class Edit:
     DEVICETYPE = "devicetype"
     SERIALCONSOLETYPE = "serialconsoletype"
     SYSTEM = "system"
+    REMOTEPOWERTYPE = "remotepowertype"
     ARCHITECTURE = "architecture"
     SERVERCONFIG = "serverconfig"
 
@@ -60,6 +63,7 @@ class Edit:
         DEVICETYPE,
         SERIALCONSOLETYPE,
         SYSTEM,
+        REMOTEPOWERTYPE,
         ARCHITECTURE,
         SERVERCONFIG,
     ]
@@ -85,6 +89,8 @@ class EditCommand(BaseAPIView):
                 serialconsoletype <id> : Edit a serial console type
                                          (superusers only).
                 system <id>            : Edit a system (superusers only).
+                remotepowertype <id>   : Edit a remote power type
+                                         (superusers only).
                 architecture <id>      : Edit an architecture (superusers only).
                 serverconfig <id>      : Edit a server configuration entry
                                          (superusers only).
@@ -94,6 +100,7 @@ class EditCommand(BaseAPIView):
         EDIT devicetype 1
         EDIT serialconsoletype 1
         EDIT system 1
+        EDIT remotepowertype 1
         EDIT architecture 1
         EDIT serverconfig 1
     """
@@ -159,6 +166,16 @@ class EditCommand(BaseAPIView):
 
             return redirect(
                 "{}?id={}".format(reverse("api:system_edit"), sub_arguments[0])
+            )
+
+        elif item == Edit.REMOTEPOWERTYPE:
+            if len(sub_arguments) != 1:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'remotepowertype'!"
+                ).as_json
+
+            return redirect(
+                "{}?id={}".format(reverse("api:remotepowertype_edit"), sub_arguments[0])
             )
 
         elif item == Edit.ARCHITECTURE:
@@ -519,6 +536,109 @@ class EditSystemCommand(BaseAPIView):
             ).as_json
 
         form = SystemAPIForm(data, instance=system)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage(
+            "\n{}".format(format_cli_form_errors(form))  # type: ignore[arg-type]
+        ).as_json
+
+
+class EditRemotePowerTypeCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/remotepowertype/edit"
+    URL_POST = "/remotepowertype/edit"
+    ARGUMENTS = (
+        [
+            "id",
+            "name",
+            "device",
+            "username",
+            "password",
+            "identity_file",
+            "architectures",
+            "systems",
+            "use_port",
+            "use_hostname_as_port",
+        ],
+    )
+
+    HELP_SHORT = "Edits a remote power type in the database."
+    HELP = """Edits a remote power type in the database (superusers only).
+
+    Usage:
+        EDIT remotepowertype <id>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^remotepowertype/edit",
+                EditRemotePowerTypeCommand.as_view(),
+                name="remotepowertype_edit",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for editing a remote power type."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        remotepowertype_id = request.GET.get("id")
+        try:
+            remotepowertype = RemotePowerType.objects.get(pk=remotepowertype_id)  # type: ignore[misc]
+        except (RemotePowerType.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Remote power type with id '{}' does not exist!".format(
+                    remotepowertype_id
+                )
+            ).as_json
+
+        form = RemotePowerTypeAPIForm(instance=remotepowertype)
+        fields = form.as_dict()
+        fields["id"] = {
+            "type": "INTEGER",
+            "prompt": "ID",
+            "initial": remotepowertype.pk,
+            "required": True,
+        }
+
+        input = InputSerializer(fields, self.URL_POST, ["id"] + form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Edit remote power type."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        remotepowertype_id = data.get("id")
+        try:
+            remotepowertype = RemotePowerType.objects.get(pk=remotepowertype_id)
+        except (RemotePowerType.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Remote power type with id '{}' does not exist!".format(
+                    remotepowertype_id
+                )
+            ).as_json
+
+        form = RemotePowerTypeAPIForm(data, instance=remotepowertype)
 
         if form.is_valid():
             try:

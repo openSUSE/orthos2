@@ -1,0 +1,41 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+{% load tags %}
+{% load filters %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="row">
+      <main class="col-12">
+        <ul class="nav nav-tabs gray">
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'remotepowertype_detail' %}"
+              href="{% url 'frontend:remotepowertype_detail' remotepowertype.pk %}"
+              >Overview</a
+            >
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          {% block tabcontent %}
+          {% endblock %}
+        </div>
+        <span style="font-size: 0.7em; font-family: Monospace;"
+          >API:
+          <a href="{% url 'api:remotepowertype' %}?name={{ remotepowertype.name }}"
+            >{% url 'api:remotepowertype' %}?name={{ remotepowertype.name }}</a
+          >
+          | Edit:
+          <a href="{% url 'frontend:edit_remotepowertype' remotepowertype.id %}"
+            >{% url 'frontend:edit_remotepowertype' remotepowertype.id %}</a
+          ></span
+        >
+      </main>
+    </div>
+  </div>
+{% endblock %}

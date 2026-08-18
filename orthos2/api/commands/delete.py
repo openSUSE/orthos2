@@ -22,6 +22,7 @@ from orthos2.api.forms import (
     DeleteManufacturerAPIForm,
     DeleteRemotePowerAPIForm,
     DeleteRemotePowerDeviceAPIForm,
+    DeleteRemotePowerTypeAPIForm,
     DeleteSerialConsoleAPIForm,
     DeleteSerialConsoleTypeAPIForm,
     DeleteServerConfigAPIForm,
@@ -40,6 +41,7 @@ from orthos2.data.models import (
     Manufacturer,
     NetworkInterface,
     RemotePowerDevice,
+    RemotePowerType,
     SerialConsoleType,
     ServerConfig,
     System,
@@ -59,6 +61,7 @@ class Delete:
     DEVICETYPE = "devicetype"
     SERIALCONSOLETYPE = "serialconsoletype"
     SYSTEM = "system"
+    REMOTEPOWERTYPE = "remotepowertype"
     ARCHITECTURE = "architecture"
     SERVERCONFIG = "serverconfig"
 
@@ -71,6 +74,7 @@ class Delete:
         DEVICETYPE,
         SERIALCONSOLETYPE,
         SYSTEM,
+        REMOTEPOWERTYPE,
         ARCHITECTURE,
         SERVERCONFIG,
     ]
@@ -101,6 +105,7 @@ Arguments:
              devicetype         : Delete a device type (superusers only).
              serialconsoletype  : Delete a serial console type (superusers only).
              system             : Delete a system (superusers only).
+             remotepowertype    : Delete a remote power type (superusers only).
              architecture       : Delete an architecture (superusers only).
              serverconfig       : Delete a server configuration entry
                                     (superusers only).
@@ -193,6 +198,14 @@ Example:
                 return ErrorMessage("Invalid number of arguments for 'system'!").as_json
 
             return redirect(reverse("api:system_delete"))
+
+        elif item == Delete.REMOTEPOWERTYPE:
+            if sub_arguments:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'remotepowertype'!"
+                ).as_json
+
+            return redirect(reverse("api:remotepowertype_delete"))
 
         elif item == Delete.ARCHITECTURE:
             if sub_arguments:
@@ -861,6 +874,87 @@ class DeleteSystemCommand(BaseAPIView):
                 system = System.objects.get(name__iexact=cleaned_data["name"])
 
                 result = system.delete()
+
+                theader = [
+                    {"objects": "Deleted objects"},
+                    {"count": "#"},
+                ]
+
+                response: Dict[str, Any] = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": [],
+                }
+                for key, value in result[1].items():
+                    response["data"].append(  # type: ignore
+                        {"objects": key.replace("data.", ""), "count": value}
+                    )
+                return JsonResponse(response)
+
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
+
+
+class DeleteRemotePowerTypeCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/remotepowertype/delete"
+    URL_POST = "/remotepowertype/delete"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Deletes a remote power type from the database."
+    HELP = """Deletes a remote power type from the database (superusers only).
+
+    Usage:
+        DELETE remotepowertype <name>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^remotepowertype/delete",
+                DeleteRemotePowerTypeCommand.as_view(),
+                name="remotepowertype_delete",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for deleting a remote power type."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = DeleteRemotePowerTypeAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Delete remote power type."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = DeleteRemotePowerTypeAPIForm(data)
+
+        if form.is_valid():
+            try:
+                cleaned_data = form.cleaned_data
+
+                remotepowertype = RemotePowerType.objects.get(
+                    name__iexact=cleaned_data["name"]
+                )
+
+                result = remotepowertype.delete()
 
                 theader = [
                     {"objects": "Deleted objects"},
