@@ -146,6 +146,26 @@ urlpatterns = [
         views.DeleteSerialConsole.as_view(),
         name="delete_serialconsole",
     ),
+    re_path(
+        r"^machine/(?P<id>[0-9]+)/remotepower$",
+        views.remotepower,
+        name="remotepower",
+    ),
+    path(
+        "machine/<int:machine_id>/remotepower/new",
+        views.NewRemotePower.as_view(),
+        name="new_remotepower",
+    ),
+    path(
+        "remotepower/edit/<int:pk>/",
+        views.RemotePowerDetailedEdit.as_view(),
+        name="edit_remotepower",
+    ),
+    path(
+        "remotepower/delete/<int:pk>/",
+        views.DeleteRemotePower.as_view(),
+        name="delete_remotepower",
+    ),
     re_path(r"^machine/(?P<id>[0-9]+)/pci$", views.pci, name="pci"),
     re_path(
         r"^machine/(?P<id>[0-9]+)/installations$",

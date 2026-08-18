@@ -102,16 +102,6 @@ class ChangeView(WebTest):
         # Assert
         self.assertContains(page, "VIRTUALIZATION")  # type: ignore
 
-    def test_visible_inlines_non_administrative_systems(self) -> None:
-        """Test for inlines."""
-        # Act
-        page = self.app.get(  # type: ignore
-            reverse("admin:data_machine_change", args=["1"]), user="superuser"
-        )
-
-        # Assert
-        self.assertContains(page, "Remote Power")  # type: ignore
-
     def test_visible_fieldsets_administrative_systems(self) -> None:
         """Test for fieldsets."""
         # Act
@@ -121,16 +111,6 @@ class ChangeView(WebTest):
 
         # Assert
         self.assertContains(page, "VIRTUALIZATION")  # type: ignore
-
-    def test_visible_inlines_administrative_systems(self) -> None:
-        """Test for inlines."""
-        # Act
-        page = self.app.get(  # type: ignore
-            reverse("admin:data_machine_change", args=["2"]), user="superuser"
-        )
-
-        # Assert
-        self.assertContains(page, "Remote Power")  # type: ignore
 
     def test_deactivate_sol_button_visible_for_ipmi_console(self) -> None:
         """The machine detail page should expose the SOL deactivate action for IPMI consoles."""

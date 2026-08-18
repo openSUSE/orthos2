@@ -526,6 +526,7 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
             "remote_power_device",
             "port",
             "comment",
+            "options",
         )
 
         RemotePowerFormSet = inlineformset_factory(  # type: ignore
@@ -547,7 +548,7 @@ class RemotePowerAPIForm(forms.Form, BaseAPIForm):
         remotepower.clean()
         return cleaned_data
 
-    def get_order(self) -> Tuple[str, str, str, str]:
+    def get_order(self) -> Tuple[str, str, str, str, str]:
         """Return input order."""
         return self._query_fields
 

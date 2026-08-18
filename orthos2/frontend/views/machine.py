@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Dict, Set, Union
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import (
     Http404,
     HttpRequest,
@@ -20,7 +20,7 @@ from django.shortcuts import get_object_or_404, redirect, render  # type: ignore
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, UpdateView
 
-from orthos2.data.models import Machine, NetworkInterface, SerialConsole
+from orthos2.data.models import Machine, NetworkInterface, RemotePower, SerialConsole
 from orthos2.data.models.netboxorthoscomparision import NetboxOrthosComparisionRun
 from orthos2.frontend.decorators import check_permissions
 from orthos2.frontend.forms.addmachine import AddMachineFormView
@@ -115,6 +115,19 @@ def serialconsole(request: HttpRequest, id: int) -> HttpResponse:
             request,
             "frontend/machines/detail/serialconsole.html",
             {"machine": machine, "title": "Serial Console"},
+        )
+    except Machine.DoesNotExist:
+        raise Http404("Machine does not exist")
+
+
+@login_required
+def remotepower(request: HttpRequest, id: int) -> HttpResponse:
+    try:
+        machine = Machine.objects.get(pk=id)
+        return render(
+            request,
+            "frontend/machines/detail/remotepower.html",
+            {"machine": machine, "title": "Remote Power"},
         )
     except Machine.DoesNotExist:
         raise Http404("Machine does not exist")
@@ -734,4 +747,85 @@ class DeleteSerialConsole(SuperuserRequiredMixin, DeleteView):  # type: ignore
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["title"] = "Delete Serial Console"
+        return context
+
+
+REMOTEPOWER_FIELDS = [
+    "fence_agent",
+    "remote_power_device",
+    "port",
+    "comment",
+    "options",
+]
+
+
+class NewRemotePower(SuperuserRequiredMixin, CreateView):
+    model = RemotePower
+    template_name = "frontend/machines/detail/new_remotepower.html"
+    fields = REMOTEPOWER_FIELDS
+
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
+        self.machine = get_object_or_404(Machine, pk=self.kwargs["machine_id"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self) -> Dict[str, Any]:
+        kwargs = super().get_form_kwargs()
+        kwargs["instance"] = RemotePower(machine=self.machine)
+        return kwargs
+
+    def get_success_url(self) -> str:
+        return reverse_lazy("frontend:remotepower", kwargs={"id": self.machine.pk})
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["machine"] = self.machine
+        context["title"] = "New Remote Power for {}".format(self.machine.fqdn)
+        context["action"] = "new"
+        return context
+
+    def form_valid(self, form: Any) -> HttpResponse:
+        try:
+            return super().form_valid(form)
+        except ValidationError as e:
+            form.add_error(None, e)
+            return self.form_invalid(form)
+
+
+class RemotePowerDetailedEdit(SuperuserRequiredMixin, UpdateView):
+    model = RemotePower
+    template_name = "frontend/machines/detail/new_remotepower.html"
+    fields = REMOTEPOWER_FIELDS
+
+    def get_success_url(self) -> str:
+        return reverse_lazy(
+            "frontend:remotepower", kwargs={"id": self.object.machine_id}
+        )
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["machine"] = self.object.machine
+        context["title"] = "Edit Remote Power for {}".format(self.object.machine.fqdn)
+        context["action"] = "edit"
+        return context
+
+    def form_valid(self, form: Any) -> HttpResponse:
+        try:
+            return super().form_valid(form)
+        except ValidationError as e:
+            form.add_error(None, e)
+            return self.form_invalid(form)
+
+
+class DeleteRemotePower(SuperuserRequiredMixin, DeleteView):  # type: ignore
+    model = RemotePower
+    template_name = "frontend/machines/detail/remotepower_confirm_deletion.html"
+
+    def get_success_url(self) -> str:
+        return reverse_lazy(
+            "frontend:remotepower", kwargs={"id": self.object.machine_id}
+        )
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Delete Remote Power"
         return context

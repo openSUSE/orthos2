@@ -230,7 +230,9 @@ class AddCommand(BaseAPIView):
                 ).as_json
 
             return redirect(
-                "{}?fqdn={}".format(reverse("api:remotepower_add"), sub_arguments[0])
+                "{}?fqdn={}".format(
+                    reverse("api:remotepower_add_get"), sub_arguments[0]
+                )
             )
         elif item == Add.REMOTEPOWERDEVICE:
             if sub_arguments:
@@ -859,7 +861,7 @@ class AddRemotePowerCommandGet(BaseAPIView):
             return ErrorMessage("No FQDN given").as_json
         try:
             result = get_machine(
-                fqdn, redirect_to="api:remotepower_add", data=request.GET
+                fqdn, redirect_to="api:remotepower_add_get", data=request.GET
             )
             if isinstance(result, Serializer):
                 return result.as_json
@@ -896,7 +898,7 @@ class AddRemotePowerCommandPost(BaseAPIView):
     def get_urls() -> List[URLPattern]:
         return [
             re_path(
-                r"^remotepower/add/(?P<fqdn>[a-z0-9\.-]+)$/",
+                r"^remotepower/add/(?P<fqdn>[a-z0-9\.-]+)/$",
                 AddRemotePowerCommandPost.as_view(),
                 name="remotepower_add_post",
             ),
@@ -914,7 +916,7 @@ class AddRemotePowerCommandPost(BaseAPIView):
         try:
             fqdn = request.path.split("/")[-2]
             result = get_machine(
-                fqdn, redirect_to="api:remotepower_add", data=request.GET
+                fqdn, redirect_to="api:remotepower_add_get", data=request.GET
             )
             if isinstance(result, Serializer):
                 return result.as_json

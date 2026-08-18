@@ -26,6 +26,7 @@ from orthos2.api.forms import (
     EnclosureAPIForm,
     ManufacturerAPIForm,
     NetworkInterfaceAPIForm,
+    RemotePowerAPIForm,
     RemotePowerDeviceAPIForm,
     RemotePowerTypeAPIForm,
     SerialConsoleAPIForm,
@@ -75,6 +76,7 @@ class Edit:
     DOMAIN = "domain"
     NETWORKINTERFACE = "networkinterface"
     SERIALCONSOLE = "serialconsole"
+    REMOTEPOWER = "remotepower"
 
     as_list = [
         MANUFACTURER,
@@ -90,6 +92,7 @@ class Edit:
         DOMAIN,
         SERIALCONSOLE,
         NETWORKINTERFACE,
+        REMOTEPOWER,
     ]
 
 
@@ -128,6 +131,8 @@ class EditCommand(BaseAPIView):
                                          (superusers only).
                 serialconsole <fqdn>   : Edit the serial console of a
                                          specific machine (superusers only).
+                remotepower <fqdn>     : Edit the remote power of a
+                                         specific machine (superusers only).
 
     Example:
         EDIT manufacturer 1
@@ -143,6 +148,7 @@ class EditCommand(BaseAPIView):
         EDIT domain 1
         EDIT networkinterface 1
         EDIT serialconsole foo.domain.tld
+        EDIT remotepower foo.domain.tld
     """
 
     @staticmethod
@@ -301,6 +307,18 @@ class EditCommand(BaseAPIView):
             return redirect(
                 "{}?fqdn={}".format(
                     reverse("api:serialconsole_edit_get"), sub_arguments[0]
+                )
+            )
+
+        elif item == Edit.REMOTEPOWER:
+            if len(sub_arguments) != 1:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'remotepower'!"
+                ).as_json
+
+            return redirect(
+                "{}?fqdn={}".format(
+                    reverse("api:remotepower_edit_get"), sub_arguments[0]
                 )
             )
 
@@ -1679,6 +1697,124 @@ class EditSerialConsoleCommandPost(BaseAPIView):
                         continue
                     setattr(serialconsole, field_name, value)
                 serialconsole.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json  # type: ignore
+
+
+class EditRemotePowerCommandGet(BaseAPIView):
+
+    URL_POST = "/remotepower/{fqdn}/edit"
+
+    HELP_SHORT = "Edits the remote power of a machine."
+    HELP = """Edits the remote power of a machine (superusers only).
+
+    Usage:
+        EDIT remotepower <fqdn>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^remotepower/edit",
+                EditRemotePowerCommandGet.as_view(),
+                name="remotepower_edit_get",
+            ),
+        ]
+
+    def get(
+        self, request: Request, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
+        """Return form for editing a remote power."""
+        fqdn = request.GET.get("fqdn", "")
+        try:
+            result = get_machine(
+                fqdn, redirect_to="api:remotepower_edit_get", data=request.GET
+            )
+            if isinstance(result, Serializer):
+                return result.as_json
+            elif isinstance(result, HttpResponseRedirect):
+                return result
+            machine = result
+        except Exception as e:
+            return ErrorMessage(str(e)).as_json
+
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        if not machine.has_remotepower():
+            return ErrorMessage("Machine has no remote power!").as_json
+
+        remotepower = machine.remotepower
+        form = RemotePowerAPIForm(machine=machine)
+        for field_name in form._query_fields:  # type: ignore
+            form.fields[field_name].initial = getattr(remotepower, field_name)
+
+        input = InputSerializer(
+            form.as_dict(), self.URL_POST.format(fqdn=machine.fqdn), form.get_order()
+        )
+        return input.as_json
+
+
+class EditRemotePowerCommandPost(BaseAPIView):
+
+    URL_POST = "/remotepower/{fqdn}/edit"
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^remotepower/(?P<fqdn>[a-z0-9\.-]+)/edit$",
+                EditRemotePowerCommandPost.as_view(),
+                name="remotepower_edit_post",
+            ),
+        ]
+
+    def post(
+        self, request: Request, fqdn: str, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
+        """Edit remote power of machine."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        try:
+            result = get_machine(
+                fqdn, redirect_to="api:remotepower_edit_post", data=request.GET
+            )
+            if isinstance(result, Serializer):
+                return result.as_json
+            elif isinstance(result, HttpResponseRedirect):
+                return result
+            machine = result
+        except Exception as e:
+            return ErrorMessage(str(e)).as_json
+
+        if not machine.has_remotepower():
+            return ErrorMessage("Machine has no remote power!").as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = RemotePowerAPIForm(data, machine=machine)
+
+        if form.is_valid():
+            try:
+                remotepower = machine.remotepower
+                for field_name, value in form.cleaned_data.items():
+                    if field_name == "machine":
+                        continue
+                    setattr(remotepower, field_name, value)
+                remotepower.save()
             except Exception as e:
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json
