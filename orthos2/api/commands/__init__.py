@@ -33,6 +33,7 @@ from orthos2.api.commands.dailytask import (
 )
 from orthos2.api.commands.delete import (
     DeleteArchitectureCommand,
+    DeleteBMCCommand,
     DeleteCommand,
     DeleteDailyTaskCommand,
     DeleteDeviceTypeCommand,
@@ -53,6 +54,7 @@ from orthos2.api.commands.delete import (
 )
 from orthos2.api.commands.edit import (
     EditArchitectureCommand,
+    EditBMCCommand,
     EditCommand,
     EditDailyTaskCommand,
     EditDeviceTypeCommand,
@@ -187,4 +189,6 @@ __all__ = [
     "EditSerialConsoleCommandPost",
     "EditRemotePowerCommandGet",
     "EditRemotePowerCommandPost",
+    "DeleteBMCCommand",
+    "EditBMCCommand",
 ]

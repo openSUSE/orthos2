@@ -1,4 +1,3 @@
-import ipaddress
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 from django import forms
@@ -10,152 +9,15 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 
 from orthos2.data.models import (
-    BMC,
     Annotation,
     Architecture,
     Domain,
     Machine,
-    NetworkInterface,
-    RemotePower,
     System,
 )
-from orthos2.utils.misc import get_domain, is_unique_mac_address, suggest_host_ip
 
 if TYPE_CHECKING:
     from django.contrib.auth.models import User
-
-
-class BMCForm(forms.ModelForm):  # type: ignore
-    def clean(self) -> None:
-        """
-        Verify that all information inside a form is valid.
-        """
-        if not self.is_valid():
-            return
-        self.__verify_username_password()
-        self.__suggest_ip_address()
-        self.__verify_ip_in_network()
-
-    def __verify_username_password(self) -> None:
-        """
-        Called during self.clean(). Verifies the username and password are both given.
-        """
-        username = self.cleaned_data.get("username")
-        password = self.cleaned_data.get("password")
-        if username and not password:
-            raise forms.ValidationError("Username also needs a password")
-        if password and not username:
-            raise forms.ValidationError("Password also needs a username")
-
-    def __verify_ip_in_network(self) -> None:
-        """
-        Called during self.clean(). Verifies the given IP address is in the network of the FQDN.
-        """
-        bmc_machine = self.cleaned_data.get("machine")
-        if bmc_machine is None:
-            raise ValidationError("No machine for BMC found")
-        if bmc_machine.administrative:
-            # Exclude administrative machines from this check.
-            return
-
-        bmc_domain = Domain.objects.get(
-            name=get_domain(self.cleaned_data.get("fqdn", ""))
-        )
-        bmc_network_v4 = ipaddress.ip_network(
-            f"{bmc_domain.ip_v4}/{bmc_domain.subnet_mask_v4}"
-        )
-        bmc_network_v6 = ipaddress.ip_network(
-            f"{bmc_domain.ip_v6}/{bmc_domain.subnet_mask_v6}"
-        )
-
-        ip_address_v4 = self.cleaned_data.get("ip_address_v4")
-        ip_address_v6 = self.cleaned_data.get("ip_address_v6")
-        if ip_address_v4 and ipaddress.ip_address(ip_address_v4) not in bmc_network_v4:
-            raise ValidationError("IPv4 address is not in the chosen network!")
-        if ip_address_v6 and ipaddress.ip_address(ip_address_v6) not in bmc_network_v6:
-            raise ValidationError("IPv4 address is not in the chosen network!")
-
-    def __suggest_ip_address(self) -> None:
-        """
-        Called during self.clean(). Suggests an IP address in case a MAC is present.
-        """
-        bmc_domain = Domain.objects.get(name=get_domain(self.cleaned_data["fqdn"]))
-        interface_mac = self.cleaned_data.get("mac")
-        if interface_mac == "":
-            # We don't want to autogenerate an address for interfaces without MAC addresses
-            self.cleaned_data["ip_address_v4"] = ""
-            self.cleaned_data["ip_address_v6"] = ""
-        else:
-            ip_address_v4 = self.cleaned_data.get("ip_address_v4")
-            if ip_address_v4 == "127.0.0.1":
-                self.cleaned_data["ip_address_v4"] = suggest_host_ip(4, bmc_domain)
-            ip_address_v6 = self.cleaned_data.get("ip_address_v6")
-            if ip_address_v6 == "::1":
-                self.cleaned_data["ip_address_v6"] = suggest_host_ip(6, bmc_domain)
-
-
-class BMCFormInlineFormSet(forms.models.BaseInlineFormSet):  # type: ignore
-    def clean(self) -> None:
-        if not self.is_valid():
-            return
-        self.__verify_unique_mac_address()
-        self.__verify_unique_ip_address()
-
-    def __verify_unique_mac_address(self) -> None:
-        """
-        This method is called in clean. It is verifying that all MAC addresses are unique inside the DB.
-        """
-        self.instance: "Machine"
-        old_mac_addresses = list(
-            self.instance.networkinterfaces.all().values_list("mac_address", flat=True)
-        )
-        if self.instance.has_bmc() and self.instance.bmc.mac != "":
-            old_mac_addresses.append(self.instance.bmc.mac)
-
-        for interface in self.cleaned_data:
-            mac = interface.get("mac_address")
-            if mac == "":
-                continue
-            if not is_unique_mac_address(mac, exclude=old_mac_addresses):  # type: ignore
-                raise ValidationError(f"MAC address {mac} is not unique")
-
-    def __verify_unique_ip_address(self) -> None:
-        """
-        This method is called in clean. It is verifying if all IPs given are unique.
-        """
-        for interface in self.cleaned_data:
-            ip_address_v4 = interface.get("ip_address_v4")
-            ip_address_v6 = interface.get("ip_address_v6")
-            if (
-                NetworkInterface.objects.filter(ip_address_v4=ip_address_v4).count() > 1
-                or BMC.objects.filter(ip_address_v4=ip_address_v4).count() > 1
-            ):
-                raise ValidationError(
-                    "IPv4 address already in use, please choose another one!"
-                )
-            if (
-                NetworkInterface.objects.filter(ip_address_v6=ip_address_v6).count() > 1
-                or BMC.objects.filter(ip_address_v6=ip_address_v6).count() > 1
-            ):
-                raise ValidationError(
-                    "IPv6 address already in use, please choose another one!"
-                )
-
-
-class BMCInline(admin.StackedInline):  # type: ignore
-    model = BMC
-    extra = 0
-    formset = BMCFormInlineFormSet
-    form = BMCForm
-    readonly_fields = ("netbox_last_fetch_attempt",)
-
-    def get_formset(  # type: ignore
-        self, request: HttpRequest, obj: Optional["Machine"] = None, **kwargs: Any
-    ):
-        """Set machine object for `formfield_for_foreignkey` method."""
-        self.machine = obj
-        formset = super(BMCInline, self).get_formset(request, obj, **kwargs)  # type: ignore
-        return formset  # type: ignore
 
 
 class AnnotationInline(admin.TabularInline):  # type: ignore
@@ -483,34 +345,12 @@ class MachineAdmin(admin.ModelAdmin):  # type: ignore
 
         MachineAdmin.inlines = ()
 
-        if machine.bmc_allowed():
-            MachineAdmin.inlines += (BMCInline,)
-
         if not machine.system.administrative:
             MachineAdmin.inlines += (AnnotationInline,)
 
         return super(MachineAdmin, self).change_view(
             request, object_id, form_url, extra_context
         )
-
-    def save_formset(
-        self,
-        request: HttpRequest,
-        form: Any,
-        formset: Any,
-        change: Any,
-    ) -> None:
-        formset.save()
-        machine = form.save(commit=False)
-        if (
-            machine.bmc_allowed()
-            and hasattr(machine, "bmc")
-            and not hasattr(machine, "remotepower")
-        ):
-            machine.remotepower = RemotePower(machine=machine)
-            machine.bmc.save()
-            machine.remotepower.save()
-            machine.save()
 
 
 admin.site.register(Machine, MachineAdmin)  # type: ignore

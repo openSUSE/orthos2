@@ -20,7 +20,13 @@ from django.shortcuts import get_object_or_404, redirect, render  # type: ignore
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, UpdateView
 
-from orthos2.data.models import Machine, NetworkInterface, RemotePower, SerialConsole
+from orthos2.data.models import (
+    BMC,
+    Machine,
+    NetworkInterface,
+    RemotePower,
+    SerialConsole,
+)
 from orthos2.data.models.netboxorthoscomparision import NetboxOrthosComparisionRun
 from orthos2.frontend.decorators import check_permissions
 from orthos2.frontend.forms.addmachine import AddMachineFormView
@@ -677,6 +683,77 @@ class NetworkInterfaceDetailedEdit(SuperuserRequiredMixin, UpdateView):
             self.object.machine.fqdn
         )
         context["action"] = "edit"
+        return context
+
+
+BMC_FIELDS = [
+    "fqdn",
+    "mac",
+    "username",
+    "password",
+    "fence_agent",
+    "ip_address_v4",
+    "ip_address_v6",
+]
+
+
+class NewBMC(SuperuserRequiredMixin, CreateView):
+    model = BMC
+    template_name = "frontend/machines/detail/new_bmc.html"
+    fields = BMC_FIELDS
+
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
+        self.machine = get_object_or_404(Machine, pk=self.kwargs["machine_id"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self) -> Dict[str, Any]:
+        kwargs = super().get_form_kwargs()
+        kwargs["instance"] = BMC(machine=self.machine)
+        return kwargs
+
+    def get_success_url(self) -> str:
+        return reverse_lazy(
+            "frontend:networkinterfaces", kwargs={"id": self.machine.pk}
+        )
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["machine"] = self.machine
+        context["title"] = "New BMC for {}".format(self.machine.fqdn)
+        context["action"] = "new"
+        return context
+
+
+class BMCDetailedEdit(SuperuserRequiredMixin, UpdateView):
+    model = BMC
+    template_name = "frontend/machines/detail/new_bmc.html"
+    fields = BMC_FIELDS
+
+    def get_success_url(self) -> str:
+        return reverse_lazy(
+            "frontend:networkinterfaces", kwargs={"id": self.object.machine_id}
+        )
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["machine"] = self.object.machine
+        context["title"] = "Edit BMC for {}".format(self.object.machine.fqdn)
+        context["action"] = "edit"
+        return context
+
+
+class DeleteBMC(SuperuserRequiredMixin, DeleteView):  # type: ignore
+    model = BMC
+    template_name = "frontend/machines/detail/bmc_confirm_deletion.html"
+
+    def get_success_url(self) -> str:
+        return reverse_lazy(
+            "frontend:networkinterfaces", kwargs={"id": self.object.machine_id}
+        )
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Delete BMC"
         return context
 
 

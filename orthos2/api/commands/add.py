@@ -630,6 +630,8 @@ class AddBMCCommandPost(BaseAPIView):
                     username=cleaned_data["username"],
                     password=cleaned_data["password"],
                     fence_agent=fence_agent,
+                    ip_address_v4=cleaned_data.get("ip_address_v4"),
+                    ip_address_v6=cleaned_data.get("ip_address_v6"),
                 )
                 bmc.save()
             except Exception as e:

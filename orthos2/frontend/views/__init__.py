@@ -67,10 +67,13 @@ from .enclosures import (
     enclosure_netboxcomparison,
 )
 from .machine import (
+    BMCDetailedEdit,
+    DeleteBMC,
     DeleteNetworkInterface,
     DeleteRemotePower,
     DeleteSerialConsole,
     NetworkInterfaceDetailedEdit,
+    NewBMC,
     NewNetworkInterface,
     NewRemotePower,
     NewSerialConsole,
@@ -197,6 +200,9 @@ __all__ = [
     "DeleteNetworkInterface",
     "NewNetworkInterface",
     "NetworkInterfaceDetailedEdit",
+    "NewBMC",
+    "BMCDetailedEdit",
+    "DeleteBMC",
     "serialconsole",
     "NewSerialConsole",
     "SerialConsoleDetailedEdit",

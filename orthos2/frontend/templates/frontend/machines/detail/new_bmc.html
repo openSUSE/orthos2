@@ -1,0 +1,135 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="mb-3">
+      <form
+        class="pt-3"
+        method="post"
+        {% if action == 'new' %}
+          action="{% url 'frontend:new_bmc' machine.pk %}"
+        {% elif action == 'edit' %}
+          action="{% url 'frontend:edit_bmc' object.id %}"
+        {% endif %}
+      >
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+
+        {{ form.fqdn.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.fqdn.id_for_label }}">
+              {{ form.fqdn.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.fqdn }}
+            <small class="form-text text-muted">
+              {{ form.fqdn.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.mac.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.mac.id_for_label }}">
+              {{ form.mac.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.mac }}
+            <small class="form-text text-muted">
+              {{ form.mac.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.username.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.username.id_for_label }}">
+              {{ form.username.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.username }}
+            <small class="form-text text-muted">
+              {{ form.username.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.password.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.password.id_for_label }}">
+              {{ form.password.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.password }}
+            <small class="form-text text-muted">
+              {{ form.password.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.fence_agent.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.fence_agent.id_for_label }}">
+              {{ form.fence_agent.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.fence_agent }}
+            <small class="form-text text-muted">
+              {{ form.fence_agent.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.ip_address_v4.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.ip_address_v4.id_for_label }}">
+              {{ form.ip_address_v4.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.ip_address_v4 }}
+            <small class="form-text text-muted">
+              {{ form.ip_address_v4.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.ip_address_v6.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.ip_address_v6.id_for_label }}">
+              {{ form.ip_address_v6.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.ip_address_v6 }}
+            <small class="form-text text-muted">
+              {{ form.ip_address_v6.help_text }}
+            </small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm w-100">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

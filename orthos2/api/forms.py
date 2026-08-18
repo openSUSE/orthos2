@@ -15,6 +15,7 @@ from django.forms.models import ModelChoiceIteratorValue
 from django.template.defaultfilters import slugify
 
 from orthos2.data.models import (
+    BMC,
     Architecture,
     DeviceType,
     Domain,
@@ -475,6 +476,8 @@ class BMCAPIForm(forms.Form, BaseAPIForm):
             "username",
             "password",
             "fence_agent",
+            "ip_address_v4",
+            "ip_address_v6",
         )
 
     username = forms.CharField(label="BMC Username", max_length=256, required=False)
@@ -496,22 +499,57 @@ class BMCAPIForm(forms.Form, BaseAPIForm):
         queryset=RemotePowerType.objects.filter(device="bmc"),
         label="Fence Agent",
     )
+    ip_address_v4 = forms.GenericIPAddressField(
+        label="IPv4 address", protocol="IPv4", required=False
+    )
+    ip_address_v6 = forms.GenericIPAddressField(
+        label="IPv6 address", protocol="IPv6", required=False
+    )
 
-    def get_order(self) -> Tuple[str, str, str, str, str]:
-        """Return input order."""
-        return self._query_fields
-
-    def clean(self) -> Dict[str, Any]:
-        cleaned_data = super().clean() or self.cleaned_data
+    def clean(self) -> Optional[Dict[str, Any]]:
+        """Validate the resulting BMC against the model's business rules."""
+        cleaned_data = super().clean()
+        if cleaned_data is None:
+            return None
+        bmc = BMC(machine=self.machine, **cleaned_data)
+        bmc.clean()
         # A BMC saves directly, bypassing Machine.save()'s own "{system} systems
         # cannot use a BMC" check - without this, a disallowed BMC could be
         # attached here and then permanently block every future save() of the
-        # machine it's attached to.
-        if self.machine is not None and not self.machine.bmc_allowed():
+        # machine it's attached to. Only enforced when attaching a BMC to a
+        # machine that doesn't have one yet - editing fields on an
+        # already-attached BMC shouldn't be blocked by this.
+        if (
+            self.machine is not None
+            and not self.machine.has_bmc()
+            and not self.machine.bmc_allowed()
+        ):
             raise forms.ValidationError(
                 "{} systems cannot use a BMC".format(self.machine.system.name)
             )
         return cleaned_data
+
+    def get_order(self) -> Tuple[str, str, str, str, str, str, str]:
+        """Return input order."""
+        return self._query_fields
+
+
+class DeleteBMCAPIForm(forms.Form, BaseAPIForm):
+    def clean_fqdn(self) -> str:
+        """Check whether `fqdn` already exists."""
+        fqdn = self.cleaned_data["fqdn"]
+        if BMC.objects.filter(fqdn__iexact=fqdn).count() == 0:
+            self.add_error("fqdn", "No BMC with this FQDN")
+        return fqdn
+
+    fqdn = forms.CharField(
+        label="FQDN",
+        max_length=256,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return ["fqdn"]
 
 
 class RemotePowerAPIForm(forms.Form, BaseAPIForm):
