@@ -5,6 +5,7 @@ from orthos2.api.commands.add import (
     AddBMCCommandPost,
     AddCommand,
     AddMachineCommand,
+    AddManufacturerCommand,
     AddRemotePowerCommandGet,
     AddRemotePowerCommandPost,
     AddRemotePowerDeviceCommand,
@@ -16,14 +17,17 @@ from orthos2.api.commands.add import (
 from orthos2.api.commands.delete import (
     DeleteCommand,
     DeleteMachineCommand,
+    DeleteManufacturerCommand,
     DeleteNetworkInterfaceCommand,
     DeleteRemotePowerCommand,
     DeleteRemotePowerDeviceCommand,
     DeleteSerialConsoleCommand,
 )
+from orthos2.api.commands.edit import EditCommand, EditManufacturerCommand
 from orthos2.api.commands.info import (
     EnclosureInfoCommand,
     InfoCommand,
+    ManufacturerInfoCommand,
     RemotePowerDeviceInfoCommand,
 )
 from orthos2.api.commands.power import PowerCommand
@@ -39,6 +43,7 @@ from orthos2.api.commands.setup import SetupCommand
 __all__ = [
     "EnclosureInfoCommand",
     "RemotePowerDeviceInfoCommand",
+    "ManufacturerInfoCommand",
     "InfoCommand",
     "QueryCommand",
     "ReserveCommandGet",
@@ -69,4 +74,8 @@ __all__ = [
     "AddBMCCommandPost",
     "AddBMCCommandGet",
     "AddRemotePowerDeviceCommand",
+    "AddManufacturerCommand",
+    "DeleteManufacturerCommand",
+    "EditCommand",
+    "EditManufacturerCommand",
 ]

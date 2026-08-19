@@ -1,0 +1,58 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="mb-3">
+      <form
+        class="pt-3"
+        method="post"
+        {% if action == 'new' %}
+          action="{% url 'frontend:new_manufacturer' %}"
+        {% elif action == 'edit' %}
+          action="{% url 'frontend:edit_manufacturer' object.id %}"
+        {% endif %}
+      >
+        {% csrf_token %}
+
+        {{ form.name.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.name.id_for_label }}">
+              {{ form.name.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.name }}
+            <small class="form-text text-muted">
+              {{ form.name.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.netbox_id.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.netbox_id.id_for_label }}">
+              {{ form.netbox_id.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.netbox_id }}
+            <small class="form-text text-muted">
+              {{ form.netbox_id.help_text }}
+            </small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm w-100">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

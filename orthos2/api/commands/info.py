@@ -1,5 +1,6 @@
 from typing import Any, List, Union
 
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import URLPattern, re_path
 from rest_framework.request import Request
@@ -13,9 +14,14 @@ from orthos2.api.commands.base import (
 )
 from orthos2.api.serializers.enclosure import EnclosureSerializer
 from orthos2.api.serializers.machine import MachineSerializer
-from orthos2.api.serializers.misc import ErrorMessage, Serializer
+from orthos2.api.serializers.manufacturer import ManufacturerSerializer
+from orthos2.api.serializers.misc import (
+    AuthRequiredSerializer,
+    ErrorMessage,
+    Serializer,
+)
 from orthos2.api.serializers.remotepowerdevice import RemotePowerDeviceSerializer
-from orthos2.data.models import Machine, RemotePowerDevice
+from orthos2.data.models import Machine, Manufacturer, RemotePowerDevice
 from orthos2.data.models.enclosure import Enclosure
 
 
@@ -248,6 +254,74 @@ class RemotePowerDeviceInfoCommand(BaseAPIView):
 
             response["header"] = {"type": "INFO", "order": order}
             response["data"] = serialzed_enclosure.data_info  # type: ignore
+        except Exception:
+            return ErrorMessage(getException()).as_json
+
+        return JsonResponse(response)
+
+
+class ManufacturerInfoCommand(BaseAPIView):
+
+    METHOD = "GET"
+    URL = "/manufacturer"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Retrieve information about a manufacturer."
+    HELP = """Command to get information about a manufacturer.
+
+Usage:
+    INFO manufacturer <name>
+
+Arguments:
+    name - Name of the manufacturer. If omitted, all manufacturers are listed.
+
+Example:
+    INFO manufacturer Dell
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^manufacturer$",
+                ManufacturerInfoCommand.as_view(),
+                name="manufacturer",
+            ),
+        ]
+
+    @staticmethod
+    def get_tabcompletion() -> List[str]:
+        return list(Manufacturer.objects.all().values_list("name", flat=True))
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return manufacturer information."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        name = request.GET.get("name", "")
+
+        try:
+            if name:
+                manufacturer = Manufacturer.objects.get(name__iexact=name)
+                serialized_manufacturer = ManufacturerSerializer(manufacturer)
+                response = {
+                    "header": {"type": "INFO", "order": ["id", "name"]},
+                    "data": serialized_manufacturer.data_info,
+                }
+            else:
+                manufacturers = Manufacturer.objects.all()
+                serialized_manufacturers = ManufacturerSerializer(
+                    manufacturers, many=True
+                )
+                theader = [{"id": "ID"}, {"name": "Name"}]
+                response = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": serialized_manufacturers.data,
+                }
+        except Manufacturer.DoesNotExist:
+            return ErrorMessage(
+                "Manufacturer '{}' does not exist!".format(name)
+            ).as_json
         except Exception:
             return ErrorMessage(getException()).as_json
 

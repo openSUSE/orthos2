@@ -46,7 +46,7 @@ Modules["general"] = (
     "Serverconfig",
     "System",
     "Architecture",
-    "Vendor",
+    "Manufacturer",
     "Platform",
     "Serialconsoletype",
 )

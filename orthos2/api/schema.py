@@ -105,19 +105,45 @@ class CustomViewSchema(AutoSchema):
 
         return operation
 
+    # Resource-agnostic CLI dispatcher endpoints (ADD/DELETE/EDIT/QUERY/...) stay grouped
+    # under "API" instead of being tagged by their own name.
+    GENERIC_RESOURCE_SEGMENTS = {
+        "add",
+        "delete",
+        "edit",
+        "query",
+        "reserve",
+        "release",
+        "regenerate",
+        "rescan",
+        "setup",
+        "powercycle",
+        "login",
+        "schema",
+    }
+
     def get_tags(self, path, method):
         # Grabs URL and splits it by /
         path_segments = [segment for segment in path.strip("/").split("/") if segment]
 
-        # Exceptions for machine and remote power, as some of their commands were treated as being part of api root
+        # Exceptions for machine and remote power, whose multi-word names don't
+        # capitalize cleanly (and some of their commands live at the api root).
         if "machine" in path_segments:
             return ["Machine"]
 
         if "remotepowerdevice" in path_segments:
             return ["RemotePowerDevice"]
 
-        # If more than 2 segments, grab the second one, else put everything in "Api"
-        if len(path_segments) > 2:
-            return [path_segments[1].capitalize()]
+        # Paths are always "/api/<resource>[/<action>]" — path_segments[0] is the
+        # fixed "api" prefix, so the resource-identifying segment is the second one.
+        if len(path_segments) < 2:
+            return ["API"]
 
-        return ["API"]
+        resource = path_segments[1]
+
+        if resource in self.GENERIC_RESOURCE_SEGMENTS:
+            return ["API"]
+
+        # Every other resource (e.g. /api/manufacturer, /api/manufacturer/add, /api/platform/edit)
+        # gets its own tag/group instead of falling into a single catch-all "API" bucket.
+        return [resource.capitalize()]

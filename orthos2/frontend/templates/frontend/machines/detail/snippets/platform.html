@@ -13,9 +13,23 @@
   </thead>
   <tbody>
     <tr>
-      <td class="th fw-bold">Vendor</td>
-      <td width="50%">{{ machine.enclosure.platform.vendor.name }}</td>
-      <td width="50%">{{ machine.platform.vendor }}</td>
+      <td class="th fw-bold">Manufacturer</td>
+      <td style="width: 50%;">
+        {% if machine.enclosure.platform %}
+          <a
+            href="{% url 'frontend:manufacturer_detail' machine.enclosure.platform.manufacturer.id %}"
+            >{{ machine.enclosure.platform.manufacturer.name }}</a
+          >
+        {% endif %}
+      </td>
+      <td style="width: 50%;">
+        {% if machine.platform %}
+          <a
+            href="{% url 'frontend:manufacturer_detail' machine.platform.manufacturer.id %}"
+            >{{ machine.platform.manufacturer.name }}</a
+          >
+        {% endif %}
+      </td>
     </tr>
     <tr>
       <td class="th fw-bold">Platform</td>

@@ -1,0 +1,40 @@
+{% extends 'frontend/manufacturers/manufacturer.html' %}
+
+{% block tabcontent %}
+  <div class="row">
+    <div class="col-10">
+      <div class="container-fluid">
+        <div class="title">
+          <h5>{{ manufacturer.name }}</h5>
+        </div>
+
+        <table class="table table-striped table-bordered small">
+          <tbody class="thead-default">
+            <tr>
+              <td class="th fw-bold" width="150px">Name</td>
+              <td>{{ manufacturer.name }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Description</td>
+              <td>{{ manufacturer.description }}</td>
+            </tr>
+            {% if manufacturer.netbox_id > 0 %}
+              <tr>
+                <td class="th fw-bold">NetBox URL</td>
+                <td>
+                  <a
+                    href="{{ NETBOX_URL }}/dcim/manufacturers/{{ manufacturer.netbox_id }}/"
+                    >NetBox Manufacturer {{ manufacturer.netbox_id }}</a
+                  >
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-2">
+      {% include 'frontend/manufacturers/detail/actions.html' %}
+    </div>
+  </div>
+{% endblock %}

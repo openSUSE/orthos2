@@ -217,6 +217,12 @@ class Netbox(REST):
         data = self.fetcher(url)
         return data
 
+    def fetch_manufacturer(self, id: int) -> Dict[str, Any]:
+        url = f"{self.base_url}/dcim/manufacturers/{id}/"
+        logger.debug("Fetch manufacturer data from %s", url)
+        data = self.fetcher(url)
+        return data
+
     def fetch_ip(self, id: int) -> Dict[str, Any]:
         url = f"{self.base_url}/ipam/ip-addresses/{id}/"
         logger.debug("Fetch ip address data from %s", url)

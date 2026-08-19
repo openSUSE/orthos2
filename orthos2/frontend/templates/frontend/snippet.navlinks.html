@@ -29,6 +29,13 @@
       >Advanced Search</a
     >
   </li>
+  <li
+    class="nav-item position-relative {% active_view request 'manufacturers' %}"
+  >
+    <a class="nav-link" href="{% url 'frontend:manufacturers' %}"
+      >Manufacturers</a
+    >
+  </li>
   <li class="nav-item position-relative {% active_view request 'statistics' %}">
     <a class="nav-link" href="{% url 'frontend:statistics' %}">Statistics</a>
   </li>

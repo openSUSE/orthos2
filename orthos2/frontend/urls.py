@@ -286,4 +286,42 @@ urlpatterns = [
         views.ansible_result_bulk_delete,
         name="ansible_results_bulk_delete",
     ),
+    # Manufacturers
+    path("manufacturers", views.ManufacturerListView.as_view(), name="manufacturers"),
+    re_path(
+        r"^manufacturers/(?P<id>[0-9]+)/detail$",
+        views.manufacturer_detail,
+        name="manufacturer_detail",
+    ),
+    re_path(
+        r"^manufacturers/(?P<id>[0-9]+)/platforms$",
+        views.manufacturer_platforms,
+        name="manufacturer_platforms",
+    ),
+    re_path(
+        r"^manufacturers/(?P<id>[0-9]+)/fetch-netbox$",
+        views.manufacturer_fetch_netbox,
+        name="manufacturer_netbox_fetch",
+    ),
+    re_path(
+        r"^manufacturers/(?P<id>[0-9]+)/netboxcomparison$",
+        views.manufacturer_netboxcomparison,
+        name="manufacturer_netbox_comparisons",
+    ),
+    re_path(
+        r"^manufacturers/(?P<id>[0-9]+)/compare-netbox$",
+        views.manufacturer_compare_netbox,
+        name="manufacturer_netbox_compare",
+    ),
+    path("manufacturers/new", views.NewManufacturer.as_view(), name="new_manufacturer"),
+    path(
+        "manufacturers/edit/<int:pk>/",
+        views.ManufacturerDetailedEdit.as_view(),
+        name="edit_manufacturer",
+    ),
+    path(
+        "manufacturers/delete/<int:pk>/",
+        views.DeleteManufacturer.as_view(),
+        name="delete_manufacturer",
+    ),
 ]

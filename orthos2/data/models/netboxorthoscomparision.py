@@ -19,6 +19,7 @@ if TYPE_CHECKING:
         OptionalBMCForeignKey,
         OptionalEnclosureForeignKey,
         OptionalMachineForeignKey,
+        OptionalManufacturerForeignKey,
         OptionalNetworkInterfaceForeignKey,
         OptionalRemotePowerDeviceForeignKey,
     )
@@ -37,6 +38,7 @@ class NetboxOrthosComparisionRun(models.Model):
         BMC = "bmc", _("BMC")  # type: ignore
         ENCLOSURE = "enclosure", _("Enclosure")  # type: ignore
         MACHINE = "machine", _("Machine")  # type: ignore
+        MANUFACTURER = "manufacturer", _("Manufacturer")  # type: ignore
         NETWORK_INTERFACE = "network_interface", _("Network Interface")  # type: ignore
         REMOTE_POWER_DEVICE = "remote_power_device", _("Remote Power Device")  # type: ignore
 
@@ -61,6 +63,13 @@ class NetboxOrthosComparisionRun(models.Model):
     )
     object_machine: "OptionalMachineForeignKey" = models.ForeignKey(
         "data.Machine",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="netboxorthoscomparisionruns",
+    )
+    object_manufacturer: "OptionalManufacturerForeignKey" = models.ForeignKey(
+        "data.Manufacturer",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -97,6 +106,13 @@ class NetboxOrthosComparisionRun(models.Model):
             if not self.object_machine:
                 raise ValueError(
                     "Machine object must be provided for Machine comparison."
+                )
+        elif (
+            self.object_type == self.NetboxOrthosComparisionItemTypes.MANUFACTURER.value
+        ):
+            if not self.object_manufacturer:
+                raise ValueError(
+                    "Manufacturer object must be provided for Manufacturer comparison."
                 )
         elif (
             self.object_type

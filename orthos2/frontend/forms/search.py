@@ -6,14 +6,14 @@ from typing import Dict, List, Tuple, Union
 
 from django import forms
 
-from orthos2.data.models import Installation, Machine, Platform, Vendor
+from orthos2.data.models import Installation, Machine, Manufacturer, Platform
 
 
-def get_vendors() -> List[Tuple[str, str]]:
-    vendors: List[Tuple[str, str]] = [("", "--all--")]
-    for vendor in Vendor.objects.all().values("id", "name"):
-        vendors.append((vendor["id"], vendor["name"]))  # type: ignore
-    return vendors
+def get_manufacturers() -> List[Tuple[str, str]]:
+    manufacturers: List[Tuple[str, str]] = [("", "--all--")]
+    for manufacturer in Manufacturer.objects.all().values("id", "name"):
+        manufacturers.append((manufacturer["id"], manufacturer["name"]))  # type: ignore
+    return manufacturers
 
 
 def get_platforms() -> List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]]:
@@ -24,24 +24,24 @@ def get_platforms() -> List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]]
     for platform in Platform.objects.all():
         platform_id = platform.id
         name = platform.name
-        platform_vendor = platform.vendor
+        platform_manufacturer = platform.manufacturer
 
         if platform.is_cartridge:
             continue
 
-        if platform_vendor.name in groups.keys():
-            groups[platform_vendor.name] += ((platform_id, name),)
+        if platform_manufacturer.name in groups.keys():
+            groups[platform_manufacturer.name] += ((platform_id, name),)
         else:
-            groups[platform_vendor.name] = ((platform_id, name),)
+            groups[platform_manufacturer.name] = ((platform_id, name),)
 
-    for vendor, platforms_ in groups.items():
-        platforms.append((vendor, platforms_))
+    for manufacturer, platforms_ in groups.items():
+        platforms.append((manufacturer, platforms_))
     return platforms
 
 
-def get_cartridge_platforms() -> List[
-    Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]
-]:
+def get_cartridge_platforms() -> (
+    List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]]
+):
     platforms: List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]] = [
         ("", "--all--")
     ]
@@ -49,18 +49,18 @@ def get_cartridge_platforms() -> List[
     for platform in Platform.objects.all():
         id = platform.id
         name = platform.name
-        platform_vendor = platform.vendor
+        platform_manufacturer = platform.manufacturer
 
         if not platform.is_cartridge:
             continue
 
-        if platform_vendor.name in groups.keys():
-            groups[platform_vendor.name] += ((id, name),)
+        if platform_manufacturer.name in groups.keys():
+            groups[platform_manufacturer.name] += ((id, name),)
         else:
-            groups[platform_vendor.name] = ((id, name),)
+            groups[platform_manufacturer.name] = ((id, name),)
 
-    for vendor, platforms_ in groups.items():
-        platforms.append((vendor, platforms_))
+    for manufacturer, platforms_ in groups.items():
+        platforms.append((manufacturer, platforms_))
     return platforms
 
 
@@ -122,9 +122,9 @@ class SearchForm(forms.Form):
             except ValueError:
                 self.add_error("cpu_cores", "Value must be a number.")
 
-    enclosure__platform__vendor = forms.ChoiceField(
+    enclosure__platform__manufacturer = forms.ChoiceField(
         required=False,
-        choices=get_vendors,
+        choices=get_manufacturers,
         widget=forms.Select(attrs={"class": "form-select"}),
     )
 

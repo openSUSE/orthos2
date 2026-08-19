@@ -15,6 +15,7 @@ from rest_framework.request import Request
 from orthos2.api.commands.base import BaseAPIView
 from orthos2.api.forms import (
     DeleteMachineAPIForm,
+    DeleteManufacturerAPIForm,
     DeleteRemotePowerAPIForm,
     DeleteRemotePowerDeviceAPIForm,
     DeleteSerialConsoleAPIForm,
@@ -24,7 +25,12 @@ from orthos2.api.serializers.misc import (
     ErrorMessage,
     InputSerializer,
 )
-from orthos2.data.models import Machine, NetworkInterface, RemotePowerDevice
+from orthos2.data.models import (
+    Machine,
+    Manufacturer,
+    NetworkInterface,
+    RemotePowerDevice,
+)
 from orthos2.utils.misc import format_cli_form_errors
 
 logger = logging.getLogger("api")
@@ -35,8 +41,9 @@ class Delete:
     SERIALCONSOLE = "serialconsole"
     REMOTEPOWER = "remotepower"
     REMOTEPOWERDEVICE = "remotepowerdevice"
+    MANUFACTURER = "manufacturer"
 
-    as_list = [MACHINE, SERIALCONSOLE, REMOTEPOWER, REMOTEPOWERDEVICE]
+    as_list = [MACHINE, SERIALCONSOLE, REMOTEPOWER, REMOTEPOWERDEVICE, MANUFACTURER]
 
 
 class DeleteCommand(BaseAPIView):
@@ -60,6 +67,7 @@ Arguments:
              remotepower        : Delete remote power of a specifc machine
                                     (superusers only).
              remotepowerdevice  : Delete a remotepower device (superusers only).
+             manufacturer       : Delete a manufacturer (superusers only).
 
 Example:
     DELETE machine
@@ -119,6 +127,14 @@ Example:
                 ).as_json
 
             return redirect(reverse("api:remotepowerdevice_delete"))
+
+        elif item == Delete.MANUFACTURER:
+            if sub_arguments:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'manufacturer'!"
+                ).as_json
+
+            return redirect(reverse("api:manufacturer_delete"))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -472,3 +488,84 @@ class DeleteNetworkInterfaceCommand(BaseAPIView):
         except Exception as e:
             logger.exception(e)
             return ErrorMessage("Something went wrong!").as_json
+
+
+class DeleteManufacturerCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/manufacturer/delete"
+    URL_POST = "/manufacturer/delete"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Deletes a manufacturer from the database."
+    HELP = """Deletes a manufacturer from the database (superusers only).
+
+    Usage:
+        DELETE manufacturer <name>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^manufacturer/delete",
+                DeleteManufacturerCommand.as_view(),
+                name="manufacturer_delete",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for deleting a manufacturer."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = DeleteManufacturerAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Delete manufacturer."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = DeleteManufacturerAPIForm(data)
+
+        if form.is_valid():
+            try:
+                cleaned_data = form.cleaned_data
+
+                manufacturer = Manufacturer.objects.get(
+                    name__iexact=cleaned_data["name"]
+                )
+
+                result = manufacturer.delete()
+
+                theader = [
+                    {"objects": "Deleted objects"},
+                    {"count": "#"},
+                ]
+
+                response: Dict[str, Any] = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": [],
+                }
+                for key, value in result[1].items():
+                    response["data"].append(  # type: ignore
+                        {"objects": key.replace("data.", ""), "count": value}
+                    )
+                return JsonResponse(response)
+
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json

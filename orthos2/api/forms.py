@@ -19,6 +19,7 @@ from orthos2.data.models import (
     Domain,
     Enclosure,
     Machine,
+    Manufacturer,
     NetworkInterface,
     RemotePower,
     RemotePowerDevice,
@@ -619,4 +620,34 @@ class DeleteRemotePowerDeviceAPIForm(forms.Form, BaseAPIForm):
         """Return input order."""
         return [
             "fqdn",
+        ]
+
+
+class ManufacturerAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = Manufacturer
+        fields = ["name"]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return ["name"]
+
+
+class DeleteManufacturerAPIForm(forms.Form, BaseAPIForm):
+    def clean_name(self) -> str:
+        """Check whether a manufacturer with `name` exists."""
+        name = self.cleaned_data["name"]
+        if Manufacturer.objects.filter(name__iexact=name).count() == 0:
+            self.add_error("name", "No manufacturer with this name")
+        return name
+
+    name = forms.CharField(
+        label="Name",
+        max_length=100,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "name",
         ]

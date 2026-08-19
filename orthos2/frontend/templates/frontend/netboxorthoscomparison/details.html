@@ -27,6 +27,8 @@
             <td>{{ run.object_enclosure.name }}</td>
           {% elif run.object_type == "machine" %}
             <td>{{ run.object_machine.fqdn }}</td>
+          {% elif run.object_type == "manufacturer" %}
+            <td>{{ run.object_manufacturer.name }}</td>
           {% elif run.object_type == "network_interface" %}
             <td>{{ run.object_network_interface.fqdn }}</td>
           {% else %}

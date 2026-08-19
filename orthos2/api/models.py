@@ -16,13 +16,13 @@ from orthos2.data.models import (
     Enclosure,
     Installation,
     Machine,
+    Manufacturer,
     NetworkInterface,
     Platform,
     RemotePower,
     SerialConsole,
     SerialConsoleType,
     System,
-    Vendor,
 )
 
 logger = logging.getLogger("api")
@@ -323,10 +323,10 @@ class QueryField:
             related_name="platform",
             verbose_name="Platform",
         ),
-        "platform_vendor": QueryFieldMappingItem(
-            field=Vendor._meta.get_field("name"),  # type: ignore
-            related_name="platform__vendor",
-            verbose_name="Vendor",
+        "platform_manufacturer": QueryFieldMappingItem(
+            field=Manufacturer._meta.get_field("name"),  # type: ignore
+            related_name="platform__manufacturer",
+            verbose_name="Manufacturer",
         ),
         "platform_description": QueryFieldMappingItem(
             field=Platform._meta.get_field("description"),  # type: ignore

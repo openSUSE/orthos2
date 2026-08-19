@@ -6,16 +6,18 @@ from orthos2.api.forms import (
     AnnotationAPIForm,
     BMCAPIForm,
     DeleteMachineAPIForm,
+    DeleteManufacturerAPIForm,
     DeleteRemotePowerAPIForm,
     DeleteRemotePowerDeviceAPIForm,
     MachineAPIForm,
+    ManufacturerAPIForm,
     RemotePowerAPIForm,
     RemotePowerDeviceAPIForm,
     ReserveMachineAPIForm,
     SerialConsoleAPIForm,
     VirtualMachineAPIForm,
 )
-from orthos2.data.models import System
+from orthos2.data.models import Manufacturer, System
 from orthos2.data.models.machine import Machine
 from orthos2.data.models.remotepowertype import RemotePowerType
 
@@ -231,3 +233,42 @@ class DeleteRemotePowerDeviceAPIFormTests(TestCase):
 
         # Assert
         self.assertTrue(form.is_valid())
+
+
+class ManufacturerAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the manufacturer creation API form"""
+        # Arrange & Act
+        form = ManufacturerAPIForm({"name": "AcmeCorp"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_requires_name(self) -> None:
+        """Test that the manufacturer creation API form requires a name"""
+        # Arrange & Act
+        form = ManufacturerAPIForm({"name": ""})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DeleteManufacturerAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the manufacturer deletion API form"""
+        # Arrange
+        Manufacturer.objects.create(name="AcmeCorp")
+
+        # Act
+        form = DeleteManufacturerAPIForm({"name": "AcmeCorp"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_rejects_nonexistent_manufacturer(self) -> None:
+        """Test that the manufacturer deletion API form rejects an unknown name"""
+        # Arrange & Act
+        form = DeleteManufacturerAPIForm({"name": "Nonexistent"})
+
+        # Assert
+        self.assertFalse(form.is_valid())

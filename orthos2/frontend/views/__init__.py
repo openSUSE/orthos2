@@ -58,6 +58,17 @@ from .machines import (
     VirtualMachineListView,
     machine_search,
 )
+from .manufacturer import (
+    DeleteManufacturer,
+    ManufacturerDetailedEdit,
+    ManufacturerListView,
+    NewManufacturer,
+    manufacturer_compare_netbox,
+    manufacturer_detail,
+    manufacturer_fetch_netbox,
+    manufacturer_netboxcomparison,
+    manufacturer_platforms,
+)
 from .regenerate import (
     regenerate_cobbler,
     regenerate_domain_cobbler,
@@ -153,4 +164,13 @@ __all__ = [
     "remotepowerdevice_fetch_netbox",
     "remotepowerdevice_netboxcomparison",
     "remotepowerdevice_compare_netbox",
+    "ManufacturerListView",
+    "NewManufacturer",
+    "ManufacturerDetailedEdit",
+    "DeleteManufacturer",
+    "manufacturer_detail",
+    "manufacturer_platforms",
+    "manufacturer_fetch_netbox",
+    "manufacturer_netboxcomparison",
+    "manufacturer_compare_netbox",
 ]
