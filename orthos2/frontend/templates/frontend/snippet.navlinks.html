@@ -1,5 +1,5 @@
 {% load tags %}
-<ul class="nav flex-column">
+<ul class="nav flex-column flex-nowrap">
   <li class="nav-item position-relative {% active_view request 'machines' %}">
     <a class="nav-link" href="{% url 'frontend:machines' %}">All Machines</a>
   </li>
@@ -77,7 +77,7 @@
     >
       Documentation <i class="fa-solid fa-chevron-down"></i>
     </a>
-    <ul class="collapse nav flex-column ms-3" id="nav-documentation">
+    <ul class="collapse nav flex-column flex-nowrap ms-3" id="nav-documentation">
       <li class="nav-item">
         <a class="nav-link" href="{% get_documentation_url %}" target="_blank"
           >Documentation</a
@@ -106,7 +106,7 @@
       >
         Administration <i class="fa-solid fa-chevron-down"></i>
       </a>
-      <ul class="collapse nav flex-column ms-3 {{ admin_open }}" id="nav-administration">
+      <ul class="collapse nav flex-column flex-nowrap ms-3 {{ admin_open }}" id="nav-administration">
         <li class="nav-item">
           <a class="nav-link" href="{% url 'admin:index' %}">Django Admin</a>
         </li>
