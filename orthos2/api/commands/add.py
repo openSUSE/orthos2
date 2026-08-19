@@ -16,9 +16,9 @@ from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.forms import (
     AnnotationAPIForm,
     BMCAPIForm,
+    DeviceTypeAPIForm,
     MachineAPIForm,
     ManufacturerAPIForm,
-    PlatformAPIForm,
     RemotePowerAPIForm,
     RemotePowerDeviceAPIForm,
     SerialConsoleAPIForm,
@@ -53,7 +53,7 @@ class Add:
     BMC = "bmc"
     REMOTEPOWERDEVICE = "remotepowerdevice"
     MANUFACTURER = "manufacturer"
-    PLATFORM = "platform"
+    DEVICETYPE = "devicetype"
 
     as_list = [
         MACHINE,
@@ -64,7 +64,7 @@ class Add:
         BMC,
         REMOTEPOWERDEVICE,
         MANUFACTURER,
-        PLATFORM,
+        DEVICETYPE,
     ]
 
 
@@ -94,7 +94,7 @@ class AddCommand(BaseAPIView):
                                                 architecture.
                 bmc <fqdn>                    : Add a bmc to a machine.
                 manufacturer <name>           : Add a manufacturer (superusers only).
-                platform <name>               : Add a platform (superusers only).
+                devicetype <name>             : Add a device type (superusers only).
 
     Example:
         ADD machine
@@ -104,7 +104,7 @@ class AddCommand(BaseAPIView):
         ADD annotation foo.domain.tld
         ADD bmc foo.domain.tld
         ADD manufacturer Dell
-        ADD platform PowerEdge
+        ADD devicetype PowerEdge
     """
 
     @staticmethod
@@ -199,12 +199,12 @@ class AddCommand(BaseAPIView):
                 ).as_json
             return redirect(reverse("api:manufacturer_add"))
 
-        elif item == Add.PLATFORM:
+        elif item == Add.DEVICETYPE:
             if sub_arguments:
                 return ErrorMessage(
-                    "Invalid number of arguments for 'platform'!"
+                    "Invalid number of arguments for 'devicetype'!"
                 ).as_json
-            return redirect(reverse("api:platform_add"))
+            return redirect(reverse("api:devicetype_add"))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -937,32 +937,32 @@ class AddManufacturerCommand(BaseAPIView):
         return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json  # type: ignore
 
 
-class AddPlatformCommand(BaseAPIView):
+class AddDeviceTypeCommand(BaseAPIView):
 
     METHOD = "POST"
-    URL = "/platform/add"
-    URL_POST = "/platform/add"
+    URL = "/devicetype/add"
+    URL_POST = "/devicetype/add"
     ARGUMENTS = (["name", "manufacturer", "is_cartridge", "description"],)
 
-    HELP_SHORT = "Adds a platform to the database."
-    HELP = """Adds a platform to the database (superusers only).
+    HELP_SHORT = "Adds a device type to the database."
+    HELP = """Adds a device type to the database (superusers only).
 
     Usage:
-        ADD platform <name>
+        ADD devicetype <name>
     """
 
     @staticmethod
     def get_urls() -> List[URLPattern]:
         return [
             re_path(
-                r"^platform/add",
-                AddPlatformCommand.as_view(),
-                name="platform_add",
+                r"^devicetype/add",
+                AddDeviceTypeCommand.as_view(),
+                name="devicetype_add",
             ),
         ]
 
     def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
-        """Return form for adding a platform."""
+        """Return form for adding a device type."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
@@ -971,20 +971,20 @@ class AddPlatformCommand(BaseAPIView):
                 "Only superusers are allowed to perform this action!"
             ).as_json
 
-        form = PlatformAPIForm()
+        form = DeviceTypeAPIForm()
 
         input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
         return input.as_json
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
-        """Add platform."""
+        """Add device type."""
         if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
 
         data = json.loads(request.body.decode("utf-8"))["form"]
-        form = PlatformAPIForm(data)
+        form = DeviceTypeAPIForm(data)
 
         if form.is_valid():
             try:

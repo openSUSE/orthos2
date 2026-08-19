@@ -12,6 +12,7 @@ from orthos2.api.commands.base import (
     get_remotepowerdevice,
     getException,
 )
+from orthos2.api.serializers.devicetype import DeviceTypeSerializer
 from orthos2.api.serializers.enclosure import EnclosureSerializer
 from orthos2.api.serializers.machine import MachineSerializer
 from orthos2.api.serializers.manufacturer import ManufacturerSerializer
@@ -20,9 +21,8 @@ from orthos2.api.serializers.misc import (
     ErrorMessage,
     Serializer,
 )
-from orthos2.api.serializers.platform import PlatformSerializer
 from orthos2.api.serializers.remotepowerdevice import RemotePowerDeviceSerializer
-from orthos2.data.models import Machine, Manufacturer, Platform, RemotePowerDevice
+from orthos2.data.models import DeviceType, Machine, Manufacturer, RemotePowerDevice
 from orthos2.data.models.enclosure import Enclosure
 
 
@@ -193,7 +193,7 @@ class EnclosureInfoCommand(BaseAPIView):
                 "id",
                 "description",
                 "netbox_id",
-                "platform",
+                "device_type",
                 "netbox_last_fetch_attempt",
                 "location_site",
                 "location_room",
@@ -329,37 +329,39 @@ Example:
         return JsonResponse(response)
 
 
-class PlatformInfoCommand(BaseAPIView):
+class DeviceTypeInfoCommand(BaseAPIView):
 
     METHOD = "GET"
-    URL = "/platform"
+    URL = "/devicetype"
     ARGUMENTS = (["name"],)
 
-    HELP_SHORT = "Retrieve information about a platform."
-    HELP = """Command to get information about a platform.
+    HELP_SHORT = "Retrieve information about a device type."
+    HELP = """Command to get information about a device type.
 
 Usage:
-    INFO platform <name>
+    INFO devicetype <name>
 
 Arguments:
-    name - Name of the platform. If omitted, all platforms are listed.
+    name - Name of the device type. If omitted, all device types are listed.
 
 Example:
-    INFO platform PowerEdge
+    INFO devicetype PowerEdge
     """
 
     @staticmethod
     def get_urls() -> List[URLPattern]:
         return [
-            re_path(r"^platform$", PlatformInfoCommand.as_view(), name="platform"),
+            re_path(
+                r"^devicetype$", DeviceTypeInfoCommand.as_view(), name="devicetype"
+            ),
         ]
 
     @staticmethod
     def get_tabcompletion() -> List[str]:
-        return list(Platform.objects.all().values_list("name", flat=True))
+        return list(DeviceType.objects.all().values_list("name", flat=True))
 
     def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
-        """Return platform information."""
+        """Return device type information."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
@@ -372,8 +374,8 @@ Example:
 
         try:
             if name:
-                platform = Platform.objects.get(name__iexact=name)
-                serialized_platform = PlatformSerializer(platform)
+                devicetype = DeviceType.objects.get(name__iexact=name)
+                serialized_devicetype = DeviceTypeSerializer(devicetype)
                 response = {
                     "header": {
                         "type": "INFO",
@@ -385,11 +387,11 @@ Example:
                             "description",
                         ],
                     },
-                    "data": serialized_platform.data_info,
+                    "data": serialized_devicetype.data_info,
                 }
             else:
-                platforms = Platform.objects.all()
-                serialized_platforms = PlatformSerializer(platforms, many=True)
+                devicetypes = DeviceType.objects.all()
+                serialized_devicetypes = DeviceTypeSerializer(devicetypes, many=True)
                 theader = [
                     {"id": "ID"},
                     {"name": "Name"},
@@ -397,10 +399,10 @@ Example:
                 ]
                 response = {
                     "header": {"type": "TABLE", "theader": theader},
-                    "data": serialized_platforms.data,
+                    "data": serialized_devicetypes.data,
                 }
-        except Platform.DoesNotExist:
-            return ErrorMessage("Platform '{}' does not exist!".format(name)).as_json
+        except DeviceType.DoesNotExist:
+            return ErrorMessage("Device Type '{}' does not exist!".format(name)).as_json
         except Exception:
             return ErrorMessage(getException()).as_json
 

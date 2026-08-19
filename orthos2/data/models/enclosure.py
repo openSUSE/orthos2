@@ -8,18 +8,18 @@ from django.db.models import QuerySet
 from django.utils import timezone
 from requests import HTTPError
 
+from orthos2.data.models.devicetype import DeviceType
 from orthos2.data.models.netboxorthoscomparision import (
     NetboxOrthosComparisionResult,
     NetboxOrthosComparisionRun,
 )
-from orthos2.data.models.platform import Platform
 from orthos2.utils.netbox import Netbox
 
 if TYPE_CHECKING:
     from django.db.models.fields.related_descriptors import RelatedManager
 
     from orthos2.data.models.machine import Machine
-    from orthos2.types import OptionalDateTimeField, OptionalPlatformForeignKey
+    from orthos2.types import OptionalDateTimeField, OptionalDeviceTypeForeignKey
 
 logger = logging.getLogger("models")
 
@@ -44,9 +44,9 @@ class Enclosure(models.Model):
         unique=True,
     )
 
-    platform: "OptionalPlatformForeignKey" = models.ForeignKey(
-        Platform,
-        help_text="The Platform of the Enclosure",
+    device_type: "OptionalDeviceTypeForeignKey" = models.ForeignKey(
+        DeviceType,
+        help_text="The Device Type of the Enclosure",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,

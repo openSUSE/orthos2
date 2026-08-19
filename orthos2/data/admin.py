@@ -693,7 +693,7 @@ class MachineAdmin(admin.ModelAdmin):  # type: ignore
                     "system",
                     ("serial_number", "product_code"),
                     "comment",
-                    "platform",
+                    "device_type",
                     "contact_email",
                     "kernel_options",
                     "netbox_id",
@@ -896,18 +896,18 @@ class EnclosureAdmin(admin.ModelAdmin):  # type: ignore
         "location_rack",
         "location_rack_position",
     )
-    list_display = ("name", "machine_count", "platform_name")
+    list_display = ("name", "machine_count", "device_type_name")
     search_fields = ("name",)
 
     def machine_count(self, obj: Enclosure) -> int:
         """Return machine counter of enclosure."""
         return obj.machine_set.count()
 
-    def platform_name(self, obj: Enclosure) -> Optional[str]:
-        """Return name of enclosures platform."""
-        platform = obj.platform
-        if platform:
-            return platform.name
+    def device_type_name(self, obj: Enclosure) -> Optional[str]:
+        """Return name of enclosures device type."""
+        device_type = obj.device_type
+        if device_type:
+            return device_type.name
         return None
 
 

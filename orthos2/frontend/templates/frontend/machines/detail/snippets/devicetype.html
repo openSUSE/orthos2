@@ -1,0 +1,40 @@
+{% load filters %}
+<div class="title">
+  <h5>Device Type</h5>Enclosure &gt; System
+</div>
+
+<table class="table small table-bordered">
+  <thead class="thead-default text-start">
+    <tr>
+      <th/>
+      <th>Enclosure</th>
+      <th>System</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="th fw-bold">Manufacturer</td>
+      <td style="width: 50%;">
+        {% if machine.enclosure.device_type %}
+          <a
+            href="{% url 'frontend:manufacturer_detail' machine.enclosure.device_type.manufacturer.id %}"
+            >{{ machine.enclosure.device_type.manufacturer.name }}</a
+          >
+        {% endif %}
+      </td>
+      <td style="width: 50%;">
+        {% if machine.device_type %}
+          <a
+            href="{% url 'frontend:manufacturer_detail' machine.device_type.manufacturer.id %}"
+            >{{ machine.device_type.manufacturer.name }}</a
+          >
+        {% endif %}
+      </td>
+    </tr>
+    <tr>
+      <td class="th fw-bold">Device Type</td>
+      <td>{{ machine.enclosure.device_type }}</td>
+      <td>{{ machine.device_type|default_if_none:"" }}</td>
+    </tr>
+  </tbody>
+</table>

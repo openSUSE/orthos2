@@ -12,9 +12,9 @@
         class="pt-3"
         method="post"
         {% if action == 'new' %}
-          action="{% url 'frontend:new_platform' %}"
+          action="{% url 'frontend:new_devicetype' %}"
         {% elif action == 'edit' %}
-          action="{% url 'frontend:edit_platform' object.id %}"
+          action="{% url 'frontend:edit_devicetype' object.id %}"
         {% endif %}
       >
         {% csrf_token %}

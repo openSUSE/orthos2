@@ -22,7 +22,7 @@
     }
   },
   {
-    "model": "data.platform",
+    "model": "data.devicetype",
     "pk": 1,
     "fields": {
       "name": "Other",
@@ -34,7 +34,7 @@
     "pk": 1,
     "fields": {
       "name": "test",
-      "platform": 1,
+      "device_type": 1,
       "description": "test enclosure"
     }
   },
@@ -63,7 +63,7 @@
       "vm_capable": true,
       "vm_dedicated_host": true,
       "virt_api_int": 0,
-      "platform": 1,
+      "device_type": 1,
       "disk_type": "scsi controller",
       "last": "root      Sat Dec 10 01:19",
       "status_ssh": true,
@@ -87,7 +87,7 @@
       "fqdn_domain_id": 1,
       "cpu_model": "",
       "cpu_flags": "",
-      "platform": 1,
+      "device_type": 1,
       "status_ssh": true,
       "status_login": false,
       "administrative": false,

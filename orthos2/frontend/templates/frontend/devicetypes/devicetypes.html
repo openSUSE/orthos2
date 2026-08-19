@@ -8,7 +8,7 @@
 
 {% block content %}
 
-{% include 'frontend/platforms/platforms_filterbar.html' %}
+{% include 'frontend/devicetypes/devicetypes_filterbar.html' %}
 {% include 'frontend/snippet.paginator.html' %}
 
 <div class="container-fluid">
@@ -24,20 +24,20 @@
       </thead>
 
       <tbody>
-        {% for platform in page_obj %}
+        {% for devicetype in page_obj %}
           <tr>
             <td>
               <a
-                href="{% url 'frontend:platform_detail' platform.pk %}"
+                href="{% url 'frontend:devicetype_detail' devicetype.pk %}"
                 class="text-muted"
-                >{{ platform.name }}</a
+                >{{ devicetype.name }}</a
               >
             </td>
-            <td>{{ platform.manufacturer }}</td>
-            <td>{{ platform.is_cartridge }}</td>
+            <td>{{ devicetype.manufacturer }}</td>
+            <td>{{ devicetype.is_cartridge }}</td>
             <td>
               <a
-                href="{% url 'frontend:delete_platform' platform.pk %}"
+                href="{% url 'frontend:delete_devicetype' devicetype.pk %}"
                 class="btn btn-danger btn-sm"
               >
                 Delete
@@ -50,7 +50,7 @@
 
     {% include 'frontend/snippet.paginator.html' %}
   {% else %}
-    <div class="alert alert-info">No platforms found!</div>
+    <div class="alert alert-info">No device types found!</div>
   {% endif %}
 </div>
 {% endblock %}

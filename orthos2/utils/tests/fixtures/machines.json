@@ -48,7 +48,7 @@
     }
   },
   {
-    "model": "data.platform",
+    "model": "data.devicetype",
     "fields": {
       "name": "Other",
       "manufacturer": ["Other"]
@@ -59,7 +59,7 @@
     "pk": 1,
     "fields": {
       "name": "test",
-      "platform": ["Other"],
+      "device_type": ["Other"],
       "description": "test enclosure"
     }
   },
@@ -135,7 +135,7 @@
       "vm_auto_delete": false,
       "reserved_permanently": true,
       "reserved_reason": "test HOS",
-      "platform": null,
+      "device_type": null,
       "bios_version": "",
       "bios_date": "2010-10-10",
       "disk_primary_size": null,
@@ -192,7 +192,7 @@
       "vm_auto_delete": false,
       "reserved_permanently": true,
       "reserved_reason": "test HOS",
-      "platform": null,
+      "device_type": null,
       "bios_version": "",
       "bios_date": "2010-10-10",
       "disk_primary_size": null,

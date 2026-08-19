@@ -11,12 +11,12 @@ if TYPE_CHECKING:
     from orthos2.data.models.enclosure import Enclosure
 
 
-class PlatformManager(models.Manager["Platform"]):
-    def get_by_natural_key(self, name: str) -> "Platform":
+class DeviceTypeManager(models.Manager["DeviceType"]):
+    def get_by_natural_key(self, name: str) -> "DeviceType":
         return self.get(name=name)
 
 
-class Platform(models.Model):
+class DeviceType(models.Model):
     class Meta:  # type: ignore
         ordering = ["manufacturer", "name"]
 
@@ -42,7 +42,7 @@ class Platform(models.Model):
 
     enclosure_set: models.Manager["Enclosure"]
 
-    objects = PlatformManager()
+    objects = DeviceTypeManager()
 
     def natural_key(self) -> Tuple[str]:
         return (self.name,)
@@ -61,8 +61,8 @@ class Platform(models.Model):
         return self.enclosure_set.count()
 
     @classmethod
-    def get_platform_manager(cls) -> PlatformManager:
+    def get_device_type_manager(cls) -> DeviceTypeManager:
         """
         Return the enclosure manager.
         """
-        return cast(PlatformManager, cls.objects)
+        return cast(DeviceTypeManager, cls.objects)

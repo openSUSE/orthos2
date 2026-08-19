@@ -16,6 +16,13 @@ from .compare_netbox import (
     NetboxOrthosComparisionRunListView,
     netboxorthoscomparisonrun,
 )
+from .devicetype import (
+    DeleteDeviceType,
+    DeviceTypeDetailedEdit,
+    DeviceTypeListView,
+    NewDeviceType,
+    devicetype_detail,
+)
 from .enclosures import (
     DeleteEnclosure,
     EnclosureDetailedEdit,
@@ -65,16 +72,9 @@ from .manufacturer import (
     NewManufacturer,
     manufacturer_compare_netbox,
     manufacturer_detail,
+    manufacturer_device_types,
     manufacturer_fetch_netbox,
     manufacturer_netboxcomparison,
-    manufacturer_platforms,
-)
-from .platform import (
-    DeletePlatform,
-    NewPlatform,
-    PlatformDetailedEdit,
-    PlatformListView,
-    platform_detail,
 )
 from .regenerate import (
     regenerate_cobbler,
@@ -176,13 +176,13 @@ __all__ = [
     "ManufacturerDetailedEdit",
     "DeleteManufacturer",
     "manufacturer_detail",
-    "manufacturer_platforms",
+    "manufacturer_device_types",
     "manufacturer_fetch_netbox",
     "manufacturer_netboxcomparison",
     "manufacturer_compare_netbox",
-    "PlatformListView",
-    "NewPlatform",
-    "PlatformDetailedEdit",
-    "DeletePlatform",
-    "platform_detail",
+    "DeviceTypeListView",
+    "NewDeviceType",
+    "DeviceTypeDetailedEdit",
+    "DeleteDeviceType",
+    "devicetype_detail",
 ]

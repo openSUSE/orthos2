@@ -294,9 +294,9 @@ urlpatterns = [
         name="manufacturer_detail",
     ),
     re_path(
-        r"^manufacturers/(?P<id>[0-9]+)/platforms$",
-        views.manufacturer_platforms,
-        name="manufacturer_platforms",
+        r"^manufacturers/(?P<id>[0-9]+)/devicetypes$",
+        views.manufacturer_device_types,
+        name="manufacturer_device_types",
     ),
     re_path(
         r"^manufacturers/(?P<id>[0-9]+)/fetch-netbox$",
@@ -324,22 +324,22 @@ urlpatterns = [
         views.DeleteManufacturer.as_view(),
         name="delete_manufacturer",
     ),
-    # Platforms
-    path("platforms", views.PlatformListView.as_view(), name="platforms"),
+    # Device Types
+    path("devicetypes", views.DeviceTypeListView.as_view(), name="devicetypes"),
     re_path(
-        r"^platform/(?P<id>[0-9]+)/detail$",
-        views.platform_detail,
-        name="platform_detail",
+        r"^devicetype/(?P<id>[0-9]+)/detail$",
+        views.devicetype_detail,
+        name="devicetype_detail",
     ),
-    path("platforms/new", views.NewPlatform.as_view(), name="new_platform"),
+    path("devicetypes/new", views.NewDeviceType.as_view(), name="new_devicetype"),
     path(
-        "platforms/edit/<int:pk>/",
-        views.PlatformDetailedEdit.as_view(),
-        name="edit_platform",
+        "devicetypes/edit/<int:pk>/",
+        views.DeviceTypeDetailedEdit.as_view(),
+        name="edit_devicetype",
     ),
     path(
-        "platforms/delete/<int:pk>/",
-        views.DeletePlatform.as_view(),
-        name="delete_platform",
+        "devicetypes/delete/<int:pk>/",
+        views.DeleteDeviceType.as_view(),
+        name="delete_devicetype",
     ),
 ]

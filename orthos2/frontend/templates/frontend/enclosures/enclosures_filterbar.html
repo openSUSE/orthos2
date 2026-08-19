@@ -7,13 +7,13 @@
       <div class="d-flex align-items-center flex-wrap">
       <div class="dropdown" style="display: inline-block;">
         <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          {% get_current_platform_filter request %}
+          {% get_current_device_type_filter request %}
         </button>
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-          <a class="dropdown-item" href="?{% url_replace request 'platform' platform.name True %}">All Platform</a>
+          <a class="dropdown-item" href="?{% url_replace request 'device_type' device_type.name True %}">All Device Types</a>
           <div class="dropdown-divider"></div>
-          {% for platform in platforms %}
-          <a class="dropdown-item" href="?{% url_replace request 'platform' platform.name %}">{{ platform.name }}</a>
+          {% for device_type in device_types %}
+          <a class="dropdown-item" href="?{% url_replace request 'device_type' device_type.name %}">{{ device_type.name }}</a>
           {% endfor %}
         </div>
       </div>
@@ -25,7 +25,7 @@
       <span class="ms-2"></span>
 
       <div style="display: inline-block">
-          <span class="hint">Found {{ paginator.count }} Platform(s)</span>
+          <span class="hint">Found {{ paginator.count }} Device Type(s)</span>
       </div>
       </div>
 

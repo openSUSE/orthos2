@@ -202,7 +202,7 @@ class ManufacturerDetailedEditViewTest(TestCase):
         assert self.manufacturer.name == "AcmeCorp"
 
 
-class ManufacturerPlatformsViewTest(TestCase):
+class ManufacturerDeviceTypesViewTest(TestCase):
     fixtures = ["orthos2/frontend/tests/user/fixtures/users.json"]
 
     def setUp(self) -> None:
@@ -210,16 +210,16 @@ class ManufacturerPlatformsViewTest(TestCase):
 
     def test_unauthenticated_get_redirects_to_login(self) -> None:
         url = reverse(
-            "frontend:manufacturer_platforms", kwargs={"id": self.manufacturer.pk}
+            "frontend:manufacturer_device_types", kwargs={"id": self.manufacturer.pk}
         )
         response = self.client.get(url)
         assert response.status_code == 302
         assert "login" in response.url.lower()  # type: ignore[attr-defined]
 
-    def test_regular_user_can_view_platforms(self) -> None:
+    def test_regular_user_can_view_device_types(self) -> None:
         self.client.force_login(User.objects.get(username="user"))
         url = reverse(
-            "frontend:manufacturer_platforms", kwargs={"id": self.manufacturer.pk}
+            "frontend:manufacturer_device_types", kwargs={"id": self.manufacturer.pk}
         )
         response = self.client.get(url)
         assert response.status_code == 200

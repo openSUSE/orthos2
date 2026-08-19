@@ -14,8 +14,8 @@
         <ul class="nav nav-tabs gray">
           <li class="nav-item">
             <a
-              class="nav-link {% active_view request 'platform_detail' %}"
-              href="{% url 'frontend:platform_detail' platform.pk %}"
+              class="nav-link {% active_view request 'devicetype_detail' %}"
+              href="{% url 'frontend:devicetype_detail' devicetype.pk %}"
               >Overview</a
             >
           </li>
@@ -27,12 +27,12 @@
         </div>
         <span style="font-size: 0.7em; font-family: Monospace;"
           >API:
-          <a href="{% url 'api:platform' %}?name={{ platform.name }}"
-            >{% url 'api:platform' %}?name={{ platform.name }}</a
+          <a href="{% url 'api:devicetype' %}?name={{ devicetype.name }}"
+            >{% url 'api:devicetype' %}?name={{ devicetype.name }}</a
           >
           | Edit:
-          <a href="{% url 'frontend:edit_platform' platform.id %}"
-            >{% url 'frontend:edit_platform' platform.id %}</a
+          <a href="{% url 'frontend:edit_devicetype' devicetype.id %}"
+            >{% url 'frontend:edit_devicetype' devicetype.id %}</a
           ></span
         >
       </main>

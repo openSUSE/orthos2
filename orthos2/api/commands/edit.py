@@ -17,14 +17,14 @@ from django.urls import URLPattern, re_path, reverse  # type: ignore
 from rest_framework.request import Request
 
 from orthos2.api.commands.base import BaseAPIView
-from orthos2.api.forms import ManufacturerAPIForm, PlatformAPIForm
+from orthos2.api.forms import DeviceTypeAPIForm, ManufacturerAPIForm
 from orthos2.api.serializers.misc import (
     AuthRequiredSerializer,
     ErrorMessage,
     InputSerializer,
     Message,
 )
-from orthos2.data.models import Manufacturer, Platform
+from orthos2.data.models import DeviceType, Manufacturer
 from orthos2.utils.misc import format_cli_form_errors
 
 logger = logging.getLogger("api")
@@ -32,9 +32,9 @@ logger = logging.getLogger("api")
 
 class Edit:
     MANUFACTURER = "manufacturer"
-    PLATFORM = "platform"
+    DEVICETYPE = "devicetype"
 
-    as_list = [MANUFACTURER, PLATFORM]
+    as_list = [MANUFACTURER, DEVICETYPE]
 
 
 class EditCommand(BaseAPIView):
@@ -53,11 +53,11 @@ class EditCommand(BaseAPIView):
         item - Specify the item which should be edited. Items are:
 
                 manufacturer <id> : Edit a manufacturer (superusers only).
-                platform <id>     : Edit a platform (superusers only).
+                devicetype <id>   : Edit a device type (superusers only).
 
     Example:
         EDIT manufacturer 1
-        EDIT platform 1
+        EDIT devicetype 1
     """
 
     @staticmethod
@@ -93,14 +93,14 @@ class EditCommand(BaseAPIView):
                 "{}?id={}".format(reverse("api:manufacturer_edit"), sub_arguments[0])
             )
 
-        elif item == Edit.PLATFORM:
+        elif item == Edit.DEVICETYPE:
             if len(sub_arguments) != 1:
                 return ErrorMessage(
-                    "Invalid number of arguments for 'platform'!"
+                    "Invalid number of arguments for 'devicetype'!"
                 ).as_json
 
             return redirect(
-                "{}?id={}".format(reverse("api:platform_edit"), sub_arguments[0])
+                "{}?id={}".format(reverse("api:devicetype_edit"), sub_arguments[0])
             )
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
@@ -192,32 +192,32 @@ class EditManufacturerCommand(BaseAPIView):
         ).as_json
 
 
-class EditPlatformCommand(BaseAPIView):
+class EditDeviceTypeCommand(BaseAPIView):
 
     METHOD = "POST"
-    URL = "/platform/edit"
-    URL_POST = "/platform/edit"
+    URL = "/devicetype/edit"
+    URL_POST = "/devicetype/edit"
     ARGUMENTS = (["id", "name", "manufacturer", "is_cartridge", "description"],)
 
-    HELP_SHORT = "Edits a platform in the database."
-    HELP = """Edits a platform in the database (superusers only).
+    HELP_SHORT = "Edits a device type in the database."
+    HELP = """Edits a device type in the database (superusers only).
 
     Usage:
-        EDIT platform <id>
+        EDIT devicetype <id>
     """
 
     @staticmethod
     def get_urls() -> List[URLPattern]:
         return [
             re_path(
-                r"^platform/edit",
-                EditPlatformCommand.as_view(),
-                name="platform_edit",
+                r"^devicetype/edit",
+                EditDeviceTypeCommand.as_view(),
+                name="devicetype_edit",
             ),
         ]
 
     def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
-        """Return form for editing a platform."""
+        """Return form for editing a device type."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
@@ -226,20 +226,20 @@ class EditPlatformCommand(BaseAPIView):
                 "Only superusers are allowed to perform this action!"
             ).as_json
 
-        platform_id = request.GET.get("id")
+        devicetype_id = request.GET.get("id")
         try:
-            platform = Platform.objects.get(pk=platform_id)
-        except (Platform.DoesNotExist, ValueError, TypeError):
+            devicetype = DeviceType.objects.get(pk=devicetype_id)  # type: ignore[misc]
+        except (DeviceType.DoesNotExist, ValueError, TypeError):
             return ErrorMessage(
-                "Platform with id '{}' does not exist!".format(platform_id)
+                "Device Type with id '{}' does not exist!".format(devicetype_id)
             ).as_json
 
-        form = PlatformAPIForm(instance=platform)
+        form = DeviceTypeAPIForm(instance=devicetype)
         fields = form.as_dict()
         fields["id"] = {
             "type": "INTEGER",
             "prompt": "ID",
-            "initial": platform.pk,
+            "initial": devicetype.pk,
             "required": True,
         }
 
@@ -247,22 +247,22 @@ class EditPlatformCommand(BaseAPIView):
         return input.as_json
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
-        """Edit platform."""
+        """Edit device type."""
         if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
 
         data = json.loads(request.body.decode("utf-8"))["form"]
-        platform_id = data.get("id")
+        devicetype_id = data.get("id")
         try:
-            platform = Platform.objects.get(pk=platform_id)
-        except (Platform.DoesNotExist, ValueError, TypeError):
+            devicetype = DeviceType.objects.get(pk=devicetype_id)
+        except (DeviceType.DoesNotExist, ValueError, TypeError):
             return ErrorMessage(
-                "Platform with id '{}' does not exist!".format(platform_id)
+                "Device Type with id '{}' does not exist!".format(devicetype_id)
             ).as_json
 
-        form = PlatformAPIForm(data, instance=platform)
+        form = DeviceTypeAPIForm(data, instance=devicetype)
 
         if form.is_valid():
             try:

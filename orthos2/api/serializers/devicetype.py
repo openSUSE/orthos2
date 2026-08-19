@@ -1,17 +1,17 @@
 """
-Module which contains functionality related to the custom Serializer that is responsible for the "Platform" model.
+Module which contains functionality related to the custom Serializer that is responsible for the "DeviceType" model.
 """
 
 from typing import Dict
 
 from rest_framework import serializers
 
-from orthos2.data.models import Platform
+from orthos2.data.models import DeviceType
 
 
-class PlatformSerializer(serializers.ModelSerializer[Platform]):
+class DeviceTypeSerializer(serializers.ModelSerializer[DeviceType]):
     class Meta:  # type: ignore
-        model = Platform
+        model = DeviceType
         fields = ("id", "name", "manufacturer", "is_cartridge", "description")
 
     @property

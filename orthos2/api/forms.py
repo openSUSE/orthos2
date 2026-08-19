@@ -16,12 +16,12 @@ from django.template.defaultfilters import slugify
 
 from orthos2.data.models import (
     Architecture,
+    DeviceType,
     Domain,
     Enclosure,
     Machine,
     Manufacturer,
     NetworkInterface,
-    Platform,
     RemotePower,
     RemotePowerDevice,
     RemotePowerType,
@@ -654,9 +654,9 @@ class DeleteManufacturerAPIForm(forms.Form, BaseAPIForm):
         ]
 
 
-class PlatformAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+class DeviceTypeAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
     class Meta:  # type: ignore
-        model = Platform
+        model = DeviceType
         fields = ["name", "manufacturer", "is_cartridge", "description"]
 
     def get_order(self) -> List[str]:
@@ -664,12 +664,12 @@ class PlatformAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
         return ["name", "manufacturer", "is_cartridge", "description"]
 
 
-class DeletePlatformAPIForm(forms.Form, BaseAPIForm):
+class DeleteDeviceTypeAPIForm(forms.Form, BaseAPIForm):
     def clean_name(self) -> str:
-        """Check whether a platform with `name` exists."""
+        """Check whether a device type with `name` exists."""
         name = self.cleaned_data["name"]
-        if Platform.objects.filter(name__iexact=name).count() == 0:
-            self.add_error("name", "No platform with this name")
+        if DeviceType.objects.filter(name__iexact=name).count() == 0:
+            self.add_error("name", "No device type with this name")
         return name
 
     name = forms.CharField(

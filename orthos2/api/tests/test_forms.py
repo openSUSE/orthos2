@@ -5,21 +5,21 @@ from django.test import TestCase
 from orthos2.api.forms import (
     AnnotationAPIForm,
     BMCAPIForm,
+    DeleteDeviceTypeAPIForm,
     DeleteMachineAPIForm,
     DeleteManufacturerAPIForm,
-    DeletePlatformAPIForm,
     DeleteRemotePowerAPIForm,
     DeleteRemotePowerDeviceAPIForm,
+    DeviceTypeAPIForm,
     MachineAPIForm,
     ManufacturerAPIForm,
-    PlatformAPIForm,
     RemotePowerAPIForm,
     RemotePowerDeviceAPIForm,
     ReserveMachineAPIForm,
     SerialConsoleAPIForm,
     VirtualMachineAPIForm,
 )
-from orthos2.data.models import Manufacturer, Platform, System
+from orthos2.data.models import DeviceType, Manufacturer, System
 from orthos2.data.models.machine import Machine
 from orthos2.data.models.remotepowertype import RemotePowerType
 
@@ -276,49 +276,49 @@ class DeleteManufacturerAPIFormTests(TestCase):
         self.assertFalse(form.is_valid())
 
 
-class PlatformAPIFormTests(TestCase):
+class DeviceTypeAPIFormTests(TestCase):
     def test_form(self) -> None:
-        """Test the platform creation API form"""
+        """Test the device type creation API form"""
         # Arrange
         manufacturer = Manufacturer.objects.create(name="AcmeCorp")
 
         # Act
-        form = PlatformAPIForm(
-            {"name": "AcmePlatform", "manufacturer": manufacturer.pk}
+        form = DeviceTypeAPIForm(
+            {"name": "AcmeDeviceType", "manufacturer": manufacturer.pk}
         )
 
         # Assert
         self.assertTrue(form.is_valid())
 
     def test_form_requires_name(self) -> None:
-        """Test that the platform creation API form requires a name"""
+        """Test that the device type creation API form requires a name"""
         # Arrange
         manufacturer = Manufacturer.objects.create(name="AcmeCorp")
 
         # Act
-        form = PlatformAPIForm({"name": "", "manufacturer": manufacturer.pk})
+        form = DeviceTypeAPIForm({"name": "", "manufacturer": manufacturer.pk})
 
         # Assert
         self.assertFalse(form.is_valid())
 
 
-class DeletePlatformAPIFormTests(TestCase):
+class DeleteDeviceTypeAPIFormTests(TestCase):
     def test_form(self) -> None:
-        """Test the platform deletion API form"""
+        """Test the device type deletion API form"""
         # Arrange
         manufacturer = Manufacturer.objects.create(name="AcmeCorp")
-        Platform.objects.create(name="AcmePlatform", manufacturer=manufacturer)
+        DeviceType.objects.create(name="AcmeDeviceType", manufacturer=manufacturer)
 
         # Act
-        form = DeletePlatformAPIForm({"name": "AcmePlatform"})
+        form = DeleteDeviceTypeAPIForm({"name": "AcmeDeviceType"})
 
         # Assert
         self.assertTrue(form.is_valid())
 
-    def test_form_rejects_nonexistent_platform(self) -> None:
-        """Test that the platform deletion API form rejects an unknown name"""
+    def test_form_rejects_nonexistent_devicetype(self) -> None:
+        """Test that the device type deletion API form rejects an unknown name"""
         # Arrange & Act
-        form = DeletePlatformAPIForm({"name": "Nonexistent"})
+        form = DeleteDeviceTypeAPIForm({"name": "Nonexistent"})
 
         # Assert
         self.assertFalse(form.is_valid())

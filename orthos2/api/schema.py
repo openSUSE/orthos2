@@ -144,6 +144,6 @@ class CustomViewSchema(AutoSchema):
         if resource in self.GENERIC_RESOURCE_SEGMENTS:
             return ["API"]
 
-        # Every other resource (e.g. /api/manufacturer, /api/manufacturer/add, /api/platform/edit)
+        # Every other resource (e.g. /api/manufacturer, /api/manufacturer/add, /api/devicetype/edit)
         # gets its own tag/group instead of falling into a single catch-all "API" bucket.
         return [resource.capitalize()]

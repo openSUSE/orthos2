@@ -12,13 +12,13 @@ from orthos2.api.lookups import NotEqual
 from orthos2.data.models import (
     Annotation,
     Architecture,
+    DeviceType,
     Domain,
     Enclosure,
     Installation,
     Machine,
     Manufacturer,
     NetworkInterface,
-    Platform,
     RemotePower,
     SerialConsole,
     SerialConsoleType,
@@ -317,21 +317,21 @@ class QueryField:
             related_name="networkinterfaces",
             verbose_name="IF primary",
         ),
-        # Platform
-        "platform": QueryFieldMappingItem(
-            field=Platform._meta.get_field("name"),  # type: ignore
-            related_name="platform",
-            verbose_name="Platform",
+        # Device Type
+        "device_type": QueryFieldMappingItem(
+            field=DeviceType._meta.get_field("name"),  # type: ignore
+            related_name="device_type",
+            verbose_name="Device Type",
         ),
-        "platform_manufacturer": QueryFieldMappingItem(
+        "device_type_manufacturer": QueryFieldMappingItem(
             field=Manufacturer._meta.get_field("name"),  # type: ignore
-            related_name="platform__manufacturer",
+            related_name="device_type__manufacturer",
             verbose_name="Manufacturer",
         ),
-        "platform_description": QueryFieldMappingItem(
-            field=Platform._meta.get_field("description"),  # type: ignore
-            related_name="platform",
-            verbose_name="Platform description",
+        "device_type_description": QueryFieldMappingItem(
+            field=DeviceType._meta.get_field("description"),  # type: ignore
+            related_name="device_type",
+            verbose_name="Device Type description",
         ),
         # Annotation
         "annotation_text": QueryFieldMappingItem(

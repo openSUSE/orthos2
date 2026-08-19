@@ -14,7 +14,7 @@ from orthos2.data.models.netboxorthoscomparision import (
 from orthos2.utils.netbox import Netbox
 
 if TYPE_CHECKING:
-    from orthos2.data.models.platform import Platform
+    from orthos2.data.models.devicetype import DeviceType
     from orthos2.types import OptionalDateTimeField
 
 logger = logging.getLogger("models")
@@ -54,7 +54,7 @@ class Manufacturer(models.Model):
         blank=True,
     )
 
-    platform_set: models.Manager["Platform"]
+    devicetype_set: models.Manager["DeviceType"]
     netboxorthoscomparisionruns: models.Manager["NetboxOrthosComparisionRun"]
 
     objects = ManufacturerManager()
