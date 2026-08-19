@@ -33,8 +33,21 @@
     </tr>
     <tr>
       <td class="th fw-bold">Device Type</td>
-      <td>{{ machine.enclosure.device_type }}</td>
-      <td>{{ machine.device_type|default_if_none:"" }}</td>
+      <td style="width: 50%;">
+        {% if machine.enclosure.device_type %}
+          <a
+            href="{% url 'frontend:devicetype_detail' machine.enclosure.device_type.id %}"
+            >{{ machine.enclosure.device_type }}</a
+          >
+        {% endif %}
+      </td>
+      <td style="width: 50%;">
+        {% if machine.device_type %}
+          <a href="{% url 'frontend:devicetype_detail' machine.device_type.id %}"
+            >{{ machine.device_type }}</a
+          >
+        {% endif %}
+      </td>
     </tr>
   </tbody>
 </table>
