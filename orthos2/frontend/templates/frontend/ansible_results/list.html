@@ -5,47 +5,65 @@
   <div class="container-fluid">
     <div class="row">
       <main class="col-12">
-        <h2>{{ title }}</h2>
-
         <!-- Filter Form -->
-        <form method="get" class="mb-3">
-          <div class="row">
-            <div class="col-md-3">
-              <input
-                type="text"
-                name="search"
-                class="form-control"
-                placeholder="Search by machine FQDN"
-                value="{{ search }}"
-              />
-            </div>
-            <div class="col-md-2">
-              <input
-                type="date"
-                name="date_from"
-                class="form-control"
-                placeholder="From"
-                value="{{ date_from }}"
-              />
-            </div>
-            <div class="col-md-2">
-              <input
-                type="date"
-                name="date_to"
-                class="form-control"
-                placeholder="To"
-                value="{{ date_to }}"
-              />
-            </div>
-            <div class="col-md-2">
-              <button type="submit" class="btn btn-primary">Filter</button>
-              <a
-                href="{% url 'frontend:ansible_results_list' %}"
-                class="btn btn-secondary"
-                >Clear</a
-              >
-            </div>
+        <form
+          method="get"
+          class="d-flex align-items-center flex-wrap"
+          style="margin-bottom: 15px;"
+        >
+          <label class="hint" for="id_date_from" style="margin-right: 0.5rem;"
+            >Run Date From</label
+          >
+          <input
+            type="date"
+            name="date_from"
+            id="id_date_from"
+            class="form-control form-control-sm"
+            style="width: 160px;"
+            value="{{ date_from }}"
+          />
+
+          <span class="ms-2"></span>
+
+          <label class="hint" for="id_date_to" style="margin-right: 0.5rem;"
+            >To</label
+          >
+          <input
+            type="date"
+            name="date_to"
+            id="id_date_to"
+            class="form-control form-control-sm"
+            style="width: 160px;"
+            value="{{ date_to }}"
+          />
+
+          <span class="ms-2"></span>
+
+          <div class="input-group input-group-sm" style="width: 220px;">
+            <input
+              type="text"
+              name="search"
+              class="form-control"
+              placeholder="FQDN Search"
+              value="{{ search }}"
+            />
+            <button class="btn btn-secondary" type="submit" aria-label="Search">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
           </div>
+
+          <span class="ms-2"></span>
+
+          <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+          <a
+            href="{% url 'frontend:ansible_results_list' %}"
+            class="btn btn-secondary btn-sm ms-2"
+            >Clear</a
+          >
+
+          <span class="ms-2"></span>
+
+          <span class="hint">Found {{ paginator.count }} Ansible Result(s)</span>
         </form>
 
         <!-- Bulk Delete Form -->
