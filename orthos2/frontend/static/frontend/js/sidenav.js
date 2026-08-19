@@ -3,7 +3,6 @@
 
   var LG_BREAKPOINT = 992;
   var STORAGE_KEY = "orthos2.sidenavCollapsed";
-  var ADMIN_NAV_STORAGE_KEY = "orthos2.adminNavOpen";
 
   document.addEventListener("DOMContentLoaded", function () {
     var toggles = document.querySelectorAll(".sidenav-toggle");
@@ -22,22 +21,27 @@
       });
     }
 
-    var adminNavToggle = document.querySelector('[href="#nav-administration"]');
-    var adminNav = document.getElementById("nav-administration");
-    if (adminNavToggle && adminNav) {
-      var storedAdminNavOpen = localStorage.getItem(ADMIN_NAV_STORAGE_KEY);
-      if (storedAdminNavOpen !== null) {
-        var shouldBeOpen = storedAdminNavOpen === "true";
-        adminNav.classList.toggle("show", shouldBeOpen);
-        adminNavToggle.setAttribute("aria-expanded", String(shouldBeOpen));
+    document.querySelectorAll('#sidenav [data-bs-toggle="collapse"]').forEach(function (navToggle) {
+      var targetId = navToggle.getAttribute("href");
+      var navGroup = targetId && document.querySelector(targetId);
+      if (!navGroup) {
+        return;
       }
 
-      adminNav.addEventListener("shown.bs.collapse", function () {
-        localStorage.setItem(ADMIN_NAV_STORAGE_KEY, "true");
+      var storageKey = "orthos2.navOpen." + targetId.slice(1);
+      var storedOpen = localStorage.getItem(storageKey);
+      if (storedOpen !== null) {
+        var shouldBeOpen = storedOpen === "true";
+        navGroup.classList.toggle("show", shouldBeOpen);
+        navToggle.setAttribute("aria-expanded", String(shouldBeOpen));
+      }
+
+      navGroup.addEventListener("shown.bs.collapse", function () {
+        localStorage.setItem(storageKey, "true");
       });
-      adminNav.addEventListener("hidden.bs.collapse", function () {
-        localStorage.setItem(ADMIN_NAV_STORAGE_KEY, "false");
+      navGroup.addEventListener("hidden.bs.collapse", function () {
+        localStorage.setItem(storageKey, "false");
       });
-    }
+    });
   });
 })();

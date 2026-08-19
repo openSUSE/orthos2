@@ -66,6 +66,33 @@
       >
     </li>
   {% endif %}
+  <li class="nav-item">
+    <a
+      class="nav-link"
+      data-bs-toggle="collapse"
+      href="#nav-documentation"
+      role="button"
+      aria-expanded="false"
+      aria-controls="nav-documentation"
+    >
+      Documentation <i class="fa-solid fa-chevron-down"></i>
+    </a>
+    <ul class="collapse nav flex-column ms-3" id="nav-documentation">
+      <li class="nav-item">
+        <a class="nav-link" href="{% get_documentation_url %}" target="_blank"
+          >Documentation</a
+        >
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/api/schema/swagger-ui" target="_blank"
+          >API Documentation</a
+        >
+      </li>
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="/api/schema" target="_blank">REST API</a>
+  </li>
   {% if request.user.is_superuser %}
     {% active_group request 'users' as admin_open %}
     <li class="nav-item">

@@ -24,29 +24,7 @@
       ><i class="fa-solid fa-bug fa-lg"></i> Bugreport</a
     ><span class="ms-4" />
 
-    <a
-      class="link-light link-opacity-50 link-opacity-75-hover link-underline-opacity-0-hover"
-      href="{% get_documentation_url %}"
-      target="_blank"
-      ><i class="fa-solid fa-circle-info fa-lg"></i> Documentation</a
-    ><span class="ms-4" />
-
-    <a
-      class="link-light link-opacity-50 link-opacity-75-hover link-underline-opacity-0-hover"
-      href="/api/schema/swagger-ui"
-      target="_blank"
-      ><i class="fa-solid fa-circle-info fa-lg"></i> API Documentation</a
-    ><span class="ms-4" />
-
-    <a
-      class="link-light link-opacity-50 link-opacity-75-hover link-underline-opacity-0-hover"
-      href="/api/schema"
-      target="_blank"
-      ><i class="fa-solid fa-circle-info fa-lg"></i> REST API</a
-    >
-
     {% if user.is_authenticated %}
-      <span class="ms-4"></span>
       <form
         id="logout-form"
         class="d-inline"
