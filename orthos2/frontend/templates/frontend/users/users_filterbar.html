@@ -48,7 +48,7 @@
           >
         </div>
 
-        {% include 'frontend/snippet.search.html' %}
+        {% include 'frontend/snippet.search.html' with search_hint='Username' %}
 
         <div style="display: inline-block;">
           <span class="hint">Found {{ paginator.count }} User(s)</span>

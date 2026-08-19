@@ -1,6 +1,6 @@
 <form class="d-inline-flex align-items-center" action="{{ request.get_full_path }}" method="GET">
   <div class="input-group input-group-sm" style="width: 180px;">
-    <input class="form-control" type="text" name="query" placeholder="FQDN Search..." aria-label="Search">
+    <input class="form-control" type="text" name="query" placeholder="{{ search_hint|default:'FQDN' }} Search..." aria-label="Search">
     <button class="btn btn-secondary" type="submit" aria-label="Search">
       <i class="fa-solid fa-magnifying-glass"></i>
     </button>
