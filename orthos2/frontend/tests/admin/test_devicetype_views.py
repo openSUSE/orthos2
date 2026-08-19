@@ -20,11 +20,12 @@ class DeviceTypeListViewTest(TestCase):
         assert response.status_code == 302
         assert "login" in response.url.lower()  # type: ignore[attr-defined]
 
-    def test_regular_user_get_is_forbidden(self) -> None:
+    def test_regular_user_get_lists_devicetypes(self) -> None:
         self.client.force_login(User.objects.get(username="user"))
         url = reverse("frontend:devicetypes")
         response = self.client.get(url)
-        assert response.status_code == 403
+        assert response.status_code == 200
+        assert b"AcmeDeviceType" in response.content
 
     def test_superuser_get_lists_devicetypes(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))
@@ -49,11 +50,12 @@ class DeviceTypeDetailViewTest(TestCase):
         assert response.status_code == 302
         assert "login" in response.url.lower()  # type: ignore[attr-defined]
 
-    def test_regular_user_get_is_forbidden(self) -> None:
+    def test_regular_user_get_shows_detail_page(self) -> None:
         self.client.force_login(User.objects.get(username="user"))
         url = reverse("frontend:devicetype_detail", kwargs={"id": self.devicetype.pk})
         response = self.client.get(url)
-        assert response.status_code == 403
+        assert response.status_code == 200
+        assert b"AcmeDeviceType" in response.content
 
     def test_superuser_get_shows_detail_page(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))
