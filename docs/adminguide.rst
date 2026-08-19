@@ -6,7 +6,7 @@ Administrator`s Guide
 
 These pages are partly very technical. You should read the User Guide before to understand the basic concept and the goals of Orthos. 
 This document describes how to create and administrate groups and users, architectures, domains,
-machines, machine groups, serial console types, systems and enclosures, vendors and platforms. Furthermore, the
+machines, machine groups, serial console types, systems and enclosures, manufacturers and platforms. Furthermore, the
 administration of the Orthos server will be discussed.
 
 .. toctree::
@@ -22,7 +22,7 @@ administration of the Orthos server will be discussed.
     Architectures <adminguide/architectures>
     Domains <adminguide/domains>
     Systems and Enclosures <adminguide/systems_and_enclosures>
-    Vendors and Platforms <adminguide/vendors_and_platforms>
+    Manufacturers and Platforms <adminguide/manufacturers_and_platforms>
     Serial Console Type <adminguide/serial_console_type>
     Machine Groups <adminguide/machine_groups>
     Remote Power Types <adminguide/remote_power_type>

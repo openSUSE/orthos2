@@ -58,6 +58,13 @@ from .machines import (
     VirtualMachineListView,
     machine_search,
 )
+from .manufacturer import (
+    DeleteManufacturer,
+    ManufacturerDetailedEdit,
+    ManufacturerListView,
+    NewManufacturer,
+    manufacturer_detail,
+)
 from .regenerate import (
     regenerate_cobbler,
     regenerate_domain_cobbler,
@@ -79,13 +86,6 @@ from .remotepowerdevice import (
 from .statistics import statistics
 from .user import users_create, users_password_restore, users_preferences
 from .users import UserListView, user_detail, user_reservations, user_reserve_machine
-from .vendor import (
-    DeleteVendor,
-    NewVendor,
-    VendorDetailedEdit,
-    VendorListView,
-    vendor_detail,
-)
 
 __all__ = [
     "annotation",
@@ -160,9 +160,9 @@ __all__ = [
     "remotepowerdevice_fetch_netbox",
     "remotepowerdevice_netboxcomparison",
     "remotepowerdevice_compare_netbox",
-    "VendorListView",
-    "NewVendor",
-    "VendorDetailedEdit",
-    "DeleteVendor",
-    "vendor_detail",
+    "ManufacturerListView",
+    "NewManufacturer",
+    "ManufacturerDetailedEdit",
+    "DeleteManufacturer",
+    "manufacturer_detail",
 ]

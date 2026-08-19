@@ -6,18 +6,18 @@ from orthos2.api.forms import (
     AnnotationAPIForm,
     BMCAPIForm,
     DeleteMachineAPIForm,
+    DeleteManufacturerAPIForm,
     DeleteRemotePowerAPIForm,
     DeleteRemotePowerDeviceAPIForm,
-    DeleteVendorAPIForm,
     MachineAPIForm,
+    ManufacturerAPIForm,
     RemotePowerAPIForm,
     RemotePowerDeviceAPIForm,
     ReserveMachineAPIForm,
     SerialConsoleAPIForm,
-    VendorAPIForm,
     VirtualMachineAPIForm,
 )
-from orthos2.data.models import System, Vendor
+from orthos2.data.models import Manufacturer, System
 from orthos2.data.models.machine import Machine
 from orthos2.data.models.remotepowertype import RemotePowerType
 
@@ -235,40 +235,40 @@ class DeleteRemotePowerDeviceAPIFormTests(TestCase):
         self.assertTrue(form.is_valid())
 
 
-class VendorAPIFormTests(TestCase):
+class ManufacturerAPIFormTests(TestCase):
     def test_form(self) -> None:
-        """Test the vendor creation API form"""
+        """Test the manufacturer creation API form"""
         # Arrange & Act
-        form = VendorAPIForm({"name": "AcmeCorp"})
+        form = ManufacturerAPIForm({"name": "AcmeCorp"})
 
         # Assert
         self.assertTrue(form.is_valid())
 
     def test_form_requires_name(self) -> None:
-        """Test that the vendor creation API form requires a name"""
+        """Test that the manufacturer creation API form requires a name"""
         # Arrange & Act
-        form = VendorAPIForm({"name": ""})
+        form = ManufacturerAPIForm({"name": ""})
 
         # Assert
         self.assertFalse(form.is_valid())
 
 
-class DeleteVendorAPIFormTests(TestCase):
+class DeleteManufacturerAPIFormTests(TestCase):
     def test_form(self) -> None:
-        """Test the vendor deletion API form"""
+        """Test the manufacturer deletion API form"""
         # Arrange
-        Vendor.objects.create(name="AcmeCorp")
+        Manufacturer.objects.create(name="AcmeCorp")
 
         # Act
-        form = DeleteVendorAPIForm({"name": "AcmeCorp"})
+        form = DeleteManufacturerAPIForm({"name": "AcmeCorp"})
 
         # Assert
         self.assertTrue(form.is_valid())
 
-    def test_form_rejects_nonexistent_vendor(self) -> None:
-        """Test that the vendor deletion API form rejects an unknown name"""
+    def test_form_rejects_nonexistent_manufacturer(self) -> None:
+        """Test that the manufacturer deletion API form rejects an unknown name"""
         # Arrange & Act
-        form = DeleteVendorAPIForm({"name": "Nonexistent"})
+        form = DeleteManufacturerAPIForm({"name": "Nonexistent"})
 
         # Assert
         self.assertFalse(form.is_valid())

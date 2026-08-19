@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Tuple, Union, cast
 from django.contrib import admin
 from django.db import models
 
-from .vendor import Vendor
+from .manufacturer import Manufacturer
 
 if TYPE_CHECKING:
     from django.db.models.expressions import Combinable
@@ -18,14 +18,16 @@ class PlatformManager(models.Manager["Platform"]):
 
 class Platform(models.Model):
     class Meta:  # type: ignore
-        ordering = ["vendor", "name"]
+        ordering = ["manufacturer", "name"]
 
     id: int
 
     name: "models.CharField[str, str]" = models.CharField(max_length=200, blank=False)
 
-    vendor: "models.ForeignKey[Union[Combinable, Vendor], Vendor]" = models.ForeignKey(
-        Vendor, blank=False, null=False, on_delete=models.CASCADE
+    manufacturer: "models.ForeignKey[Union[Combinable, Manufacturer], Manufacturer]" = (
+        models.ForeignKey(
+            Manufacturer, blank=False, null=False, on_delete=models.CASCADE
+        )
     )
 
     is_cartridge: "models.BooleanField[bool, bool]" = models.BooleanField(
@@ -45,14 +47,14 @@ class Platform(models.Model):
     def natural_key(self) -> Tuple[str]:
         return (self.name,)
 
-    natural_key.dependencies = ["data.vendor"]  # type: ignore
+    natural_key.dependencies = ["data.manufacturer"]  # type: ignore
 
     def __str__(self) -> str:
         return self.name
 
-    @admin.display(description="Vendor")
-    def get_vendor(self) -> str:
-        return self.vendor.name
+    @admin.display(description="Manufacturer")
+    def get_manufacturer(self) -> str:
+        return self.manufacturer.name
 
     @admin.display(description="Enclosures")
     def get_enclosure_count(self) -> int:

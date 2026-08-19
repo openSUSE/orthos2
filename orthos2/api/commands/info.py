@@ -14,14 +14,14 @@ from orthos2.api.commands.base import (
 )
 from orthos2.api.serializers.enclosure import EnclosureSerializer
 from orthos2.api.serializers.machine import MachineSerializer
+from orthos2.api.serializers.manufacturer import ManufacturerSerializer
 from orthos2.api.serializers.misc import (
     AuthRequiredSerializer,
     ErrorMessage,
     Serializer,
 )
 from orthos2.api.serializers.remotepowerdevice import RemotePowerDeviceSerializer
-from orthos2.api.serializers.vendor import VendorSerializer
-from orthos2.data.models import Machine, RemotePowerDevice, Vendor
+from orthos2.data.models import Machine, Manufacturer, RemotePowerDevice
 from orthos2.data.models.enclosure import Enclosure
 
 
@@ -260,37 +260,41 @@ class RemotePowerDeviceInfoCommand(BaseAPIView):
         return JsonResponse(response)
 
 
-class VendorInfoCommand(BaseAPIView):
+class ManufacturerInfoCommand(BaseAPIView):
 
     METHOD = "GET"
-    URL = "/vendor"
+    URL = "/manufacturer"
     ARGUMENTS = (["name"],)
 
-    HELP_SHORT = "Retrieve information about a vendor."
-    HELP = """Command to get information about a vendor.
+    HELP_SHORT = "Retrieve information about a manufacturer."
+    HELP = """Command to get information about a manufacturer.
 
 Usage:
-    INFO vendor <name>
+    INFO manufacturer <name>
 
 Arguments:
-    name - Name of the vendor. If omitted, all vendors are listed.
+    name - Name of the manufacturer. If omitted, all manufacturers are listed.
 
 Example:
-    INFO vendor Dell
+    INFO manufacturer Dell
     """
 
     @staticmethod
     def get_urls() -> List[URLPattern]:
         return [
-            re_path(r"^vendor$", VendorInfoCommand.as_view(), name="vendor"),
+            re_path(
+                r"^manufacturer$",
+                ManufacturerInfoCommand.as_view(),
+                name="manufacturer",
+            ),
         ]
 
     @staticmethod
     def get_tabcompletion() -> List[str]:
-        return list(Vendor.objects.all().values_list("name", flat=True))
+        return list(Manufacturer.objects.all().values_list("name", flat=True))
 
     def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
-        """Return vendor information."""
+        """Return manufacturer information."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
@@ -303,22 +307,26 @@ Example:
 
         try:
             if name:
-                vendor = Vendor.objects.get(name__iexact=name)
-                serialized_vendor = VendorSerializer(vendor)
+                manufacturer = Manufacturer.objects.get(name__iexact=name)
+                serialized_manufacturer = ManufacturerSerializer(manufacturer)
                 response = {
                     "header": {"type": "INFO", "order": ["id", "name"]},
-                    "data": serialized_vendor.data_info,
+                    "data": serialized_manufacturer.data_info,
                 }
             else:
-                vendors = Vendor.objects.all()
-                serialized_vendors = VendorSerializer(vendors, many=True)
+                manufacturers = Manufacturer.objects.all()
+                serialized_manufacturers = ManufacturerSerializer(
+                    manufacturers, many=True
+                )
                 theader = [{"id": "ID"}, {"name": "Name"}]
                 response = {
                     "header": {"type": "TABLE", "theader": theader},
-                    "data": serialized_vendors.data,
+                    "data": serialized_manufacturers.data,
                 }
-        except Vendor.DoesNotExist:
-            return ErrorMessage("Vendor '{}' does not exist!".format(name)).as_json
+        except Manufacturer.DoesNotExist:
+            return ErrorMessage(
+                "Manufacturer '{}' does not exist!".format(name)
+            ).as_json
         except Exception:
             return ErrorMessage(getException()).as_json
 

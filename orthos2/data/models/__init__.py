@@ -13,6 +13,7 @@ from .machine import (
     check_permission,
     validate_dns,
 )
+from .manufacturer import Manufacturer
 from .netboxorthoscomparision import (
     NetboxOrthosComparisionResult,
     NetboxOrthosComparisionRun,
@@ -27,7 +28,6 @@ from .serialconsole import SerialConsole
 from .serialconsoletype import SerialConsoleType
 from .serverconfig import ServerConfig, ServerConfigManager, ServerConfigSSHManager
 from .system import System
-from .vendor import Vendor
 
 __all__ = [
     "AnsibleScanResult",
@@ -45,6 +45,7 @@ __all__ = [
     "ViewManager",
     "check_permission",
     "validate_dns",
+    "Manufacturer",
     "NetboxOrthosComparisionRun",
     "NetboxOrthosComparisionResult",
     "NetworkInterface",
@@ -59,5 +60,4 @@ __all__ = [
     "ServerConfigManager",
     "ServerConfigSSHManager",
     "System",
-    "Vendor",
 ]

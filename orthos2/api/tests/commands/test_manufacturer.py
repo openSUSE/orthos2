@@ -1,4 +1,4 @@
-"""Tests for the Vendor Add/Edit/Delete/Info API commands."""
+"""Tests for the Manufacturer Add/Edit/Delete/Info API commands."""
 
 import json
 
@@ -8,10 +8,10 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
-from orthos2.data.models import Vendor
+from orthos2.data.models import Manufacturer
 
 
-class VendorCommandTestCase(APITestCase):
+class ManufacturerCommandTestCase(APITestCase):
     def setUp(self) -> None:
         self.superuser = User.objects.create_superuser(
             username="superuser", email="super@test.de", password="secret"
@@ -31,9 +31,9 @@ class VendorCommandTestCase(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.regular_user_token)
 
 
-class AddVendorTest(VendorCommandTestCase):
+class AddManufacturerTest(ManufacturerCommandTestCase):
     def test_unauthenticated_returns_auth_required(self) -> None:
-        url = reverse("api:vendor_add")
+        url = reverse("api:manufacturer_add")
         response = self.client.get(url)
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
@@ -41,7 +41,7 @@ class AddVendorTest(VendorCommandTestCase):
 
     def test_get_returns_input_form(self) -> None:
         self._auth_superuser()
-        url = reverse("api:vendor_add")
+        url = reverse("api:manufacturer_add")
         response = self.client.get(url)
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
@@ -49,56 +49,56 @@ class AddVendorTest(VendorCommandTestCase):
 
     def test_regular_user_post_is_rejected(self) -> None:
         self._auth_regular()
-        url = reverse("api:vendor_add")
+        url = reverse("api:manufacturer_add")
         response = self.client.post(url, {"form": {"name": "AcmeCorp"}}, format="json")
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
         assert data["header"]["type"] == "MESSAGE"
         assert "superuser" in data["data"]["message"].lower()
-        assert not Vendor.objects.filter(name="AcmeCorp").exists()
+        assert not Manufacturer.objects.filter(name="AcmeCorp").exists()
 
-    def test_superuser_post_creates_vendor(self) -> None:
+    def test_superuser_post_creates_manufacturer(self) -> None:
         self._auth_superuser()
-        url = reverse("api:vendor_add")
+        url = reverse("api:manufacturer_add")
         response = self.client.post(url, {"form": {"name": "AcmeCorp"}}, format="json")
         assert response.status_code == status.HTTP_200_OK
-        assert Vendor.objects.filter(name="AcmeCorp").exists()
+        assert Manufacturer.objects.filter(name="AcmeCorp").exists()
 
     def test_superuser_post_invalid_data_returns_error(self) -> None:
         self._auth_superuser()
-        count_before = Vendor.objects.count()
-        url = reverse("api:vendor_add")
+        count_before = Manufacturer.objects.count()
+        url = reverse("api:manufacturer_add")
         response = self.client.post(url, {"form": {"name": ""}}, format="json")
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
         assert data["header"]["type"] == "MESSAGE"
         assert data["data"]["type"] == "ERROR"
-        assert Vendor.objects.count() == count_before
+        assert Manufacturer.objects.count() == count_before
 
 
-class EditVendorTest(VendorCommandTestCase):
+class EditManufacturerTest(ManufacturerCommandTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.vendor = Vendor.objects.create(name="AcmeCorp")
+        self.manufacturer = Manufacturer.objects.create(name="AcmeCorp")
 
     def test_unauthenticated_returns_auth_required(self) -> None:
-        url = reverse("api:vendor_edit")
-        response = self.client.get(url, {"id": self.vendor.pk})
+        url = reverse("api:manufacturer_edit")
+        response = self.client.get(url, {"id": self.manufacturer.pk})
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
         assert data["header"]["type"] == "AUTHREQUIRED"
 
     def test_get_returns_input_form(self) -> None:
         self._auth_superuser()
-        url = reverse("api:vendor_edit")
-        response = self.client.get(url, {"id": self.vendor.pk})
+        url = reverse("api:manufacturer_edit")
+        response = self.client.get(url, {"id": self.manufacturer.pk})
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
         assert data["header"]["type"] == "INPUT"
 
     def test_get_nonexistent_id_returns_error(self) -> None:
         self._auth_superuser()
-        url = reverse("api:vendor_edit")
+        url = reverse("api:manufacturer_edit")
         response = self.client.get(url, {"id": 99999})
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
@@ -106,34 +106,34 @@ class EditVendorTest(VendorCommandTestCase):
 
     def test_regular_user_post_is_rejected(self) -> None:
         self._auth_regular()
-        url = reverse("api:vendor_edit")
+        url = reverse("api:manufacturer_edit")
         response = self.client.post(
             url,
-            {"form": {"id": self.vendor.pk, "name": "AcmeCorp Renamed"}},
+            {"form": {"id": self.manufacturer.pk, "name": "AcmeCorp Renamed"}},
             format="json",
         )
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
         assert data["header"]["type"] == "MESSAGE"
         assert "superuser" in data["data"]["message"].lower()
-        self.vendor.refresh_from_db()
-        assert self.vendor.name == "AcmeCorp"
+        self.manufacturer.refresh_from_db()
+        assert self.manufacturer.name == "AcmeCorp"
 
-    def test_superuser_post_updates_vendor(self) -> None:
+    def test_superuser_post_updates_manufacturer(self) -> None:
         self._auth_superuser()
-        url = reverse("api:vendor_edit")
+        url = reverse("api:manufacturer_edit")
         response = self.client.post(
             url,
-            {"form": {"id": self.vendor.pk, "name": "AcmeCorp Renamed"}},
+            {"form": {"id": self.manufacturer.pk, "name": "AcmeCorp Renamed"}},
             format="json",
         )
         assert response.status_code == status.HTTP_200_OK
-        self.vendor.refresh_from_db()
-        assert self.vendor.name == "AcmeCorp Renamed"
+        self.manufacturer.refresh_from_db()
+        assert self.manufacturer.name == "AcmeCorp Renamed"
 
     def test_superuser_post_nonexistent_id_returns_error(self) -> None:
         self._auth_superuser()
-        url = reverse("api:vendor_edit")
+        url = reverse("api:manufacturer_edit")
         response = self.client.post(
             url, {"form": {"id": 99999, "name": "AcmeCorp Renamed"}}, format="json"
         )
@@ -142,13 +142,13 @@ class EditVendorTest(VendorCommandTestCase):
         assert data["header"]["type"] == "MESSAGE"
 
 
-class DeleteVendorTest(VendorCommandTestCase):
+class DeleteManufacturerTest(ManufacturerCommandTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.vendor = Vendor.objects.create(name="AcmeCorp")
+        self.manufacturer = Manufacturer.objects.create(name="AcmeCorp")
 
     def test_unauthenticated_returns_auth_required(self) -> None:
-        url = reverse("api:vendor_delete")
+        url = reverse("api:manufacturer_delete")
         response = self.client.get(url)
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
@@ -156,26 +156,26 @@ class DeleteVendorTest(VendorCommandTestCase):
 
     def test_regular_user_post_is_rejected(self) -> None:
         self._auth_regular()
-        url = reverse("api:vendor_delete")
+        url = reverse("api:manufacturer_delete")
         response = self.client.post(url, {"form": {"name": "AcmeCorp"}}, format="json")
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
         assert data["header"]["type"] == "MESSAGE"
         assert "superuser" in data["data"]["message"].lower()
-        assert Vendor.objects.filter(name="AcmeCorp").exists()
+        assert Manufacturer.objects.filter(name="AcmeCorp").exists()
 
-    def test_superuser_post_deletes_vendor(self) -> None:
+    def test_superuser_post_deletes_manufacturer(self) -> None:
         self._auth_superuser()
-        url = reverse("api:vendor_delete")
+        url = reverse("api:manufacturer_delete")
         response = self.client.post(url, {"form": {"name": "AcmeCorp"}}, format="json")
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
         assert data["header"]["type"] == "TABLE"
-        assert not Vendor.objects.filter(name="AcmeCorp").exists()
+        assert not Manufacturer.objects.filter(name="AcmeCorp").exists()
 
     def test_superuser_post_nonexistent_name_returns_error(self) -> None:
         self._auth_superuser()
-        url = reverse("api:vendor_delete")
+        url = reverse("api:manufacturer_delete")
         response = self.client.post(
             url, {"form": {"name": "Nonexistent"}}, format="json"
         )
@@ -185,39 +185,39 @@ class DeleteVendorTest(VendorCommandTestCase):
         assert data["data"]["type"] == "ERROR"
 
 
-class VendorInfoTest(VendorCommandTestCase):
+class ManufacturerInfoTest(ManufacturerCommandTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.vendor = Vendor.objects.create(name="AcmeCorp")
+        self.manufacturer = Manufacturer.objects.create(name="AcmeCorp")
 
-    def test_get_single_vendor_by_name(self) -> None:
+    def test_get_single_manufacturer_by_name(self) -> None:
         self._auth_superuser()
-        url = reverse("api:vendor")
+        url = reverse("api:manufacturer")
         response = self.client.get(url, {"name": "AcmeCorp"})
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
         assert data["header"]["type"] == "INFO"
         assert data["data"]["name"] == "AcmeCorp"
 
-    def test_get_all_vendors_when_no_name_given(self) -> None:
+    def test_get_all_manufacturers_when_no_name_given(self) -> None:
         self._auth_superuser()
-        url = reverse("api:vendor")
+        url = reverse("api:manufacturer")
         response = self.client.get(url)
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
         assert data["header"]["type"] == "TABLE"
         assert "AcmeCorp" in [row["name"] for row in data["data"]]
 
-    def test_get_nonexistent_vendor_returns_error(self) -> None:
+    def test_get_nonexistent_manufacturer_returns_error(self) -> None:
         self._auth_superuser()
-        url = reverse("api:vendor")
+        url = reverse("api:manufacturer")
         response = self.client.get(url, {"name": "Nonexistent"})
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
         assert data["header"]["type"] == "MESSAGE"
 
     def test_unauthenticated_returns_auth_required(self) -> None:
-        url = reverse("api:vendor")
+        url = reverse("api:manufacturer")
         response = self.client.get(url)
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
@@ -225,7 +225,7 @@ class VendorInfoTest(VendorCommandTestCase):
 
     def test_regular_user_is_rejected(self) -> None:
         self._auth_regular()
-        url = reverse("api:vendor")
+        url = reverse("api:manufacturer")
         response = self.client.get(url)
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)

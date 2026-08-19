@@ -14,8 +14,8 @@
         <ul class="nav nav-tabs gray">
           <li class="nav-item">
             <a
-              class="nav-link {% active_view request 'vendor_detail' %}"
-              href="{% url 'frontend:vendor_detail' vendor.pk %}"
+              class="nav-link {% active_view request 'manufacturer_detail' %}"
+              href="{% url 'frontend:manufacturer_detail' manufacturer.pk %}"
               >Overview</a
             >
           </li>
@@ -27,12 +27,12 @@
         </div>
         <span style="font-size: 0.7em; font-family: Monospace;"
           >API:
-          <a href="{% url 'api:vendor' %}?name={{ vendor.name }}"
-            >{% url 'api:vendor' %}?name={{ vendor.name }}</a
+          <a href="{% url 'api:manufacturer' %}?name={{ manufacturer.name }}"
+            >{% url 'api:manufacturer' %}?name={{ manufacturer.name }}</a
           >
           | Edit:
-          <a href="{% url 'frontend:edit_vendor' vendor.id %}"
-            >{% url 'frontend:edit_vendor' vendor.id %}</a
+          <a href="{% url 'frontend:edit_manufacturer' manufacturer.id %}"
+            >{% url 'frontend:edit_manufacturer' manufacturer.id %}</a
           ></span
         >
       </main>

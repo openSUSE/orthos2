@@ -1,6 +1,6 @@
 [
   {
-    "model": "data.vendor",
+    "model": "data.manufacturer",
     "fields": {
       "name": "Other"
     }
@@ -51,7 +51,7 @@
     "model": "data.platform",
     "fields": {
       "name": "Other",
-      "vendor": ["Other"]
+      "manufacturer": ["Other"]
     }
   },
   {

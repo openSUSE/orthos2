@@ -3,12 +3,12 @@ from typing import Tuple, cast
 from django.db import models
 
 
-class VendorManager(models.Manager["Vendor"]):
-    def get_by_natural_key(self, name: str) -> "Vendor":
+class ManufacturerManager(models.Manager["Manufacturer"]):
+    def get_by_natural_key(self, name: str) -> "Manufacturer":
         return self.get(name=name)
 
 
-class Vendor(models.Model):
+class Manufacturer(models.Model):
     class Meta:  # type: ignore
         ordering = ["name"]
 
@@ -18,7 +18,7 @@ class Vendor(models.Model):
         unique=True,
     )
 
-    objects = VendorManager()
+    objects = ManufacturerManager()
 
     def natural_key(self) -> Tuple[str]:
         return (self.name,)
@@ -27,8 +27,8 @@ class Vendor(models.Model):
         return self.name
 
     @classmethod
-    def get_vendor_manager(cls) -> VendorManager:
+    def get_manufacturer_manager(cls) -> ManufacturerManager:
         """
-        Return the vendor manager.
+        Return the manufacturer manager.
         """
-        return cast(VendorManager, cls.objects)
+        return cast(ManufacturerManager, cls.objects)

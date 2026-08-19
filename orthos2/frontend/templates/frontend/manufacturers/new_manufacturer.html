@@ -12,9 +12,9 @@
         class="pt-3"
         method="post"
         {% if action == 'new' %}
-          action="{% url 'frontend:new_vendor' %}"
+          action="{% url 'frontend:new_manufacturer' %}"
         {% elif action == 'edit' %}
-          action="{% url 'frontend:edit_vendor' object.id %}"
+          action="{% url 'frontend:edit_manufacturer' object.id %}"
         {% endif %}
       >
         {% csrf_token %}

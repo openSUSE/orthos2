@@ -31,7 +31,6 @@ from orthos2.data.models import (
     SerialConsoleType,
     ServerConfig,
     System,
-    Vendor,
 )
 from orthos2.utils.misc import get_domain, is_unique_mac_address, suggest_host_ip
 
@@ -994,7 +993,7 @@ admin.site.register(ServerConfig, ServerConfigAdmin)  # type: ignore
 
 
 class PlatformAdmin(admin.ModelAdmin):  # type: ignore
-    list_display = ("name", "get_vendor", "get_enclosure_count", "is_cartridge")
+    list_display = ("name", "get_manufacturer", "get_enclosure_count", "is_cartridge")
     list_per_page = 50
     search_fields = ("name",)
     show_full_result_count = True

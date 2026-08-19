@@ -1,25 +1,25 @@
-{% extends 'frontend/vendors/vendor.html' %}
+{% extends 'frontend/manufacturers/manufacturer.html' %}
 
 {% block tabcontent %}
   <div class="row">
     <div class="col-10">
       <div class="container-fluid">
         <div class="title">
-          <h5>{{ vendor.name }}</h5>
+          <h5>{{ manufacturer.name }}</h5>
         </div>
 
         <table class="table table-striped table-bordered small">
           <tbody class="thead-default">
             <tr>
               <td class="th fw-bold" width="150px">Name</td>
-              <td>{{ vendor.name }}</td>
+              <td>{{ manufacturer.name }}</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
     <div class="col-2">
-      {% include 'frontend/vendors/detail/actions.html' %}
+      {% include 'frontend/manufacturers/detail/actions.html' %}
     </div>
   </div>
 {% endblock %}

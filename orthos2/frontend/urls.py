@@ -286,22 +286,22 @@ urlpatterns = [
         views.ansible_result_bulk_delete,
         name="ansible_results_bulk_delete",
     ),
-    # Vendors
-    path("vendors", views.VendorListView.as_view(), name="vendors"),
+    # Manufacturers
+    path("manufacturers", views.ManufacturerListView.as_view(), name="manufacturers"),
     re_path(
-        r"^vendor/(?P<id>[0-9]+)/detail$",
-        views.vendor_detail,
-        name="vendor_detail",
+        r"^manufacturers/(?P<id>[0-9]+)/detail$",
+        views.manufacturer_detail,
+        name="manufacturer_detail",
     ),
-    path("vendors/new", views.NewVendor.as_view(), name="new_vendor"),
+    path("manufacturers/new", views.NewManufacturer.as_view(), name="new_manufacturer"),
     path(
-        "vendors/edit/<int:pk>/",
-        views.VendorDetailedEdit.as_view(),
-        name="edit_vendor",
+        "manufacturers/edit/<int:pk>/",
+        views.ManufacturerDetailedEdit.as_view(),
+        name="edit_manufacturer",
     ),
     path(
-        "vendors/delete/<int:pk>/",
-        views.DeleteVendor.as_view(),
-        name="delete_vendor",
+        "manufacturers/delete/<int:pk>/",
+        views.DeleteManufacturer.as_view(),
+        name="delete_manufacturer",
     ),
 ]

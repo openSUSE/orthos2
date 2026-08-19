@@ -17,23 +17,23 @@ from django.urls import URLPattern, re_path, reverse  # type: ignore
 from rest_framework.request import Request
 
 from orthos2.api.commands.base import BaseAPIView
-from orthos2.api.forms import VendorAPIForm
+from orthos2.api.forms import ManufacturerAPIForm
 from orthos2.api.serializers.misc import (
     AuthRequiredSerializer,
     ErrorMessage,
     InputSerializer,
     Message,
 )
-from orthos2.data.models import Vendor
+from orthos2.data.models import Manufacturer
 from orthos2.utils.misc import format_cli_form_errors
 
 logger = logging.getLogger("api")
 
 
 class Edit:
-    VENDOR = "vendor"
+    MANUFACTURER = "manufacturer"
 
-    as_list = [VENDOR]
+    as_list = [MANUFACTURER]
 
 
 class EditCommand(BaseAPIView):
@@ -51,10 +51,10 @@ class EditCommand(BaseAPIView):
     Arguments:
         item - Specify the item which should be edited. Items are:
 
-                vendor <id> : Edit a vendor (superusers only).
+                manufacturer <id> : Edit a manufacturer (superusers only).
 
     Example:
-        EDIT vendor 1
+        EDIT manufacturer 1
     """
 
     @staticmethod
@@ -80,43 +80,45 @@ class EditCommand(BaseAPIView):
         else:
             return ErrorMessage("Item is missing!").as_json
 
-        if item == Edit.VENDOR:
+        if item == Edit.MANUFACTURER:
             if len(sub_arguments) != 1:
-                return ErrorMessage("Invalid number of arguments for 'vendor'!").as_json
+                return ErrorMessage(
+                    "Invalid number of arguments for 'manufacturer'!"
+                ).as_json
 
             return redirect(
-                "{}?id={}".format(reverse("api:vendor_edit"), sub_arguments[0])
+                "{}?id={}".format(reverse("api:manufacturer_edit"), sub_arguments[0])
             )
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
 
-class EditVendorCommand(BaseAPIView):
+class EditManufacturerCommand(BaseAPIView):
 
     METHOD = "POST"
-    URL = "/vendor/edit"
-    URL_POST = "/vendor/edit"
+    URL = "/manufacturer/edit"
+    URL_POST = "/manufacturer/edit"
     ARGUMENTS = (["id", "name"],)
 
-    HELP_SHORT = "Edits a vendor in the database."
-    HELP = """Edits a vendor in the database (superusers only).
+    HELP_SHORT = "Edits a manufacturer in the database."
+    HELP = """Edits a manufacturer in the database (superusers only).
 
     Usage:
-        EDIT vendor <id>
+        EDIT manufacturer <id>
     """
 
     @staticmethod
     def get_urls() -> List[URLPattern]:
         return [
             re_path(
-                r"^vendor/edit",
-                EditVendorCommand.as_view(),
-                name="vendor_edit",
+                r"^manufacturer/edit",
+                EditManufacturerCommand.as_view(),
+                name="manufacturer_edit",
             ),
         ]
 
     def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
-        """Return form for editing a vendor."""
+        """Return form for editing a manufacturer."""
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
@@ -125,20 +127,20 @@ class EditVendorCommand(BaseAPIView):
                 "Only superusers are allowed to perform this action!"
             ).as_json
 
-        vendor_id = request.GET.get("id")
+        manufacturer_id = request.GET.get("id")
         try:
-            vendor = Vendor.objects.get(pk=vendor_id)
-        except (Vendor.DoesNotExist, ValueError, TypeError):
+            manufacturer = Manufacturer.objects.get(pk=manufacturer_id)  # type: ignore[misc]
+        except (Manufacturer.DoesNotExist, ValueError, TypeError):
             return ErrorMessage(
-                "Vendor with id '{}' does not exist!".format(vendor_id)
+                "Manufacturer with id '{}' does not exist!".format(manufacturer_id)
             ).as_json
 
-        form = VendorAPIForm(instance=vendor)
+        form = ManufacturerAPIForm(instance=manufacturer)
         fields = form.as_dict()
         fields["id"] = {
             "type": "INTEGER",
             "prompt": "ID",
-            "initial": vendor.pk,
+            "initial": manufacturer.pk,
             "required": True,
         }
 
@@ -146,22 +148,22 @@ class EditVendorCommand(BaseAPIView):
         return input.as_json
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
-        """Edit vendor."""
+        """Edit manufacturer."""
         if not request.user.is_superuser:  # type: ignore
             return ErrorMessage(
                 "Only superusers are allowed to perform this action!"
             ).as_json
 
         data = json.loads(request.body.decode("utf-8"))["form"]
-        vendor_id = data.get("id")
+        manufacturer_id = data.get("id")
         try:
-            vendor = Vendor.objects.get(pk=vendor_id)
-        except (Vendor.DoesNotExist, ValueError, TypeError):
+            manufacturer = Manufacturer.objects.get(pk=manufacturer_id)
+        except (Manufacturer.DoesNotExist, ValueError, TypeError):
             return ErrorMessage(
-                "Vendor with id '{}' does not exist!".format(vendor_id)
+                "Manufacturer with id '{}' does not exist!".format(manufacturer_id)
             ).as_json
 
-        form = VendorAPIForm(data, instance=vendor)
+        form = ManufacturerAPIForm(data, instance=manufacturer)
 
         if form.is_valid():
             try:

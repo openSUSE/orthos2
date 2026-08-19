@@ -1,21 +1,21 @@
-*********************
-Vendors and Platforms
-*********************
+***************************
+Manufacturers and Platforms
+***************************
 
 Concepts
 ########
 
-Under Vendors you can enter the machine manufacturer, This serves together with the platforms to recognize a machine or
+Under Manufacturers you can enter the machine manufacturer, This serves together with the platforms to recognize a machine or
 machines of the same type. Most manufacturers are already stored in the Orthos system. With platforms you can set the
-machine family name (unit name). It goes hand in hand with the vendor, the platform name is determined by the vendor.
+machine family name (unit name). It goes hand in hand with the manufacturer, the platform name is determined by the manufacturer.
 
 .. code-block::
 
-    -------------
-    |  Vendor   |
-    -------------
-         |
-         |
+    ----------------
+    | Manufacturer |
+    ----------------
+          |
+          |
     -------------
     | Platform  |
     -------------
@@ -25,13 +25,13 @@ machine family name (unit name). It goes hand in hand with the vendor, the platf
     | Enclosure |-----| Machine |
     -------------     -----------
 
-Vendor fields description
-#########################
+Manufacturer fields description
+###############################
 
 Name (required)
 ===============
 
-Name of the vendor.
+Name of the manufacturer.
 
 Example: AMD, IBM, Raritan, Dell, Intel, SGI etc.
 
@@ -51,12 +51,12 @@ Latitude E7470
 But this info is often empty or wrong, especially on early developement machines.
 Therefore it has to be filled manually.
 It should be a meaningful name, by which people who are familiar with products
-of the vendor have an idea what kind of machine this is (how old, features, etc.).
+of the manufacturer have an idea what kind of machine this is (how old, features, etc.).
 
-Vendor (required)
-=================
+Manufacturer (required)
+=======================
 
-Here a vendor is specified and the connection between platform and vendor created.
+Here a manufacturer is specified and the connection between platform and manufacturer created.
 
 Example: AMD, IBM, Raritan, Dell, Intel, SGI etc.
 

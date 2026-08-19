@@ -65,7 +65,7 @@ Name of the Enclosure.
 Platform
 ========
 
-Here the machine platform is specified, this usually comes via the vendor.
+Here the machine platform is specified, this usually comes via the manufacturer.
 
 Description
 ===========
