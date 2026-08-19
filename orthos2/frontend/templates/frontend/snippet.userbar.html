@@ -17,14 +17,6 @@
     {% endif %}
     <span class="ms-4"></span>
 
-    {% if user.is_superuser or not user.is_authenticated %}
-      <a
-        class="link-light link-opacity-50 link-opacity-75-hover link-underline-opacity-0-hover"
-        href="{% url 'admin:index' %}"
-        ><i class="fa-solid fa-sliders fa-lg"></i> Administration</a
-      ><span class="ms-4" />
-    {% endif %}
-
     <a
       class="link-light link-opacity-50 link-opacity-75-hover link-underline-opacity-0-hover"
       href="{% get_bugreport_url %}"
