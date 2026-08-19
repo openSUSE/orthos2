@@ -11,6 +11,7 @@ from orthos2.data.models import (
     BMC,
     Enclosure,
     Machine,
+    Manufacturer,
     NetworkInterface,
     RemotePowerDevice,
 )
@@ -86,6 +87,22 @@ class NetboxFetchNetworkInterface(Task):
             logger.debug(
                 'Fetching network interface "%s" - End', network_interface.name
             )
+
+
+class NetboxFetchManufacturer(Task):
+    """
+    Iterate over all manufacturers and fetch information from Netbox.
+    """
+
+    def execute(self) -> None:
+        """
+        Executes the task.
+        """
+        logger.info("Fetching information from Netbox API for all manufacturers.")
+        for manufacturer in Manufacturer.objects.all():
+            logger.debug('Fetching manufacturer "%s" - Start', manufacturer.name)
+            manufacturer.fetch_netbox()
+            logger.debug('Fetching manufacturer "%s" - End', manufacturer.name)
 
 
 class NetboxFetchRemotePowerDevice(Task):
@@ -167,6 +184,32 @@ class NetboxFetchFullEnclosure(Task):
         enclosure.fetch_netbox()
 
 
+class NetboxFetchFullManufacturer(Task):
+    """
+    Fetch a single manufacturer.
+    """
+
+    def __init__(self, manufacturer_id: int) -> None:
+        """
+        Constructor to initialize the task.
+        """
+        self.manufacturer_pk = manufacturer_id
+
+    def execute(self) -> None:
+        """
+        Executes the task.
+        """
+        logger.info(
+            "Fetching information from Netbox API for manufacturer with pk %s.",
+            self.manufacturer_pk,
+        )
+        try:
+            manufacturer = Manufacturer.objects.get(pk=self.manufacturer_pk)
+        except ObjectDoesNotExist as err:
+            raise ValueError("Requested manufacturer doesn't exist!") from err
+        manufacturer.fetch_netbox()
+
+
 class NetboxCompareFullMachine(Task):
     """
     Compare a single full machine with its subobjects.
@@ -221,6 +264,32 @@ class NetboxCompareEnclosure(Task):
         except ObjectDoesNotExist as err:
             raise ValueError("Requested enclosure doesn't exist!") from err
         enclosure.compare_netbox()
+
+
+class NetboxCompareManufacturer(Task):
+    """
+    Compare a single manufacturer.
+    """
+
+    def __init__(self, manufacturer_id: int) -> None:
+        """
+        Constructor to initialize the task.
+        """
+        self.manufacturer_pk = manufacturer_id
+
+    def execute(self) -> None:
+        """
+        Executes the task.
+        """
+        logger.info(
+            'Comparing information from Netbox API for manufacturer "%s".',
+            self.manufacturer_pk,
+        )
+        try:
+            manufacturer = Manufacturer.objects.get(pk=self.manufacturer_pk)
+        except ObjectDoesNotExist as err:
+            raise ValueError("Requested manufacturer doesn't exist!") from err
+        manufacturer.compare_netbox()
 
 
 class NetboxCompareRemotePowerDevice(Task):

@@ -63,7 +63,11 @@ from .manufacturer import (
     ManufacturerDetailedEdit,
     ManufacturerListView,
     NewManufacturer,
+    manufacturer_compare_netbox,
     manufacturer_detail,
+    manufacturer_fetch_netbox,
+    manufacturer_netboxcomparison,
+    manufacturer_platforms,
 )
 from .regenerate import (
     regenerate_cobbler,
@@ -165,4 +169,8 @@ __all__ = [
     "ManufacturerDetailedEdit",
     "DeleteManufacturer",
     "manufacturer_detail",
+    "manufacturer_platforms",
+    "manufacturer_fetch_netbox",
+    "manufacturer_netboxcomparison",
+    "manufacturer_compare_netbox",
 ]

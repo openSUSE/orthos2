@@ -14,6 +14,21 @@
               <td class="th fw-bold" width="150px">Name</td>
               <td>{{ manufacturer.name }}</td>
             </tr>
+            <tr>
+              <td class="th fw-bold">Description</td>
+              <td>{{ manufacturer.description }}</td>
+            </tr>
+            {% if manufacturer.netbox_id > 0 %}
+              <tr>
+                <td class="th fw-bold">NetBox URL</td>
+                <td>
+                  <a
+                    href="{{ NETBOX_URL }}/dcim/manufacturers/{{ manufacturer.netbox_id }}/"
+                    >NetBox Manufacturer {{ manufacturer.netbox_id }}</a
+                  >
+                </td>
+              </tr>
+            {% endif %}
           </tbody>
         </table>
       </div>

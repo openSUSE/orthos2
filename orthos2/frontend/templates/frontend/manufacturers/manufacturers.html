@@ -16,6 +16,8 @@
         <thead class="thead-default">
           <tr style="border: 1px solid #ddd;">
             <th>Name {% order_list request 'name' %}</th>
+            <th>NetBox ID {% order_list request 'netbox_id' %}</th>
+            <th>Platforms</th>
             <th width="80px">&nbsp;</th>
           </tr>
         </thead>
@@ -30,6 +32,8 @@
                   >{{ manufacturer.name }}</a
                 >
               </td>
+              <td>{{ manufacturer.netbox_id }}</td>
+              <td>{{ manufacturer.platform_set.count }}</td>
               <td>
                 <a
                   href="{% url 'frontend:delete_manufacturer' manufacturer.pk %}"

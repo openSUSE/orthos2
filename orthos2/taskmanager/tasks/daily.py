@@ -84,6 +84,7 @@ class DailyNetboxFetch(Task):
         from orthos2.taskmanager import tasks
 
         TaskManager.add(tasks.NetboxFetchEnclosure())
+        TaskManager.add(tasks.NetboxFetchManufacturer())
         TaskManager.add(tasks.NetboxFetchMachine())
         TaskManager.add(tasks.NetboxFetchNetworkInterface())
         TaskManager.add(tasks.NetboxFetchBMC())

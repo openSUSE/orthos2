@@ -19,6 +19,20 @@
               >Overview</a
             >
           </li>
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'manufacturer_platforms' %}"
+              href="{% url 'frontend:manufacturer_platforms' manufacturer.pk %}"
+              >Platforms</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'manufacturer_netbox_comparisons' %}"
+              href="{% url 'frontend:manufacturer_netbox_comparisons' manufacturer.pk %}"
+              >Netbox Comparison</a
+            >
+          </li>
         </ul>
 
         <div class="tab-content">
