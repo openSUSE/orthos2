@@ -5,7 +5,7 @@ from django.http import HttpRequest
 from django.urls import resolve, reverse  # type: ignore
 from django.utils.safestring import SafeString, mark_safe
 
-from orthos2.data.models import Machine, ServerConfig
+from orthos2.data.models import Machine, NetboxOrthosComparisionRun, ServerConfig
 
 register = template.Library()
 
@@ -102,6 +102,17 @@ def get_current_arch_filter(request: HttpRequest) -> str:
     if (not arch) or (arch == ""):
         arch = "All Architectures"
     return arch
+
+
+@register.simple_tag
+def get_current_object_type_filter(request: HttpRequest) -> str:
+    """Return the current NetBox comparison object type label from GET (if available)."""
+    object_type = request.GET.get("object_type", None)
+    if not object_type:
+        return "All Object Types"
+    return dict(
+        NetboxOrthosComparisionRun.NetboxOrthosComparisionItemTypes.choices
+    ).get(object_type, "All Object Types")
 
 
 @register.simple_tag
