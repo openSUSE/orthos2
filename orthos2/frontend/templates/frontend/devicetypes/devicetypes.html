@@ -34,7 +34,12 @@
                 >{{ devicetype.name }}</a
               >
             </td>
-            <td>{{ devicetype.manufacturer }}</td>
+            <td>
+              <a
+                href="{% url 'frontend:manufacturer_detail' devicetype.manufacturer.id %}"
+                >{{ devicetype.manufacturer }}</a
+              >
+            </td>
             <td>{{ devicetype.is_cartridge }}</td>
             <td>{{ devicetype.netbox_id }}</td>
             <td>
