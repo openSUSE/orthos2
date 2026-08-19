@@ -3,7 +3,7 @@
 <div class="container-fluid" style="margin-bottom: 15px;">
   <div class="row">
     <div class="col-12 d-flex align-items-center">
-      <div>
+      <div class="d-flex align-items-center flex-wrap">
         <span class="hint" style="margin-right: 0.5rem;">Staff</span>
         <div class="btn-group" role="group" style="margin-right: 1rem;">
           <a
@@ -47,6 +47,8 @@
             >&#215;</a
           >
         </div>
+
+        {% include 'frontend/snippet.search.html' with search_hint='Username' %}
 
         <div style="display: inline-block;">
           <span class="hint">Found {{ paginator.count }} User(s)</span>

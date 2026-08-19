@@ -15,44 +15,65 @@
   </head>
   <body>
 
-    <div class="container-fluid" style="background: #0D2C40; margin-bottom: 15px">
-      <div class="row justify-content-between" style="padding-top: 15px;">
-        <div class="col-6">
+    <script>
+      if (localStorage.getItem('orthos2.sidenavCollapsed') === 'true') {
+        document.documentElement.classList.add('sidenav-collapsed');
+      }
+    </script>
+
+    <nav class="navbar navbar-expand-lg" style="background: #0D2C40;">
+      <div class="container-fluid">
+        <button type="button" class="btn btn-link link-light text-decoration-none sidenav-toggle" id="sidenav-toggle" aria-controls="sidenav" aria-label="Toggle navigation">
+          <i class="fa-solid fa-bars fa-lg"></i>
+        </button>
+        <a class="navbar-brand d-none d-lg-flex align-items-center ms-2" href="{% url 'frontend:machines' %}">
+          <img src="{% static 'frontend/images/orthos.png' %}" width="30px"/>
+          <span class="ms-2" style="color: #fff; font-size: 22px; font: Gotham, Arial, sans-serif;"><strong>Orthos</strong></span>
+        </a>
+        <div class="ms-auto">
+          {% include 'frontend/snippet.userbar.html' %}
+        </div>
+      </div>
+    </nav>
+
+    <div class="d-flex" id="app-shell">
+      <div class="offcanvas-lg offcanvas-start sidenav text-white flex-shrink-0" tabindex="-1" id="sidenav" style="background: #0D2C40; width: 260px;">
+        <div class="offcanvas-header d-lg-none">
           <a class="navbar-brand" href="{% url 'frontend:machines' %}">
             <img src="{% static 'frontend/images/orthos.png' %}" width="40px" style="float: left;"/>
-            <span class="ms-2"/>
+            <span class="ms-2"></span>
             <span style="color: #fff; font-size: 30px; font: Gotham, Arial, sans-serif;"><strong>Orthos</strong></span>
           </a>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#sidenav" aria-label="Close"></button>
         </div>
-        {% include 'frontend/snippet.userbar.html' %}
-      </div>
-
-      <nav class="navbar navbar-expand navbar-dark" style="padding-left: 0px; padding-right: 0px;">
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="offcanvas-body d-flex flex-column p-0">
           {% block navbar %}
+            {% include 'frontend/snippet.navlinks.html' %}
           {% endblock %}
         </div>
-      </nav>
+      </div>
 
-    </div>
+      <div class="flex-grow-1" id="page-content-wrapper" style="min-width: 0; padding-top: 15px;">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="container-fluid">
+          <div{% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %}>
+          {{ message }}
+          </div>
+        </div>
+        {% endfor %}
+        {% endif %}
 
-    {% if messages %}
-    {% for message in messages %}
-    <div class="container-fluid">
-      <div{% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %}>
-      {{ message }}
+        {% block content %}
+        {% endblock %}
       </div>
     </div>
-    {% endfor %}
-    {% endif %}
-
-    {% block content %}
-    {% endblock %}
 
     <script src="{% static 'frontend/js/jquery.js' %}"></script>
     <script src="{% static 'frontend/js/jquery-ui.js' %}"></script>
     <script src="{% static 'frontend/js/popper.min.js' %}"></script>
     <script src="{% static 'frontend/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'frontend/js/sidenav.js' %}"></script>
 
     {% block javascript_imports %}
     {% endblock %}

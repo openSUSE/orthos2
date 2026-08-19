@@ -1,22 +1,30 @@
 {% load tags %}
-<ul class="navbar-nav me-auto">
+<ul class="nav flex-column flex-nowrap">
   <li class="nav-item position-relative {% active_view request 'machines' %}">
     <a class="nav-link" href="{% url 'frontend:machines' %}">All Machines</a>
   </li>
-  <li class="nav-item position-relative {% active_view request 'free_machines' %}">
+  <li
+    class="nav-item position-relative {% active_view request 'free_machines' %}"
+  >
     <a class="nav-link" href="{% url 'frontend:free_machines' %}"
       >Free Machines</a
     >
   </li>
-  <li class="nav-item position-relative {% active_view request 'my_machines' %}">
+  <li
+    class="nav-item position-relative {% active_view request 'my_machines' %}"
+  >
     <a class="nav-link" href="{% url 'frontend:my_machines' %}">My Machines</a>
   </li>
-  <li class="nav-item position-relative {% active_view request 'virtual_machines' %}">
+  <li
+    class="nav-item position-relative {% active_view request 'virtual_machines' %}"
+  >
     <a class="nav-link" href="{% url 'frontend:virtual_machines' %}"
       >Virtual Machines</a
     >
   </li>
-  <li class="nav-item position-relative {% active_view request 'advanced_search' %}">
+  <li
+    class="nav-item position-relative {% active_view request 'advanced_search' %}"
+  >
     <a class="nav-link" href="{% url 'frontend:advanced_search' %}"
       >Advanced Search</a
     >
@@ -25,30 +33,89 @@
     <a class="nav-link" href="{% url 'frontend:statistics' %}">Statistics</a>
   </li>
   {% if perms.data and perms.data.add_netboxorthoscomparisonrun %}
-    <li class="nav-item position-relative {% active_view request 'compare_netbox_overview' %}">
+    <li
+      class="nav-item position-relative {% active_view request 'compare_netbox_overview' %}"
+    >
       <a class="nav-link" href="{% url 'frontend:compare_netbox_overview' %}"
         >NetBox Comparisons</a
       >
     </li>
   {% endif %}
   {% if perms.data and perms.data.change_enclosure %}
-    <li class="nav-item position-relative {% active_view request 'enclosures' %}">
+    <li
+      class="nav-item position-relative {% active_view request 'enclosures' %}"
+    >
       <a class="nav-link" href="{% url 'frontend:enclosures' %}">Enclosures</a>
     </li>
   {% endif %}
   {% if perms.data and perms.data.change_remotepowerdevice %}
-    <li class="nav-item position-relative {% active_view request 'remotepowerdevices' %}">
-      <a class="nav-link" href="{% url 'frontend:remotepowerdevices' %}">Remote Power Devices</a>
+    <li
+      class="nav-item position-relative {% active_view request 'remotepowerdevices' %}"
+    >
+      <a class="nav-link" href="{% url 'frontend:remotepowerdevices' %}"
+        >Remote Power Devices</a
+      >
     </li>
   {% endif %}
   {% if perms.data and perms.data.change_ansible_result %}
-    <li class="nav-item position-relative {% active_view request 'ansible_results' %}">
-      <a class="nav-link" href="{% url 'frontend:ansible_results_list' %}">Ansible Results</a>
+    <li
+      class="nav-item position-relative {% active_view request 'ansible_results_list' %}"
+    >
+      <a class="nav-link" href="{% url 'frontend:ansible_results_list' %}"
+        >Ansible Results</a
+      >
     </li>
   {% endif %}
+  <li class="nav-item">
+    <a
+      class="nav-link"
+      data-bs-toggle="collapse"
+      href="#nav-documentation"
+      role="button"
+      aria-expanded="false"
+      aria-controls="nav-documentation"
+    >
+      Documentation <i class="fa-solid fa-chevron-down"></i>
+    </a>
+    <ul class="collapse nav flex-column flex-nowrap ms-3" id="nav-documentation">
+      <li class="nav-item">
+        <a class="nav-link" href="{% get_documentation_url %}" target="_blank"
+          >Documentation</a
+        >
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/api/schema/swagger-ui" target="_blank"
+          >API Documentation</a
+        >
+      </li>
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="/api/schema" target="_blank">REST API</a>
+  </li>
   {% if request.user.is_superuser %}
-    <li class="nav-item position-relative {% active_view request 'users' %}">
-      <a class="nav-link" href="{% url 'frontend:users' %}">Users</a>
+    {% active_group request 'users' as admin_open %}
+    <li class="nav-item">
+      <a
+        class="nav-link"
+        data-bs-toggle="collapse"
+        href="#nav-administration"
+        role="button"
+        aria-expanded="{% if admin_open %}true{% else %}false{% endif %}"
+        aria-controls="nav-administration"
+      >
+        Administration <i class="fa-solid fa-chevron-down"></i>
+      </a>
+      <ul class="collapse nav flex-column flex-nowrap ms-3 {{ admin_open }}" id="nav-administration">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'admin:index' %}">Django Admin</a>
+        </li>
+        <li
+          class="nav-item position-relative {% active_view request 'users' %}"
+        >
+          <a class="nav-link" href="{% url 'frontend:users' %}">Users</a>
+        </li>
+      </ul>
     </li>
   {% endif %}
 </ul>

@@ -3,12 +3,13 @@ This view module contains all views that display the NetboxOrthosComparisionRun 
 """
 
 import uuid
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, List
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db.models import Q, QuerySet
 from django.http import HttpRequest, HttpResponseBase
 from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator  # type: ignore
@@ -35,9 +36,33 @@ class NetboxOrthosComparisionRunListView(PermissionRequiredMixin, ListView):
             request, *args, **kwargs
         )
 
+    def get_queryset(self) -> "QuerySet[NetboxOrthosComparisionRun]":
+        filters: List[Q] = []
+
+        object_type = self.request.GET.get("object_type")
+        if object_type:
+            filters.append(Q(object_type=object_type))
+
+        date_from = self.request.GET.get("date_from")
+        if date_from:
+            filters.append(Q(compare_timestamp__date__gte=date_from))
+
+        date_to = self.request.GET.get("date_to")
+        if date_to:
+            filters.append(Q(compare_timestamp__date__lte=date_to))
+
+        return super().get_queryset().filter(*filters)  # type: ignore
+
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super(NetboxOrthosComparisionRunListView, self).get_context_data(**kwargs)  # type: ignore
         context["run_list"] = self.object_list  # type: ignore
+
+        context[
+            "object_types"
+        ] = NetboxOrthosComparisionRun.NetboxOrthosComparisionItemTypes.choices
+        context["object_type"] = self.request.GET.get("object_type", "")
+        context["date_from"] = self.request.GET.get("date_from", "")
+        context["date_to"] = self.request.GET.get("date_to", "")
 
         order_by = self.request.GET.get("order_by", None)
         order_direction = self.request.GET.get("order_direction", None)

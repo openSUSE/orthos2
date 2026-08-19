@@ -2,13 +2,7 @@
 {% load static %}
 {% load tags %}
 
-{% block navbar %}
-  {% include 'frontend/snippet.navlinks.html' %}
-  {% include 'frontend/snippet.search.html' %}
-{% endblock %}
-
 {% block content %}
-
   {% include 'frontend/users/users_filterbar.html' %}
   {% include 'frontend/snippet.paginator.html' %}
 

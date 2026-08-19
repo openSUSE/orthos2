@@ -4,14 +4,75 @@
 {% load filters %}
 {% load tags %}
 
-{% block navbar %}
-
-{% include 'frontend/snippet.navlinks.html' %}
-{% include 'frontend/snippet.search.html' %}
-
-{% endblock %}
-
 {% block content %}
+
+<div class="container-fluid" style="margin-bottom: 15px;">
+  <div class="row">
+    <div class="col-12 d-flex align-items-center flex-wrap">
+
+      <div class="dropdown" style="display: inline-block;">
+        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButtonObjectType" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          {% get_current_object_type_filter request %}
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButtonObjectType">
+          <a class="dropdown-item" href="?{% url_replace request 'object_type' '' True %}">All Object Types</a>
+          <div class="dropdown-divider"></div>
+          {% for value, label in object_types %}
+          <a class="dropdown-item" href="?{% url_replace request 'object_type' value %}">{{ label }}</a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <span class="ms-2"></span>
+
+      <form method="get" class="d-flex align-items-center flex-wrap">
+        <label class="hint" for="id_date_from" style="margin-right: 0.5rem;"
+          >From</label
+        >
+        <input
+          type="date"
+          name="date_from"
+          id="id_date_from"
+          class="form-control form-control-sm"
+          style="width: 160px;"
+          value="{{ date_from }}"
+        />
+
+        <span class="ms-2"></span>
+
+        <label class="hint" for="id_date_to" style="margin-right: 0.5rem;"
+          >To</label
+        >
+        <input
+          type="date"
+          name="date_to"
+          id="id_date_to"
+          class="form-control form-control-sm"
+          style="width: 160px;"
+          value="{{ date_to }}"
+        />
+
+        <span class="ms-2"></span>
+
+        <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+        <a
+          href="{% url 'frontend:compare_netbox_overview' %}"
+          class="btn btn-secondary btn-sm ms-2"
+          >Clear</a
+        >
+      </form>
+
+      <span class="ms-2"></span>
+
+      {% include 'frontend/snippet.search.html' with search_hint='Object Name' %}
+
+      <span class="ms-2"></span>
+
+      <span class="hint">Found {{ paginator.count }} Comparisons</span>
+
+    </div>
+  </div>
+</div>
 
 <div class="container-fluid">
   {% if runs %}

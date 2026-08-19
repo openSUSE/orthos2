@@ -5,7 +5,7 @@ from django.http import HttpRequest
 from django.urls import resolve, reverse  # type: ignore
 from django.utils.safestring import SafeString, mark_safe
 
-from orthos2.data.models import Machine, ServerConfig
+from orthos2.data.models import Machine, NetboxOrthosComparisionRun, ServerConfig
 
 register = template.Library()
 
@@ -48,6 +48,12 @@ def active_view(request: HttpRequest, view: str) -> Optional[str]:
 
 
 @register.simple_tag
+def active_group(request: HttpRequest, *views: str) -> str:
+    """Return 'show' if any of ``views`` gets requested (keeps a collapsible nav group expanded)."""
+    return "show" if resolve(request.path_info).url_name in views else ""
+
+
+@register.simple_tag
 def disabled(request: HttpRequest, name: str) -> Optional[str]:
     """Return 'disabled' if ``name`` is in GET parameters."""
     return "disabled" if name in list(request.GET.values()) else None
@@ -87,6 +93,26 @@ def get_current_domain_filter(request: HttpRequest) -> str:
     if (not domain) or (domain == ""):
         domain = "All Network Domains"
     return domain
+
+
+@register.simple_tag
+def get_current_arch_filter(request: HttpRequest) -> str:
+    """Return the current architecture from GET (if available)."""
+    arch = request.GET.get("arch", None)
+    if (not arch) or (arch == ""):
+        arch = "All Architectures"
+    return arch
+
+
+@register.simple_tag
+def get_current_object_type_filter(request: HttpRequest) -> str:
+    """Return the current NetBox comparison object type label from GET (if available)."""
+    object_type = request.GET.get("object_type", None)
+    if not object_type:
+        return "All Object Types"
+    return dict(
+        NetboxOrthosComparisionRun.NetboxOrthosComparisionItemTypes.choices
+    ).get(object_type, "All Object Types")
 
 
 @register.simple_tag

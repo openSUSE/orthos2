@@ -1,4 +1,8 @@
-<form class="d-flex align-items-center" action="{{ request.get_full_path }}" method="GET">
-  <input class="form-control form-control-sm" type="text" name="query" placeholder="FQDN Search..." aria-label="Search"><span class="ms-2"/>
-  <button class="btn btn-success btn-sm" type="submit">Search</button>
+<form class="d-inline-flex align-items-center" action="{{ request.get_full_path }}" method="GET">
+  <div class="input-group input-group-sm" style="width: 180px;">
+    <input class="form-control" type="text" name="query" placeholder="{{ search_hint|default:'FQDN' }} Search..." aria-label="Search">
+    <button class="btn btn-secondary" type="submit" aria-label="Search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+  </div>
 </form>
