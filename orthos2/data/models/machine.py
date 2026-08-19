@@ -34,7 +34,6 @@ from orthos2.data.models.architecture import Architecture
 from orthos2.data.models.bmc import BMC
 from orthos2.data.models.domain import Domain, DomainAdmin, validate_domain_ending
 from orthos2.data.models.enclosure import Enclosure
-from orthos2.data.models.machinegroup import MachineGroup
 from orthos2.data.models.netboxorthoscomparision import (
     NetboxOrthosComparisionResult,
     NetboxOrthosComparisionRun,
@@ -71,7 +70,6 @@ if TYPE_CHECKING:
         OptionalDateField,
         OptionalDateTimeField,
         OptionalMachineForeignKey,
-        OptionalMachineGroupForeignKey,
         OptionalPlatformForeignKey,
         OptionalSmallIntegerField,
         OptionalUserForeignKey,
@@ -98,7 +96,6 @@ def check_permission(
 
         - no `user` keyword                                         -> allow
         - is superuser                                              -> allow
-        - is groupadmin (`is_privileged`)                           -> allow
         - machine reserved by user                                  -> allow
         - call `reserve` and not reserved and not administrative    -> allow
         - call `release` and not reserved and not administrative    -> allow
@@ -114,17 +111,6 @@ def check_permission(
         elif user.is_superuser:  # type: ignore
             logger.debug(
                 "Allow %s of %s by %s (superuser)", function.__name__, machine, user
-            )
-            return function(machine, *args, **kwargs)
-
-        elif user in User.objects.filter(  # type: ignore
-            memberships__group__name=machine.group, memberships__is_privileged=True
-        ):
-            logger.debug(
-                "Allow %s of %s by %s (privileged user)",
-                function.__name__,
-                machine,
-                user,
             )
             return function(machine, *args, **kwargs)
 
@@ -576,10 +562,6 @@ class Machine(models.Model):
         help_text="Machine vanishes from most lists. This is intendend as kind of maintenance/repair state",
     )
 
-    group: "OptionalMachineGroupForeignKey" = models.ForeignKey(
-        MachineGroup, on_delete=models.SET_NULL, blank=True, null=True
-    )
-
     contact_email: "models.EmailField[str, str]" = models.EmailField(
         blank=True,
         help_text="Override contact email address to whom is in charge for this machine",
@@ -1023,7 +1005,6 @@ class Machine(models.Model):
                     self.fqdn != self._original.fqdn,
                     self.fqdn_domain != self._original.fqdn_domain,
                     self.architecture != self._original.architecture,
-                    self.group != self._original.group,
                     self.dhcp_filename != self._original.dhcp_filename,
                     self.kernel_options != self._original.kernel_options,
                 ]
@@ -1302,7 +1283,7 @@ class Machine(models.Model):
     def has_setup_capability(self) -> bool:
         """
         Return true if a machines network domain supports the setup capability for the respective
-        machine group (if the machine belongs to one) or architecture.
+        architecture.
         """
         return self.architecture in self.fqdn_domain.supported_architectures.all()
 
@@ -1646,15 +1627,10 @@ class Machine(models.Model):
         """
         Return email address for responsible support contact (default: SUPPORT_CONTACT).
 
-        Machine > [Group >] Architecture > SUPPORT_CONTACT
+        Machine > Architecture > SUPPORT_CONTACT
         """
         if self.contact_email:
             return self.contact_email
-
-        if self.group:
-            contact = self.group.get_support_contact()
-            if contact:
-                return contact
 
         admin = DomainAdmin.objects.get(domain=self.fqdn_domain, arch=self.architecture)
         if admin and admin.contact_email:

@@ -17,7 +17,6 @@ from orthos2.data.models.bmc import BMC
 from orthos2.data.models.domain import Domain
 from orthos2.data.models.enclosure import Enclosure
 from orthos2.data.models.machine import Machine
-from orthos2.data.models.machinegroup import MachineGroup
 from orthos2.data.models.netboxorthoscomparision import NetboxOrthosComparisionRun
 from orthos2.data.models.networkinterface import NetworkInterface
 from orthos2.data.models.platform import Platform
@@ -43,12 +42,6 @@ OptionalMachineForeignKey = models.ForeignKey[
 MandatoryUserForeignKey = models.ForeignKey[Union[Combinable, User], User]
 OptionalUserForeignKey = models.ForeignKey[
     Union[Combinable, User, None], Optional[User]
-]
-MandatoryMachineGroupForeignKey = models.ForeignKey[
-    Union[Combinable, MachineGroup], MachineGroup
-]
-OptionalMachineGroupForeignKey = models.ForeignKey[
-    Union[Combinable, MachineGroup, None], Optional[MachineGroup]
 ]
 MandatoryPlatformForeignKey = models.ForeignKey[Union[Combinable, Platform], Platform]
 OptionalPlatformForeignKey = models.ForeignKey[

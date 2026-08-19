@@ -16,7 +16,6 @@ from orthos2.data.models import (
     Enclosure,
     Installation,
     Machine,
-    MachineGroup,
     NetworkInterface,
     Platform,
     RemotePower,
@@ -131,13 +130,6 @@ class QueryField:
                 Enclosure.objects.get(name__iexact=x) if isinstance(x, str) else x
             ),
             post=lambda x: Enclosure.objects.get(pk=x).name,
-        ),
-        "group": QueryFieldMappingItem(
-            field=Machine._meta.get_field("group"),  # type: ignore
-            pre=lambda x: (
-                MachineGroup.objects.get(name__iexact=x) if isinstance(x, str) else x
-            ),
-            post=lambda x: MachineGroup.objects.get(pk=x).name,
         ),
         "system": QueryFieldMappingItem(
             field=System._meta.get_field("name"),  # type: ignore

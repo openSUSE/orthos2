@@ -22,8 +22,6 @@ from orthos2.data.models import (
     DomainAdmin,
     Enclosure,
     Machine,
-    MachineGroup,
-    MachineGroupMembership,
     NetworkInterface,
     Platform,
     RemotePower,
@@ -664,31 +662,6 @@ class MachineDomainFilter(admin.SimpleListFilter):
         return None
 
 
-class MachineGroupFilter(admin.SimpleListFilter):
-    title = "Machine Groups"
-
-    parameter_name = "machinegroup"
-
-    def lookups(  # type: ignore
-        self, request: HttpRequest, model_admin: "ModelAdmin[MachineGroup]"
-    ) -> List[Tuple[int, str]]:
-        machinegroups = MachineGroup.objects.all()
-        result: List[Tuple[int, str]] = []
-
-        for group in machinegroups:
-            result.append((group.id, group.name))
-
-        return result
-
-    def queryset(
-        self, request: HttpRequest, queryset: QuerySet["Machine"]
-    ) -> Optional[QuerySet["Machine"]]:
-        value = self.value()
-        if value and value.isdigit():
-            return queryset.filter(group_id=int(value))
-        return None
-
-
 class MachineAdmin(admin.ModelAdmin):  # type: ignore
     class Media:
         js = ("js/machine_admin.js",)
@@ -701,7 +674,6 @@ class MachineAdmin(admin.ModelAdmin):  # type: ignore
         "architecture",
         "system",
         "reserved_by",
-        # 'group',
         # 'active'
     )
     list_per_page = 50
@@ -712,7 +684,6 @@ class MachineAdmin(admin.ModelAdmin):  # type: ignore
         MachineArchitectureFilter,
         MachineSystemFilter,
         MachineDomainFilter,
-        MachineGroupFilter,
     )
     fieldsets = (
         (
@@ -722,7 +693,6 @@ class MachineAdmin(admin.ModelAdmin):  # type: ignore
                     ("fqdn", "enclosure"),
                     "architecture",
                     "system",
-                    "group",
                     ("serial_number", "product_code"),
                     "comment",
                     "platform",
@@ -775,11 +745,7 @@ class MachineAdmin(admin.ModelAdmin):  # type: ignore
     autocomplete_fields = ["hypervisor"]
 
     def get_queryset(self, request: HttpRequest) -> "QuerySet[Machine]":
-        """
-        Filter machine list. A superuser is authorized to see/edit all machines. If a user is
-        authorized to change machine models and is privileged in any machine group, then all
-        machines belonging to the respective machine group(s) get listed.
-        """
+        """Filter machine list. Only superusers are authorized to see/edit machines."""
         queryset: "QuerySet[Machine]" = super(  # type: ignore
             MachineAdmin, self
         ).get_queryset(request)
@@ -788,21 +754,7 @@ class MachineAdmin(admin.ModelAdmin):  # type: ignore
         if user.is_superuser:  # type: ignore
             return queryset
 
-        query = None
-
-        for membership in user.memberships.all():  # type: ignore
-            if membership.is_privileged:  # type: ignore
-                if query:
-                    query = query | Q(group_id=membership.group_id)  # type: ignore
-                else:
-                    query = Q(group_id=membership.group_id)  # type: ignore
-
-        if query:
-            queryset = queryset.filter(query)
-        else:
-            queryset = Machine.objects.none()
-
-        return queryset
+        return Machine.objects.none()
 
     def add_view(
         self,
@@ -1089,37 +1041,9 @@ class SystemAdmin(admin.ModelAdmin):  # type: ignore
 admin.site.register(System, SystemAdmin)  # type: ignore
 
 
-class MachineGroupMembershipInline(admin.TabularInline):  # type: ignore
-    model = MachineGroupMembership
-    extra = 0
-
-
-class MachinesInline(admin.TabularInline):  # type: ignore
-    model = Machine
-    fields = ("fqdn",)
-    readonly_fields = ("fqdn",)
-
-    def has_add_permission(self, request: HttpRequest, obj: Any = None) -> bool:
-        return False
-
-    def has_delete_permission(self, request: HttpRequest, obj: Any = None) -> bool:
-        return False
-
-
-class MachineGroupAdmin(admin.ModelAdmin):  # type: ignore
-    list_display = ("name", "machines", "dhcp_filename")
-    inlines = (MachinesInline, MachineGroupMembershipInline)
-
-    def machines(self, obj: MachineGroup) -> str:
-        machines = Machine.objects.filter(group=obj)
-        output = ", ".join([machine.fqdn for machine in machines])
-        return output
-
-
 class RemotePowerTypeAdmin(admin.ModelAdmin):  # type: ignore
     list_display = ("name", "device")
 
 
 admin.site.register(RemotePowerType, RemotePowerTypeAdmin)  # type: ignore
-admin.site.register(MachineGroup, MachineGroupAdmin)  # type: ignore
 admin.site.register(Vendor)  # type: ignore

@@ -5,13 +5,7 @@ from unittest import mock
 from django.test import TestCase
 
 import orthos2.utils.cobbler as cobbler
-from orthos2.data.models import (
-    Architecture,
-    Domain,
-    Machine,
-    MachineGroup,
-    RemotePowerDevice,
-)
+from orthos2.data.models import Architecture, Domain, Machine, RemotePowerDevice
 
 logging.disable(logging.CRITICAL)
 
@@ -36,20 +30,15 @@ class CobblerMethodTests(TestCase):
         """
         get_filename should return the right filename attribute.
 
-        Machine > Group > Architecture > None
+        Machine > Architecture > None
         """
         machine = mock.NonCallableMagicMock(spec_set=Machine)
         machine.dhcp_filename = "machine"
-        group = mock.NonCallableMagicMock(spec_set=MachineGroup)
-        group.dhcp_filename = "group"
-        machine.group = group
         architecture = mock.NonCallableMagicMock(spec_set=Architecture)
         architecture.dhcp_filename = "architecture"
         machine.architecture = architecture
         self.assertEqual(cobbler.get_filename(machine), "machine")
         machine.dhcp_filename = None
-        self.assertEqual(cobbler.get_filename(machine), "group")
-        group.dhcp_filename = None
         self.assertEqual(cobbler.get_filename(machine), "architecture")
         architecture.dhcp_filename = None
         self.assertIsNone(cobbler.get_filename(machine))

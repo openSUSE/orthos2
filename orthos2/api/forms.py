@@ -19,7 +19,6 @@ from orthos2.data.models import (
     Domain,
     Enclosure,
     Machine,
-    MachineGroup,
     NetworkInterface,
     RemotePower,
     RemotePowerDevice,
@@ -211,14 +210,6 @@ def get_systems() -> List[Tuple[int, str]]:
     return systems
 
 
-def get_machinegroups() -> List[Tuple[int, str]]:
-    """Return machine group choice tuple."""
-    groups = [("none", "None")]
-    for group in MachineGroup.objects.all().values("id", "name").order_by("name"):
-        groups.append((group["id"], group["name"]))  # type: ignore
-    return groups  # type: ignore
-
-
 class MachineAPIForm(forms.Form, BaseAPIForm):
     def clean_fqdn(self) -> str:
         """Check whether `fqdn` already exists."""
@@ -248,13 +239,6 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
         if not enclosure:
             enclosure = None
         return enclosure  # type: ignore
-
-    def clean_group_id(self) -> str:
-        """Set `group_id` to None if 'None' is selected."""
-        group_id = self.cleaned_data["group_id"]
-        if group_id == "none":
-            group_id = None
-        return group_id  # type: ignore
 
     def clean(self) -> Dict[str, Any]:
         """
@@ -310,12 +294,6 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
     system_id = forms.ChoiceField(
         label="System",
         choices=get_systems,
-    )
-
-    group_id = forms.ChoiceField(
-        label="Machine group",
-        choices=get_machinegroups,
-        initial=0,
     )
 
     nda = forms.BooleanField(
