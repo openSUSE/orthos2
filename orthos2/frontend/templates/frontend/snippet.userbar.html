@@ -1,39 +1,71 @@
 {% load tags %}
 {% load static %}
-<div class="col-6 text-end text-sm header" style="color: #ffffff;">
+<div class="text-end text-sm header" style="color: #ffffff;">
   <div class="small">
     {% if user.is_authenticated %}
-    {% if user.is_superuser %}
-    <i class="fa-solid fa-user-doctor fa-lg"></i> {{ user.username }}
-    {% else %}
-    <i class="fa-solid fa-user fa-lg"></i> {{ user.username }}
-    {% endif %}
-    <span class="ms-4"></span>
-    <a class="link-light link-opacity-50 link-opacity-75-hover link-underline-opacity-0-hover" href="{% url 'frontend:preferences_user' %}"><i class="fa-solid fa-gears fa-lg"></i> Preferences</a>
+      {% if user.is_superuser %}
+        <i class="fa-solid fa-user-doctor fa-lg"></i> {{ user.username }}
+      {% else %}
+        <i class="fa-solid fa-user fa-lg"></i> {{ user.username }}
+      {% endif %}
+      <span class="ms-4"></span>
+      <a
+        class="link-light link-opacity-50 link-opacity-75-hover link-underline-opacity-0-hover"
+        href="{% url 'frontend:preferences_user' %}"
+        ><i class="fa-solid fa-gears fa-lg"></i> Preferences</a
+      >
     {% endif %}
     <span class="ms-4"></span>
 
     {% if user.is_superuser or not user.is_authenticated %}
-    <a class="link-light link-opacity-50 link-opacity-75-hover link-underline-opacity-0-hover" href="{% url 'admin:index' %}"><i class="fa-solid fa-sliders fa-lg"></i> Administration</a><span class="ms-4" />
+      <a
+        class="link-light link-opacity-50 link-opacity-75-hover link-underline-opacity-0-hover"
+        href="{% url 'admin:index' %}"
+        ><i class="fa-solid fa-sliders fa-lg"></i> Administration</a
+      ><span class="ms-4" />
     {% endif %}
 
-    <a class="link-light link-opacity-50 link-opacity-75-hover link-underline-opacity-0-hover" href="{% get_bugreport_url %}" target="_blank"><i class="fa-solid fa-bug fa-lg"></i> Bugreport</a><span
-      class="ms-4" />
+    <a
+      class="link-light link-opacity-50 link-opacity-75-hover link-underline-opacity-0-hover"
+      href="{% get_bugreport_url %}"
+      target="_blank"
+      ><i class="fa-solid fa-bug fa-lg"></i> Bugreport</a
+    ><span class="ms-4" />
 
-    <a class="link-light link-opacity-50 link-opacity-75-hover link-underline-opacity-0-hover" href="{% get_documentation_url %}" target="_blank"><i class="fa-solid fa-circle-info fa-lg"></i> Documentation</a><span
-      class="ms-4" />
+    <a
+      class="link-light link-opacity-50 link-opacity-75-hover link-underline-opacity-0-hover"
+      href="{% get_documentation_url %}"
+      target="_blank"
+      ><i class="fa-solid fa-circle-info fa-lg"></i> Documentation</a
+    ><span class="ms-4" />
 
-    <a class="link-light link-opacity-50 link-opacity-75-hover link-underline-opacity-0-hover" href="/api/schema/swagger-ui" target="_blank"><i class="fa-solid fa-circle-info fa-lg"></i> API Documentation</a><span
-      class="ms-4" />
+    <a
+      class="link-light link-opacity-50 link-opacity-75-hover link-underline-opacity-0-hover"
+      href="/api/schema/swagger-ui"
+      target="_blank"
+      ><i class="fa-solid fa-circle-info fa-lg"></i> API Documentation</a
+    ><span class="ms-4" />
 
-    <a class="link-light link-opacity-50 link-opacity-75-hover link-underline-opacity-0-hover" href="/api/schema" target="_blank"><i class="fa-solid fa-circle-info fa-lg"></i> REST API</a>
+    <a
+      class="link-light link-opacity-50 link-opacity-75-hover link-underline-opacity-0-hover"
+      href="/api/schema"
+      target="_blank"
+      ><i class="fa-solid fa-circle-info fa-lg"></i> REST API</a
+    >
 
     {% if user.is_authenticated %}
-    <span class="ms-4"></span>
-    <form id="logout-form" class="d-inline" method="post" action="{% url 'frontend:logout' %}">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-link p-0"><i class="fa-solid fa-right-from-bracket fa-lg"></i> Logout</button>
-    </form>
+      <span class="ms-4"></span>
+      <form
+        id="logout-form"
+        class="d-inline"
+        method="post"
+        action="{% url 'frontend:logout' %}"
+      >
+        {% csrf_token %}
+        <button type="submit" class="btn btn-link p-0">
+          <i class="fa-solid fa-right-from-bracket fa-lg"></i> Logout
+        </button>
+      </form>
     {% endif %}
   </div>
 </div>

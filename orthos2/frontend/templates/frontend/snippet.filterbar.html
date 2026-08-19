@@ -1,15 +1,21 @@
 {% load tags %}
 
-{% if architectures and domains %}
 <div class="container-fluid" style="margin-bottom: 15px;">
   <div class="row">
     <div class="col-12 d-flex align-items-center">
-      <div>
-      <div class="btn-group" role="group">
-        {% for architecture in architectures %}
-        <a class="btn btn-secondary btn-sm {% active request architecture.name %}" href="?{% url_replace request 'arch' architecture.name %}" role="button">{{ architecture.name }}</a>
-        {% endfor %}
-        <a class="btn btn-secondary btn-sm" href="?{% url_replace request 'arch' '' True %}" role="button">&#215;</a>
+      {% if architectures and domains %}
+      <div class="d-flex align-items-center flex-wrap">
+      <div class="dropdown" style="display: inline-block;">
+        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButtonArch" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          {% get_current_arch_filter request %}
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButtonArch">
+          <a class="dropdown-item" href="?{% url_replace request 'arch' '' True %}">All Architectures</a>
+          <div class="dropdown-divider"></div>
+          {% for architecture in architectures %}
+          <a class="dropdown-item" href="?{% url_replace request 'arch' architecture.name %}">{{ architecture.name }}</a>
+          {% endfor %}
+        </div>
       </div>
 
       <span class="ms-2"/>
@@ -53,10 +59,15 @@
 
       <span class="ms-2"/>
 
+      {% include 'frontend/snippet.search.html' %}
+
+      <span class="ms-2"/>
+
       <div style="display: inline-block">
           <span class="hint">Found {{ paginator.count }} Machine(s)</span>
       </div>
       </div>
+      {% endif %}
 
       {% if perms.data and perms.data.add_machine %}
       <a class="nav-link ms-auto" href="{% url 'frontend:machine_add' %}">
@@ -67,4 +78,3 @@
     </div>
   </div>
 </div>
-{% endif %}

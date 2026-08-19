@@ -2,13 +2,40 @@ body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-.navbar-nav .active a::after {
-  border-bottom: 5px solid #02D35F;
-  bottom: -8px;
-  content: " ";
-  left: 0;
-  position: absolute;
-  right: 0;
+#app-shell {
+  min-height: 100vh;
+}
+
+/* .offcanvas-lg resets background/width to transparent/auto above the lg
+   breakpoint so it can behave as a plain inline sidebar; re-assert the
+   navy brand color and fixed width there with matching specificity. */
+#sidenav.offcanvas-lg {
+  background-color: #0D2C40 !important;
+  width: 260px !important;
+  flex-shrink: 0 !important;
+}
+
+@media (min-width: 992px) {
+  html.sidenav-collapsed #sidenav {
+    display: none !important;
+  }
+}
+
+.sidenav .nav-link {
+  color: rgba(255, 255, 255, 0.75);
+  padding: 0.5rem 1rem;
+  border-left: 4px solid transparent;
+}
+
+.sidenav .nav-link:hover {
+  color: #fff;
+}
+
+.sidenav .nav-item.active > .nav-link,
+.sidenav .nav-link.active {
+  color: #fff;
+  border-left-color: #02D35F;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .pagination {

@@ -3,10 +3,6 @@
 {% load tags %}
 {% load filters %}
 
-{% block navbar %}
-  {% include 'frontend/snippet.navlinks.html' %}
-{% endblock %}
-
 {% block content %}
   <div class="container-fluid">
     <div class="row">
@@ -34,11 +30,13 @@
         </div>
         <span style="font-size: 0.7em; font-family: Monospace;"
           >API:
-          <a href="{% url 'api:remotepowerdevice' %}?fqdn={{ remotepowerdevice.fqdn }}"
+          <a
+            href="{% url 'api:remotepowerdevice' %}?fqdn={{ remotepowerdevice.fqdn }}"
             >{% url 'api:remotepowerdevice' %}?fqdn={{ remotepowerdevice.fqdn }}</a
           >
           | Edit:
-          <a href="{% url 'admin:data_remotepowerdevice_change' remotepowerdevice.id %}"
+          <a
+            href="{% url 'admin:data_remotepowerdevice_change' remotepowerdevice.id %}"
             >{% url 'admin:data_remotepowerdevice_change' remotepowerdevice.id %}</a
           ></span
         >

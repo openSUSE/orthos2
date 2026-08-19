@@ -24,10 +24,6 @@
   </script>
 {% endblock %}
 
-{% block navbar %}
-  {% include 'frontend/snippet.navlinks.html' %}
-{% endblock %}
-
 {% block content %}
   <div class="container">
     <div class="row justify-content-center">
@@ -50,7 +46,9 @@
             </div>
             <div class="col-9">
               {{ form.machine }}
-              <small class="form-text text-muted">{{ form.machine.help_text }}</small>
+              <small class="form-text text-muted"
+                >{{ form.machine.help_text }}</small
+              >
             </div>
           </div>
 
@@ -61,7 +59,9 @@
             </div>
             <div class="col-9">
               {{ form.reason }}
-              <small class="form-text text-muted">{{ form.reason.help_text }}</small>
+              <small class="form-text text-muted"
+                >{{ form.reason.help_text }}</small
+              >
             </div>
           </div>
 
@@ -72,7 +72,9 @@
             </div>
             <div class="col-9">
               {{ form.until }}
-              <small class="form-text text-muted">{{ form.until.help_text }}</small>
+              <small class="form-text text-muted"
+                >{{ form.until.help_text }}</small
+              >
             </div>
           </div>
 
@@ -82,9 +84,7 @@
               <label>{{ form.permanently.label }}:</label>
             </div>
             <div class="col-9">
-              <div class="form-check">
-                {{ form.permanently }}
-              </div>
+              <div class="form-check">{{ form.permanently }}</div>
             </div>
           </div>
 
