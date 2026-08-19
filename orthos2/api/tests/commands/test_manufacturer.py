@@ -223,11 +223,11 @@ class ManufacturerInfoTest(ManufacturerCommandTestCase):
         data = json.loads(response.content)
         assert data["header"]["type"] == "AUTHREQUIRED"
 
-    def test_regular_user_is_rejected(self) -> None:
+    def test_regular_user_can_read(self) -> None:
         self._auth_regular()
         url = reverse("api:manufacturer")
-        response = self.client.get(url)
+        response = self.client.get(url, {"name": "AcmeCorp"})
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
-        assert data["header"]["type"] == "MESSAGE"
-        assert "superuser" in data["data"]["message"].lower()
+        assert data["header"]["type"] == "INFO"
+        assert data["data"]["name"] == "AcmeCorp"

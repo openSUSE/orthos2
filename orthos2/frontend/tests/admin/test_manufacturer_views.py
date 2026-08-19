@@ -19,11 +19,12 @@ class ManufacturerListViewTest(TestCase):
         assert response.status_code == 302
         assert "login" in response.url.lower()  # type: ignore[attr-defined]
 
-    def test_regular_user_get_is_forbidden(self) -> None:
+    def test_regular_user_get_lists_manufacturers(self) -> None:
         self.client.force_login(User.objects.get(username="user"))
         url = reverse("frontend:manufacturers")
         response = self.client.get(url)
-        assert response.status_code == 403
+        assert response.status_code == 200
+        assert b"AcmeCorp" in response.content
 
     def test_superuser_get_lists_manufacturers(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))
@@ -47,13 +48,14 @@ class ManufacturerDetailViewTest(TestCase):
         assert response.status_code == 302
         assert "login" in response.url.lower()  # type: ignore[attr-defined]
 
-    def test_regular_user_get_is_forbidden(self) -> None:
+    def test_regular_user_get_shows_detail_page(self) -> None:
         self.client.force_login(User.objects.get(username="user"))
         url = reverse(
             "frontend:manufacturer_detail", kwargs={"id": self.manufacturer.pk}
         )
         response = self.client.get(url)
-        assert response.status_code == 403
+        assert response.status_code == 200
+        assert b"AcmeCorp" in response.content
 
     def test_superuser_get_shows_detail_page(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))

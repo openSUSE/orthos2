@@ -298,11 +298,6 @@ Example:
         if isinstance(request.user, AnonymousUser) or not request.auth:
             return AuthRequiredSerializer().as_json
 
-        if not request.user.is_superuser:  # type: ignore
-            return ErrorMessage(
-                "Only superusers are allowed to perform this action!"
-            ).as_json
-
         name = request.GET.get("name", "")
 
         try:
