@@ -17,7 +17,7 @@ class EnclosureSerializer(serializers.ModelSerializer[Enclosure]):
             "id",
             "description",
             "netbox_id",
-            "platform",
+            "device_type",
             "netbox_last_fetch_attempt",
             "location_site",
             "location_room",

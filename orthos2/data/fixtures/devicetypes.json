@@ -1,6 +1,6 @@
 [
   {
-    "model": "data.platform",
+    "model": "data.devicetype",
     "pk": null,
     "fields": {
       "name": "Other",

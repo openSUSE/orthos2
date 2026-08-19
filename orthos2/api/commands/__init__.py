@@ -4,6 +4,7 @@ from orthos2.api.commands.add import (
     AddBMCCommandGet,
     AddBMCCommandPost,
     AddCommand,
+    AddDeviceTypeCommand,
     AddMachineCommand,
     AddManufacturerCommand,
     AddRemotePowerCommandGet,
@@ -16,6 +17,7 @@ from orthos2.api.commands.add import (
 )
 from orthos2.api.commands.delete import (
     DeleteCommand,
+    DeleteDeviceTypeCommand,
     DeleteMachineCommand,
     DeleteManufacturerCommand,
     DeleteNetworkInterfaceCommand,
@@ -23,8 +25,13 @@ from orthos2.api.commands.delete import (
     DeleteRemotePowerDeviceCommand,
     DeleteSerialConsoleCommand,
 )
-from orthos2.api.commands.edit import EditCommand, EditManufacturerCommand
+from orthos2.api.commands.edit import (
+    EditCommand,
+    EditDeviceTypeCommand,
+    EditManufacturerCommand,
+)
 from orthos2.api.commands.info import (
+    DeviceTypeInfoCommand,
     EnclosureInfoCommand,
     InfoCommand,
     ManufacturerInfoCommand,
@@ -44,6 +51,7 @@ __all__ = [
     "EnclosureInfoCommand",
     "RemotePowerDeviceInfoCommand",
     "ManufacturerInfoCommand",
+    "DeviceTypeInfoCommand",
     "InfoCommand",
     "QueryCommand",
     "ReserveCommandGet",
@@ -78,4 +86,7 @@ __all__ = [
     "DeleteManufacturerCommand",
     "EditCommand",
     "EditManufacturerCommand",
+    "AddDeviceTypeCommand",
+    "DeleteDeviceTypeCommand",
+    "EditDeviceTypeCommand",
 ]

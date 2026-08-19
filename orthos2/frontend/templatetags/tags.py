@@ -116,12 +116,12 @@ def get_current_object_type_filter(request: HttpRequest) -> str:
 
 
 @register.simple_tag
-def get_current_platform_filter(request: HttpRequest) -> str:
-    """Return the current platform from GET (if available)."""
-    platform = request.GET.get("platform", None)
-    if (not platform) or (platform == ""):
-        platform = "All Platforms"
-    return platform
+def get_current_device_type_filter(request: HttpRequest) -> str:
+    """Return the current device type from GET (if available)."""
+    device_type = request.GET.get("device_type", None)
+    if (not device_type) or (device_type == ""):
+        device_type = "All Device Types"
+    return device_type
 
 
 @register.simple_tag

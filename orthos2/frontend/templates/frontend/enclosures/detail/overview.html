@@ -16,11 +16,11 @@
               <td>{{ enclosure.name }}</td>
             </tr>
             <tr>
-              <td class="th fw-bold">Platform</td>
-              {% if enclosure.platform == None %}
+              <td class="th fw-bold">Device Type</td>
+              {% if enclosure.device_type == None %}
                 <td></td>
               {% else %}
-                <td>{{ enclosure.platform }}</td>
+                <td>{{ enclosure.device_type }}</td>
               {% endif %}
             </tr>
             <tr>

@@ -12,6 +12,7 @@ from orthos2.api.commands.base import (
     get_remotepowerdevice,
     getException,
 )
+from orthos2.api.serializers.devicetype import DeviceTypeSerializer
 from orthos2.api.serializers.enclosure import EnclosureSerializer
 from orthos2.api.serializers.machine import MachineSerializer
 from orthos2.api.serializers.manufacturer import ManufacturerSerializer
@@ -21,7 +22,7 @@ from orthos2.api.serializers.misc import (
     Serializer,
 )
 from orthos2.api.serializers.remotepowerdevice import RemotePowerDeviceSerializer
-from orthos2.data.models import Machine, Manufacturer, RemotePowerDevice
+from orthos2.data.models import DeviceType, Machine, Manufacturer, RemotePowerDevice
 from orthos2.data.models.enclosure import Enclosure
 
 
@@ -192,7 +193,7 @@ class EnclosureInfoCommand(BaseAPIView):
                 "id",
                 "description",
                 "netbox_id",
-                "platform",
+                "device_type",
                 "netbox_last_fetch_attempt",
                 "location_site",
                 "location_room",
@@ -322,6 +323,86 @@ Example:
             return ErrorMessage(
                 "Manufacturer '{}' does not exist!".format(name)
             ).as_json
+        except Exception:
+            return ErrorMessage(getException()).as_json
+
+        return JsonResponse(response)
+
+
+class DeviceTypeInfoCommand(BaseAPIView):
+
+    METHOD = "GET"
+    URL = "/devicetype"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Retrieve information about a device type."
+    HELP = """Command to get information about a device type.
+
+Usage:
+    INFO devicetype <name>
+
+Arguments:
+    name - Name of the device type. If omitted, all device types are listed.
+
+Example:
+    INFO devicetype PowerEdge
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^devicetype$", DeviceTypeInfoCommand.as_view(), name="devicetype"
+            ),
+        ]
+
+    @staticmethod
+    def get_tabcompletion() -> List[str]:
+        return list(DeviceType.objects.all().values_list("name", flat=True))
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return device type information."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        name = request.GET.get("name", "")
+
+        try:
+            if name:
+                devicetype = DeviceType.objects.get(name__iexact=name)
+                serialized_devicetype = DeviceTypeSerializer(devicetype)
+                response = {
+                    "header": {
+                        "type": "INFO",
+                        "order": [
+                            "id",
+                            "name",
+                            "manufacturer",
+                            "is_cartridge",
+                            "description",
+                        ],
+                    },
+                    "data": serialized_devicetype.data_info,
+                }
+            else:
+                devicetypes = DeviceType.objects.all()
+                serialized_devicetypes = DeviceTypeSerializer(devicetypes, many=True)
+                theader = [
+                    {"id": "ID"},
+                    {"name": "Name"},
+                    {"manufacturer": "Manufacturer"},
+                ]
+                response = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": serialized_devicetypes.data,
+                }
+        except DeviceType.DoesNotExist:
+            return ErrorMessage("Device Type '{}' does not exist!".format(name)).as_json
         except Exception:
             return ErrorMessage(getException()).as_json
 

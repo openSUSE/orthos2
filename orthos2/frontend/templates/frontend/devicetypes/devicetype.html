@@ -1,0 +1,48 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+{% load tags %}
+{% load filters %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="row">
+      <main class="col-12">
+        <ul class="nav nav-tabs gray">
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'devicetype_detail' %}"
+              href="{% url 'frontend:devicetype_detail' devicetype.pk %}"
+              >Overview</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'devicetype_netbox_comparisons' %}"
+              href="{% url 'frontend:devicetype_netbox_comparisons' devicetype.pk %}"
+              >Netbox Comparison</a
+            >
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          {% block tabcontent %}
+          {% endblock %}
+        </div>
+        <span style="font-size: 0.7em; font-family: Monospace;"
+          >API:
+          <a href="{% url 'api:devicetype' %}?name={{ devicetype.name }}"
+            >{% url 'api:devicetype' %}?name={{ devicetype.name }}</a
+          >
+          | Edit:
+          <a href="{% url 'frontend:edit_devicetype' devicetype.id %}"
+            >{% url 'frontend:edit_devicetype' devicetype.id %}</a
+          ></span
+        >
+      </main>
+    </div>
+  </div>
+{% endblock %}

@@ -47,7 +47,7 @@ Modules["general"] = (
     "System",
     "Architecture",
     "Manufacturer",
-    "Platform",
+    "Devicetype",
     "Serialconsoletype",
 )
 

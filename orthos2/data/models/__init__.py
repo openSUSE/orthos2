@@ -2,6 +2,7 @@ from .annotation import Annotation
 from .ansible import AnsibleScanResult
 from .architecture import Architecture
 from .bmc import BMC
+from .devicetype import DeviceType
 from .domain import Domain, DomainAdmin, validate_domain_ending
 from .enclosure import Enclosure
 from .installation import Installation
@@ -19,7 +20,6 @@ from .netboxorthoscomparision import (
     NetboxOrthosComparisionRun,
 )
 from .networkinterface import NetworkInterface
-from .platform import Platform
 from .remotepower import RemotePower
 from .remotepowerdevice import RemotePowerDevice
 from .remotepowertype import RemotePowerType
@@ -34,6 +34,7 @@ __all__ = [
     "Annotation",
     "Architecture",
     "BMC",
+    "DeviceType",
     "Domain",
     "DomainAdmin",
     "validate_domain_ending",
@@ -49,7 +50,6 @@ __all__ = [
     "NetboxOrthosComparisionRun",
     "NetboxOrthosComparisionResult",
     "NetworkInterface",
-    "Platform",
     "RemotePower",
     "RemotePowerDevice",
     "RemotePowerType",

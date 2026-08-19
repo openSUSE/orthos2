@@ -294,9 +294,9 @@ urlpatterns = [
         name="manufacturer_detail",
     ),
     re_path(
-        r"^manufacturers/(?P<id>[0-9]+)/platforms$",
-        views.manufacturer_platforms,
-        name="manufacturer_platforms",
+        r"^manufacturers/(?P<id>[0-9]+)/devicetypes$",
+        views.manufacturer_device_types,
+        name="manufacturer_device_types",
     ),
     re_path(
         r"^manufacturers/(?P<id>[0-9]+)/fetch-netbox$",
@@ -323,5 +323,38 @@ urlpatterns = [
         "manufacturers/delete/<int:pk>/",
         views.DeleteManufacturer.as_view(),
         name="delete_manufacturer",
+    ),
+    # Device Types
+    path("devicetypes", views.DeviceTypeListView.as_view(), name="devicetypes"),
+    re_path(
+        r"^devicetype/(?P<id>[0-9]+)/detail$",
+        views.devicetype_detail,
+        name="devicetype_detail",
+    ),
+    re_path(
+        r"^devicetype/(?P<id>[0-9]+)/fetch-netbox$",
+        views.devicetype_fetch_netbox,
+        name="devicetype_netbox_fetch",
+    ),
+    re_path(
+        r"^devicetype/(?P<id>[0-9]+)/netboxcomparison$",
+        views.devicetype_netboxcomparison,
+        name="devicetype_netbox_comparisons",
+    ),
+    re_path(
+        r"^devicetype/(?P<id>[0-9]+)/compare-netbox$",
+        views.devicetype_compare_netbox,
+        name="devicetype_netbox_compare",
+    ),
+    path("devicetypes/new", views.NewDeviceType.as_view(), name="new_devicetype"),
+    path(
+        "devicetypes/edit/<int:pk>/",
+        views.DeviceTypeDetailedEdit.as_view(),
+        name="edit_devicetype",
+    ),
+    path(
+        "devicetypes/delete/<int:pk>/",
+        views.DeleteDeviceType.as_view(),
+        name="delete_devicetype",
     ),
 ]

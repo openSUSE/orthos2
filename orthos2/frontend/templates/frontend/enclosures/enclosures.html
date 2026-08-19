@@ -12,7 +12,7 @@
         <thead class="thead-default">
           <tr style="border: 1px solid #ddd;">
             <th>Name {% order_list request 'name' %}</th>
-            <th>Platform {% order_list request 'platform' %}</th>
+            <th>Device Type {% order_list request 'device_type' %}</th>
             <th>NetBox ID {% order_list request 'netbox_id' %}</th>
             <th>Number of Machines</th>
             <th width="80px">&nbsp;</th>
@@ -29,7 +29,14 @@
                   >{{ enclosure.name }}</a
                 >
               </td>
-              <td>{{ enclosure.platform }}</td>
+              <td>
+                {% if enclosure.device_type %}
+                  <a
+                    href="{% url 'frontend:devicetype_detail' enclosure.device_type.id %}"
+                    >{{ enclosure.device_type }}</a
+                  >
+                {% endif %}
+              </td>
               <td>{{ enclosure.netbox_id }}</td>
               <td>{{ enclosure.machine_set.count }}</td>
               <td>

@@ -140,7 +140,7 @@ python manage.py createsuperuser
 
 # Load fixture data (useful for development)
 python manage.py loaddata orthos2/data/fixtures/architectures.json
-python manage.py loaddata orthos2/data/fixtures/platforms.json
+python manage.py loaddata orthos2/data/fixtures/devicetypes.json
 python manage.py loaddata orthos2/data/fixtures/serialconsoletypes.json
 python manage.py loaddata orthos2/data/fixtures/systems.json
 ```

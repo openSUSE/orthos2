@@ -47,7 +47,7 @@ Under Enclosures the case (unit) is defined. A parent name for a unit with sever
 .. code-block::
 
     -------------
-    | Platform  |
+    | DeviceType |
     -------------
           |
           |
@@ -62,10 +62,10 @@ Name (required)
 
 Name of the Enclosure.
 
-Platform
-========
+Device Type
+===========
 
-Here the machine platform is specified, this usually comes via the manufacturer.
+Here the machine device type is specified, this usually comes via the manufacturer.
 
 Description
 ===========

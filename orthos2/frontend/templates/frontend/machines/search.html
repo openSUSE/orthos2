@@ -191,9 +191,11 @@
                     data-bs-parent="#accordion"
                     href="#collapseOne"
                   >
-                    Platform
+                    Device Type
                   </a>
-                  <small class="form-text text-muted">Manufacturer, Platform</small>
+                  <small class="form-text text-muted"
+                    >Manufacturer, Device Type</small
+                  >
                 </span>
               </div>
 
@@ -202,33 +204,33 @@
                   class="card-block"
                   style="padding-top: 5px; padding-right: 5px;"
                 >
-                  {{ form.enclosure__platform__manufacturer.errors }}
+                  {{ form.enclosure__device_type__manufacturer.errors }}
                   <div class="row" style="margin-bottom: 5px;">
                     <div class="col-4" align="right">
                       <label>Manufacturer (enclosure)</label>
                     </div>
                     <div class="col-2" align="center">is</div>
                     <div class="col-6">
-                      {{ form.enclosure__platform__manufacturer }}
+                      {{ form.enclosure__device_type__manufacturer }}
                     </div>
                   </div>
 
-                  {{ form.enclosure__platform.errors }}
+                  {{ form.enclosure__device_type.errors }}
                   <div class="row" style="margin-bottom: 5px;">
                     <div class="col-4" align="right">
-                      <label>Platform (enclosure)</label>
+                      <label>Device Type (enclosure)</label>
                     </div>
                     <div class="col-2" align="center">is</div>
-                    <div class="col-6">{{ form.enclosure__platform }}</div>
+                    <div class="col-6">{{ form.enclosure__device_type }}</div>
                   </div>
 
-                  {{ form.platform.errors }}
+                  {{ form.device_type.errors }}
                   <div class="row" style="margin-bottom: 5px;">
                     <div class="col-4" align="right">
-                      <label>Platform (cartridge)</label>
+                      <label>Device Type (cartridge)</label>
                     </div>
                     <div class="col-2" align="center">is</div>
-                    <div class="col-6">{{ form.platform }}</div>
+                    <div class="col-6">{{ form.device_type }}</div>
                   </div>
                 </div>
               </div>

@@ -20,7 +20,7 @@ from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator  # type: ignore
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-from orthos2.data.models import Manufacturer, Platform
+from orthos2.data.models import DeviceType, Manufacturer
 from orthos2.frontend.forms.manufacturer import ManufacturerForm
 from orthos2.frontend.mixins import SuperuserRequiredMixin
 from orthos2.taskmanager import tasks
@@ -127,20 +127,20 @@ def manufacturer_detail(request: HttpRequest, id: int) -> HttpResponse:
 
 
 @login_required
-def manufacturer_platforms(request: HttpRequest, id: int) -> HttpResponse:
+def manufacturer_device_types(request: HttpRequest, id: int) -> HttpResponse:
     try:
         manufacturer = Manufacturer.objects.get(pk=id)
     except Manufacturer.DoesNotExist:
         raise Http404("Manufacturer does not exist")
 
-    platforms = Platform.objects.filter(manufacturer__id=id)
+    device_types = DeviceType.objects.filter(manufacturer__id=id)
     return render(
         request,
-        "frontend/manufacturers/detail/platforms.html",
+        "frontend/manufacturers/detail/devicetypes.html",
         {
             "manufacturer": manufacturer,
-            "platforms": platforms,
-            "title": f"Manufacturer {manufacturer.name} Platforms",
+            "device_types": device_types,
+            "title": f"Manufacturer {manufacturer.name} Device Types",
         },
     )
 

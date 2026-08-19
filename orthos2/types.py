@@ -14,13 +14,13 @@ from django.http import HttpRequest
 
 from orthos2.data.models.architecture import Architecture
 from orthos2.data.models.bmc import BMC
+from orthos2.data.models.devicetype import DeviceType
 from orthos2.data.models.domain import Domain
 from orthos2.data.models.enclosure import Enclosure
 from orthos2.data.models.machine import Machine
 from orthos2.data.models.manufacturer import Manufacturer
 from orthos2.data.models.netboxorthoscomparision import NetboxOrthosComparisionRun
 from orthos2.data.models.networkinterface import NetworkInterface
-from orthos2.data.models.platform import Platform
 from orthos2.data.models.remotepowerdevice import RemotePowerDevice
 from orthos2.data.models.remotepowertype import RemotePowerType
 from orthos2.data.models.serialconsoletype import SerialConsoleType
@@ -44,9 +44,11 @@ MandatoryUserForeignKey = models.ForeignKey[Union[Combinable, User], User]
 OptionalUserForeignKey = models.ForeignKey[
     Union[Combinable, User, None], Optional[User]
 ]
-MandatoryPlatformForeignKey = models.ForeignKey[Union[Combinable, Platform], Platform]
-OptionalPlatformForeignKey = models.ForeignKey[
-    Union[Combinable, Platform, None], Optional[Platform]
+MandatoryDeviceTypeForeignKey = models.ForeignKey[
+    Union[Combinable, DeviceType], DeviceType
+]
+OptionalDeviceTypeForeignKey = models.ForeignKey[
+    Union[Combinable, DeviceType, None], Optional[DeviceType]
 ]
 MandatoryEnclosureForeignKey = models.ForeignKey[
     Union[Combinable, Enclosure], Enclosure

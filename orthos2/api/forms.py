@@ -16,6 +16,7 @@ from django.template.defaultfilters import slugify
 
 from orthos2.data.models import (
     Architecture,
+    DeviceType,
     Domain,
     Enclosure,
     Machine,
@@ -644,6 +645,36 @@ class DeleteManufacturerAPIForm(forms.Form, BaseAPIForm):
     name = forms.CharField(
         label="Name",
         max_length=100,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "name",
+        ]
+
+
+class DeviceTypeAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = DeviceType
+        fields = ["name", "manufacturer", "is_cartridge", "description"]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return ["name", "manufacturer", "is_cartridge", "description"]
+
+
+class DeleteDeviceTypeAPIForm(forms.Form, BaseAPIForm):
+    def clean_name(self) -> str:
+        """Check whether a device type with `name` exists."""
+        name = self.cleaned_data["name"]
+        if DeviceType.objects.filter(name__iexact=name).count() == 0:
+            self.add_error("name", "No device type with this name")
+        return name
+
+    name = forms.CharField(
+        label="Name",
+        max_length=200,
     )
 
     def get_order(self) -> List[str]:

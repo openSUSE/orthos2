@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple, Union
 
 from django import forms
 
-from orthos2.data.models import Installation, Machine, Manufacturer, Platform
+from orthos2.data.models import DeviceType, Installation, Machine, Manufacturer
 
 
 def get_manufacturers() -> List[Tuple[str, str]]:
@@ -16,52 +16,52 @@ def get_manufacturers() -> List[Tuple[str, str]]:
     return manufacturers
 
 
-def get_platforms() -> List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]]:
-    platforms: List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]] = [
+def get_device_types() -> List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]]:
+    device_types: List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]] = [
         ("", "--all--")
     ]
     groups: Dict[str, Tuple[Tuple[int, str], ...]] = {}
-    for platform in Platform.objects.all():
-        platform_id = platform.id
-        name = platform.name
-        platform_manufacturer = platform.manufacturer
+    for device_type in DeviceType.objects.all():
+        device_type_id = device_type.id
+        name = device_type.name
+        device_type_manufacturer = device_type.manufacturer
 
-        if platform.is_cartridge:
+        if device_type.is_cartridge:
             continue
 
-        if platform_manufacturer.name in groups.keys():
-            groups[platform_manufacturer.name] += ((platform_id, name),)
+        if device_type_manufacturer.name in groups.keys():
+            groups[device_type_manufacturer.name] += ((device_type_id, name),)
         else:
-            groups[platform_manufacturer.name] = ((platform_id, name),)
+            groups[device_type_manufacturer.name] = ((device_type_id, name),)
 
-    for manufacturer, platforms_ in groups.items():
-        platforms.append((manufacturer, platforms_))
-    return platforms
+    for manufacturer, device_types_ in groups.items():
+        device_types.append((manufacturer, device_types_))
+    return device_types
 
 
-def get_cartridge_platforms() -> (
+def get_cartridge_device_types() -> (
     List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]]
 ):
-    platforms: List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]] = [
+    device_types: List[Tuple[str, Union[str, Tuple[Tuple[int, str], ...]]]] = [
         ("", "--all--")
     ]
     groups: Dict[str, Tuple[Tuple[int, str], ...]] = {}
-    for platform in Platform.objects.all():
-        id = platform.id
-        name = platform.name
-        platform_manufacturer = platform.manufacturer
+    for device_type in DeviceType.objects.all():
+        id = device_type.id
+        name = device_type.name
+        device_type_manufacturer = device_type.manufacturer
 
-        if not platform.is_cartridge:
+        if not device_type.is_cartridge:
             continue
 
-        if platform_manufacturer.name in groups.keys():
-            groups[platform_manufacturer.name] += ((id, name),)
+        if device_type_manufacturer.name in groups.keys():
+            groups[device_type_manufacturer.name] += ((id, name),)
         else:
-            groups[platform_manufacturer.name] = ((id, name),)
+            groups[device_type_manufacturer.name] = ((id, name),)
 
-    for manufacturer, platforms_ in groups.items():
-        platforms.append((manufacturer, platforms_))
-    return platforms
+    for manufacturer, device_types_ in groups.items():
+        device_types.append((manufacturer, device_types_))
+    return device_types
 
 
 def get_distributions() -> List[Tuple[str, str]]:
@@ -122,21 +122,21 @@ class SearchForm(forms.Form):
             except ValueError:
                 self.add_error("cpu_cores", "Value must be a number.")
 
-    enclosure__platform__manufacturer = forms.ChoiceField(
+    enclosure__device_type__manufacturer = forms.ChoiceField(
         required=False,
         choices=get_manufacturers,
         widget=forms.Select(attrs={"class": "form-select"}),
     )
 
-    enclosure__platform = forms.ChoiceField(
+    enclosure__device_type = forms.ChoiceField(
         required=False,
-        choices=get_platforms,
+        choices=get_device_types,
         widget=forms.Select(attrs={"class": "form-select"}),
     )
 
-    platform = forms.ChoiceField(
+    device_type = forms.ChoiceField(
         required=False,
-        choices=get_cartridge_platforms,
+        choices=get_cartridge_device_types,
         widget=forms.Select(attrs={"class": "form-select"}),
     )
 

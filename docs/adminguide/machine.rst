@@ -15,7 +15,7 @@ able to reserve machine objects. The following figure shows the machine object o
 .. code-block::
 
     -------------
-    | Platform  |
+    | DeviceType |
     -------------
           |
     -------------    -----------------
@@ -54,12 +54,12 @@ The type of system of the machine.
 
 Example: VM, BMC, BareMetal, LPAR, Desctop, RemotePower etc.
 
-Serial number/Product code/Platform
-===================================
+Serial number/Product code/Device Type
+=======================================
 
 Specified by the manufacturer. Mostly there is a sticker with the serial number and the product code on the machine's chassis, which has to be entered here.
 
-Example: Serial number: GPKLDV6120104 / Product code: MAKL1K1PFB / Platform: Knights Landing
+Example: Serial number: GPKLDV6120104 / Product code: MAKL1K1PFB / Device Type: Knights Landing
 
 Kernel option
 =============

@@ -1,0 +1,43 @@
+{% load tags %}
+
+<div class="container-fluid" style="margin-bottom: 15px;">
+  <div class="row">
+    <div class="col-12 d-flex align-items-center">
+      <div class="d-flex align-items-center flex-wrap">
+        <span class="hint" style="margin-right: 0.5rem;">NetBox ID set?</span>
+        <div class="btn-group" role="group" style="margin-right: 1rem;">
+          <a
+            class="btn btn-secondary btn-sm {% active request '1' %}"
+            href="?{% url_replace request 'has_netbox' '1' %}"
+            role="button"
+            >Yes</a
+          >
+          <a
+            class="btn btn-secondary btn-sm {% active request '0' %}"
+            href="?{% url_replace request 'has_netbox' '0' %}"
+            role="button"
+            >No</a
+          >
+          <a
+            class="btn btn-secondary btn-sm"
+            href="?{% url_replace request 'has_netbox' '' True %}"
+            role="button"
+            >&#215;</a
+          >
+        </div>
+
+        {% include 'frontend/snippet.search.html' with search_hint='Name' %}
+
+        <span class="ms-2"></span>
+
+        <div style="display: inline-block">
+          <span class="hint">Found {{ paginator.count }} Device Type(s)</span>
+        </div>
+      </div>
+
+      <a class="nav-link ms-auto" href="{% url 'frontend:new_devicetype' %}">
+        <button type="button" class="btn btn-success">+</button>
+      </a>
+    </div>
+  </div>
+</div>

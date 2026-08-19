@@ -32,6 +32,7 @@ from requests import HTTPError
 from orthos2.data.exceptions import ReleaseException, ReserveException
 from orthos2.data.models.architecture import Architecture
 from orthos2.data.models.bmc import BMC
+from orthos2.data.models.devicetype import DeviceType
 from orthos2.data.models.domain import Domain, DomainAdmin, validate_domain_ending
 from orthos2.data.models.enclosure import Enclosure
 from orthos2.data.models.netboxorthoscomparision import (
@@ -39,7 +40,6 @@ from orthos2.data.models.netboxorthoscomparision import (
     NetboxOrthosComparisionRun,
 )
 from orthos2.data.models.networkinterface import NetworkInterface, validate_mac_address
-from orthos2.data.models.platform import Platform
 from orthos2.data.models.remotepowertype import RemotePowerType
 from orthos2.data.models.system import System
 from orthos2.data.virtualization import VirtualizationAPI
@@ -69,8 +69,8 @@ if TYPE_CHECKING:
         MandatorySystemForeignKey,
         OptionalDateField,
         OptionalDateTimeField,
+        OptionalDeviceTypeForeignKey,
         OptionalMachineForeignKey,
-        OptionalPlatformForeignKey,
         OptionalSmallIntegerField,
         OptionalUserForeignKey,
     )
@@ -423,8 +423,8 @@ class Machine(models.Model):
         default=False
     )
 
-    platform: "OptionalPlatformForeignKey" = models.ForeignKey(
-        Platform, blank=True, null=True, on_delete=models.SET_NULL
+    device_type: "OptionalDeviceTypeForeignKey" = models.ForeignKey(
+        DeviceType, blank=True, null=True, on_delete=models.SET_NULL
     )
 
     bios_version: "models.CharField[str, str]" = models.CharField(

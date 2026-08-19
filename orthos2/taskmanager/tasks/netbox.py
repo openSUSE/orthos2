@@ -9,6 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from orthos2.data.models import (
     BMC,
+    DeviceType,
     Enclosure,
     Machine,
     Manufacturer,
@@ -103,6 +104,22 @@ class NetboxFetchManufacturer(Task):
             logger.debug('Fetching manufacturer "%s" - Start', manufacturer.name)
             manufacturer.fetch_netbox()
             logger.debug('Fetching manufacturer "%s" - End', manufacturer.name)
+
+
+class NetboxFetchDeviceType(Task):
+    """
+    Iterate over all device types and fetch information from Netbox.
+    """
+
+    def execute(self) -> None:
+        """
+        Executes the task.
+        """
+        logger.info("Fetching information from Netbox API for all device types.")
+        for devicetype in DeviceType.objects.all():
+            logger.debug('Fetching device type "%s" - Start', devicetype.name)
+            devicetype.fetch_netbox()
+            logger.debug('Fetching device type "%s" - End', devicetype.name)
 
 
 class NetboxFetchRemotePowerDevice(Task):
@@ -210,6 +227,32 @@ class NetboxFetchFullManufacturer(Task):
         manufacturer.fetch_netbox()
 
 
+class NetboxFetchFullDeviceType(Task):
+    """
+    Fetch a single device type.
+    """
+
+    def __init__(self, devicetype_id: int) -> None:
+        """
+        Constructor to initialize the task.
+        """
+        self.devicetype_pk = devicetype_id
+
+    def execute(self) -> None:
+        """
+        Executes the task.
+        """
+        logger.info(
+            "Fetching information from Netbox API for device type with pk %s.",
+            self.devicetype_pk,
+        )
+        try:
+            devicetype = DeviceType.objects.get(pk=self.devicetype_pk)
+        except ObjectDoesNotExist as err:
+            raise ValueError("Requested device type doesn't exist!") from err
+        devicetype.fetch_netbox()
+
+
 class NetboxCompareFullMachine(Task):
     """
     Compare a single full machine with its subobjects.
@@ -290,6 +333,32 @@ class NetboxCompareManufacturer(Task):
         except ObjectDoesNotExist as err:
             raise ValueError("Requested manufacturer doesn't exist!") from err
         manufacturer.compare_netbox()
+
+
+class NetboxCompareDeviceType(Task):
+    """
+    Compare a single device type.
+    """
+
+    def __init__(self, devicetype_id: int) -> None:
+        """
+        Constructor to initialize the task.
+        """
+        self.devicetype_pk = devicetype_id
+
+    def execute(self) -> None:
+        """
+        Executes the task.
+        """
+        logger.info(
+            'Comparing information from Netbox API for device type "%s".',
+            self.devicetype_pk,
+        )
+        try:
+            devicetype = DeviceType.objects.get(pk=self.devicetype_pk)
+        except ObjectDoesNotExist as err:
+            raise ValueError("Requested device type doesn't exist!") from err
+        devicetype.compare_netbox()
 
 
 class NetboxCompareRemotePowerDevice(Task):

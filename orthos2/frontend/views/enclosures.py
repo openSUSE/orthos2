@@ -20,7 +20,7 @@ from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-from orthos2.data.models import Enclosure, Machine, Platform
+from orthos2.data.models import DeviceType, Enclosure, Machine
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 
@@ -49,8 +49,8 @@ class EnclosureListView(PermissionRequiredMixin, ListView):
         if self.request.GET.get("query"):
             filters.append(Q(name__contains=self.request.GET.get("query")))
 
-        if self.request.GET.get("platform"):
-            filters.append(Q(platform__name=self.request.GET.get("platform")))
+        if self.request.GET.get("device_type"):
+            filters.append(Q(device_type__name=self.request.GET.get("device_type")))
 
         enclosures = super().get_queryset().filter(*filters)  # type: ignore
 
@@ -72,7 +72,7 @@ class EnclosureListView(PermissionRequiredMixin, ListView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["title"] = "Enclosures"
-        context["platforms"] = Platform.objects.all()
+        context["device_types"] = DeviceType.objects.all()
         context["enclosure_list"] = self.object_list  # type: ignore
         return context
 
@@ -84,7 +84,7 @@ class EnclosureDetailedEdit(PermissionRequiredMixin, UpdateView):
     success_url = reverse_lazy("frontend:enclosures")
     permission_required = "data.change_enclosure"
 
-    fields = ["name", "platform", "netbox_id", "description", "is_virtual"]
+    fields = ["name", "device_type", "netbox_id", "description", "is_virtual"]
 
     @method_decorator(login_required)
     def dispatch(
@@ -105,7 +105,7 @@ class NewEnclosure(PermissionRequiredMixin, CreateView):
     success_url = "/enclosures"
     permission_required = "data.change_enclosure"
 
-    fields = ["name", "platform", "netbox_id", "description", "is_virtual"]
+    fields = ["name", "device_type", "netbox_id", "description", "is_virtual"]
 
     @method_decorator(login_required)
     def dispatch(
