@@ -26,6 +26,17 @@
               <td class="th fw-bold">Description</td>
               <td>{{ devicetype.description }}</td>
             </tr>
+            {% if devicetype.netbox_id > 0 %}
+              <tr>
+                <td class="th fw-bold">NetBox URL</td>
+                <td>
+                  <a
+                    href="{{ NETBOX_URL }}/dcim/device-types/{{ devicetype.netbox_id }}/"
+                    >NetBox Device Type {{ devicetype.netbox_id }}</a
+                  >
+                </td>
+              </tr>
+            {% endif %}
           </tbody>
         </table>
       </div>

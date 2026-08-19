@@ -17,6 +17,7 @@ if TYPE_CHECKING:
         MandatoryNetboxOrthosComparisionRunForeignKey,
         MandatoryUUIDField,
         OptionalBMCForeignKey,
+        OptionalDeviceTypeForeignKey,
         OptionalEnclosureForeignKey,
         OptionalMachineForeignKey,
         OptionalManufacturerForeignKey,
@@ -36,6 +37,7 @@ class NetboxOrthosComparisionRun(models.Model):
         """
 
         BMC = "bmc", _("BMC")  # type: ignore
+        DEVICE_TYPE = "device_type", _("Device Type")  # type: ignore
         ENCLOSURE = "enclosure", _("Enclosure")  # type: ignore
         MACHINE = "machine", _("Machine")  # type: ignore
         MANUFACTURER = "manufacturer", _("Manufacturer")  # type: ignore
@@ -49,6 +51,13 @@ class NetboxOrthosComparisionRun(models.Model):
     )
     object_bmc: "OptionalBMCForeignKey" = models.ForeignKey(
         "data.BMC",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="netboxorthoscomparisionruns",
+    )
+    object_device_type: "OptionalDeviceTypeForeignKey" = models.ForeignKey(
+        "data.DeviceType",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -97,6 +106,13 @@ class NetboxOrthosComparisionRun(models.Model):
         if self.object_type == self.NetboxOrthosComparisionItemTypes.BMC.value:
             if not self.object_bmc:
                 raise ValueError("BMC object must be provided for BMC comparison.")
+        elif (
+            self.object_type == self.NetboxOrthosComparisionItemTypes.DEVICE_TYPE.value
+        ):
+            if not self.object_device_type:
+                raise ValueError(
+                    "Device Type object must be provided for Device Type comparison."
+                )
         elif self.object_type == self.NetboxOrthosComparisionItemTypes.ENCLOSURE.value:
             if not self.object_enclosure:
                 raise ValueError(

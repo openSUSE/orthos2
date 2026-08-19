@@ -331,6 +331,21 @@ urlpatterns = [
         views.devicetype_detail,
         name="devicetype_detail",
     ),
+    re_path(
+        r"^devicetype/(?P<id>[0-9]+)/fetch-netbox$",
+        views.devicetype_fetch_netbox,
+        name="devicetype_netbox_fetch",
+    ),
+    re_path(
+        r"^devicetype/(?P<id>[0-9]+)/netboxcomparison$",
+        views.devicetype_netboxcomparison,
+        name="devicetype_netbox_comparisons",
+    ),
+    re_path(
+        r"^devicetype/(?P<id>[0-9]+)/compare-netbox$",
+        views.devicetype_compare_netbox,
+        name="devicetype_netbox_compare",
+    ),
     path("devicetypes/new", views.NewDeviceType.as_view(), name="new_devicetype"),
     path(
         "devicetypes/edit/<int:pk>/",

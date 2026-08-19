@@ -19,6 +19,7 @@
           <th>Name {% order_list request 'name' %}</th>
           <th>Manufacturer {% order_list request 'manufacturer' %}</th>
           <th>Cartridge/Blade</th>
+          <th>NetBox ID {% order_list request 'netbox_id' %}</th>
           <th width="80px">&nbsp;</th>
         </tr>
       </thead>
@@ -35,6 +36,7 @@
             </td>
             <td>{{ devicetype.manufacturer }}</td>
             <td>{{ devicetype.is_cartridge }}</td>
+            <td>{{ devicetype.netbox_id }}</td>
             <td>
               <a
                 href="{% url 'frontend:delete_devicetype' devicetype.pk %}"

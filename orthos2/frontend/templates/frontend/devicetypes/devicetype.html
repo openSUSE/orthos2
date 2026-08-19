@@ -19,6 +19,13 @@
               >Overview</a
             >
           </li>
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'devicetype_netbox_comparisons' %}"
+              href="{% url 'frontend:devicetype_netbox_comparisons' devicetype.pk %}"
+              >Netbox Comparison</a
+            >
+          </li>
         </ul>
 
         <div class="tab-content">

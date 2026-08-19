@@ -21,7 +21,10 @@ from .devicetype import (
     DeviceTypeDetailedEdit,
     DeviceTypeListView,
     NewDeviceType,
+    devicetype_compare_netbox,
     devicetype_detail,
+    devicetype_fetch_netbox,
+    devicetype_netboxcomparison,
 )
 from .enclosures import (
     DeleteEnclosure,
@@ -185,4 +188,7 @@ __all__ = [
     "DeviceTypeDetailedEdit",
     "DeleteDeviceType",
     "devicetype_detail",
+    "devicetype_fetch_netbox",
+    "devicetype_netboxcomparison",
+    "devicetype_compare_netbox",
 ]

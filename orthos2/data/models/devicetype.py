@@ -1,14 +1,27 @@
-from typing import TYPE_CHECKING, Tuple, Union, cast
+import datetime
+import logging
+import uuid
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union, cast
 
 from django.contrib import admin
 from django.db import models
+from django.utils import timezone
+from requests import HTTPError
 
-from .manufacturer import Manufacturer
+from orthos2.data.models.manufacturer import Manufacturer
+from orthos2.data.models.netboxorthoscomparision import (
+    NetboxOrthosComparisionResult,
+    NetboxOrthosComparisionRun,
+)
+from orthos2.utils.netbox import Netbox
 
 if TYPE_CHECKING:
     from django.db.models.expressions import Combinable
 
     from orthos2.data.models.enclosure import Enclosure
+    from orthos2.types import OptionalDateTimeField
+
+logger = logging.getLogger("models")
 
 
 class DeviceTypeManager(models.Manager["DeviceType"]):
@@ -40,7 +53,20 @@ class DeviceType(models.Model):
         blank=True,
     )
 
+    netbox_id: "models.PositiveIntegerField[int, int]" = models.PositiveIntegerField(
+        verbose_name="NetBox ID",
+        help_text="The ID that NetBox gives to the object.",
+        default=0,
+    )
+
+    netbox_last_fetch_attempt: "OptionalDateTimeField" = models.DateTimeField(
+        "NetBox Last Fetched at",
+        null=True,
+        blank=True,
+    )
+
     enclosure_set: models.Manager["Enclosure"]
+    netboxorthoscomparisionruns: models.Manager["NetboxOrthosComparisionRun"]
 
     objects = DeviceTypeManager()
 
@@ -66,3 +92,75 @@ class DeviceType(models.Model):
         Return the enclosure manager.
         """
         return cast(DeviceTypeManager, cls.objects)
+
+    def fetch_netbox_record(self) -> Optional[Dict[str, Any]]:
+        """
+        Fetch the record of this DeviceType object from NetBox.
+
+        :returns: None in case the record cannot be retrieved. The Dict with the NetBox data otherwhise.
+        :raises HTTPError: In case any HTTP code except 200 and 404 is returned.
+        """
+        netbox_api = Netbox.get_instance()
+        try:
+            return netbox_api.fetch_device_type(self.netbox_id)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                logger.info("Fetching DeviceType from NetBox failed with status 404.")
+                return None
+            raise e
+
+    def compare_netbox(self) -> None:
+        """
+        Compare the current data in the database of Orthos 2 with the data from NetBox.
+        """
+        if self.netbox_id == 0:
+            logger.debug("Skipping comparision because NetBox ID is 0.")
+            return
+
+        run_uuid = uuid.uuid4()
+        run_obj = NetboxOrthosComparisionRun(
+            run_id=run_uuid,
+            compare_timestamp=datetime.datetime.now(tz=timezone.get_current_timezone()),
+            object_type=NetboxOrthosComparisionRun.NetboxOrthosComparisionItemTypes.DEVICE_TYPE,
+            object_device_type=self,
+        )
+        run_obj.save()
+
+        netbox_devicetype = self.fetch_netbox_record()
+        if netbox_devicetype is None:
+            return
+
+        # Name
+        NetboxOrthosComparisionResult(
+            run_id=run_obj,
+            property_name="name",
+            orthos_result=self.name or "<not set>",
+            netbox_result=netbox_devicetype.get("model", "<not set>"),
+        ).save()
+        # Description
+        NetboxOrthosComparisionResult(
+            run_id=run_obj,
+            property_name="description",
+            orthos_result=self.description or "<not set>",
+            netbox_result=netbox_devicetype.get("description", "<not set>"),
+        ).save()
+
+    def fetch_netbox(self) -> None:
+        """
+        Fetch all information about a device type from NetBox if the NetBox ID is set.
+        """
+        if self.netbox_id == 0:
+            logger.debug("Skipping fetching from NetBox because NetBox ID is 0.")
+            return
+
+        self.netbox_last_fetch_attempt = datetime.datetime.now(
+            tz=timezone.get_current_timezone()
+        )
+        self.save()
+        netbox_devicetype = self.fetch_netbox_record()
+        if netbox_devicetype is None:
+            return
+
+        self.name = netbox_devicetype.get("model", self.name)
+        self.description = netbox_devicetype.get("description", "")
+        self.save()

@@ -101,6 +101,8 @@
         <th>{{ run.object_type }}</th>
         {% if run.object_type == "bmc" %}
         <th>{{ run.object_bmc.fqdn }}</th>
+        {% elif run.object_type == "device_type" %}
+        <th>{{ run.object_device_type.name }}</th>
         {% elif run.object_type == "enclosure" %}
         <th>{{ run.object_enclosure.name }}</th>
         {% elif run.object_type == "machine" %}
