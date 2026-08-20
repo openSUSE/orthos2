@@ -506,8 +506,8 @@ class SingleTaskAPIFormTests(TestCase):
         # Arrange & Act
         form = SingleTaskAPIForm(
             {
-                "name": "AcmeTask",
-                "module": "acme.module",
+                # orthos2.taskmanager.tasks.netbox.NetboxFetchMachine
+                "task": "orthos2.taskmanager.tasks.netbox.NetboxFetchMachine",
                 "arguments": "[[], {}]",
                 "priority": 10,
             }
@@ -515,11 +515,28 @@ class SingleTaskAPIFormTests(TestCase):
 
         # Assert
         self.assertTrue(form.is_valid())
+        singletask = form.save()
+        self.assertEqual(singletask.module, "orthos2.taskmanager.tasks.netbox")
+        self.assertEqual(singletask.name, "NetboxFetchMachine")
 
-    def test_form_requires_name(self) -> None:
-        """Test that the single task creation API form requires a name"""
+    def test_form_requires_task(self) -> None:
+        """Test that the single task creation API form requires a task"""
         # Arrange & Act
-        form = SingleTaskAPIForm({"name": "", "module": "acme.module"})
+        form = SingleTaskAPIForm({"task": ""})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+    def test_form_rejects_unknown_task(self) -> None:
+        """Test that the single task creation API form rejects an unknown task"""
+        # Arrange & Act
+        form = SingleTaskAPIForm(
+            {
+                "task": "not.a.real.Task",
+                "arguments": "[[], {}]",
+                "priority": 10,
+            }
+        )
 
         # Assert
         self.assertFalse(form.is_valid())
@@ -554,8 +571,8 @@ class DailyTaskAPIFormTests(TestCase):
         # Arrange & Act
         form = DailyTaskAPIForm(
             {
-                "name": "AcmeDailyTask",
-                "module": "acme.module",
+                # orthos2.taskmanager.tasks.daily.DailyCheckForPrimaryNetwork
+                "task": "orthos2.taskmanager.tasks.daily.DailyCheckForPrimaryNetwork",
                 "arguments": "[[], {}]",
                 "priority": 10,
                 "enabled": True,
@@ -564,11 +581,44 @@ class DailyTaskAPIFormTests(TestCase):
 
         # Assert
         self.assertTrue(form.is_valid())
+        dailytask = form.save()
+        self.assertEqual(dailytask.module, "orthos2.taskmanager.tasks.daily")
+        self.assertEqual(dailytask.name, "DailyCheckForPrimaryNetwork")
 
-    def test_form_requires_name(self) -> None:
-        """Test that the daily task creation API form requires a name"""
+    def test_form_requires_task(self) -> None:
+        """Test that the daily task creation API form requires a task"""
         # Arrange & Act
-        form = DailyTaskAPIForm({"name": "", "module": "acme.module", "priority": 10})
+        form = DailyTaskAPIForm({"task": "", "priority": 10})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+    def test_form_rejects_unknown_task(self) -> None:
+        """Test that the daily task creation API form rejects an unknown task"""
+        # Arrange & Act
+        form = DailyTaskAPIForm(
+            {
+                "task": "not.a.real.Task",
+                "arguments": "[[], {}]",
+                "priority": 10,
+                "enabled": True,
+            }
+        )
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+    def test_form_rejects_non_daily_task(self) -> None:
+        """Test that the daily task creation API form rejects a one-off-only task"""
+        # Arrange & Act
+        form = DailyTaskAPIForm(
+            {
+                "task": "orthos2.taskmanager.tasks.netbox.NetboxFetchMachine",
+                "arguments": "[[], {}]",
+                "priority": 10,
+                "enabled": True,
+            }
+        )
 
         # Assert
         self.assertFalse(form.is_valid())

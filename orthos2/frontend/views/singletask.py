@@ -11,6 +11,7 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
+from orthos2.frontend.forms.task import SingleTaskForm
 from orthos2.frontend.mixins import SuperuserRequiredMixin
 from orthos2.taskmanager.models import SingleTask
 
@@ -30,7 +31,7 @@ class NewSingleTask(SuperuserRequiredMixin, CreateView):
     model = SingleTask
     template_name = "frontend/singletasks/new_singletask.html"
     success_url = reverse_lazy("frontend:singletasks")
-    fields = ["name", "module", "arguments", "priority"]
+    form_class = SingleTaskForm
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -43,7 +44,7 @@ class SingleTaskDetailedEdit(SuperuserRequiredMixin, UpdateView):
     model = SingleTask
     template_name = "frontend/singletasks/new_singletask.html"
     success_url = reverse_lazy("frontend:singletasks")
-    fields = ["name", "module", "arguments", "priority"]
+    form_class = SingleTaskForm
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)

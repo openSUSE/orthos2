@@ -1298,7 +1298,7 @@ class AddDailyTaskCommand(BaseAPIView):
     METHOD = "POST"
     URL = "/dailytask/add"
     URL_POST = "/dailytask/add"
-    ARGUMENTS = (["name", "module", "arguments", "priority", "enabled"],)
+    ARGUMENTS = (["task", "arguments", "priority", "enabled"],)
 
     HELP_SHORT = "Adds a daily task to the database."
     HELP = """Adds a daily task to the database (superusers only).
@@ -1359,7 +1359,7 @@ class AddSingleTaskCommand(BaseAPIView):
     METHOD = "POST"
     URL = "/singletask/add"
     URL_POST = "/singletask/add"
-    ARGUMENTS = (["name", "module", "arguments", "priority"],)
+    ARGUMENTS = (["task", "arguments", "priority"],)
 
     HELP_SHORT = "Adds a single task to the database."
     HELP = """Adds a single task to the database (superusers only).

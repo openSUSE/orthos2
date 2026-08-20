@@ -715,7 +715,7 @@ class EditDailyTaskCommand(BaseAPIView):
     METHOD = "POST"
     URL = "/dailytask/edit"
     URL_POST = "/dailytask/edit"
-    ARGUMENTS = (["id", "name", "module", "arguments", "priority", "enabled"],)
+    ARGUMENTS = (["id", "task", "arguments", "priority", "enabled"],)
 
     HELP_SHORT = "Edits a daily task in the database."
     HELP = """Edits a daily task in the database (superusers only).
@@ -801,7 +801,7 @@ class EditSingleTaskCommand(BaseAPIView):
     METHOD = "POST"
     URL = "/singletask/edit"
     URL_POST = "/singletask/edit"
-    ARGUMENTS = (["id", "name", "module", "arguments", "priority"],)
+    ARGUMENTS = (["id", "task", "arguments", "priority"],)
 
     HELP_SHORT = "Edits a single task in the database."
     HELP = """Edits a single task in the database (superusers only).

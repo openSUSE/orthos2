@@ -15,6 +15,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
+from orthos2.frontend.forms.task import DailyTaskForm
 from orthos2.frontend.mixins import SuperuserRequiredMixin
 from orthos2.taskmanager.models import DailyTask
 
@@ -34,7 +35,7 @@ class NewDailyTask(SuperuserRequiredMixin, CreateView):
     model = DailyTask
     template_name = "frontend/dailytasks/new_dailytask.html"
     success_url = reverse_lazy("frontend:dailytasks")
-    fields = ["name", "module", "arguments", "priority", "enabled"]
+    form_class = DailyTaskForm
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -47,7 +48,7 @@ class DailyTaskDetailedEdit(SuperuserRequiredMixin, UpdateView):
     model = DailyTask
     template_name = "frontend/dailytasks/new_dailytask.html"
     success_url = reverse_lazy("frontend:dailytasks")
-    fields = ["name", "module", "arguments", "priority", "enabled"]
+    form_class = DailyTaskForm
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)

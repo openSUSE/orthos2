@@ -33,6 +33,7 @@ from orthos2.data.models import (
 from orthos2.data.models.domain import validate_domain_ending
 from orthos2.data.validators import validate_mac_address
 from orthos2.frontend.forms.reservemachine import ReserveMachineForm
+from orthos2.frontend.forms.task import DailyTaskForm, SingleTaskForm
 from orthos2.frontend.forms.virtualmachine import VirtualMachineForm
 from orthos2.taskmanager.models import DailyTask, SingleTask
 from orthos2.utils.misc import get_domain, is_unique_mac_address
@@ -806,14 +807,10 @@ class DeleteServerConfigAPIForm(forms.Form, BaseAPIForm):
         ]
 
 
-class SingleTaskAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
-    class Meta:  # type: ignore
-        model = SingleTask
-        fields = ["name", "module", "arguments", "priority"]
-
+class SingleTaskAPIForm(SingleTaskForm, BaseAPIForm):
     def get_order(self) -> List[str]:
         """Return input order."""
-        return ["name", "module", "arguments", "priority"]
+        return ["task", "arguments", "priority"]
 
 
 class DeleteSingleTaskAPIForm(forms.Form, BaseAPIForm):
@@ -833,14 +830,10 @@ class DeleteSingleTaskAPIForm(forms.Form, BaseAPIForm):
         ]
 
 
-class DailyTaskAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
-    class Meta:  # type: ignore
-        model = DailyTask
-        fields = ["name", "module", "arguments", "priority", "enabled"]
-
+class DailyTaskAPIForm(DailyTaskForm, BaseAPIForm):
     def get_order(self) -> List[str]:
         """Return input order."""
-        return ["name", "module", "arguments", "priority", "enabled"]
+        return ["task", "arguments", "priority", "enabled"]
 
 
 class DeleteDailyTaskAPIForm(forms.Form, BaseAPIForm):

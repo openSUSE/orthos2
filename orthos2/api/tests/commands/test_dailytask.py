@@ -48,8 +48,7 @@ class AddDailyTaskTest(DailyTaskCommandTestCase):
             url,
             {
                 "form": {
-                    "name": "AcmeDailyTask",
-                    "module": "acme.module",
+                    "task": "orthos2.taskmanager.tasks.daily.DailyCheckForPrimaryNetwork",
                     "arguments": "[[], {}]",
                     "priority": 10,
                     "enabled": True,
@@ -58,7 +57,10 @@ class AddDailyTaskTest(DailyTaskCommandTestCase):
             format="json",
         )
         assert response.status_code == status.HTTP_200_OK
-        assert DailyTask.objects.filter(name="AcmeDailyTask").exists()
+        assert DailyTask.objects.filter(
+            name="DailyCheckForPrimaryNetwork",
+            module="orthos2.taskmanager.tasks.daily",
+        ).exists()
 
     def test_regular_user_post_is_rejected(self) -> None:
         self._auth_regular()
@@ -67,8 +69,7 @@ class AddDailyTaskTest(DailyTaskCommandTestCase):
             url,
             {
                 "form": {
-                    "name": "AcmeDailyTask",
-                    "module": "acme.module",
+                    "task": "orthos2.taskmanager.tasks.daily.DailyCheckForPrimaryNetwork",
                     "arguments": "[[], {}]",
                     "priority": 10,
                     "enabled": True,
@@ -79,7 +80,28 @@ class AddDailyTaskTest(DailyTaskCommandTestCase):
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
         assert "superuser" in data["data"]["message"].lower()
-        assert not DailyTask.objects.filter(name="AcmeDailyTask").exists()
+        assert not DailyTask.objects.filter(name="DailyCheckForPrimaryNetwork").exists()
+
+    def test_superuser_post_unknown_task_returns_error(self) -> None:
+        self._auth_superuser()
+        count_before = DailyTask.objects.count()
+        url = reverse("api:dailytask_add")
+        response = self.client.post(
+            url,
+            {
+                "form": {
+                    "task": "not.a.real.Task",
+                    "arguments": "[[], {}]",
+                    "priority": 10,
+                    "enabled": True,
+                }
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        data = json.loads(response.content)
+        assert data["data"]["type"] == "ERROR"
+        assert DailyTask.objects.count() == count_before
 
 
 class EditDailyTaskTest(DailyTaskCommandTestCase):
@@ -97,8 +119,7 @@ class EditDailyTaskTest(DailyTaskCommandTestCase):
             {
                 "form": {
                     "id": self.dailytask.pk,
-                    "name": "AcmeDailyTask Renamed",
-                    "module": "acme.module",
+                    "task": "orthos2.taskmanager.tasks.daily.DailyMachineChecks",
                     "arguments": "[[], {}]",
                     "priority": 10,
                     "enabled": True,
@@ -108,7 +129,8 @@ class EditDailyTaskTest(DailyTaskCommandTestCase):
         )
         assert response.status_code == status.HTTP_200_OK
         self.dailytask.refresh_from_db()
-        assert self.dailytask.name == "AcmeDailyTask Renamed"
+        assert self.dailytask.name == "DailyMachineChecks"
+        assert self.dailytask.module == "orthos2.taskmanager.tasks.daily"
 
 
 class DeleteDailyTaskTest(DailyTaskCommandTestCase):

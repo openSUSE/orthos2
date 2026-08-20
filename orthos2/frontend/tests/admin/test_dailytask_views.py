@@ -99,15 +99,17 @@ class NewDailyTaskViewTest(TestCase):
         response = self.client.post(
             url,
             {
-                "name": "AcmeDailyTask",
-                "module": "acme.module",
+                "task": "orthos2.taskmanager.tasks.daily.DailyCheckForPrimaryNetwork",
                 "arguments": "[[], {}]",
                 "priority": 10,
                 "enabled": True,
             },
         )
         assert response.status_code == 302
-        assert DailyTask.objects.filter(name="AcmeDailyTask").exists()
+        assert DailyTask.objects.filter(
+            name="DailyCheckForPrimaryNetwork",
+            module="orthos2.taskmanager.tasks.daily",
+        ).exists()
 
     def test_regular_user_post_does_not_create_dailytask(self) -> None:
         self.client.force_login(User.objects.get(username="user"))
@@ -115,15 +117,14 @@ class NewDailyTaskViewTest(TestCase):
         response = self.client.post(
             url,
             {
-                "name": "AcmeDailyTask",
-                "module": "acme.module",
+                "task": "orthos2.taskmanager.tasks.daily.DailyCheckForPrimaryNetwork",
                 "arguments": "[[], {}]",
                 "priority": 10,
                 "enabled": True,
             },
         )
         assert response.status_code == 403
-        assert not DailyTask.objects.filter(name="AcmeDailyTask").exists()
+        assert not DailyTask.objects.filter(name="DailyCheckForPrimaryNetwork").exists()
 
 
 class DailyTaskDetailedEditViewTest(TestCase):
@@ -140,8 +141,7 @@ class DailyTaskDetailedEditViewTest(TestCase):
         response = self.client.post(
             url,
             {
-                "name": "AcmeDailyTask Renamed",
-                "module": "acme.module",
+                "task": "orthos2.taskmanager.tasks.daily.DailyMachineChecks",
                 "arguments": "[[], {}]",
                 "priority": 10,
                 "enabled": True,
@@ -149,7 +149,8 @@ class DailyTaskDetailedEditViewTest(TestCase):
         )
         assert response.status_code == 302
         self.dailytask.refresh_from_db()
-        assert self.dailytask.name == "AcmeDailyTask Renamed"
+        assert self.dailytask.name == "DailyMachineChecks"
+        assert self.dailytask.module == "orthos2.taskmanager.tasks.daily"
 
     def test_regular_user_post_does_not_update_dailytask(self) -> None:
         self.client.force_login(User.objects.get(username="user"))
@@ -157,8 +158,7 @@ class DailyTaskDetailedEditViewTest(TestCase):
         response = self.client.post(
             url,
             {
-                "name": "AcmeDailyTask Renamed",
-                "module": "acme.module",
+                "task": "orthos2.taskmanager.tasks.daily.DailyMachineChecks",
                 "arguments": "[[], {}]",
                 "priority": 10,
                 "enabled": True,

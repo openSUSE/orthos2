@@ -54,8 +54,7 @@ class AddSingleTaskTest(SingleTaskCommandTestCase):
             url,
             {
                 "form": {
-                    "name": "AcmeTask",
-                    "module": "acme.module",
+                    "task": "orthos2.taskmanager.tasks.netbox.NetboxFetchMachine",
                     "arguments": "[[], {}]",
                 }
             },
@@ -65,7 +64,7 @@ class AddSingleTaskTest(SingleTaskCommandTestCase):
         data = json.loads(response.content)
         assert data["header"]["type"] == "MESSAGE"
         assert "superuser" in data["data"]["message"].lower()
-        assert not SingleTask.objects.filter(name="AcmeTask").exists()
+        assert not SingleTask.objects.filter(name="NetboxFetchMachine").exists()
 
     def test_superuser_post_creates_singletask(self) -> None:
         self._auth_superuser()
@@ -74,8 +73,7 @@ class AddSingleTaskTest(SingleTaskCommandTestCase):
             url,
             {
                 "form": {
-                    "name": "AcmeTask",
-                    "module": "acme.module",
+                    "task": "orthos2.taskmanager.tasks.netbox.NetboxFetchMachine",
                     "arguments": "[[], {}]",
                     "priority": 10,
                 }
@@ -83,13 +81,30 @@ class AddSingleTaskTest(SingleTaskCommandTestCase):
             format="json",
         )
         assert response.status_code == status.HTTP_200_OK
-        assert SingleTask.objects.filter(name="AcmeTask").exists()
+        assert SingleTask.objects.filter(
+            name="NetboxFetchMachine", module="orthos2.taskmanager.tasks.netbox"
+        ).exists()
 
     def test_superuser_post_invalid_data_returns_error(self) -> None:
         self._auth_superuser()
         count_before = SingleTask.objects.count()
         url = reverse("api:singletask_add")
-        response = self.client.post(url, {"form": {"name": ""}}, format="json")
+        response = self.client.post(url, {"form": {"task": ""}}, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        data = json.loads(response.content)
+        assert data["header"]["type"] == "MESSAGE"
+        assert data["data"]["type"] == "ERROR"
+        assert SingleTask.objects.count() == count_before
+
+    def test_superuser_post_unknown_task_returns_error(self) -> None:
+        self._auth_superuser()
+        count_before = SingleTask.objects.count()
+        url = reverse("api:singletask_add")
+        response = self.client.post(
+            url,
+            {"form": {"task": "not.a.real.Task", "arguments": "[[], {}]"}},
+            format="json",
+        )
         assert response.status_code == status.HTTP_200_OK
         data = json.loads(response.content)
         assert data["header"]["type"] == "MESSAGE"
@@ -135,8 +150,7 @@ class EditSingleTaskTest(SingleTaskCommandTestCase):
             {
                 "form": {
                     "id": self.singletask.pk,
-                    "name": "AcmeTask Renamed",
-                    "module": "acme.module",
+                    "task": "orthos2.taskmanager.tasks.netbox.NetboxFetchBMC",
                     "arguments": "[[], {}]",
                 }
             },
@@ -157,8 +171,7 @@ class EditSingleTaskTest(SingleTaskCommandTestCase):
             {
                 "form": {
                     "id": self.singletask.pk,
-                    "name": "AcmeTask Renamed",
-                    "module": "acme.module",
+                    "task": "orthos2.taskmanager.tasks.netbox.NetboxFetchBMC",
                     "arguments": "[[], {}]",
                     "priority": 10,
                 }
@@ -167,7 +180,8 @@ class EditSingleTaskTest(SingleTaskCommandTestCase):
         )
         assert response.status_code == status.HTTP_200_OK
         self.singletask.refresh_from_db()
-        assert self.singletask.name == "AcmeTask Renamed"
+        assert self.singletask.name == "NetboxFetchBMC"
+        assert self.singletask.module == "orthos2.taskmanager.tasks.netbox"
 
     def test_superuser_post_nonexistent_id_returns_error(self) -> None:
         self._auth_superuser()

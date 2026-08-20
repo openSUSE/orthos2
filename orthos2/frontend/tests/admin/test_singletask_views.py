@@ -96,23 +96,28 @@ class NewSingleTaskViewTest(TestCase):
         response = self.client.post(
             url,
             {
-                "name": "AcmeTask",
-                "module": "acme.module",
+                "task": "orthos2.taskmanager.tasks.netbox.NetboxFetchMachine",
                 "arguments": "[[], {}]",
                 "priority": 10,
             },
         )
         assert response.status_code == 302
-        assert SingleTask.objects.filter(name="AcmeTask").exists()
+        assert SingleTask.objects.filter(
+            name="NetboxFetchMachine", module="orthos2.taskmanager.tasks.netbox"
+        ).exists()
 
     def test_regular_user_post_does_not_create_singletask(self) -> None:
         self.client.force_login(User.objects.get(username="user"))
         url = reverse("frontend:new_singletask")
         response = self.client.post(
-            url, {"name": "AcmeTask", "module": "acme.module", "arguments": "[[], {}]"}
+            url,
+            {
+                "task": "orthos2.taskmanager.tasks.netbox.NetboxFetchMachine",
+                "arguments": "[[], {}]",
+            },
         )
         assert response.status_code == 403
-        assert not SingleTask.objects.filter(name="AcmeTask").exists()
+        assert not SingleTask.objects.filter(name="NetboxFetchMachine").exists()
 
 
 class SingleTaskDetailedEditViewTest(TestCase):
@@ -147,15 +152,15 @@ class SingleTaskDetailedEditViewTest(TestCase):
         response = self.client.post(
             url,
             {
-                "name": "AcmeTask Renamed",
-                "module": "acme.module",
+                "task": "orthos2.taskmanager.tasks.netbox.NetboxFetchBMC",
                 "arguments": "[[], {}]",
                 "priority": 10,
             },
         )
         assert response.status_code == 302
         self.singletask.refresh_from_db()
-        assert self.singletask.name == "AcmeTask Renamed"
+        assert self.singletask.name == "NetboxFetchBMC"
+        assert self.singletask.module == "orthos2.taskmanager.tasks.netbox"
 
     def test_regular_user_post_does_not_update_singletask(self) -> None:
         self.client.force_login(User.objects.get(username="user"))
@@ -163,8 +168,7 @@ class SingleTaskDetailedEditViewTest(TestCase):
         response = self.client.post(
             url,
             {
-                "name": "AcmeTask Renamed",
-                "module": "acme.module",
+                "task": "orthos2.taskmanager.tasks.netbox.NetboxFetchBMC",
                 "arguments": "[[], {}]",
             },
         )

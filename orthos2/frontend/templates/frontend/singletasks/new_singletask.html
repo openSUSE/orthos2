@@ -19,32 +19,17 @@
       >
         {% csrf_token %}
 
-        {{ form.name.errors }}
+        {{ form.task.errors }}
         <div class="row" style="margin: 5px;">
           <div class="col-3">
-            <label for="{{ form.name.id_for_label }}">
-              {{ form.name.label }}:
+            <label for="{{ form.task.id_for_label }}">
+              {{ form.task.label }}:
             </label>
           </div>
           <div class="col-9">
-            {{ form.name }}
+            {{ form.task }}
             <small class="form-text text-muted">
-              {{ form.name.help_text }}
-            </small>
-          </div>
-        </div>
-
-        {{ form.module.errors }}
-        <div class="row" style="margin: 5px;">
-          <div class="col-3">
-            <label for="{{ form.module.id_for_label }}">
-              {{ form.module.label }}:
-            </label>
-          </div>
-          <div class="col-9">
-            {{ form.module }}
-            <small class="form-text text-muted">
-              {{ form.module.help_text }}
+              {{ form.task.help_text }}
             </small>
           </div>
         </div>
