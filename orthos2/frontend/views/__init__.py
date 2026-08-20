@@ -11,6 +11,13 @@ from .ansible_results import (
     ansible_result_detail,
     machine_ansible_results,
 )
+from .architecture import (
+    ArchitectureDetailedEdit,
+    ArchitectureListView,
+    DeleteArchitecture,
+    NewArchitecture,
+    architecture_detail,
+)
 from .auth import deprecate_current_app, login
 from .compare_netbox import (
     NetboxOrthosComparisionRunListView,
@@ -97,7 +104,28 @@ from .remotepowerdevice import (
     remotepowerdevice_fetch_netbox,
     remotepowerdevice_netboxcomparison,
 )
+from .serialconsoletype import (
+    DeleteSerialConsoleType,
+    NewSerialConsoleType,
+    SerialConsoleTypeDetailedEdit,
+    SerialConsoleTypeListView,
+    serialconsoletype_detail,
+)
+from .serverconfig import (
+    DeleteServerConfig,
+    NewServerConfig,
+    ServerConfigDetailedEdit,
+    ServerConfigListView,
+    serverconfig_detail,
+)
 from .statistics import statistics
+from .system import (
+    DeleteSystem,
+    NewSystem,
+    SystemDetailedEdit,
+    SystemListView,
+    system_detail,
+)
 from .user import users_create, users_password_restore, users_preferences
 from .users import UserListView, user_detail, user_reservations, user_reserve_machine
 
@@ -191,4 +219,24 @@ __all__ = [
     "devicetype_fetch_netbox",
     "devicetype_netboxcomparison",
     "devicetype_compare_netbox",
+    "SerialConsoleTypeListView",
+    "NewSerialConsoleType",
+    "SerialConsoleTypeDetailedEdit",
+    "DeleteSerialConsoleType",
+    "serialconsoletype_detail",
+    "SystemListView",
+    "NewSystem",
+    "SystemDetailedEdit",
+    "DeleteSystem",
+    "system_detail",
+    "ArchitectureListView",
+    "NewArchitecture",
+    "ArchitectureDetailedEdit",
+    "DeleteArchitecture",
+    "architecture_detail",
+    "ServerConfigListView",
+    "NewServerConfig",
+    "ServerConfigDetailedEdit",
+    "DeleteServerConfig",
+    "serverconfig_detail",
 ]

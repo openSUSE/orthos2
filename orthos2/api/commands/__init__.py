@@ -1,6 +1,7 @@
 from orthos2.api.commands.add import (
     AddAnnotationCommandGet,
     AddAnnotationCommandPost,
+    AddArchitectureCommand,
     AddBMCCommandGet,
     AddBMCCommandPost,
     AddCommand,
@@ -12,10 +13,14 @@ from orthos2.api.commands.add import (
     AddRemotePowerDeviceCommand,
     AddSerialConsoleCommandGet,
     AddSerialConsoleCommandPost,
+    AddSerialConsoleTypeCommand,
+    AddServerConfigCommand,
+    AddSystemCommand,
     AddVMCommandGet,
     AddVMCommandPost,
 )
 from orthos2.api.commands.delete import (
+    DeleteArchitectureCommand,
     DeleteCommand,
     DeleteDeviceTypeCommand,
     DeleteMachineCommand,
@@ -24,18 +29,28 @@ from orthos2.api.commands.delete import (
     DeleteRemotePowerCommand,
     DeleteRemotePowerDeviceCommand,
     DeleteSerialConsoleCommand,
+    DeleteSerialConsoleTypeCommand,
+    DeleteServerConfigCommand,
+    DeleteSystemCommand,
 )
 from orthos2.api.commands.edit import (
+    EditArchitectureCommand,
     EditCommand,
     EditDeviceTypeCommand,
     EditManufacturerCommand,
+    EditSerialConsoleTypeCommand,
+    EditServerConfigCommand,
+    EditSystemCommand,
 )
 from orthos2.api.commands.info import (
+    ArchitectureInfoCommand,
     DeviceTypeInfoCommand,
     EnclosureInfoCommand,
     InfoCommand,
     ManufacturerInfoCommand,
     RemotePowerDeviceInfoCommand,
+    SerialConsoleTypeInfoCommand,
+    SystemInfoCommand,
 )
 from orthos2.api.commands.power import PowerCommand
 from orthos2.api.commands.query import QueryCommand
@@ -52,6 +67,9 @@ __all__ = [
     "RemotePowerDeviceInfoCommand",
     "ManufacturerInfoCommand",
     "DeviceTypeInfoCommand",
+    "SerialConsoleTypeInfoCommand",
+    "SystemInfoCommand",
+    "ArchitectureInfoCommand",
     "InfoCommand",
     "QueryCommand",
     "ReserveCommandGet",
@@ -89,4 +107,16 @@ __all__ = [
     "AddDeviceTypeCommand",
     "DeleteDeviceTypeCommand",
     "EditDeviceTypeCommand",
+    "AddSerialConsoleTypeCommand",
+    "DeleteSerialConsoleTypeCommand",
+    "EditSerialConsoleTypeCommand",
+    "AddSystemCommand",
+    "DeleteSystemCommand",
+    "EditSystemCommand",
+    "AddArchitectureCommand",
+    "DeleteArchitectureCommand",
+    "EditArchitectureCommand",
+    "AddServerConfigCommand",
+    "DeleteServerConfigCommand",
+    "EditServerConfigCommand",
 ]

@@ -1,0 +1,58 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="mb-3">
+      <form
+        class="pt-3"
+        method="post"
+        {% if action == 'new' %}
+          action="{% url 'frontend:new_serverconfig' %}"
+        {% elif action == 'edit' %}
+          action="{% url 'frontend:edit_serverconfig' object.id %}"
+        {% endif %}
+      >
+        {% csrf_token %}
+
+        {{ form.key.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.key.id_for_label }}">
+              {{ form.key.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.key }}
+            <small class="form-text text-muted">
+              {{ form.key.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.value.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.value.id_for_label }}">
+              {{ form.value.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.value }}
+            <small class="form-text text-muted">
+              {{ form.value.help_text }}
+            </small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm w-100">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

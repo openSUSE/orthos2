@@ -3,6 +3,7 @@ import logging
 from typing import Any, Dict, List, Union
 
 from django.contrib.auth.models import AnonymousUser
+from django.core.exceptions import ValidationError
 from django.http import (
     HttpResponsePermanentRedirect,
     HttpResponseRedirect,
@@ -14,12 +15,16 @@ from rest_framework.request import Request
 
 from orthos2.api.commands.base import BaseAPIView
 from orthos2.api.forms import (
+    DeleteArchitectureAPIForm,
     DeleteDeviceTypeAPIForm,
     DeleteMachineAPIForm,
     DeleteManufacturerAPIForm,
     DeleteRemotePowerAPIForm,
     DeleteRemotePowerDeviceAPIForm,
     DeleteSerialConsoleAPIForm,
+    DeleteSerialConsoleTypeAPIForm,
+    DeleteServerConfigAPIForm,
+    DeleteSystemAPIForm,
 )
 from orthos2.api.serializers.misc import (
     AuthRequiredSerializer,
@@ -27,11 +32,15 @@ from orthos2.api.serializers.misc import (
     InputSerializer,
 )
 from orthos2.data.models import (
+    Architecture,
     DeviceType,
     Machine,
     Manufacturer,
     NetworkInterface,
     RemotePowerDevice,
+    SerialConsoleType,
+    ServerConfig,
+    System,
 )
 from orthos2.utils.misc import format_cli_form_errors
 
@@ -45,6 +54,10 @@ class Delete:
     REMOTEPOWERDEVICE = "remotepowerdevice"
     MANUFACTURER = "manufacturer"
     DEVICETYPE = "devicetype"
+    SERIALCONSOLETYPE = "serialconsoletype"
+    SYSTEM = "system"
+    ARCHITECTURE = "architecture"
+    SERVERCONFIG = "serverconfig"
 
     as_list = [
         MACHINE,
@@ -53,6 +66,10 @@ class Delete:
         REMOTEPOWERDEVICE,
         MANUFACTURER,
         DEVICETYPE,
+        SERIALCONSOLETYPE,
+        SYSTEM,
+        ARCHITECTURE,
+        SERVERCONFIG,
     ]
 
 
@@ -79,6 +96,11 @@ Arguments:
              remotepowerdevice  : Delete a remotepower device (superusers only).
              manufacturer       : Delete a manufacturer (superusers only).
              devicetype         : Delete a device type (superusers only).
+             serialconsoletype  : Delete a serial console type (superusers only).
+             system             : Delete a system (superusers only).
+             architecture       : Delete an architecture (superusers only).
+             serverconfig       : Delete a server configuration entry
+                                    (superusers only).
 
 Example:
     DELETE machine
@@ -154,6 +176,36 @@ Example:
                 ).as_json
 
             return redirect(reverse("api:devicetype_delete"))
+
+        elif item == Delete.SERIALCONSOLETYPE:
+            if sub_arguments:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'serialconsoletype'!"
+                ).as_json
+
+            return redirect(reverse("api:serialconsoletype_delete"))
+
+        elif item == Delete.SYSTEM:
+            if sub_arguments:
+                return ErrorMessage("Invalid number of arguments for 'system'!").as_json
+
+            return redirect(reverse("api:system_delete"))
+
+        elif item == Delete.ARCHITECTURE:
+            if sub_arguments:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'architecture'!"
+                ).as_json
+
+            return redirect(reverse("api:architecture_delete"))
+
+        elif item == Delete.SERVERCONFIG:
+            if sub_arguments:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'serverconfig'!"
+                ).as_json
+
+            return redirect(reverse("api:serverconfig_delete"))
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -646,6 +698,328 @@ class DeleteDeviceTypeCommand(BaseAPIView):
                 device_type = DeviceType.objects.get(name__iexact=cleaned_data["name"])
 
                 result = device_type.delete()
+
+                theader = [
+                    {"objects": "Deleted objects"},
+                    {"count": "#"},
+                ]
+
+                response: Dict[str, Any] = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": [],
+                }
+                for key, value in result[1].items():
+                    response["data"].append(  # type: ignore
+                        {"objects": key.replace("data.", ""), "count": value}
+                    )
+                return JsonResponse(response)
+
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
+
+
+class DeleteSerialConsoleTypeCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/serialconsoletype/delete"
+    URL_POST = "/serialconsoletype/delete"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Deletes a serial console type from the database."
+    HELP = """Deletes a serial console type from the database (superusers only).
+
+    Usage:
+        DELETE serialconsoletype <name>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^serialconsoletype/delete",
+                DeleteSerialConsoleTypeCommand.as_view(),
+                name="serialconsoletype_delete",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for deleting a serial console type."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = DeleteSerialConsoleTypeAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Delete serial console type."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = DeleteSerialConsoleTypeAPIForm(data)
+
+        if form.is_valid():
+            try:
+                cleaned_data = form.cleaned_data
+
+                serialconsoletype = SerialConsoleType.objects.get(
+                    name__iexact=cleaned_data["name"]
+                )
+
+                result = serialconsoletype.delete()
+
+                theader = [
+                    {"objects": "Deleted objects"},
+                    {"count": "#"},
+                ]
+
+                response: Dict[str, Any] = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": [],
+                }
+                for key, value in result[1].items():
+                    response["data"].append(  # type: ignore
+                        {"objects": key.replace("data.", ""), "count": value}
+                    )
+                return JsonResponse(response)
+
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
+
+
+class DeleteSystemCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/system/delete"
+    URL_POST = "/system/delete"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Deletes a system from the database."
+    HELP = """Deletes a system from the database (superusers only).
+
+    Usage:
+        DELETE system <name>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^system/delete",
+                DeleteSystemCommand.as_view(),
+                name="system_delete",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for deleting a system."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = DeleteSystemAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Delete system."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = DeleteSystemAPIForm(data)
+
+        if form.is_valid():
+            try:
+                cleaned_data = form.cleaned_data
+
+                system = System.objects.get(name__iexact=cleaned_data["name"])
+
+                result = system.delete()
+
+                theader = [
+                    {"objects": "Deleted objects"},
+                    {"count": "#"},
+                ]
+
+                response: Dict[str, Any] = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": [],
+                }
+                for key, value in result[1].items():
+                    response["data"].append(  # type: ignore
+                        {"objects": key.replace("data.", ""), "count": value}
+                    )
+                return JsonResponse(response)
+
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
+
+
+class DeleteArchitectureCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/architecture/delete"
+    URL_POST = "/architecture/delete"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Deletes an architecture from the database."
+    HELP = """Deletes an architecture from the database (superusers only).
+
+    Usage:
+        DELETE architecture <name>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^architecture/delete",
+                DeleteArchitectureCommand.as_view(),
+                name="architecture_delete",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for deleting an architecture."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = DeleteArchitectureAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Delete architecture."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = DeleteArchitectureAPIForm(data)
+
+        if form.is_valid():
+            try:
+                cleaned_data = form.cleaned_data
+
+                architecture = Architecture.objects.get(
+                    name__iexact=cleaned_data["name"]
+                )
+
+                result = architecture.delete()
+
+                theader = [
+                    {"objects": "Deleted objects"},
+                    {"count": "#"},
+                ]
+
+                response: Dict[str, Any] = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": [],
+                }
+                for key, value in result[1].items():
+                    response["data"].append(  # type: ignore
+                        {"objects": key.replace("data.", ""), "count": value}
+                    )
+                return JsonResponse(response)
+
+            except ValidationError as e:
+                return ErrorMessage(str(e.message)).as_json
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json
+
+
+class DeleteServerConfigCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/serverconfig/delete"
+    URL_POST = "/serverconfig/delete"
+    ARGUMENTS = (["key"],)
+
+    HELP_SHORT = "Deletes a server configuration entry from the database."
+    HELP = """Deletes a server configuration entry from the database (superusers only).
+
+    Usage:
+        DELETE serverconfig <key>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^serverconfig/delete",
+                DeleteServerConfigCommand.as_view(),
+                name="serverconfig_delete",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for deleting a server configuration entry."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = DeleteServerConfigAPIForm()
+
+        input = InputSerializer(form.as_dict(), self.URL_POST, form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Delete server configuration entry."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = DeleteServerConfigAPIForm(data)
+
+        if form.is_valid():
+            try:
+                cleaned_data = form.cleaned_data
+
+                serverconfig = ServerConfig.objects.get(key__iexact=cleaned_data["key"])
+
+                result = serverconfig.delete()
 
                 theader = [
                     {"objects": "Deleted objects"},

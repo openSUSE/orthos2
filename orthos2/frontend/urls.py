@@ -357,4 +357,84 @@ urlpatterns = [
         views.DeleteDeviceType.as_view(),
         name="delete_devicetype",
     ),
+    # Serial Console Types
+    path(
+        "serialconsoletypes",
+        views.SerialConsoleTypeListView.as_view(),
+        name="serialconsoletypes",
+    ),
+    re_path(
+        r"^serialconsoletype/(?P<id>[0-9]+)/detail$",
+        views.serialconsoletype_detail,
+        name="serialconsoletype_detail",
+    ),
+    path(
+        "serialconsoletypes/new",
+        views.NewSerialConsoleType.as_view(),
+        name="new_serialconsoletype",
+    ),
+    path(
+        "serialconsoletypes/edit/<int:pk>/",
+        views.SerialConsoleTypeDetailedEdit.as_view(),
+        name="edit_serialconsoletype",
+    ),
+    path(
+        "serialconsoletypes/delete/<int:pk>/",
+        views.DeleteSerialConsoleType.as_view(),
+        name="delete_serialconsoletype",
+    ),
+    # Systems
+    path("systems", views.SystemListView.as_view(), name="systems"),
+    re_path(
+        r"^system/(?P<id>[0-9]+)/detail$",
+        views.system_detail,
+        name="system_detail",
+    ),
+    path("systems/new", views.NewSystem.as_view(), name="new_system"),
+    path(
+        "systems/edit/<int:pk>/",
+        views.SystemDetailedEdit.as_view(),
+        name="edit_system",
+    ),
+    path(
+        "systems/delete/<int:pk>/",
+        views.DeleteSystem.as_view(),
+        name="delete_system",
+    ),
+    # Architectures
+    path("architectures", views.ArchitectureListView.as_view(), name="architectures"),
+    re_path(
+        r"^architecture/(?P<id>[0-9]+)/detail$",
+        views.architecture_detail,
+        name="architecture_detail",
+    ),
+    path("architectures/new", views.NewArchitecture.as_view(), name="new_architecture"),
+    path(
+        "architectures/edit/<int:pk>/",
+        views.ArchitectureDetailedEdit.as_view(),
+        name="edit_architecture",
+    ),
+    path(
+        "architectures/delete/<int:pk>/",
+        views.DeleteArchitecture.as_view(),
+        name="delete_architecture",
+    ),
+    # Server Configuration
+    path("serverconfigs", views.ServerConfigListView.as_view(), name="serverconfigs"),
+    re_path(
+        r"^serverconfig/(?P<id>[0-9]+)/detail$",
+        views.serverconfig_detail,
+        name="serverconfig_detail",
+    ),
+    path("serverconfigs/new", views.NewServerConfig.as_view(), name="new_serverconfig"),
+    path(
+        "serverconfigs/edit/<int:pk>/",
+        views.ServerConfigDetailedEdit.as_view(),
+        name="edit_serverconfig",
+    ),
+    path(
+        "serverconfigs/delete/<int:pk>/",
+        views.DeleteServerConfig.as_view(),
+        name="delete_serverconfig",
+    ),
 ]

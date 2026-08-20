@@ -1,0 +1,41 @@
+{% extends 'frontend/systems/system.html' %}
+
+{% block tabcontent %}
+  <div class="row">
+    <div class="col-10">
+      <div class="container-fluid">
+        <div class="title">
+          <h5>{{ system.name }}</h5>
+        </div>
+
+        <table class="table table-striped table-bordered small">
+          <tbody class="thead-default">
+            <tr>
+              <td class="th fw-bold" width="150px">Name</td>
+              <td>{{ system.name }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Virtual</td>
+              <td>{{ system.virtual }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Allow BMC</td>
+              <td>{{ system.allowBMC }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Allow Hypervisor</td>
+              <td>{{ system.allowHypervisor }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Administrative</td>
+              <td>{{ system.administrative }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-2">
+      {% include 'frontend/systems/detail/actions.html' %}
+    </div>
+  </div>
+{% endblock %}

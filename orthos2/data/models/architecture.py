@@ -1,8 +1,9 @@
 from copy import deepcopy
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Optional, Tuple, cast
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, cast
 
 from django.contrib import admin
+from django.core.exceptions import ValidationError
 from django.db import models
 
 if TYPE_CHECKING:
@@ -83,6 +84,11 @@ class Architecture(models.Model):
 
                 # FIXME: domain_id cannot be None
                 signal_cobbler_sync_dhcp.send(sender=self.__class__, domain_id=None)  # type: ignore
+
+    def delete(self, *args: Any, **kwargs: Any) -> Tuple[int, Dict[str, int]]:
+        if self.machine_set.count() > 0:
+            raise ValidationError("Architecture contains machines.")
+        return super(Architecture, self).delete(*args, **kwargs)
 
     @admin.display(description="Machines")
     def get_machine_count(self) -> int:

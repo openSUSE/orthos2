@@ -1,0 +1,88 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="mb-3">
+      <form
+        class="pt-3"
+        method="post"
+        {% if action == 'new' %}
+          action="{% url 'frontend:new_serialconsoletype' %}"
+        {% elif action == 'edit' %}
+          action="{% url 'frontend:edit_serialconsoletype' object.id %}"
+        {% endif %}
+      >
+        {% csrf_token %}
+
+        {{ form.name.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.name.id_for_label }}">
+              {{ form.name.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.name }}
+            <small class="form-text text-muted">
+              {{ form.name.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.command.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.command.id_for_label }}">
+              {{ form.command.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.command }}
+            <small class="form-text text-muted">
+              {{ form.command.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.comment.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.comment.id_for_label }}">
+              {{ form.comment.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.comment }}
+            <small class="form-text text-muted">
+              {{ form.comment.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.has_ipmi_sol.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.has_ipmi_sol.id_for_label }}">
+              {{ form.has_ipmi_sol.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.has_ipmi_sol }}
+            <small class="form-text text-muted">
+              {{ form.has_ipmi_sol.help_text }}
+            </small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm w-100">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

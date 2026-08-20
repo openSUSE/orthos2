@@ -1,0 +1,54 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+{% load tags %}
+
+{% block navbar %}
+{% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+
+{% include 'frontend/serverconfigs/serverconfigs_filterbar.html' %}
+{% include 'frontend/snippet.paginator.html' %}
+
+<div class="container-fluid">
+  {% if page_obj %}
+    <table class="table table-striped table-bordered table-fixed">
+      <thead class="thead-default">
+        <tr style="border: 1px solid #ddd;">
+          <th>Key {% order_list request 'key' %}</th>
+          <th>Value</th>
+          <th width="80px">&nbsp;</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for serverconfig in page_obj %}
+          <tr>
+            <td>
+              <a
+                href="{% url 'frontend:serverconfig_detail' serverconfig.pk %}"
+                class="text-muted"
+                >{{ serverconfig.key }}</a
+              >
+            </td>
+            <td>{{ serverconfig.value }}</td>
+            <td>
+              <a
+                href="{% url 'frontend:delete_serverconfig' serverconfig.pk %}"
+                class="btn btn-danger btn-sm"
+              >
+                Delete
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% include 'frontend/snippet.paginator.html' %}
+  {% else %}
+    <div class="alert alert-info">No server configuration entries found!</div>
+  {% endif %}
+</div>
+{% endblock %}

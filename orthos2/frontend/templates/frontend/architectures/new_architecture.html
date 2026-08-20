@@ -1,0 +1,88 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="mb-3">
+      <form
+        class="pt-3"
+        method="post"
+        {% if action == 'new' %}
+          action="{% url 'frontend:new_architecture' %}"
+        {% elif action == 'edit' %}
+          action="{% url 'frontend:edit_architecture' object.id %}"
+        {% endif %}
+      >
+        {% csrf_token %}
+
+        {{ form.name.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.name.id_for_label }}">
+              {{ form.name.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.name }}
+            <small class="form-text text-muted">
+              {{ form.name.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.dhcp_filename.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.dhcp_filename.id_for_label }}">
+              {{ form.dhcp_filename.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.dhcp_filename }}
+            <small class="form-text text-muted">
+              {{ form.dhcp_filename.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.contact_email.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.contact_email.id_for_label }}">
+              {{ form.contact_email.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.contact_email }}
+            <small class="form-text text-muted">
+              {{ form.contact_email.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.default_profile.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.default_profile.id_for_label }}">
+              {{ form.default_profile.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.default_profile }}
+            <small class="form-text text-muted">
+              {{ form.default_profile.help_text }}
+            </small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm w-100">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

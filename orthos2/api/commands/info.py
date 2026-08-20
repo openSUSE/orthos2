@@ -12,6 +12,7 @@ from orthos2.api.commands.base import (
     get_remotepowerdevice,
     getException,
 )
+from orthos2.api.serializers.architecture import ArchitectureSerializer
 from orthos2.api.serializers.devicetype import DeviceTypeSerializer
 from orthos2.api.serializers.enclosure import EnclosureSerializer
 from orthos2.api.serializers.machine import MachineSerializer
@@ -22,7 +23,17 @@ from orthos2.api.serializers.misc import (
     Serializer,
 )
 from orthos2.api.serializers.remotepowerdevice import RemotePowerDeviceSerializer
-from orthos2.data.models import DeviceType, Machine, Manufacturer, RemotePowerDevice
+from orthos2.api.serializers.serialconsoletype import SerialConsoleTypeSerializer
+from orthos2.api.serializers.system import SystemSerializer
+from orthos2.data.models import (
+    Architecture,
+    DeviceType,
+    Machine,
+    Manufacturer,
+    RemotePowerDevice,
+    SerialConsoleType,
+    System,
+)
 from orthos2.data.models.enclosure import Enclosure
 
 
@@ -403,6 +414,243 @@ Example:
                 }
         except DeviceType.DoesNotExist:
             return ErrorMessage("Device Type '{}' does not exist!".format(name)).as_json
+        except Exception:
+            return ErrorMessage(getException()).as_json
+
+        return JsonResponse(response)
+
+
+class SerialConsoleTypeInfoCommand(BaseAPIView):
+
+    METHOD = "GET"
+    URL = "/serialconsoletype"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Retrieve information about a serial console type."
+    HELP = """Command to get information about a serial console type.
+
+Usage:
+    INFO serialconsoletype <name>
+
+Arguments:
+    name - Name of the serial console type. If omitted, all serial console
+           types are listed.
+
+Example:
+    INFO serialconsoletype Telnet
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^serialconsoletype$",
+                SerialConsoleTypeInfoCommand.as_view(),
+                name="serialconsoletype",
+            ),
+        ]
+
+    @staticmethod
+    def get_tabcompletion() -> List[str]:
+        return list(SerialConsoleType.objects.all().values_list("name", flat=True))
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return serial console type information."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        name = request.GET.get("name", "")
+
+        try:
+            if name:
+                serialconsoletype = SerialConsoleType.objects.get(name__iexact=name)
+                serialized_serialconsoletype = SerialConsoleTypeSerializer(
+                    serialconsoletype
+                )
+                response = {
+                    "header": {
+                        "type": "INFO",
+                        "order": ["id", "name", "command", "comment", "has_ipmi_sol"],
+                    },
+                    "data": serialized_serialconsoletype.data_info,
+                }
+            else:
+                serialconsoletypes = SerialConsoleType.objects.all()
+                serialized_serialconsoletypes = SerialConsoleTypeSerializer(
+                    serialconsoletypes, many=True
+                )
+                theader = [{"id": "ID"}, {"name": "Name"}, {"command": "Command"}]
+                response = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": serialized_serialconsoletypes.data,
+                }
+        except SerialConsoleType.DoesNotExist:
+            return ErrorMessage(
+                "Serial console type '{}' does not exist!".format(name)
+            ).as_json
+        except Exception:
+            return ErrorMessage(getException()).as_json
+
+        return JsonResponse(response)
+
+
+class SystemInfoCommand(BaseAPIView):
+
+    METHOD = "GET"
+    URL = "/system"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Retrieve information about a system."
+    HELP = """Command to get information about a system.
+
+Usage:
+    INFO system <name>
+
+Arguments:
+    name - Name of the system. If omitted, all systems are listed.
+
+Example:
+    INFO system BareMetal
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(r"^system$", SystemInfoCommand.as_view(), name="system"),
+        ]
+
+    @staticmethod
+    def get_tabcompletion() -> List[str]:
+        return list(System.objects.all().values_list("name", flat=True))
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return system information."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        name = request.GET.get("name", "")
+
+        try:
+            if name:
+                system = System.objects.get(name__iexact=name)
+                serialized_system = SystemSerializer(system)
+                response = {
+                    "header": {
+                        "type": "INFO",
+                        "order": [
+                            "id",
+                            "name",
+                            "virtual",
+                            "allowBMC",
+                            "allowHypervisor",
+                            "administrative",
+                        ],
+                    },
+                    "data": serialized_system.data_info,
+                }
+            else:
+                systems = System.objects.all()
+                serialized_systems = SystemSerializer(systems, many=True)
+                theader = [{"id": "ID"}, {"name": "Name"}, {"virtual": "Virtual"}]
+                response = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": serialized_systems.data,
+                }
+        except System.DoesNotExist:
+            return ErrorMessage("System '{}' does not exist!".format(name)).as_json
+        except Exception:
+            return ErrorMessage(getException()).as_json
+
+        return JsonResponse(response)
+
+
+class ArchitectureInfoCommand(BaseAPIView):
+
+    METHOD = "GET"
+    URL = "/architecture"
+    ARGUMENTS = (["name"],)
+
+    HELP_SHORT = "Retrieve information about an architecture."
+    HELP = """Command to get information about an architecture.
+
+Usage:
+    INFO architecture <name>
+
+Arguments:
+    name - Name of the architecture. If omitted, all architectures are
+           listed.
+
+Example:
+    INFO architecture x86_64
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^architecture$",
+                ArchitectureInfoCommand.as_view(),
+                name="architecture",
+            ),
+        ]
+
+    @staticmethod
+    def get_tabcompletion() -> List[str]:
+        return list(Architecture.objects.all().values_list("name", flat=True))
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return architecture information."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        name = request.GET.get("name", "")
+
+        try:
+            if name:
+                architecture = Architecture.objects.get(name__iexact=name)
+                serialized_architecture = ArchitectureSerializer(architecture)
+                response = {
+                    "header": {
+                        "type": "INFO",
+                        "order": [
+                            "id",
+                            "name",
+                            "dhcp_filename",
+                            "contact_email",
+                            "default_profile",
+                        ],
+                    },
+                    "data": serialized_architecture.data_info,
+                }
+            else:
+                architectures = Architecture.objects.all()
+                serialized_architectures = ArchitectureSerializer(
+                    architectures, many=True
+                )
+                theader = [{"id": "ID"}, {"name": "Name"}]
+                response = {
+                    "header": {"type": "TABLE", "theader": theader},
+                    "data": serialized_architectures.data,
+                }
+        except Architecture.DoesNotExist:
+            return ErrorMessage(
+                "Architecture '{}' does not exist!".format(name)
+            ).as_json
         except Exception:
             return ErrorMessage(getException()).as_json
 

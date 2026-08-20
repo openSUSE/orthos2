@@ -27,6 +27,7 @@ from orthos2.data.models import (
     RemotePowerType,
     SerialConsole,
     SerialConsoleType,
+    ServerConfig,
     System,
 )
 from orthos2.data.models.domain import validate_domain_ending
@@ -681,4 +682,124 @@ class DeleteDeviceTypeAPIForm(forms.Form, BaseAPIForm):
         """Return input order."""
         return [
             "name",
+        ]
+
+
+class SerialConsoleTypeAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = SerialConsoleType
+        fields = ["name", "command", "comment", "has_ipmi_sol"]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return ["name", "command", "comment", "has_ipmi_sol"]
+
+
+class DeleteSerialConsoleTypeAPIForm(forms.Form, BaseAPIForm):
+    def clean_name(self) -> str:
+        """Check whether a serial console type with `name` exists."""
+        name = self.cleaned_data["name"]
+        if SerialConsoleType.objects.filter(name__iexact=name).count() == 0:
+            self.add_error("name", "No serial console type with this name")
+        return name
+
+    name = forms.CharField(
+        label="Name",
+        max_length=100,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "name",
+        ]
+
+
+class SystemAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = System
+        fields = ["name", "virtual", "allowBMC", "allowHypervisor", "administrative"]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return ["name", "virtual", "allowBMC", "allowHypervisor", "administrative"]
+
+
+class DeleteSystemAPIForm(forms.Form, BaseAPIForm):
+    def clean_name(self) -> str:
+        """Check whether a system with `name` exists."""
+        name = self.cleaned_data["name"]
+        if System.objects.filter(name__iexact=name).count() == 0:
+            self.add_error("name", "No system with this name")
+        return name
+
+    name = forms.CharField(
+        label="Name",
+        max_length=200,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "name",
+        ]
+
+
+class ArchitectureAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = Architecture
+        fields = ["name", "dhcp_filename", "contact_email", "default_profile"]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return ["name", "dhcp_filename", "contact_email", "default_profile"]
+
+
+class DeleteArchitectureAPIForm(forms.Form, BaseAPIForm):
+    def clean_name(self) -> str:
+        """Check whether an architecture with `name` exists."""
+        name = self.cleaned_data["name"]
+        if Architecture.objects.filter(name__iexact=name).count() == 0:
+            self.add_error("name", "No architecture with this name")
+        return name
+
+    name = forms.CharField(
+        label="Name",
+        max_length=200,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "name",
+        ]
+
+
+class ServerConfigAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = ServerConfig
+        fields = ["key", "value"]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return ["key", "value"]
+
+
+class DeleteServerConfigAPIForm(forms.Form, BaseAPIForm):
+    def clean_key(self) -> str:
+        """Check whether a server configuration entry with `key` exists."""
+        key = self.cleaned_data["key"]
+        if ServerConfig.objects.filter(key__iexact=key).count() == 0:
+            self.add_error("key", "No server configuration entry with this key")
+        return key
+
+    key = forms.CharField(
+        label="Key",
+        max_length=100,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "key",
         ]

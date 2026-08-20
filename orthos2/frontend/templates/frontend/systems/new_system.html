@@ -1,0 +1,103 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="mb-3">
+      <form
+        class="pt-3"
+        method="post"
+        {% if action == 'new' %}
+          action="{% url 'frontend:new_system' %}"
+        {% elif action == 'edit' %}
+          action="{% url 'frontend:edit_system' object.id %}"
+        {% endif %}
+      >
+        {% csrf_token %}
+
+        {{ form.name.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.name.id_for_label }}">
+              {{ form.name.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.name }}
+            <small class="form-text text-muted">
+              {{ form.name.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.virtual.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.virtual.id_for_label }}">
+              {{ form.virtual.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.virtual }}
+            <small class="form-text text-muted">
+              {{ form.virtual.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.allowBMC.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.allowBMC.id_for_label }}">
+              {{ form.allowBMC.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.allowBMC }}
+            <small class="form-text text-muted">
+              {{ form.allowBMC.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.allowHypervisor.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.allowHypervisor.id_for_label }}">
+              {{ form.allowHypervisor.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.allowHypervisor }}
+            <small class="form-text text-muted">
+              {{ form.allowHypervisor.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.administrative.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.administrative.id_for_label }}">
+              {{ form.administrative.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.administrative }}
+            <small class="form-text text-muted">
+              {{ form.administrative.help_text }}
+            </small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm w-100">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
