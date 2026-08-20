@@ -1,3 +1,4 @@
+from .ansible import Ansible
 from .cobbler import (
     RegenerateCobbler,
     SyncCobblerDHCP,
@@ -8,6 +9,7 @@ from .daily import (
     DailyCheckForPrimaryNetwork,
     DailyCheckReservationExpirations,
     DailyMachineChecks,
+    DailyNetboxFetch,
 )
 from .machinetasks import MachineCheck, RegenerateMOTD
 from .netbox import (
@@ -41,12 +43,14 @@ from .setup import SetupMachine
 from .sol import DeactivateSerialOverLan
 
 __all__ = [
+    "Ansible",
     "CheckForPrimaryNetwork",
     "CheckMultipleAccounts",
     "CheckReservationExpiration",
     "DailyCheckForPrimaryNetwork",
     "DailyCheckReservationExpirations",
     "DailyMachineChecks",
+    "DailyNetboxFetch",
     "DeactivateSerialOverLan",
     "MachineCheck",
     "NetboxCleanupComparisionResults",
