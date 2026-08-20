@@ -1,0 +1,73 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="mb-3">
+      <form
+        class="pt-3"
+        method="post"
+        {% if action == 'new' %}
+          action="{% url 'frontend:new_singletask' %}"
+        {% elif action == 'edit' %}
+          action="{% url 'frontend:edit_singletask' object.id %}"
+        {% endif %}
+      >
+        {% csrf_token %}
+
+        {{ form.task.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.task.id_for_label }}">
+              {{ form.task.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.task }}
+            <small class="form-text text-muted">
+              {{ form.task.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.arguments.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.arguments.id_for_label }}">
+              {{ form.arguments.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.arguments }}
+            <small class="form-text text-muted">
+              {{ form.arguments.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.priority.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.priority.id_for_label }}">
+              {{ form.priority.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.priority }}
+            <small class="form-text text-muted">
+              {{ form.priority.help_text }}
+            </small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm w-100">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

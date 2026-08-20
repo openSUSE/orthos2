@@ -23,6 +23,15 @@ from .compare_netbox import (
     NetboxOrthosComparisionRunListView,
     netboxorthoscomparisonrun,
 )
+from .dailytask import (
+    DailyTaskDetailedEdit,
+    DailyTaskListView,
+    DeleteDailyTask,
+    NewDailyTask,
+    dailytask_detail,
+    dailytask_execute,
+    dailytask_switch,
+)
 from .devicetype import (
     DeleteDeviceType,
     DeviceTypeDetailedEdit,
@@ -117,6 +126,13 @@ from .serverconfig import (
     ServerConfigDetailedEdit,
     ServerConfigListView,
     serverconfig_detail,
+)
+from .singletask import (
+    DeleteSingleTask,
+    NewSingleTask,
+    SingleTaskDetailedEdit,
+    SingleTaskListView,
+    singletask_detail,
 )
 from .statistics import statistics
 from .system import (
@@ -229,6 +245,18 @@ __all__ = [
     "SystemDetailedEdit",
     "DeleteSystem",
     "system_detail",
+    "SingleTaskListView",
+    "NewSingleTask",
+    "SingleTaskDetailedEdit",
+    "DeleteSingleTask",
+    "singletask_detail",
+    "DailyTaskListView",
+    "NewDailyTask",
+    "DailyTaskDetailedEdit",
+    "DeleteDailyTask",
+    "dailytask_detail",
+    "dailytask_execute",
+    "dailytask_switch",
     "ArchitectureListView",
     "NewArchitecture",
     "ArchitectureDetailedEdit",

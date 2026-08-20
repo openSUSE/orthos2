@@ -401,6 +401,52 @@ urlpatterns = [
         views.DeleteSystem.as_view(),
         name="delete_system",
     ),
+    # Single Tasks
+    path("singletasks", views.SingleTaskListView.as_view(), name="singletasks"),
+    re_path(
+        r"^singletask/(?P<id>[0-9]+)/detail$",
+        views.singletask_detail,
+        name="singletask_detail",
+    ),
+    path("singletasks/new", views.NewSingleTask.as_view(), name="new_singletask"),
+    path(
+        "singletasks/edit/<int:pk>/",
+        views.SingleTaskDetailedEdit.as_view(),
+        name="edit_singletask",
+    ),
+    path(
+        "singletasks/delete/<int:pk>/",
+        views.DeleteSingleTask.as_view(),
+        name="delete_singletask",
+    ),
+    # Daily Tasks
+    path("dailytasks", views.DailyTaskListView.as_view(), name="dailytasks"),
+    re_path(
+        r"^dailytask/(?P<id>[0-9]+)/detail$",
+        views.dailytask_detail,
+        name="dailytask_detail",
+    ),
+    path("dailytasks/new", views.NewDailyTask.as_view(), name="new_dailytask"),
+    path(
+        "dailytasks/edit/<int:pk>/",
+        views.DailyTaskDetailedEdit.as_view(),
+        name="edit_dailytask",
+    ),
+    path(
+        "dailytasks/delete/<int:pk>/",
+        views.DeleteDailyTask.as_view(),
+        name="delete_dailytask",
+    ),
+    path(
+        "dailytask/<int:id>/execute/",
+        views.dailytask_execute,
+        name="dailytask_execute",
+    ),
+    path(
+        "dailytask/<int:id>/switch/",
+        views.dailytask_switch,
+        name="dailytask_switch",
+    ),
     # Architectures
     path("architectures", views.ArchitectureListView.as_view(), name="architectures"),
     re_path(

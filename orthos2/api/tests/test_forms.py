@@ -6,7 +6,9 @@ from orthos2.api.forms import (
     AnnotationAPIForm,
     ArchitectureAPIForm,
     BMCAPIForm,
+    DailyTaskAPIForm,
     DeleteArchitectureAPIForm,
+    DeleteDailyTaskAPIForm,
     DeleteDeviceTypeAPIForm,
     DeleteMachineAPIForm,
     DeleteManufacturerAPIForm,
@@ -14,6 +16,7 @@ from orthos2.api.forms import (
     DeleteRemotePowerDeviceAPIForm,
     DeleteSerialConsoleTypeAPIForm,
     DeleteServerConfigAPIForm,
+    DeleteSingleTaskAPIForm,
     DeleteSystemAPIForm,
     DeviceTypeAPIForm,
     MachineAPIForm,
@@ -24,6 +27,7 @@ from orthos2.api.forms import (
     SerialConsoleAPIForm,
     SerialConsoleTypeAPIForm,
     ServerConfigAPIForm,
+    SingleTaskAPIForm,
     SystemAPIForm,
     VirtualMachineAPIForm,
 )
@@ -37,6 +41,7 @@ from orthos2.data.models import (
 )
 from orthos2.data.models.machine import Machine
 from orthos2.data.models.remotepowertype import RemotePowerType
+from orthos2.taskmanager.models import DailyTask, SingleTask
 
 
 class ReserveMachineAPIFormTests(TestCase):
@@ -490,6 +495,153 @@ class DeleteServerConfigAPIFormTests(TestCase):
         """Test that the server configuration deletion API form rejects an unknown key"""
         # Arrange & Act
         form = DeleteServerConfigAPIForm({"key": "nonexistent.key"})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class SingleTaskAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the single task creation API form"""
+        # Arrange & Act
+        form = SingleTaskAPIForm(
+            {
+                # orthos2.taskmanager.tasks.netbox.NetboxFetchMachine
+                "task": "orthos2.taskmanager.tasks.netbox.NetboxFetchMachine",
+                "arguments": "[[], {}]",
+                "priority": 10,
+            }
+        )
+
+        # Assert
+        self.assertTrue(form.is_valid())
+        singletask = form.save()
+        self.assertEqual(singletask.module, "orthos2.taskmanager.tasks.netbox")
+        self.assertEqual(singletask.name, "NetboxFetchMachine")
+
+    def test_form_requires_task(self) -> None:
+        """Test that the single task creation API form requires a task"""
+        # Arrange & Act
+        form = SingleTaskAPIForm({"task": ""})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+    def test_form_rejects_unknown_task(self) -> None:
+        """Test that the single task creation API form rejects an unknown task"""
+        # Arrange & Act
+        form = SingleTaskAPIForm(
+            {
+                "task": "not.a.real.Task",
+                "arguments": "[[], {}]",
+                "priority": 10,
+            }
+        )
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DeleteSingleTaskAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the single task deletion API form"""
+        # Arrange
+        singletask = SingleTask.objects.create(
+            name="AcmeTask", module="acme.module", arguments="[[], {}]"
+        )
+
+        # Act
+        form = DeleteSingleTaskAPIForm({"id": singletask.pk})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_rejects_nonexistent_singletask(self) -> None:
+        """Test that the single task deletion API form rejects an unknown id"""
+        # Arrange & Act
+        form = DeleteSingleTaskAPIForm({"id": 99999})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DailyTaskAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the daily task creation API form"""
+        # Arrange & Act
+        form = DailyTaskAPIForm(
+            {
+                # orthos2.taskmanager.tasks.daily.DailyCheckForPrimaryNetwork
+                "task": "orthos2.taskmanager.tasks.daily.DailyCheckForPrimaryNetwork",
+                "arguments": "[[], {}]",
+                "priority": 10,
+                "enabled": True,
+            }
+        )
+
+        # Assert
+        self.assertTrue(form.is_valid())
+        dailytask = form.save()
+        self.assertEqual(dailytask.module, "orthos2.taskmanager.tasks.daily")
+        self.assertEqual(dailytask.name, "DailyCheckForPrimaryNetwork")
+
+    def test_form_requires_task(self) -> None:
+        """Test that the daily task creation API form requires a task"""
+        # Arrange & Act
+        form = DailyTaskAPIForm({"task": "", "priority": 10})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+    def test_form_rejects_unknown_task(self) -> None:
+        """Test that the daily task creation API form rejects an unknown task"""
+        # Arrange & Act
+        form = DailyTaskAPIForm(
+            {
+                "task": "not.a.real.Task",
+                "arguments": "[[], {}]",
+                "priority": 10,
+                "enabled": True,
+            }
+        )
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+    def test_form_rejects_non_daily_task(self) -> None:
+        """Test that the daily task creation API form rejects a one-off-only task"""
+        # Arrange & Act
+        form = DailyTaskAPIForm(
+            {
+                "task": "orthos2.taskmanager.tasks.netbox.NetboxFetchMachine",
+                "arguments": "[[], {}]",
+                "priority": 10,
+                "enabled": True,
+            }
+        )
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DeleteDailyTaskAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the daily task deletion API form"""
+        # Arrange
+        dailytask = DailyTask.objects.create(
+            name="AcmeDailyTask", module="acme.module", arguments="[[], {}]"
+        )
+
+        # Act
+        form = DeleteDailyTaskAPIForm({"id": dailytask.pk})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_rejects_nonexistent_dailytask(self) -> None:
+        """Test that the daily task deletion API form rejects an unknown id"""
+        # Arrange & Act
+        form = DeleteDailyTaskAPIForm({"id": 99999})
 
         # Assert
         self.assertFalse(form.is_valid())

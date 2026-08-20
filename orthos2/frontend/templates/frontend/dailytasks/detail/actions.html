@@ -1,0 +1,38 @@
+{% load filters %}
+<div class="title">
+  <h5>Actions</h5>
+</div>
+
+<div class="btn-group-vertical d-flex">
+  <a
+    class="btn btn-warning btn-sm"
+    href="{% url 'frontend:edit_dailytask' dailytask.pk %}"
+    role="button"
+    >Edit Daily Task</a
+  >
+</div>
+<br />
+<form method="post" action="{% url 'frontend:dailytask_execute' dailytask.pk %}">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-secondary btn-sm w-100">Execute Now</button>
+</form>
+<br />
+<form method="post" action="{% url 'frontend:dailytask_switch' dailytask.pk %}">
+  {% csrf_token %}
+  {% if dailytask.enabled %}
+    <input type="hidden" name="action" value="disable" />
+    <button type="submit" class="btn btn-secondary btn-sm w-100">Disable Task</button>
+  {% else %}
+    <input type="hidden" name="action" value="enable" />
+    <button type="submit" class="btn btn-secondary btn-sm w-100">Enable Task</button>
+  {% endif %}
+</form>
+<br />
+<div class="btn-group-vertical d-flex">
+  <a
+    class="btn btn-danger btn-sm"
+    href="{% url 'frontend:delete_dailytask' dailytask.pk %}"
+    role="button"
+    >Delete Daily Task</a
+  >
+</div>

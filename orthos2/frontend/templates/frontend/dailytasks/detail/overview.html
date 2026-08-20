@@ -1,0 +1,61 @@
+{% extends 'frontend/dailytasks/dailytask.html' %}
+
+{% block tabcontent %}
+  <div class="row">
+    <div class="col-10">
+      <div class="container-fluid">
+        <div class="title">
+          <h5>{{ dailytask.name }}</h5>
+        </div>
+
+        <table class="table table-striped table-bordered small">
+          <tbody class="thead-default">
+            <tr>
+              <td class="th fw-bold" width="150px">Name</td>
+              <td>{{ dailytask.name }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Module</td>
+              <td>{{ dailytask.module }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Arguments</td>
+              <td>{{ dailytask.arguments }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Priority</td>
+              <td>{{ dailytask.get_priority_display }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Enabled</td>
+              <td>{{ dailytask.enabled }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Executed At</td>
+              <td>{{ dailytask.executed_at }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Running</td>
+              <td>{{ dailytask.running }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Hash</td>
+              <td>{{ dailytask.hash }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Created</td>
+              <td>{{ dailytask.created }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Updated</td>
+              <td>{{ dailytask.updated }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-2">
+      {% include 'frontend/dailytasks/detail/actions.html' %}
+    </div>
+  </div>
+{% endblock %}
