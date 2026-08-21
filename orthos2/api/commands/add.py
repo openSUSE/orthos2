@@ -220,7 +220,7 @@ class AddCommand(BaseAPIView):
                 ).as_json
 
             return redirect(
-                "{}?fqdn={}".format(reverse("api:annotation_add"), sub_arguments[0])
+                "{}?fqdn={}".format(reverse("api:annotation_add_get"), sub_arguments[0])
             )
 
         elif item == Add.REMOTEPOWER:
@@ -630,6 +630,8 @@ class AddBMCCommandPost(BaseAPIView):
                     username=cleaned_data["username"],
                     password=cleaned_data["password"],
                     fence_agent=fence_agent,
+                    ip_address_v4=cleaned_data.get("ip_address_v4"),
+                    ip_address_v6=cleaned_data.get("ip_address_v6"),
                 )
                 bmc.save()
             except Exception as e:
@@ -766,7 +768,7 @@ class AddAnnotationCommandGet(BaseAPIView):
         fqdn = request.GET.get("fqdn", "")
         try:
             result = get_machine(
-                fqdn, redirect_to="api:annotation_add", data=request.GET
+                fqdn, redirect_to="api:annotation_add_get", data=request.GET
             )
             if isinstance(result, Serializer):
                 return result.as_json
@@ -807,7 +809,7 @@ class AddAnnotationCommandPost(BaseAPIView):
         """Add annotation to machine."""
         try:
             result = get_machine(
-                fqdn, redirect_to="api:annotation_add", data=request.GET
+                fqdn, redirect_to="api:annotation_add_get", data=request.GET
             )
             if isinstance(result, Serializer):
                 return result.as_json

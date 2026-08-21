@@ -1,6 +1,7 @@
 """
 This test module verifies the functionality of "/<model>/add/".
 """
+
 import json
 
 from django.contrib.auth.models import User
@@ -61,7 +62,9 @@ class AddBMCTest(APITestCase):
         data = {
             "form": {
                 "fqdn": "test.testing.suse.de",
-                "mac": "aa:bb:cc:dd:ee:ff",
+                # Distinct from the NetworkInterface MACs in test_machines.json,
+                # which BMC's cross-model uniqueness validation now checks against.
+                "mac": "aa:bb:cc:dd:ee:00",
                 "username": "",
                 "password": "",
                 "fence_agent": agent.id,

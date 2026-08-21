@@ -126,6 +126,21 @@ urlpatterns = [
         views.NetworkInterfaceDetailedEdit.as_view(),
         name="edit_networkinterface",
     ),
+    path(
+        "machine/<int:machine_id>/bmc/new",
+        views.NewBMC.as_view(),
+        name="new_bmc",
+    ),
+    path(
+        "bmc/edit/<int:pk>/",
+        views.BMCDetailedEdit.as_view(),
+        name="edit_bmc",
+    ),
+    path(
+        "bmc/delete/<int:pk>/",
+        views.DeleteBMC.as_view(),
+        name="delete_bmc",
+    ),
     re_path(
         r"^machine/(?P<id>[0-9]+)/serialconsole$",
         views.serialconsole,
@@ -165,6 +180,11 @@ urlpatterns = [
         "remotepower/delete/<int:pk>/",
         views.DeleteRemotePower.as_view(),
         name="delete_remotepower",
+    ),
+    path(
+        "annotation/delete/<int:pk>/",
+        views.DeleteAnnotation.as_view(),
+        name="delete_annotation",
     ),
     re_path(r"^machine/(?P<id>[0-9]+)/pci$", views.pci, name="pci"),
     re_path(

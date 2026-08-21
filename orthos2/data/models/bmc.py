@@ -4,8 +4,8 @@ import logging
 import uuid
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
+from django.core.exceptions import ValidationError
 from django.db import models
-from django.forms import ValidationError
 from django.utils import timezone
 
 from orthos2.data.models.netboxorthoscomparision import (
@@ -247,13 +247,77 @@ class BMC(models.Model):
                 self.ip_address_v6 = str(ip_obj)
             self.save()
 
-    def clean_fence_agent(self) -> None:
-        """
-        Validate the fence_agent field to ensure it is of type "hypervisor".
-        This method is called automatically by Django's validation system.
-        """
-        if self.fence_agent.device != "bmc":
+    def clean(self) -> None:
+        """Validate credentials, network membership and cross-model uniqueness."""
+        if self.username and not self.password:
+            raise ValidationError("Username also needs a password!")
+        if self.password and not self.username:
+            raise ValidationError("Password also needs a username!")
+
+        from orthos2.data.models.networkinterface import NetworkInterface
+
+        if NetworkInterface.objects.filter(mac_address=self.mac).exists():
             raise ValidationError(
-                "The fence agent must be of type 'bmc'. "
-                "Please select a valid fence agent."
+                "MAC address '{}' is already in use by a network interface!".format(
+                    self.mac
+                )
             )
+        if (
+            self.ip_address_v4
+            and NetworkInterface.objects.filter(
+                ip_address_v4=self.ip_address_v4
+            ).exists()
+        ):
+            raise ValidationError(
+                "IPv4 address '{}' is already in use by a network interface!".format(
+                    self.ip_address_v4
+                )
+            )
+        if (
+            self.ip_address_v6
+            and NetworkInterface.objects.filter(
+                ip_address_v6=self.ip_address_v6
+            ).exists()
+        ):
+            raise ValidationError(
+                "IPv6 address '{}' is already in use by a network interface!".format(
+                    self.ip_address_v6
+                )
+            )
+
+        if (
+            (self.ip_address_v4 or self.ip_address_v6)
+            and self.machine_id is not None
+            and not self.machine.administrative
+        ):
+            from orthos2.data.models.domain import Domain
+            from orthos2.utils.misc import get_domain
+
+            try:
+                bmc_domain = Domain.objects.get(name=get_domain(self.fqdn))
+            except Domain.DoesNotExist:
+                return
+
+            bmc_network_v4 = ipaddress.ip_network(
+                f"{bmc_domain.ip_v4}/{bmc_domain.subnet_mask_v4}", strict=False
+            )
+            bmc_network_v6 = ipaddress.ip_network(
+                f"{bmc_domain.ip_v6}/{bmc_domain.subnet_mask_v6}", strict=False
+            )
+            if (
+                self.ip_address_v4
+                and ipaddress.ip_address(self.ip_address_v4) not in bmc_network_v4
+            ):
+                raise ValidationError("IPv4 address is not in the chosen network!")
+            if (
+                self.ip_address_v6
+                and ipaddress.ip_address(self.ip_address_v6) not in bmc_network_v6
+            ):
+                raise ValidationError("IPv6 address is not in the chosen network!")
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        super().save(*args, **kwargs)
+        if self.machine.bmc_allowed() and not self.machine.has_remotepower():
+            from orthos2.data.models.remotepower import RemotePower
+
+            RemotePower(machine=self.machine).save()

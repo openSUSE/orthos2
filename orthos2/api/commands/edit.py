@@ -19,6 +19,7 @@ from rest_framework.request import Request
 from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.forms import (
     ArchitectureAPIForm,
+    BMCAPIForm,
     DailyTaskAPIForm,
     DeviceTypeAPIForm,
     DomainAPIForm,
@@ -43,6 +44,7 @@ from orthos2.api.serializers.misc import (
     Serializer,
 )
 from orthos2.data.models import (
+    BMC,
     Architecture,
     DeviceType,
     Domain,
@@ -77,6 +79,7 @@ class Edit:
     NETWORKINTERFACE = "networkinterface"
     SERIALCONSOLE = "serialconsole"
     REMOTEPOWER = "remotepower"
+    BMC = "bmc"
 
     as_list = [
         MANUFACTURER,
@@ -93,6 +96,7 @@ class Edit:
         SERIALCONSOLE,
         NETWORKINTERFACE,
         REMOTEPOWER,
+        BMC,
     ]
 
 
@@ -133,6 +137,7 @@ class EditCommand(BaseAPIView):
                                          specific machine (superusers only).
                 remotepower <fqdn>     : Edit the remote power of a
                                          specific machine (superusers only).
+                bmc <id>               : Edit a BMC (superusers only).
 
     Example:
         EDIT manufacturer 1
@@ -149,6 +154,7 @@ class EditCommand(BaseAPIView):
         EDIT networkinterface 1
         EDIT serialconsole foo.domain.tld
         EDIT remotepower foo.domain.tld
+        EDIT bmc 1
     """
 
     @staticmethod
@@ -320,6 +326,14 @@ class EditCommand(BaseAPIView):
                 "{}?fqdn={}".format(
                     reverse("api:remotepower_edit_get"), sub_arguments[0]
                 )
+            )
+
+        elif item == Edit.BMC:
+            if len(sub_arguments) != 1:
+                return ErrorMessage("Invalid number of arguments for 'bmc'!").as_json
+
+            return redirect(
+                "{}?id={}".format(reverse("api:bmc_edit"), sub_arguments[0])
             )
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
@@ -1822,3 +1836,104 @@ class EditRemotePowerCommandPost(BaseAPIView):
             return Message("Ok.").as_json
 
         return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json  # type: ignore
+
+
+class EditBMCCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/bmc/edit"
+    URL_POST = "/bmc/edit"
+    ARGUMENTS = (
+        [
+            "id",
+            "fqdn",
+            "mac",
+            "username",
+            "password",
+            "fence_agent",
+            "ip_address_v4",
+            "ip_address_v6",
+        ],
+    )
+
+    HELP_SHORT = "Edits a BMC in the database."
+    HELP = """Edits a BMC in the database (superusers only).
+
+    Usage:
+        EDIT bmc <id>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^bmc/edit",
+                EditBMCCommand.as_view(),
+                name="bmc_edit",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for editing a BMC."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        bmc_id = request.GET.get("id")
+        try:
+            bmc = BMC.objects.get(pk=bmc_id)  # type: ignore[misc]
+        except (BMC.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "BMC with id '{}' does not exist!".format(bmc_id)
+            ).as_json
+
+        form = BMCAPIForm(machine=bmc.machine)
+        for field_name in form._query_fields:  # type: ignore
+            form.fields[field_name].initial = getattr(bmc, field_name)
+        fields = form.as_dict()
+        fields["id"] = {
+            "type": "INTEGER",
+            "prompt": "ID",
+            "initial": bmc.pk,
+            "required": True,
+        }
+
+        input = InputSerializer(fields, self.URL_POST, ["id"] + list(form.get_order()))
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Edit BMC."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        bmc_id = data.get("id")
+        try:
+            bmc = BMC.objects.get(pk=bmc_id)
+        except (BMC.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "BMC with id '{}' does not exist!".format(bmc_id)
+            ).as_json
+
+        form = BMCAPIForm(data, machine=bmc.machine)
+
+        if form.is_valid():
+            try:
+                for field_name, value in form.cleaned_data.items():
+                    setattr(bmc, field_name, value)
+                bmc.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage(
+            "\n{}".format(format_cli_form_errors(form))  # type: ignore[arg-type]
+        ).as_json

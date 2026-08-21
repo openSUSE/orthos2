@@ -96,7 +96,7 @@
   },
   {
     "model": "data.BMC",
-    "pk": null,
+    "pk": 2,
     "fields": {
       "username": "",
       "password": "",

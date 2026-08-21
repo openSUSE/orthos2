@@ -2,66 +2,103 @@
 {% load filters %}
 
 {% block tabcontent %}
-<div class="title d-flex align-items-center">
-  <h5>Network Interfaces</h5>
-  {% if request.user.is_superuser %}
-  <a class="btn btn-success btn-sm ms-auto" href="{% url 'frontend:new_networkinterface' machine.pk %}">+</a>
+  <div class="title d-flex align-items-center">
+    <h5>Network Interfaces</h5>
+    {% if request.user.is_superuser %}
+      <a
+        class="btn btn-success btn-sm ms-auto"
+        href="{% url 'frontend:new_networkinterface' machine.pk %}"
+        >+</a
+      >
+    {% endif %}
+  </div>
+
+  <table class="table table-bordered small">
+    <thead class="thead-default text-start">
+      <th width="200px">MAC Address</th>
+      <th width="70px">Primary</th>
+      <th>Name</th>
+      <th>Driver Module</th>
+      <th>Ethernet Type</th>
+      {% if request.user.is_superuser %}<th></th>{% endif %}
+    </thead>
+    <tbody>
+      {% for network_interface in machine.networkinterfaces.all %}
+        <tr>
+          <td>{{ network_interface.mac_address }}</td>
+          <td>{{ network_interface.primary|boolean_image:15|safe }}</td>
+          <td>{{ network_interface.name }}</td>
+          <td>{{ network_interface.driver_module }}</td>
+          <td>{{ network_interface.ethernet_type }}</td>
+          {% if request.user.is_superuser %}
+            <td>
+              <a
+                class="btn btn-warning btn-sm"
+                href="{% url 'frontend:edit_networkinterface' network_interface.pk %}"
+                >Edit</a
+              >
+              {% if network_interface.primary %}
+                <button class="btn btn-danger btn-sm" disabled>Delete</button>
+              {% else %}
+                <a
+                  class="btn btn-danger btn-sm"
+                  href="{% url 'frontend:delete_networkinterface' network_interface.pk %}"
+                  >Delete</a
+                >
+              {% endif %}
+            </td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="title d-flex align-items-center">
+    <h5>Management Interfaces</h5>
+    {% if request.user.is_superuser and not machine.bmc %}
+      <a
+        class="btn btn-success btn-sm ms-auto"
+        href="{% url 'frontend:new_bmc' machine.pk %}"
+        >+</a
+      >
+    {% endif %}
+  </div>
+
+  {% if machine.bmc %}
+    <table class="table table-bordered small">
+      <thead class="thead-default text-start">
+        <th width="200px">MAC Address</th>
+        <th>BMC</th>
+        {% if request.user.is_superuser %}<th></th>{% endif %}
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ machine.bmc.mac }}</td>
+          <td>
+            {{ machine.bmc.fqdn }}
+            <small
+              >(<a href="http://{{ machine.bmc.fqdn }}">http</a>|<a
+                href="https://{{ machine.bmc.fqdn }}"
+                >https</a
+              >)</small
+            >
+          </td>
+          {% if request.user.is_superuser %}
+            <td>
+              <a
+                class="btn btn-warning btn-sm"
+                href="{% url 'frontend:edit_bmc' machine.bmc.pk %}"
+                >Edit</a
+              >
+              <a
+                class="btn btn-danger btn-sm"
+                href="{% url 'frontend:delete_bmc' machine.bmc.pk %}"
+                >Delete</a
+              >
+            </td>
+          {% endif %}
+        </tr>
+      </tbody>
+    </table>
   {% endif %}
-</div>
-
-<table class="table table-bordered small">
-  <thead class="thead-default text-start">
-    <th width="200px">MAC Address</th>
-    <th width="70px">Primary</th>
-    <th>Name</th>
-    <th>Driver Module</th>
-    <th>Ethernet Type</th>
-    {% if request.user.is_superuser %}<th></th>{% endif %}
-  </thead>
-  <tbody>
-    {% for network_interface in machine.networkinterfaces.all %}
-    <tr>
-      <td>{{ network_interface.mac_address }}</td>
-      <td>{{ network_interface.primary|boolean_image:15|safe }}</td>
-      <td>{{ network_interface.name }}</td>
-      <td>{{ network_interface.driver_module }}</td>
-      <td>{{ network_interface.ethernet_type }}</td>
-      {% if request.user.is_superuser %}
-      <td>
-        <a class="btn btn-warning btn-sm" href="{% url 'frontend:edit_networkinterface' network_interface.pk %}">Edit</a>
-        {% if network_interface.primary %}
-        <button class="btn btn-danger btn-sm" disabled>Delete</button>
-        {% else %}
-        <a class="btn btn-danger btn-sm" href="{% url 'frontend:delete_networkinterface' network_interface.pk %}">Delete</a>
-        {% endif %}
-      </td>
-      {% endif %}
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
-{% if machine.bmc %}
-<div class="title">
-  <h5>Management Interfaces</h5>
-</div>
-
-<table class="table table-bordered small">
-  <thead class="thead-default text-start">
-    <th width="200px">MAC Address</th>
-    <th>BMC</th>
-    <th>Comment</th>
-  </thead>
-  <tbody>
-    <tr>
-      <td>{{ machine.bmc.mac }}</td>
-      <td>
-        {{ machine.bmc.fqdn }}
-        <small>(<a href="http://{{ machine.bmc.fqdn }}">http</a>|<a href="https://{{ machine.bmc.fqdn }}">https</a>)</small></td>
-      <td>{{ machine.bmc.comment }}</td>
-    </tr>
-
-  </tbody>
-</table>
-{% endif %}
 {% endblock %}
