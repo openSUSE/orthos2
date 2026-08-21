@@ -18,6 +18,7 @@
         <tr style="border: 1px solid #ddd;">
           <th>Name {% order_list request 'name' %}</th>
           <th>Device</th>
+          <th>Devices</th>
           <th width="80px">&nbsp;</th>
         </tr>
       </thead>
@@ -33,6 +34,13 @@
               >
             </td>
             <td>{{ remotepowertype.get_device_display }}</td>
+            <td>
+              <a
+                href="{% url 'frontend:remotepowertype_devices' remotepowertype.pk %}"
+                class="text-muted"
+                >{{ remotepowertype.device_count }}</a
+              >
+            </td>
             <td>
               <a
                 href="{% url 'frontend:delete_remotepowertype' remotepowertype.pk %}"

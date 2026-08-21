@@ -458,6 +458,11 @@ urlpatterns = [
         views.remotepowertype_detail,
         name="remotepowertype_detail",
     ),
+    re_path(
+        r"^remotepowertype/(?P<id>[0-9]+)/devices$",
+        views.remotepowertype_devices,
+        name="remotepowertype_devices",
+    ),
     path(
         "remotepowertypes/new",
         views.NewRemotePowerType.as_view(),

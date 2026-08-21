@@ -19,6 +19,13 @@
               >Overview</a
             >
           </li>
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'remotepowertype_devices' %}"
+              href="{% url 'frontend:remotepowertype_devices' remotepowertype.pk %}"
+              >Devices</a
+            >
+          </li>
         </ul>
 
         <div class="tab-content">

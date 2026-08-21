@@ -119,6 +119,7 @@ from .remotepowertype import (
     RemotePowerTypeDetailedEdit,
     RemotePowerTypeListView,
     remotepowertype_detail,
+    remotepowertype_devices,
 )
 from .serialconsoletype import (
     DeleteSerialConsoleType,
@@ -269,6 +270,7 @@ __all__ = [
     "RemotePowerTypeDetailedEdit",
     "DeleteRemotePowerType",
     "remotepowertype_detail",
+    "remotepowertype_devices",
     "ArchitectureListView",
     "NewArchitecture",
     "ArchitectureDetailedEdit",
