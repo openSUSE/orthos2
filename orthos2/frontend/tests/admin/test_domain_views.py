@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from orthos2.data.models import Domain, ServerConfig
+from orthos2.data.models import Architecture, Domain, Machine, ServerConfig, System
 
 
 class DomainListViewTest(TestCase):
@@ -81,6 +81,44 @@ class DomainDetailViewTest(TestCase):
         url = reverse("frontend:domain_detail", kwargs={"id": 99999})
         response = self.client.get(url)
         assert response.status_code == 404
+
+    def test_superuser_get_hides_regenerate_buttons_without_servers(self) -> None:
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse("frontend:domain_detail", kwargs={"id": self.domain.pk})
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert b"Regenerate Cobbler Server" not in response.content
+        assert b"Regenerate Serial Console Server" not in response.content
+
+    def test_superuser_get_shows_cobbler_and_cscreen_server_links(self) -> None:
+        cobbler_server = Machine.objects.create(
+            fqdn="cobbler.orthos2.test",
+            system=System.objects.get(name="BareMetal"),
+            architecture=Architecture.objects.get(name="x86_64"),
+        )
+        cscreen_server = Machine.objects.create(
+            fqdn="cscreen.orthos2.test",
+            system=System.objects.get(name="BareMetal"),
+            architecture=Architecture.objects.get(name="x86_64"),
+        )
+        self.domain.cobbler_server = cobbler_server
+        self.domain.cscreen_server = cscreen_server
+        self.domain.save()
+
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse("frontend:domain_detail", kwargs={"id": self.domain.pk})
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert b"Regenerate Cobbler Server" in response.content
+        assert b"Regenerate Serial Console Server" in response.content
+        assert (
+            reverse("frontend:detail", kwargs={"id": cobbler_server.pk}).encode()
+            in response.content
+        )
+        assert (
+            reverse("frontend:detail", kwargs={"id": cscreen_server.pk}).encode()
+            in response.content
+        )
 
 
 class NewDomainViewTest(TestCase):

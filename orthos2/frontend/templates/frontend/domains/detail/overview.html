@@ -16,7 +16,13 @@
             </tr>
             <tr>
               <td class="th fw-bold">Cobbler Server</td>
-              <td>{{ domain.cobbler_server|default_if_none:"-" }}</td>
+              <td>
+                {% if domain.cobbler_server %}
+                <a href="{% url 'frontend:detail' domain.cobbler_server.id %}">{{ domain.cobbler_server }}</a>
+                {% else %}
+                -
+                {% endif %}
+              </td>
             </tr>
             <tr>
               <td class="th fw-bold">TFTP Server</td>
@@ -24,7 +30,13 @@
             </tr>
             <tr>
               <td class="th fw-bold">CScreen Server</td>
-              <td>{{ domain.cscreen_server|default_if_none:"-" }}</td>
+              <td>
+                {% if domain.cscreen_server %}
+                <a href="{% url 'frontend:detail' domain.cscreen_server.id %}">{{ domain.cscreen_server }}</a>
+                {% else %}
+                -
+                {% endif %}
+              </td>
             </tr>
             <tr>
               <td class="th fw-bold">IPv4</td>
@@ -62,4 +74,34 @@
       {% include 'frontend/domains/detail/actions.html' %}
     </div>
   </div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+function regenerate_domain_cobbler() {
+  $.ajax({
+    url: '{% url 'frontend:regenerate_domain_cobbler' domain.cobbler_server.id|default:0 %}',
+    beforeSend: function() {
+      $('.regenerate-domain-cobbler').addClass('disabled')
+    },
+    success: function(data) {
+      showMachineStatusBarMessage(data);
+      $('.regenerate-domain-cobbler').removeClass('disabled')
+    }
+  })
+}
+
+function regenerate_domain_cscreen() {
+  $.ajax({
+    url: '{% url 'frontend:regenerate_domain_cscreen' domain.cscreen_server.id|default:0 %}',
+    beforeSend: function() {
+      $('.regenerate-domain-cscreen').addClass('disabled')
+    },
+    success: function(data) {
+      showMachineStatusBarMessage(data);
+      $('.regenerate-domain-cscreen').removeClass('disabled')
+    }
+  })
+}
+</script>
 {% endblock %}
