@@ -1,0 +1,105 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="mb-3">
+      <form
+        class="pt-3"
+        method="post"
+        {% if action == 'new' %}
+          action="{% url 'frontend:new_remotepower' machine.pk %}"
+        {% elif action == 'edit' %}
+          action="{% url 'frontend:edit_remotepower' object.machine_id %}"
+        {% endif %}
+      >
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+
+        {{ form.fence_agent.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.fence_agent.id_for_label }}">
+              {{ form.fence_agent.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.fence_agent }}
+            <small class="form-text text-muted">
+              {{ form.fence_agent.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.remote_power_device.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.remote_power_device.id_for_label }}">
+              {{ form.remote_power_device.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.remote_power_device }}
+            <small class="form-text text-muted">
+              {{ form.remote_power_device.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.port.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.port.id_for_label }}">
+              {{ form.port.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.port }}
+            <small class="form-text text-muted">
+              {{ form.port.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.comment.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.comment.id_for_label }}">
+              {{ form.comment.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.comment }}
+            <small class="form-text text-muted">
+              {{ form.comment.help_text }}
+            </small>
+          </div>
+        </div>
+
+        {{ form.options.errors }}
+        <div class="row" style="margin: 5px;">
+          <div class="col-3">
+            <label for="{{ form.options.id_for_label }}">
+              {{ form.options.label }}:
+            </label>
+          </div>
+          <div class="col-9">
+            {{ form.options }}
+            <small class="form-text text-muted">
+              {{ form.options.help_text }}
+            </small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-sm w-100">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

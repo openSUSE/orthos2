@@ -16,7 +16,7 @@ from django.shortcuts import redirect  # type: ignore
 from django.urls import URLPattern, re_path, reverse  # type: ignore
 from rest_framework.request import Request
 
-from orthos2.api.commands.base import BaseAPIView
+from orthos2.api.commands.base import BaseAPIView, get_machine
 from orthos2.api.forms import (
     ArchitectureAPIForm,
     DailyTaskAPIForm,
@@ -26,8 +26,10 @@ from orthos2.api.forms import (
     EnclosureAPIForm,
     ManufacturerAPIForm,
     NetworkInterfaceAPIForm,
+    RemotePowerAPIForm,
     RemotePowerDeviceAPIForm,
     RemotePowerTypeAPIForm,
+    SerialConsoleAPIForm,
     SerialConsoleTypeAPIForm,
     ServerConfigAPIForm,
     SingleTaskAPIForm,
@@ -38,6 +40,7 @@ from orthos2.api.serializers.misc import (
     ErrorMessage,
     InputSerializer,
     Message,
+    Serializer,
 )
 from orthos2.data.models import (
     Architecture,
@@ -72,6 +75,8 @@ class Edit:
     DOMAINARCHITECTURE = "domainarchitecture"
     DOMAIN = "domain"
     NETWORKINTERFACE = "networkinterface"
+    SERIALCONSOLE = "serialconsole"
+    REMOTEPOWER = "remotepower"
 
     as_list = [
         MANUFACTURER,
@@ -85,7 +90,9 @@ class Edit:
         REMOTEPOWERDEVICE,
         DOMAINARCHITECTURE,
         DOMAIN,
+        SERIALCONSOLE,
         NETWORKINTERFACE,
+        REMOTEPOWER,
     ]
 
 
@@ -122,6 +129,10 @@ class EditCommand(BaseAPIView):
                 domain <id>            : Edit a domain (superusers only).
                 networkinterface <id>  : Edit a network interface
                                          (superusers only).
+                serialconsole <fqdn>   : Edit the serial console of a
+                                         specific machine (superusers only).
+                remotepower <fqdn>     : Edit the remote power of a
+                                         specific machine (superusers only).
 
     Example:
         EDIT manufacturer 1
@@ -136,6 +147,8 @@ class EditCommand(BaseAPIView):
         EDIT domainarchitecture 1
         EDIT domain 1
         EDIT networkinterface 1
+        EDIT serialconsole foo.domain.tld
+        EDIT remotepower foo.domain.tld
     """
 
     @staticmethod
@@ -282,6 +295,30 @@ class EditCommand(BaseAPIView):
             return redirect(
                 "{}?id={}".format(
                     reverse("api:networkinterface_edit"), sub_arguments[0]
+                )
+            )
+
+        elif item == Edit.SERIALCONSOLE:
+            if len(sub_arguments) != 1:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'serialconsole'!"
+                ).as_json
+
+            return redirect(
+                "{}?fqdn={}".format(
+                    reverse("api:serialconsole_edit_get"), sub_arguments[0]
+                )
+            )
+
+        elif item == Edit.REMOTEPOWER:
+            if len(sub_arguments) != 1:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'remotepower'!"
+                ).as_json
+
+            return redirect(
+                "{}?fqdn={}".format(
+                    reverse("api:remotepower_edit_get"), sub_arguments[0]
                 )
             )
 
@@ -1549,3 +1586,239 @@ class EditNetworkInterfaceCommand(BaseAPIView):
         return ErrorMessage(
             "\n{}".format(format_cli_form_errors(form))  # type: ignore[arg-type]
         ).as_json
+
+
+class EditSerialConsoleCommandGet(BaseAPIView):
+
+    URL_POST = "/serialconsole/{fqdn}/edit"
+
+    HELP_SHORT = "Edits the serial console of a machine."
+    HELP = """Edits the serial console of a machine (superusers only).
+
+    Usage:
+        EDIT serialconsole <fqdn>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^serialconsole/edit",
+                EditSerialConsoleCommandGet.as_view(),
+                name="serialconsole_edit_get",
+            ),
+        ]
+
+    def get(
+        self, request: Request, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
+        """Return form for editing a serial console."""
+        fqdn = request.GET.get("fqdn", "")
+        try:
+            result = get_machine(
+                fqdn, redirect_to="api:serialconsole_edit_get", data=request.GET
+            )
+            if isinstance(result, Serializer):
+                return result.as_json
+            elif isinstance(result, HttpResponseRedirect):
+                return result
+            machine = result
+        except Exception as e:
+            return ErrorMessage(str(e)).as_json
+
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        if not machine.has_serialconsole():
+            return ErrorMessage("Machine has no serial console!").as_json
+
+        serialconsole = machine.serialconsole
+        form = SerialConsoleAPIForm(machine=machine)
+        for field_name in form._query_fields:  # type: ignore
+            form.fields[field_name].initial = getattr(serialconsole, field_name)
+
+        input = InputSerializer(
+            form.as_dict(), self.URL_POST.format(fqdn=machine.fqdn), form.get_order()
+        )
+        return input.as_json
+
+
+class EditSerialConsoleCommandPost(BaseAPIView):
+
+    URL_POST = "/serialconsole/{fqdn}/edit"
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^serialconsole/(?P<fqdn>[a-z0-9\.-]+)/edit$",
+                EditSerialConsoleCommandPost.as_view(),
+                name="serialconsole_edit_post",
+            ),
+        ]
+
+    def post(
+        self, request: Request, fqdn: str, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
+        """Edit serial console of machine."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        try:
+            result = get_machine(
+                fqdn, redirect_to="api:serialconsole_edit_post", data=request.GET
+            )
+            if isinstance(result, Serializer):
+                return result.as_json
+            elif isinstance(result, HttpResponseRedirect):
+                return result
+            machine = result
+        except Exception as e:
+            return ErrorMessage(str(e)).as_json
+
+        if not machine.has_serialconsole():
+            return ErrorMessage("Machine has no serial console!").as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = SerialConsoleAPIForm(data, machine=machine)
+
+        if form.is_valid():
+            try:
+                serialconsole = machine.serialconsole
+                for field_name, value in form.cleaned_data.items():
+                    if field_name == "machine":
+                        continue
+                    setattr(serialconsole, field_name, value)
+                serialconsole.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json  # type: ignore
+
+
+class EditRemotePowerCommandGet(BaseAPIView):
+
+    URL_POST = "/remotepower/{fqdn}/edit"
+
+    HELP_SHORT = "Edits the remote power of a machine."
+    HELP = """Edits the remote power of a machine (superusers only).
+
+    Usage:
+        EDIT remotepower <fqdn>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^remotepower/edit",
+                EditRemotePowerCommandGet.as_view(),
+                name="remotepower_edit_get",
+            ),
+        ]
+
+    def get(
+        self, request: Request, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
+        """Return form for editing a remote power."""
+        fqdn = request.GET.get("fqdn", "")
+        try:
+            result = get_machine(
+                fqdn, redirect_to="api:remotepower_edit_get", data=request.GET
+            )
+            if isinstance(result, Serializer):
+                return result.as_json
+            elif isinstance(result, HttpResponseRedirect):
+                return result
+            machine = result
+        except Exception as e:
+            return ErrorMessage(str(e)).as_json
+
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        if not machine.has_remotepower():
+            return ErrorMessage("Machine has no remote power!").as_json
+
+        remotepower = machine.remotepower
+        form = RemotePowerAPIForm(machine=machine)
+        for field_name in form._query_fields:  # type: ignore
+            form.fields[field_name].initial = getattr(remotepower, field_name)
+
+        input = InputSerializer(
+            form.as_dict(), self.URL_POST.format(fqdn=machine.fqdn), form.get_order()
+        )
+        return input.as_json
+
+
+class EditRemotePowerCommandPost(BaseAPIView):
+
+    URL_POST = "/remotepower/{fqdn}/edit"
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^remotepower/(?P<fqdn>[a-z0-9\.-]+)/edit$",
+                EditRemotePowerCommandPost.as_view(),
+                name="remotepower_edit_post",
+            ),
+        ]
+
+    def post(
+        self, request: Request, fqdn: str, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
+        """Edit remote power of machine."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        try:
+            result = get_machine(
+                fqdn, redirect_to="api:remotepower_edit_post", data=request.GET
+            )
+            if isinstance(result, Serializer):
+                return result.as_json
+            elif isinstance(result, HttpResponseRedirect):
+                return result
+            machine = result
+        except Exception as e:
+            return ErrorMessage(str(e)).as_json
+
+        if not machine.has_remotepower():
+            return ErrorMessage("Machine has no remote power!").as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = RemotePowerAPIForm(data, machine=machine)
+
+        if form.is_valid():
+            try:
+                remotepower = machine.remotepower
+                for field_name, value in form.cleaned_data.items():
+                    if field_name == "machine":
+                        continue
+                    setattr(remotepower, field_name, value)
+                remotepower.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json  # type: ignore

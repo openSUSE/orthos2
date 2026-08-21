@@ -17,8 +17,6 @@ from orthos2.data.models import (
     Machine,
     NetworkInterface,
     RemotePower,
-    RemotePowerDevice,
-    SerialConsole,
     System,
 )
 from orthos2.utils.misc import get_domain, is_unique_mac_address, suggest_host_ip
@@ -158,126 +156,6 @@ class BMCInline(admin.StackedInline):  # type: ignore
         self.machine = obj
         formset = super(BMCInline, self).get_formset(request, obj, **kwargs)  # type: ignore
         return formset  # type: ignore
-
-
-class SerialConsoleInline(admin.StackedInline):  # type: ignore
-    model = SerialConsole
-    extra = 0
-    fk_name = "machine"
-    verbose_name = "Serial Console"
-    verbose_name_plural = "Serial Console"
-    fields = (
-        "stype",
-        "baud_rate",
-        "kernel_device",
-        "kernel_device_num",
-        "console_server",
-        "port",
-        "command",
-        "comment",
-        "rendered_command",
-    )
-    readonly_fields = ("rendered_command",)
-
-    def get_formset(  # type: ignore
-        self, request: HttpRequest, obj: Optional["Machine"] = None, **kwargs: Any
-    ):
-        """Set machine object for `formfield_for_foreignkey` method."""
-        self.machine = obj
-        return super(SerialConsoleInline, self).get_formset(request, obj, **kwargs)  # type: ignore
-
-
-class RemotePowerInlineFormset(forms.models.BaseInlineFormSet):  # type: ignore
-    def clean(self) -> None:
-        if not self.cleaned_data:
-            return
-        data = self.cleaned_data[0]
-        port = data.get("port")
-        # Django Magic: Since this is a ModelChoiceField, dev is a RemotePowerDevice object
-        dev: "RemotePowerDevice" = data.get("remote_power_device")  # type: ignore
-        machine = data.get("machine")
-        if not dev:
-            raise forms.ValidationError("Bad remote device - Open a bug")
-        fence = dev.fence_agent
-        if fence.use_port:
-            if not port:
-                raise forms.ValidationError(
-                    "Fence {} needs a port number".format(fence.name)
-                )
-            try:
-                int(port)
-            except ValueError:
-                raise forms.ValidationError("{} - Port must be a number".format(port))
-        elif fence.use_hostname_as_port:
-            if machine is None:
-                raise forms.ValidationError(
-                    "Machine is required for remote power device!"
-                )
-            if not port:
-                port = machine.hostname
-            elif port != machine.hostname:
-                raise forms.ValidationError(
-                    "{} - Port must be empty or hostname for fence: {}".format(
-                        port, dev.fence_agent.name
-                    )
-                )
-        else:
-            if port:
-                raise forms.ValidationError(
-                    "Fence {} needs no port, please leave emtpy".format(fence.name)
-                )
-
-
-class RemotePowerInlineRpower(admin.StackedInline):  # type: ignore
-    model = RemotePower
-    formset = RemotePowerInlineFormset
-    extra = 0
-    fk_name = "machine"
-    verbose_name = "Remote Power via PowerSwitch Device"
-    verbose_name_plural = "Remote Power via PowerSwitch Device"
-    fields = ["port", "remote_power_device", "options"]
-
-    def get_formset(  # type: ignore
-        self, request: HttpRequest, obj: Optional["Machine"] = None, **kwargs: Any
-    ):
-        """Set machine object for `formfield_for_foreignkey` method."""
-        self.machine = obj
-        return super(RemotePowerInlineRpower, self).get_formset(request, obj, **kwargs)  # type: ignore
-
-
-class RemotePowerInlineBMC(admin.StackedInline):  # type: ignore
-    model = RemotePower
-    extra = 0
-    fk_name = "machine"
-    verbose_name = "Remote Power via BMC"
-    verbose_name_plural = "Remote Power via BMC"
-    fields = ["options"]
-
-    def get_formset(  # type: ignore
-        self,
-        request: HttpRequest,
-        obj: Optional["Machine"] = None,
-        **kwargs: Any,
-    ):
-        """Set machine object for `formfield_for_foreignkey` method."""
-        self.machine = obj
-        return super(RemotePowerInlineBMC, self).get_formset(request, obj, **kwargs)  # type: ignore
-
-
-class RemotePowerInlineHypervisor(admin.StackedInline):  # type: ignore
-    model = RemotePower
-    extra = 0
-    fk_name = "machine"
-    verbose_name = "Remote Power via Hypervisor"
-    verbose_name_plural = "Remote Power via Hypervisor"
-    fields = ["fence_agent", "options"]
-
-    def get_formset(self, request: HttpRequest, obj: Any = None, **kwargs: Any):  # type: ignore
-        """Set machine object for `formfield_for_foreignkey` method."""
-        self.machine = obj
-        return super(RemotePowerInlineHypervisor, self).get_formset(  # type: ignore
-            request, obj, **kwargs
-        )
 
 
 class AnnotationInline(admin.TabularInline):  # type: ignore
@@ -594,9 +472,6 @@ class MachineAdmin(admin.ModelAdmin):  # type: ignore
     ) -> Union[HttpResponseRedirect, TemplateResponse, HttpResponse]:
         """Return changes view with inlines for non-administrative systems."""
         machine = Machine.objects.get(pk=object_id)
-        fence = None
-        if machine.has_remotepower():
-            fence = machine.remotepower.get_remotepower_fence()
 
         if not self.get_object(request, object_id):
             messages.add_message(
@@ -606,20 +481,10 @@ class MachineAdmin(admin.ModelAdmin):  # type: ignore
                 extra_tags="error",
             )
 
-        MachineAdmin.inlines = (SerialConsoleInline,)
+        MachineAdmin.inlines = ()
 
         if machine.bmc_allowed():
             MachineAdmin.inlines += (BMCInline,)
-            if hasattr(machine, "bmc"):
-                if not fence or fence.device == "bmc":
-                    MachineAdmin.inlines += (RemotePowerInlineBMC,)
-        if machine.is_virtual_machine():
-            MachineAdmin.inlines += (RemotePowerInlineHypervisor,)
-        else:
-            # Only show rpower device to add/modify if we do not
-            # have one yet or if it's a rpower_device already
-            if not fence or fence.device == "rpower_device":
-                MachineAdmin.inlines += (RemotePowerInlineRpower,)
 
         if not machine.system.administrative:
             MachineAdmin.inlines += (AnnotationInline,)

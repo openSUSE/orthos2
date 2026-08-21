@@ -61,6 +61,7 @@ class RemotePower(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Fence Agent",
         null=True,
+        blank=True,
     )
 
     machine: "MandatoryMachineOneToOneField" = models.OneToOneField(
@@ -106,6 +107,36 @@ class RemotePower(models.Model):
             raise ValidationError(
                 "The fence agent must be of type 'hypervisor'. "
                 "Please select a valid fence agent."
+            )
+
+    def clean(self) -> None:
+        """Validate the port format against the fence agent currently in effect."""
+        if self.machine_id is None:  # type: ignore[attr-defined]
+            return
+        try:
+            fence = self.get_remotepower_fence()
+        except ValueError:
+            # No fence agent determinable yet - `save()` will raise a proper error.
+            return
+
+        if fence.use_port:
+            if not self.port:
+                raise ValidationError("Please provide a port!")
+            try:
+                int(self.port)
+            except ValueError:
+                raise ValidationError("Port must be a number!")
+        elif fence.use_hostname_as_port:
+            if self.port and self.port != self.machine.hostname:
+                raise ValidationError(
+                    "Port must be empty or match the machine's hostname "
+                    "for fence agent '{}'!".format(fence.name)
+                )
+        elif self.port:
+            raise ValidationError(
+                "Fence agent '{}' does not use a port, please leave it empty!".format(
+                    fence.name
+                )
             )
 
     def save(self, *args: Any, **kwargs: Any) -> None:
@@ -237,7 +268,7 @@ class RemotePower(models.Model):
         if fence.device == "bmc":
             username = self.machine.bmc.username
             password = self.machine.bmc.password
-        elif fence.device == "rpower_device":
+        elif fence.device == "rpowerdevice":
             if self.remote_power_device is None:
                 raise ValueError("No remote power device set for this machine")
             username = self.remote_power_device.username
@@ -264,7 +295,7 @@ class RemotePower(models.Model):
         fence = self.get_remotepower_fence()
         if fence.device == "bmc":
             return self.machine.bmc.fqdn
-        if fence.device == "rpower_device":
+        if fence.device == "rpowerdevice":
             if self.remote_power_device is None:
                 raise ValueError("No remote power device set for this machine")
             return self.remote_power_device.fqdn

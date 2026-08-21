@@ -33,6 +33,20 @@
           </li>
           <li class="nav-item">
             <a
+              class="nav-link {% active_view request 'serialconsole' %}"
+              href="{% url 'frontend:serialconsole' machine.id %}"
+              >Serial Console</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'remotepower' %}"
+              href="{% url 'frontend:remotepower' machine.id %}"
+              >Remote Power</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
               class="nav-link {% active_view request 'installations' %}"
               href="{% url 'frontend:installations' machine.id %}"
               >Installations</a
