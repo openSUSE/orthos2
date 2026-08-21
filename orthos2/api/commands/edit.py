@@ -24,6 +24,7 @@ from orthos2.api.forms import (
     DeviceTypeAPIForm,
     DomainAPIForm,
     DomainArchitectureAPIForm,
+    EditMachineAPIForm,
     EnclosureAPIForm,
     ManufacturerAPIForm,
     NetworkInterfaceAPIForm,
@@ -80,6 +81,7 @@ class Edit:
     SERIALCONSOLE = "serialconsole"
     REMOTEPOWER = "remotepower"
     BMC = "bmc"
+    MACHINE = "machine"
 
     as_list = [
         MANUFACTURER,
@@ -97,6 +99,7 @@ class Edit:
         NETWORKINTERFACE,
         REMOTEPOWER,
         BMC,
+        MACHINE,
     ]
 
 
@@ -138,6 +141,7 @@ class EditCommand(BaseAPIView):
                 remotepower <fqdn>     : Edit the remote power of a
                                          specific machine (superusers only).
                 bmc <id>               : Edit a BMC (superusers only).
+                machine <fqdn>         : Edit a machine (superusers only).
 
     Example:
         EDIT manufacturer 1
@@ -155,6 +159,7 @@ class EditCommand(BaseAPIView):
         EDIT serialconsole foo.domain.tld
         EDIT remotepower foo.domain.tld
         EDIT bmc 1
+        EDIT machine foo.domain.tld
     """
 
     @staticmethod
@@ -334,6 +339,16 @@ class EditCommand(BaseAPIView):
 
             return redirect(
                 "{}?id={}".format(reverse("api:bmc_edit"), sub_arguments[0])
+            )
+
+        elif item == Edit.MACHINE:
+            if len(sub_arguments) != 1:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'machine'!"
+                ).as_json
+
+            return redirect(
+                "{}?fqdn={}".format(reverse("api:machine_edit_get"), sub_arguments[0])
             )
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
@@ -1928,6 +1943,112 @@ class EditBMCCommand(BaseAPIView):
                 for field_name, value in form.cleaned_data.items():
                     setattr(bmc, field_name, value)
                 bmc.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage(
+            "\n{}".format(format_cli_form_errors(form))  # type: ignore[arg-type]
+        ).as_json
+
+
+class EditMachineCommandGet(BaseAPIView):
+
+    URL_POST = "/machine/{fqdn}/edit"
+
+    HELP_SHORT = "Edits a machine."
+    HELP = """Edits a machine (superusers only).
+
+    Usage:
+        EDIT machine <fqdn>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^machine/edit",
+                EditMachineCommandGet.as_view(),
+                name="machine_edit_get",
+            ),
+        ]
+
+    def get(
+        self, request: Request, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
+        """Return form for editing a machine."""
+        fqdn = request.GET.get("fqdn", "")
+        try:
+            result = get_machine(
+                fqdn, redirect_to="api:machine_edit_get", data=request.GET
+            )
+            if isinstance(result, Serializer):
+                return result.as_json
+            elif isinstance(result, HttpResponseRedirect):
+                return result
+            machine = result
+        except Exception as e:
+            return ErrorMessage(str(e)).as_json
+
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = EditMachineAPIForm(instance=machine)
+
+        input = InputSerializer(
+            form.as_dict(), self.URL_POST.format(fqdn=machine.fqdn), form.get_order()
+        )
+        return input.as_json
+
+
+class EditMachineCommandPost(BaseAPIView):
+
+    URL_POST = "/machine/{fqdn}/edit"
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^machine/(?P<fqdn>[a-z0-9\.-]+)/edit$",
+                EditMachineCommandPost.as_view(),
+                name="machine_edit_post",
+            ),
+        ]
+
+    def post(
+        self, request: Request, fqdn: str, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
+        """Edit machine."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        try:
+            result = get_machine(
+                fqdn, redirect_to="api:machine_edit_post", data=request.GET
+            )
+            if isinstance(result, Serializer):
+                return result.as_json
+            elif isinstance(result, HttpResponseRedirect):
+                return result
+            machine = result
+        except Exception as e:
+            return ErrorMessage(str(e)).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = EditMachineAPIForm(data, instance=machine)
+
+        if form.is_valid():
+            try:
+                form.save()
             except Exception as e:
                 logger.exception(e)
                 return ErrorMessage("Something went wrong!").as_json

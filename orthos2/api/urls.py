@@ -125,3 +125,5 @@ urlpatterns += EditSerialConsoleCommandPost.get_urls()  # noqa: F405
 urlpatterns += EditRemotePowerCommandGet.get_urls()  # noqa: F405
 urlpatterns += EditRemotePowerCommandPost.get_urls()  # noqa: F405
 urlpatterns += EditBMCCommand.get_urls()  # noqa: F405
+urlpatterns += EditMachineCommandGet.get_urls()  # noqa: F405
+urlpatterns += EditMachineCommandPost.get_urls()  # noqa: F405

@@ -136,8 +136,8 @@
             >{% url 'api:machine' %}?fqdn={{ machine.fqdn }}</a
           >
           | Edit:
-          <a href="{% url 'admin:data_machine_change' machine.id %}"
-            >{% url 'admin:data_machine_change' machine.id %}</a
+          <a href="{% url 'frontend:edit_machine' machine.id %}"
+            >{% url 'frontend:edit_machine' machine.id %}</a
           ></span
         >
       </main>

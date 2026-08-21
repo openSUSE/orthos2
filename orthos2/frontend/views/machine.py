@@ -920,3 +920,53 @@ class DeleteAnnotation(SuperuserRequiredMixin, DeleteView):  # type: ignore
         context = super().get_context_data(**kwargs)
         context["title"] = "Delete Annotation"
         return context
+
+
+MACHINE_FIELDS = [
+    "fqdn",
+    "enclosure",
+    "architecture",
+    "system",
+    "serial_number",
+    "product_code",
+    "comment",
+    "device_type",
+    "contact_email",
+    "kernel_options",
+    "netbox_id",
+    "administrative",
+    "nda",
+    "autoreinstall",
+    "active",
+    "vm_dedicated_host",
+    "vm_auto_delete",
+    "vm_max",
+    "virt_api_int",
+    "hypervisor",
+    "check_connectivity",
+    "collect_system_information",
+    "tftp_server",
+    "dhcp_filename",
+]
+
+
+class MachineDetailedEdit(SuperuserRequiredMixin, UpdateView):
+    model = Machine
+    template_name = "frontend/machines/detail/edit_machine.html"
+    fields = MACHINE_FIELDS
+
+    def get_success_url(self) -> str:
+        return reverse_lazy("frontend:detail", kwargs={"id": self.object.pk})
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["machine"] = self.object
+        context["title"] = "Edit Machine {}".format(self.object.fqdn)
+        return context
+
+    def form_valid(self, form: Any) -> HttpResponse:
+        try:
+            return super().form_valid(form)
+        except ValidationError as e:
+            form.add_error(None, e)
+            return self.form_invalid(form)

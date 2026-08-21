@@ -96,7 +96,7 @@ class ChangeView(WebTest):
         """Test for fieldsets."""
         # Act
         page = self.app.get(  # type: ignore
-            reverse("admin:data_machine_change", args=["1"]), user="superuser"
+            reverse("frontend:edit_machine", args=["1"]), user="superuser"
         )
 
         # Assert
@@ -106,11 +106,32 @@ class ChangeView(WebTest):
         """Test for fieldsets."""
         # Act
         page = self.app.get(  # type: ignore
-            reverse("admin:data_machine_change", args=["2"]), user="superuser"
+            reverse("frontend:edit_machine", args=["2"]), user="superuser"
         )
 
         # Assert
         self.assertContains(page, "VIRTUALIZATION")  # type: ignore
+
+    def test_virtualization_server_hidden_for_non_hypervisor_capable_systems(
+        self,
+    ) -> None:
+        """VIRTUALIZATION SERVER is hidden for systems that cannot host VMs."""
+        virtual_system = System.objects.create(name="VM Test", virtual=True)
+        m3 = Machine()
+        m3.pk = 3
+        m3.system = virtual_system
+        m3.fqdn = "machine3.foo.bar.de"
+        m3.architecture_id = (
+            Architecture.get_architecture_manager().get_by_natural_key("x86_64").id
+        )
+        m3.save()
+
+        page = self.app.get(  # type: ignore
+            reverse("frontend:edit_machine", args=["3"]), user="superuser"
+        )
+
+        self.assertContains(page, "VIRTUALIZATION CLIENT")  # type: ignore
+        self.assertNotContains(page, "VIRTUALIZATION SERVER")  # type: ignore
 
     def test_deactivate_sol_button_visible_for_ipmi_console(self) -> None:
         """The machine detail page should expose the SOL deactivate action for IPMI consoles."""

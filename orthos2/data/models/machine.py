@@ -953,6 +953,35 @@ class Machine(models.Model):
     def has_bmc(self) -> bool:
         return hasattr(self, "bmc")
 
+    def clean(self) -> None:
+        """Validate system-dependent fields (hypervisor, VM host, Ansible checks)."""
+        if self.system_id is None:  # type: ignore[attr-defined]
+            return
+
+        if (
+            self.collect_system_information
+            and self.check_connectivity != Machine.Connectivity.ALL
+        ):
+            raise ValidationError(
+                {
+                    "collect_system_information": "Connectivity check must be set "
+                    "to 'Full' to collect system information!"
+                }
+            )
+
+        if self.hypervisor_id and not self.system.virtual:  # type: ignore[attr-defined]
+            raise ValidationError(
+                {"hypervisor": "Only Virtual Machines may have a hypervisor!"}
+            )
+
+        if self.vm_dedicated_host and not self.system.allowHypervisor:
+            raise ValidationError(
+                {
+                    "vm_dedicated_host": "System type '{}' cannot serve as a "
+                    "dedicated VM host!".format(self.system.name)
+                }
+            )
+
     def save(self, *args: Any, **kwargs: Any) -> None:
         """
         Save machine object.

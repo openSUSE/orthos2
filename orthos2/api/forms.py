@@ -341,13 +341,47 @@ class MachineAPIForm(forms.Form, BaseAPIForm):
             "mac_address",
             "architecture_id",
             "system_id",
-            "group_id",
             "hypervisor_fqdn",
             "nda",
             "administrative",
             "check_connectivity",
             "collect_system_information",
         ]
+
+
+class EditMachineAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = Machine
+        fields = [
+            "fqdn",
+            "enclosure",
+            "architecture",
+            "system",
+            "serial_number",
+            "product_code",
+            "comment",
+            "device_type",
+            "contact_email",
+            "kernel_options",
+            "netbox_id",
+            "administrative",
+            "nda",
+            "autoreinstall",
+            "active",
+            "vm_dedicated_host",
+            "vm_auto_delete",
+            "vm_max",
+            "virt_api_int",
+            "hypervisor",
+            "check_connectivity",
+            "collect_system_information",
+            "tftp_server",
+            "dhcp_filename",
+        ]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return self.Meta.fields
 
 
 class DeleteMachineAPIForm(forms.Form, BaseAPIForm):
