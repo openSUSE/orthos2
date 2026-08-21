@@ -28,6 +28,7 @@ from orthos2.api.forms import (
     EnclosureAPIForm,
     MachineAPIForm,
     ManufacturerAPIForm,
+    NetworkInterfaceAPIForm,
     RemotePowerAPIForm,
     RemotePowerDeviceAPIForm,
     RemotePowerTypeAPIForm,
@@ -40,6 +41,7 @@ from orthos2.api.forms import (
     VirtualMachineAPIForm,
 )
 from orthos2.data.models import (
+    BMC,
     Architecture,
     DeviceType,
     Domain,
@@ -888,6 +890,41 @@ class DeleteDomainAPIFormTests(TestCase):
         """Test that the domain deletion API form rejects an unknown name"""
         # Arrange & Act
         form = DeleteDomainAPIForm({"name": "Nonexistent"})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class NetworkInterfaceAPIFormTests(TestCase):
+    fixtures = ["orthos2/utils/tests/fixtures/machines.json"]
+
+    def test_form(self) -> None:
+        """Test the network interface creation API form"""
+        # Arrange & Act
+        form = NetworkInterfaceAPIForm(
+            {"mac_address": "AA:BB:CC:DD:EE:AA", "ip_address_v4": "127.0.0.50"}
+        )
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_requires_mac_address(self) -> None:
+        """Test that the network interface creation API form requires a MAC address"""
+        # Arrange & Act
+        form = NetworkInterfaceAPIForm({"mac_address": ""})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+    def test_form_rejects_mac_address_used_by_bmc(self) -> None:
+        """Test that the network interface creation API form rejects a BMC's MAC"""
+        # Arrange
+        bmc_mac = BMC.objects.get(pk=1).mac
+
+        # Act
+        form = NetworkInterfaceAPIForm(
+            {"mac_address": bmc_mac, "ip_address_v4": "127.0.0.50"}
+        )
 
         # Assert
         self.assertFalse(form.is_valid())

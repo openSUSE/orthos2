@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
+from orthos2.data.models.bmc import BMC
 from orthos2.data.models.netboxorthoscomparision import (
     NetboxOrthosComparisionResult,
     NetboxOrthosComparisionRun,
@@ -143,6 +144,66 @@ class NetworkInterface(models.Model):
                     self.mac_address, violate_machine
                 )
             )
+
+        if BMC.objects.filter(mac=self.mac_address).exists():
+            raise ValidationError(
+                "MAC address '{}' is already in use by a BMC!".format(self.mac_address)
+            )
+
+        if (
+            self.ip_address_v4
+            and BMC.objects.filter(ip_address_v4=self.ip_address_v4).exists()
+        ):
+            raise ValidationError(
+                "IPv4 address '{}' is already in use by a BMC!".format(
+                    self.ip_address_v4
+                )
+            )
+
+        if (
+            self.ip_address_v6
+            and BMC.objects.filter(ip_address_v6=self.ip_address_v6).exists()
+        ):
+            raise ValidationError(
+                "IPv6 address '{}' is already in use by a BMC!".format(
+                    self.ip_address_v6
+                )
+            )
+
+        if self.primary and hasattr(self, "machine"):
+            other_primary = self.machine.networkinterfaces.filter(primary=True)
+            if self.pk is not None:
+                other_primary = other_primary.exclude(pk=self.pk)
+            if other_primary.exists():
+                raise ValidationError(
+                    "Machine '{}' already has a primary network interface!".format(
+                        self.machine.fqdn
+                    )
+                )
+
+        if hasattr(self, "machine") and not self.machine.administrative:
+            from orthos2.data.models.domain import Domain
+            from orthos2.utils.misc import get_domain
+
+            machine_domain = Domain.objects.get(name=get_domain(self.machine.fqdn))
+            machine_network_v4 = ipaddress.ip_network(
+                f"{machine_domain.ip_v4}/{machine_domain.subnet_mask_v4}",
+                strict=False,
+            )
+            machine_network_v6 = ipaddress.ip_network(
+                f"{machine_domain.ip_v6}/{machine_domain.subnet_mask_v6}",
+                strict=False,
+            )
+            if (
+                self.ip_address_v4
+                and ipaddress.ip_address(self.ip_address_v4) not in machine_network_v4
+            ):
+                raise ValidationError("IPv4 address is not in the chosen network!")
+            if (
+                self.ip_address_v6
+                and ipaddress.ip_address(self.ip_address_v6) not in machine_network_v6
+            ):
+                raise ValidationError("IPv6 address is not in the chosen network!")
 
     def fetch_netbox_record(self) -> Dict[str, Any]:
         """

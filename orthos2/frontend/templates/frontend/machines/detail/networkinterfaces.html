@@ -2,8 +2,11 @@
 {% load filters %}
 
 {% block tabcontent %}
-<div class="title">
+<div class="title d-flex align-items-center">
   <h5>Network Interfaces</h5>
+  {% if request.user.is_superuser %}
+  <a class="btn btn-success btn-sm ms-auto" href="{% url 'frontend:new_networkinterface' machine.pk %}">+</a>
+  {% endif %}
 </div>
 
 <table class="table table-bordered small">
@@ -25,6 +28,7 @@
       <td>{{ network_interface.ethernet_type }}</td>
       {% if request.user.is_superuser %}
       <td>
+        <a class="btn btn-warning btn-sm" href="{% url 'frontend:edit_networkinterface' network_interface.pk %}">Edit</a>
         {% if network_interface.primary %}
         <button class="btn btn-danger btn-sm" disabled>Delete</button>
         {% else %}

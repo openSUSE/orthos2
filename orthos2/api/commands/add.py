@@ -24,6 +24,7 @@ from orthos2.api.forms import (
     EnclosureAPIForm,
     MachineAPIForm,
     ManufacturerAPIForm,
+    NetworkInterfaceAPIForm,
     RemotePowerAPIForm,
     RemotePowerDeviceAPIForm,
     RemotePowerTypeAPIForm,
@@ -72,6 +73,7 @@ class Add:
     ENCLOSURE = "enclosure"
     DOMAINARCHITECTURE = "domainarchitecture"
     DOMAIN = "domain"
+    NETWORKINTERFACE = "networkinterface"
 
     as_list = [
         MACHINE,
@@ -91,6 +93,7 @@ class Add:
         ENCLOSURE,
         DOMAINARCHITECTURE,
         DOMAIN,
+        NETWORKINTERFACE,
     ]
 
 
@@ -134,6 +137,8 @@ class AddCommand(BaseAPIView):
                 domainarchitecture            : Add a supported architecture entry
                                                 for a domain (superusers only).
                 domain <name>                 : Add a domain (superusers only).
+                networkinterface <fqdn>       : Add a network interface to a
+                                                specific machine (superusers only).
 
     Example:
         ADD machine
@@ -152,6 +157,7 @@ class AddCommand(BaseAPIView):
         ADD enclosure Rack01
         ADD domainarchitecture
         ADD domain foo.domain.tld
+        ADD networkinterface foo.domain.tld
     """
 
     @staticmethod
@@ -304,6 +310,17 @@ class AddCommand(BaseAPIView):
             if sub_arguments:
                 return ErrorMessage("Invalid number of arguments for 'domain'!").as_json
             return redirect(reverse("api:domain_add"))
+
+        elif item == Add.NETWORKINTERFACE:
+            if len(sub_arguments) != 1:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'networkinterface'!"
+                ).as_json
+            return redirect(
+                "{}?fqdn={}".format(
+                    reverse("api:networkinterface_add_get"), sub_arguments[0]
+                )
+            )
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
 
@@ -1725,6 +1742,111 @@ class AddDomainCommand(BaseAPIView):
 
         data = json.loads(request.body.decode("utf-8"))["form"]
         form = DomainAPIForm(data)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage("\n{}".format(format_cli_form_errors(form))).as_json  # type: ignore
+
+
+class AddNetworkInterfaceCommandGet(BaseAPIView):
+
+    URL_POST = "/networkinterface/{fqdn}/add"
+
+    HELP_SHORT = "Adds a network interface to a machine."
+    HELP = """Adds a network interface to a machine (superusers only).
+
+    Usage:
+        ADD networkinterface <fqdn>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^networkinterface/add",
+                AddNetworkInterfaceCommandGet.as_view(),
+                name="networkinterface_add_get",
+            ),
+        ]
+
+    def get(
+        self, request: Request, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
+        """Return form for adding a network interface."""
+        fqdn = request.GET.get("fqdn", "")
+        try:
+            result = get_machine(
+                fqdn, redirect_to="api:networkinterface_add_get", data=request.GET
+            )
+            if isinstance(result, Serializer):
+                return result.as_json
+            elif isinstance(result, HttpResponseRedirect):
+                return result
+            machine = result
+        except Exception as e:
+            return ErrorMessage(str(e)).as_json
+
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        form = NetworkInterfaceAPIForm()
+
+        input = InputSerializer(
+            form.as_dict(), self.URL_POST.format(fqdn=machine.fqdn), form.get_order()
+        )
+        return input.as_json
+
+
+class AddNetworkInterfaceCommandPost(BaseAPIView):
+
+    URL_POST = "/networkinterface/{fqdn}/add"
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^networkinterface/(?P<fqdn>[a-z0-9\.-]+)/add$",
+                AddNetworkInterfaceCommandPost.as_view(),
+                name="networkinterface_add_post",
+            ),
+        ]
+
+    def post(
+        self, request: Request, fqdn: str, *args: Any, **kwargs: Any
+    ) -> Union[JsonResponse, HttpResponseRedirect]:
+        """Add network interface to machine."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        try:
+            result = get_machine(
+                fqdn, redirect_to="api:networkinterface_add_post", data=request.GET
+            )
+            if isinstance(result, Serializer):
+                return result.as_json
+            elif isinstance(result, HttpResponseRedirect):
+                return result
+            machine = result
+        except Exception as e:
+            return ErrorMessage(str(e)).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        form = NetworkInterfaceAPIForm(data)
+        form.instance.machine = machine
 
         if form.is_valid():
             try:

@@ -16,9 +16,9 @@ from django.http import (
     HttpResponsePermanentRedirect,
     HttpResponseRedirect,
 )
-from django.shortcuts import redirect, render  # type: ignore
+from django.shortcuts import get_object_or_404, redirect, render  # type: ignore
 from django.urls import reverse_lazy
-from django.views.generic import DeleteView
+from django.views.generic import CreateView, DeleteView, UpdateView
 
 from orthos2.data.models import Machine, NetworkInterface
 from orthos2.data.models.netboxorthoscomparision import NetboxOrthosComparisionRun
@@ -27,6 +27,7 @@ from orthos2.frontend.forms.addmachine import AddMachineFormView
 from orthos2.frontend.forms.reservemachine import ReserveMachineForm
 from orthos2.frontend.forms.setupmachine import SetupMachineForm
 from orthos2.frontend.forms.virtualmachine import VirtualMachineForm
+from orthos2.frontend.mixins import SuperuserRequiredMixin
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.cobbler import CobblerServer
@@ -601,3 +602,53 @@ class DeleteNetworkInterface(DeleteView):  # type: ignore
         if obj.primary:
             raise PermissionDenied
         return super().form_valid(form)
+
+
+NETWORKINTERFACE_FIELDS = ["primary", "mac_address", "ip_address_v4", "ip_address_v6"]
+
+
+class NewNetworkInterface(SuperuserRequiredMixin, CreateView):
+    model = NetworkInterface
+    template_name = "frontend/machines/detail/new_networkinterface.html"
+    fields = NETWORKINTERFACE_FIELDS
+
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
+        self.machine = get_object_or_404(Machine, pk=self.kwargs["machine_id"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self) -> Dict[str, Any]:
+        kwargs = super().get_form_kwargs()
+        kwargs["instance"] = NetworkInterface(machine=self.machine)
+        return kwargs
+
+    def get_success_url(self) -> str:
+        return reverse_lazy(
+            "frontend:networkinterfaces", kwargs={"id": self.machine.pk}
+        )
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["machine"] = self.machine
+        context["title"] = "New Network Interface for {}".format(self.machine.fqdn)
+        context["action"] = "new"
+        return context
+
+
+class NetworkInterfaceDetailedEdit(SuperuserRequiredMixin, UpdateView):
+    model = NetworkInterface
+    template_name = "frontend/machines/detail/new_networkinterface.html"
+    fields = NETWORKINTERFACE_FIELDS
+
+    def get_success_url(self) -> str:
+        return reverse_lazy(
+            "frontend:networkinterfaces", kwargs={"id": self.object.machine_id}
+        )
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["machine"] = self.object.machine
+        context["title"] = "Edit Network Interface for {}".format(
+            self.object.machine.fqdn
+        )
+        context["action"] = "edit"
+        return context

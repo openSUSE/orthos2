@@ -25,6 +25,7 @@ from orthos2.api.forms import (
     DomainArchitectureAPIForm,
     EnclosureAPIForm,
     ManufacturerAPIForm,
+    NetworkInterfaceAPIForm,
     RemotePowerDeviceAPIForm,
     RemotePowerTypeAPIForm,
     SerialConsoleTypeAPIForm,
@@ -45,6 +46,7 @@ from orthos2.data.models import (
     DomainAdmin,
     Enclosure,
     Manufacturer,
+    NetworkInterface,
     RemotePowerDevice,
     RemotePowerType,
     SerialConsoleType,
@@ -69,6 +71,7 @@ class Edit:
     REMOTEPOWERDEVICE = "remotepowerdevice"
     DOMAINARCHITECTURE = "domainarchitecture"
     DOMAIN = "domain"
+    NETWORKINTERFACE = "networkinterface"
 
     as_list = [
         MANUFACTURER,
@@ -82,6 +85,7 @@ class Edit:
         REMOTEPOWERDEVICE,
         DOMAINARCHITECTURE,
         DOMAIN,
+        NETWORKINTERFACE,
     ]
 
 
@@ -116,6 +120,8 @@ class EditCommand(BaseAPIView):
                 domainarchitecture <id> : Edit a supported architecture entry
                                          for a domain (superusers only).
                 domain <id>            : Edit a domain (superusers only).
+                networkinterface <id>  : Edit a network interface
+                                         (superusers only).
 
     Example:
         EDIT manufacturer 1
@@ -129,6 +135,7 @@ class EditCommand(BaseAPIView):
         EDIT remotepowerdevice 1
         EDIT domainarchitecture 1
         EDIT domain 1
+        EDIT networkinterface 1
     """
 
     @staticmethod
@@ -264,6 +271,18 @@ class EditCommand(BaseAPIView):
 
             return redirect(
                 "{}?id={}".format(reverse("api:domain_edit"), sub_arguments[0])
+            )
+
+        elif item == Edit.NETWORKINTERFACE:
+            if len(sub_arguments) != 1:
+                return ErrorMessage(
+                    "Invalid number of arguments for 'networkinterface'!"
+                ).as_json
+
+            return redirect(
+                "{}?id={}".format(
+                    reverse("api:networkinterface_edit"), sub_arguments[0]
+                )
             )
 
         return ErrorMessage("Unknown item '{}'!".format(item)).as_json
@@ -1427,6 +1446,96 @@ class EditDomainCommand(BaseAPIView):
             ).as_json
 
         form = DomainAPIForm(data, instance=domain)
+
+        if form.is_valid():
+            try:
+                form.save()
+            except Exception as e:
+                logger.exception(e)
+                return ErrorMessage("Something went wrong!").as_json
+
+            return Message("Ok.").as_json
+
+        return ErrorMessage(
+            "\n{}".format(format_cli_form_errors(form))  # type: ignore[arg-type]
+        ).as_json
+
+
+class EditNetworkInterfaceCommand(BaseAPIView):
+
+    METHOD = "POST"
+    URL = "/networkinterface/edit"
+    URL_POST = "/networkinterface/edit"
+    ARGUMENTS = (["id", "primary", "mac_address", "ip_address_v4", "ip_address_v6"],)
+
+    HELP_SHORT = "Edits a network interface in the database."
+    HELP = """Edits a network interface in the database (superusers only).
+
+    Usage:
+        EDIT networkinterface <id>
+    """
+
+    @staticmethod
+    def get_urls() -> List[URLPattern]:
+        return [
+            re_path(
+                r"^networkinterface/edit",
+                EditNetworkInterfaceCommand.as_view(),
+                name="networkinterface_edit",
+            ),
+        ]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Return form for editing a network interface."""
+        if isinstance(request.user, AnonymousUser) or not request.auth:
+            return AuthRequiredSerializer().as_json
+
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        networkinterface_id = request.GET.get("id")
+        try:
+            networkinterface = NetworkInterface.objects.get(pk=networkinterface_id)  # type: ignore[misc]
+        except (NetworkInterface.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Network interface with id '{}' does not exist!".format(
+                    networkinterface_id
+                )
+            ).as_json
+
+        form = NetworkInterfaceAPIForm(instance=networkinterface)
+        fields = form.as_dict()
+        fields["id"] = {
+            "type": "INTEGER",
+            "prompt": "ID",
+            "initial": networkinterface.pk,
+            "required": True,
+        }
+
+        input = InputSerializer(fields, self.URL_POST, ["id"] + form.get_order())
+        return input.as_json
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> JsonResponse:
+        """Edit network interface."""
+        if not request.user.is_superuser:  # type: ignore
+            return ErrorMessage(
+                "Only superusers are allowed to perform this action!"
+            ).as_json
+
+        data = json.loads(request.body.decode("utf-8"))["form"]
+        networkinterface_id = data.get("id")
+        try:
+            networkinterface = NetworkInterface.objects.get(pk=networkinterface_id)
+        except (NetworkInterface.DoesNotExist, ValueError, TypeError):
+            return ErrorMessage(
+                "Network interface with id '{}' does not exist!".format(
+                    networkinterface_id
+                )
+            ).as_json
+
+        form = NetworkInterfaceAPIForm(data, instance=networkinterface)
 
         if form.is_valid():
             try:
