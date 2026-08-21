@@ -1,0 +1,45 @@
+{% load filters %}
+<div class="title">
+  <h5>Actions</h5>
+</div>
+
+<div class="btn-group-vertical d-flex">
+  <a
+    class="btn btn-warning btn-sm"
+    href="{% url 'frontend:edit_domain' domain.pk %}"
+    role="button"
+    >Edit Domain</a
+  >
+</div>
+<br />
+<div class="btn-group-vertical d-flex">
+  <a
+    class="btn btn-danger btn-sm"
+    href="{% url 'frontend:delete_domain' domain.pk %}"
+    role="button"
+    >Delete Domain</a
+  >
+</div>
+{% if domain.cobbler_server or domain.cscreen_server %}
+<br />
+<div class="btn-group-vertical d-flex">
+  {% if domain.cobbler_server %}
+  <a
+    class="btn btn-secondary btn-sm regenerate-domain-cobbler"
+    href="javascript:void(0);"
+    onclick="regenerate_domain_cobbler()"
+    role="button"
+    >Regenerate Cobbler Server</a
+  >
+  {% endif %}
+  {% if domain.cscreen_server %}
+  <a
+    class="btn btn-secondary btn-sm regenerate-domain-cscreen"
+    href="javascript:void(0);"
+    onclick="regenerate_domain_cscreen()"
+    role="button"
+    >Regenerate Serial Console Server</a
+  >
+  {% endif %}
+</div>
+{% endif %}

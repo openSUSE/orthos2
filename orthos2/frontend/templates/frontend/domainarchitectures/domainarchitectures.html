@@ -1,0 +1,62 @@
+{% extends 'frontend/domains/domain.html' %}
+
+{% block tabcontent %}
+
+<div class="container-fluid" style="margin-bottom: 15px;">
+  <div class="row">
+    <div class="col-12 d-flex align-items-center">
+
+      <div style="display: inline-block">
+          <span class="hint">Supported architectures for {{ domain.name }}</span>
+      </div>
+
+      <a
+        class="nav-link ms-auto"
+        href="{% url 'frontend:new_domain_architecture' domain.pk %}"
+      >
+        <button type="button" class="btn btn-success">+</button>
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  {% if object_list %}
+    <table class="table table-striped table-bordered table-fixed">
+      <thead class="thead-default text-start">
+        <tr style="border: 1px solid #ddd;">
+          <th>Architecture</th>
+          <th>Contact Email</th>
+          <th width="160px">&nbsp;</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for domainarchitecture in object_list %}
+          <tr>
+            <td>{{ domainarchitecture.arch.name }}</td>
+            <td>{{ domainarchitecture.contact_email }}</td>
+            <td>
+              <a
+                href="{% url 'frontend:edit_domain_architecture' domainarchitecture.pk %}"
+                class="btn btn-warning btn-sm"
+              >
+                Edit
+              </a>
+              <a
+                href="{% url 'frontend:delete_domain_architecture' domainarchitecture.pk %}"
+                class="btn btn-danger btn-sm"
+              >
+                Delete
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="alert alert-info">No supported architectures found!</div>
+  {% endif %}
+</div>
+{% endblock %}
