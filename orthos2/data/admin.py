@@ -9,19 +9,16 @@ from django.db.models import Q, QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 
-from orthos2.api.forms import RemotePowerDeviceAPIForm
 from orthos2.data.models import (
     BMC,
     Annotation,
     Architecture,
     Domain,
     DomainAdmin,
-    Enclosure,
     Machine,
     NetworkInterface,
     RemotePower,
     RemotePowerDevice,
-    RemotePowerType,
     SerialConsole,
     System,
 )
@@ -880,44 +877,3 @@ class DomainAdminAdmin(admin.ModelAdmin):  # type: ignore
 
 
 admin.site.register(Domain, DomainAdminAdmin)  # type: ignore
-
-
-class EnclosureAdmin(admin.ModelAdmin):  # type: ignore
-    readonly_fields = (
-        "netbox_last_fetch_attempt",
-        "location_site",
-        "location_room",
-        "location_rack",
-        "location_rack_position",
-    )
-    list_display = ("name", "machine_count", "device_type_name")
-    search_fields = ("name",)
-
-    def machine_count(self, obj: Enclosure) -> int:
-        """Return machine counter of enclosure."""
-        return obj.machine_set.count()
-
-    def device_type_name(self, obj: Enclosure) -> Optional[str]:
-        """Return name of enclosures device type."""
-        device_type = obj.device_type
-        if device_type:
-            return device_type.name
-        return None
-
-
-admin.site.register(Enclosure, EnclosureAdmin)  # type: ignore
-
-
-class RemotePowerDeviceAdmin(admin.ModelAdmin):  # type: ignore
-    form = RemotePowerDeviceAPIForm
-    list_display = ["fqdn", "fence_agent"]  # type: ignore
-
-
-admin.site.register(RemotePowerDevice, RemotePowerDeviceAdmin)  # type: ignore
-
-
-class RemotePowerTypeAdmin(admin.ModelAdmin):  # type: ignore
-    list_display = ("name", "device")
-
-
-admin.site.register(RemotePowerType, RemotePowerTypeAdmin)  # type: ignore

@@ -447,6 +447,37 @@ urlpatterns = [
         views.dailytask_switch,
         name="dailytask_switch",
     ),
+    # Remote Power Types
+    path(
+        "remotepowertypes",
+        views.RemotePowerTypeListView.as_view(),
+        name="remotepowertypes",
+    ),
+    re_path(
+        r"^remotepowertype/(?P<id>[0-9]+)/detail$",
+        views.remotepowertype_detail,
+        name="remotepowertype_detail",
+    ),
+    re_path(
+        r"^remotepowertype/(?P<id>[0-9]+)/devices$",
+        views.remotepowertype_devices,
+        name="remotepowertype_devices",
+    ),
+    path(
+        "remotepowertypes/new",
+        views.NewRemotePowerType.as_view(),
+        name="new_remotepowertype",
+    ),
+    path(
+        "remotepowertypes/edit/<int:pk>/",
+        views.RemotePowerTypeDetailedEdit.as_view(),
+        name="edit_remotepowertype",
+    ),
+    path(
+        "remotepowertypes/delete/<int:pk>/",
+        views.DeleteRemotePowerType.as_view(),
+        name="delete_remotepowertype",
+    ),
     # Architectures
     path("architectures", views.ArchitectureListView.as_view(), name="architectures"),
     re_path(

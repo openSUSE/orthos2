@@ -113,6 +113,14 @@ from .remotepowerdevice import (
     remotepowerdevice_fetch_netbox,
     remotepowerdevice_netboxcomparison,
 )
+from .remotepowertype import (
+    DeleteRemotePowerType,
+    NewRemotePowerType,
+    RemotePowerTypeDetailedEdit,
+    RemotePowerTypeListView,
+    remotepowertype_detail,
+    remotepowertype_devices,
+)
 from .serialconsoletype import (
     DeleteSerialConsoleType,
     NewSerialConsoleType,
@@ -257,6 +265,12 @@ __all__ = [
     "dailytask_detail",
     "dailytask_execute",
     "dailytask_switch",
+    "RemotePowerTypeListView",
+    "NewRemotePowerType",
+    "RemotePowerTypeDetailedEdit",
+    "DeleteRemotePowerType",
+    "remotepowertype_detail",
+    "remotepowertype_devices",
     "ArchitectureListView",
     "NewArchitecture",
     "ArchitectureDetailedEdit",

@@ -102,7 +102,7 @@ class EnclosureDetailedEdit(PermissionRequiredMixin, UpdateView):
 class NewEnclosure(PermissionRequiredMixin, CreateView):
     model = Enclosure
     template_name = "frontend/enclosures/new_enclosure.html"
-    success_url = "/enclosures"
+    success_url = reverse_lazy("frontend:enclosures")
     permission_required = "data.change_enclosure"
 
     fields = ["name", "device_type", "netbox_id", "description", "is_virtual"]
@@ -200,13 +200,13 @@ def enclosure_netboxcomparison(
     ]
     if not request.user.has_perms(perm_list):
         messages.error(request, "Not enough user permissions.")
-        return redirect("enclosures")
+        return redirect("frontend:enclosures")
 
     try:
         enclosure = Enclosure.objects.get(pk=id)
     except Enclosure.DoesNotExist:
         messages.error(request, "Enclosure does not exist.")
-        return redirect("enclosures")
+        return redirect("frontend:enclosures")
 
     if enclosure.netboxorthoscomparisionruns.count() > 0:
         enclosure_run = enclosure.netboxorthoscomparisionruns.latest(

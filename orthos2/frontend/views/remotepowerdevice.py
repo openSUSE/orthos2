@@ -1,6 +1,7 @@
 """
 All views that are under "/remote-power-devices".
 """
+
 import logging
 from typing import TYPE_CHECKING, Any, Dict
 
@@ -68,7 +69,6 @@ class RemotePowerDevicesListView(PermissionRequiredMixin, ListView):
 
 class RemotePowerDeviceDetailedEdit(PermissionRequiredMixin, UpdateView):
     model = RemotePowerDevice
-    success_url = reverse_lazy("remote-power-device/<int:pk>")
     template_name = "frontend/remotepowerdevices/new_remotepowerdevice.html"
     success_url = reverse_lazy("frontend:remotepowerdevices")
     permission_required = "data.change_remotepowerdevice"
@@ -280,7 +280,7 @@ def remotepowerdevice_netboxcomparison(
     ]
     if not request.user.has_perms(perm_list):
         messages.error(request, "Not enough user permissions.")
-        return redirect("remotepowerdevices")
+        return redirect("frontend:remotepowerdevices")
 
     try:
         remotepowerdevice = RemotePowerDevice.objects.get(pk=id)

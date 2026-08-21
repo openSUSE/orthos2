@@ -10,19 +10,23 @@ from orthos2.api.forms import (
     DeleteArchitectureAPIForm,
     DeleteDailyTaskAPIForm,
     DeleteDeviceTypeAPIForm,
+    DeleteEnclosureAPIForm,
     DeleteMachineAPIForm,
     DeleteManufacturerAPIForm,
     DeleteRemotePowerAPIForm,
     DeleteRemotePowerDeviceAPIForm,
+    DeleteRemotePowerTypeAPIForm,
     DeleteSerialConsoleTypeAPIForm,
     DeleteServerConfigAPIForm,
     DeleteSingleTaskAPIForm,
     DeleteSystemAPIForm,
     DeviceTypeAPIForm,
+    EnclosureAPIForm,
     MachineAPIForm,
     ManufacturerAPIForm,
     RemotePowerAPIForm,
     RemotePowerDeviceAPIForm,
+    RemotePowerTypeAPIForm,
     ReserveMachineAPIForm,
     SerialConsoleAPIForm,
     SerialConsoleTypeAPIForm,
@@ -34,6 +38,7 @@ from orthos2.api.forms import (
 from orthos2.data.models import (
     Architecture,
     DeviceType,
+    Enclosure,
     Manufacturer,
     SerialConsoleType,
     ServerConfig,
@@ -461,6 +466,45 @@ class DeleteArchitectureAPIFormTests(TestCase):
         self.assertFalse(form.is_valid())
 
 
+class RemotePowerTypeAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the remote power type creation API form"""
+        # Arrange & Act
+        form = RemotePowerTypeAPIForm({"name": "AcmeRemotePowerType", "device": "bmc"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_requires_name(self) -> None:
+        """Test that the remote power type creation API form requires a name"""
+        # Arrange & Act
+        form = RemotePowerTypeAPIForm({"name": "", "device": "bmc"})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DeleteRemotePowerTypeAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the remote power type deletion API form"""
+        # Arrange
+        RemotePowerType.objects.create(name="AcmeRemotePowerType")
+
+        # Act
+        form = DeleteRemotePowerTypeAPIForm({"name": "AcmeRemotePowerType"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_rejects_nonexistent_remotepowertype(self) -> None:
+        """Test that the remote power type deletion API form rejects an unknown name"""
+        # Arrange & Act
+        form = DeleteRemotePowerTypeAPIForm({"name": "Nonexistent"})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
 class ServerConfigAPIFormTests(TestCase):
     def test_form(self) -> None:
         """Test the server configuration creation API form"""
@@ -642,6 +686,45 @@ class DeleteDailyTaskAPIFormTests(TestCase):
         """Test that the daily task deletion API form rejects an unknown id"""
         # Arrange & Act
         form = DeleteDailyTaskAPIForm({"id": 99999})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class EnclosureAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the enclosure creation API form"""
+        # Arrange & Act
+        form = EnclosureAPIForm({"name": "AcmeEnclosure", "netbox_id": 0})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_requires_name(self) -> None:
+        """Test that the enclosure creation API form requires a name"""
+        # Arrange & Act
+        form = EnclosureAPIForm({"name": "", "netbox_id": 0})
+
+        # Assert
+        self.assertFalse(form.is_valid())
+
+
+class DeleteEnclosureAPIFormTests(TestCase):
+    def test_form(self) -> None:
+        """Test the enclosure deletion API form"""
+        # Arrange
+        Enclosure.objects.create(name="AcmeEnclosure")
+
+        # Act
+        form = DeleteEnclosureAPIForm({"name": "AcmeEnclosure"})
+
+        # Assert
+        self.assertTrue(form.is_valid())
+
+    def test_form_rejects_nonexistent_enclosure(self) -> None:
+        """Test that the enclosure deletion API form rejects an unknown name"""
+        # Arrange & Act
+        form = DeleteEnclosureAPIForm({"name": "Nonexistent"})
 
         # Assert
         self.assertFalse(form.is_valid())

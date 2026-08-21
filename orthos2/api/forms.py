@@ -580,11 +580,38 @@ class RemotePowerDeviceAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
         label="Architecture",
     )
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        # Editing doesn't require resubmitting architecture (it's not part of
+        # EditRemotePowerDeviceCommand.ARGUMENTS) - only Add needs it.
+        if self.instance.pk:
+            self.fields["architecture"].required = False
+
+    def clean_architecture(self) -> Architecture:
+        architecture = self.cleaned_data.get("architecture")
+        if architecture is None:
+            # Only reachable when editing (required=False above) - Add
+            # still enforces the field before this method is even called.
+            return self.instance.architecture  # type: ignore[no-any-return]
+        return architecture
+
     def save(self, commit: bool = True) -> RemotePowerDevice:
         # domain is required but not user-supplied - resolve it from fqdn,
         # same as the frontend's RemotePowerDevice creation view does.
         self.instance.domain = Domain.objects.get(name=get_domain(self.instance.fqdn))
         return super().save(commit=commit)  # type: ignore
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "fqdn",
+            "mac",
+            "username",
+            "password",
+            "fence_agent",
+            "url",
+            "architecture",
+        ]
 
 
 class DeleteRemotePowerAPIForm(forms.Form, BaseAPIForm):
@@ -777,6 +804,56 @@ class DeleteArchitectureAPIForm(forms.Form, BaseAPIForm):
         ]
 
 
+class RemotePowerTypeAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = RemotePowerType
+        fields = [
+            "name",
+            "device",
+            "username",
+            "password",
+            "identity_file",
+            "architectures",
+            "systems",
+            "use_port",
+            "use_hostname_as_port",
+        ]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "name",
+            "device",
+            "username",
+            "password",
+            "identity_file",
+            "architectures",
+            "systems",
+            "use_port",
+            "use_hostname_as_port",
+        ]
+
+
+class DeleteRemotePowerTypeAPIForm(forms.Form, BaseAPIForm):
+    def clean_name(self) -> str:
+        """Check whether a remote power type with `name` exists."""
+        name = self.cleaned_data["name"]
+        if RemotePowerType.objects.filter(name__iexact=name).count() == 0:
+            self.add_error("name", "No remote power type with this name")
+        return name
+
+    name = forms.CharField(
+        label="Name",
+        max_length=255,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "name",
+        ]
+
+
 class ServerConfigAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
     class Meta:  # type: ignore
         model = ServerConfig
@@ -850,4 +927,34 @@ class DeleteDailyTaskAPIForm(forms.Form, BaseAPIForm):
         """Return input order."""
         return [
             "id",
+        ]
+
+
+class EnclosureAPIForm(forms.ModelForm, BaseAPIForm):  # type: ignore
+    class Meta:  # type: ignore
+        model = Enclosure
+        fields = ["name", "device_type", "netbox_id", "description", "is_virtual"]
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return ["name", "device_type", "netbox_id", "description", "is_virtual"]
+
+
+class DeleteEnclosureAPIForm(forms.Form, BaseAPIForm):
+    def clean_name(self) -> str:
+        """Check whether an enclosure with `name` exists."""
+        name = self.cleaned_data["name"]
+        if Enclosure.objects.filter(name__iexact=name).count() == 0:
+            self.add_error("name", "No enclosure with this name")
+        return name
+
+    name = forms.CharField(
+        label="Name",
+        max_length=200,
+    )
+
+    def get_order(self) -> List[str]:
+        """Return input order."""
+        return [
+            "name",
         ]
