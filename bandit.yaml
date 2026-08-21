@@ -1,0 +1,15 @@
+# Configuration for bandit (https://bandit.readthedocs.io/), used both
+# locally (`bandit -c bandit.yaml -r orthos2`) and by Codacy's Bandit
+# integration.
+#
+# B101 (use of `assert`) is expected and idiomatic in Django TestCase/pytest
+# test files, where `assert` is the normal way to make an assertion, and
+# stripping it under `python -O` (the actual security concern for B101) is a
+# non-issue since tests are never run that way. Keep B101 active for
+# application code, where an `assert` silently disappearing under `-O` would
+# be a real bug.
+assert_used:
+  skips:
+    - "*/tests/*"
+    - "*/test_*.py"
+    - "*_test.py"
