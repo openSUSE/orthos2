@@ -108,7 +108,7 @@
     <a class="nav-link" href="/api/schema" target="_blank">REST API</a>
   </li>
   {% if request.user.is_superuser %}
-    {% active_group request 'users' 'serialconsoletypes' 'systems' 'remotepowertypes' 'architectures' 'serverconfigs' 'singletasks' 'dailytasks' 'domains' as admin_open %}
+    {% active_group request 'users' 'tokens' 'serialconsoletypes' 'systems' 'remotepowertypes' 'architectures' 'serverconfigs' 'singletasks' 'dailytasks' 'domains' as admin_open %}
     <li class="nav-item">
       <a
         class="nav-link"
@@ -180,6 +180,11 @@
           class="nav-item position-relative {% active_view request 'users' %}"
         >
           <a class="nav-link" href="{% url 'frontend:users' %}">Users</a>
+        </li>
+        <li
+          class="nav-item position-relative {% active_view request 'tokens' %}"
+        >
+          <a class="nav-link" href="{% url 'frontend:tokens' %}">Tokens</a>
         </li>
       </ul>
     </li>

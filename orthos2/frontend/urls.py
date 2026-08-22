@@ -273,6 +273,12 @@ urlpatterns = [
     re_path(
         r"^password/restore$", views.users_password_restore, name="password_restore"
     ),
+    path("tokens", views.TokenListView.as_view(), name="tokens"),
+    path(
+        "tokens/delete/<str:pk>/",
+        views.DeleteToken.as_view(),
+        name="delete_token",
+    ),
     re_path(r"^statistics$", views.statistics, name="statistics"),
     re_path(
         r"^ajax/machine/(?P<machine_id>[0-9]+)/annotation/add",
