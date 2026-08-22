@@ -70,6 +70,34 @@ class TaskExecuter(Thread):
             singletask.save()
             self.queue[singletask.priority].put(singletask)
 
+    def reset_stale_running_tasks(self) -> None:
+        """
+        Clear the 'running' flag left behind on tasks that were mid-execution
+        when the taskmanager process last stopped (crash, restart, kill -9).
+        This process just started and tracks no threads yet, so any task
+        still marked running in the database is necessarily stale, not
+        actually in progress.
+        """
+        stale_daily = DailyTask.objects.filter(running=True)
+        stale_daily_count = stale_daily.count()
+        if stale_daily_count:
+            logger.warning(
+                "Resetting %d daily task(s) stuck as running from a previous "
+                "taskmanager run.",
+                stale_daily_count,
+            )
+            stale_daily.update(running=False)
+
+        stale_single = SingleTask.objects.filter(running=True)
+        stale_single_count = stale_single.count()
+        if stale_single_count:
+            logger.warning(
+                "Resetting %d single task(s) stuck as running from a previous "
+                "taskmanager run.",
+                stale_single_count,
+            )
+            stale_single.update(running=False)
+
     def reset_daily_task(self, hash: str) -> None:
         """Reset daily task and unset 'running' field."""
         try:
@@ -101,6 +129,7 @@ class TaskExecuter(Thread):
 
     def run(self) -> None:
         """Main thread function."""
+        self.reset_stale_running_tasks()
         running_threads: Dict[str, Tuple[Thread, "Task"]] = {}
         while not self._stop_execution:
             queue = None
