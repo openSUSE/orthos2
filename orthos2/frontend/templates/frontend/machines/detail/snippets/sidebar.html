@@ -58,7 +58,11 @@
 
 <br/>
 <div class="btn-group-vertical d-flex">
+  {% if machine.netbox_id %}
     <a class="btn btn-secondary btn-sm" href="{% url 'frontend:netbox_fetch' machine.id %}" role="button">Fetch Netbox</a>
+  {% else %}
+    <a class="btn btn-secondary btn-sm disabled" href="#" role="button" title="Not linked to NetBox">Fetch Netbox</a>
+  {% endif %}
 </div>
 
 <br/>

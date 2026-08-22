@@ -13,12 +13,22 @@
 </div>
 <br />
 <div class="btn-group-vertical d-flex">
-  <a
-    class="btn btn-secondary btn-sm"
-    href="{% url 'frontend:remotepowerdevice_netbox_fetch' remotepowerdevice.pk %}"
-    role="button"
-    >Fetch Netbox</a
-  >
+  {% if remotepowerdevice.netbox_id %}
+    <a
+      class="btn btn-secondary btn-sm"
+      href="{% url 'frontend:remotepowerdevice_netbox_fetch' remotepowerdevice.pk %}"
+      role="button"
+      >Fetch Netbox</a
+    >
+  {% else %}
+    <a
+      class="btn btn-secondary btn-sm disabled"
+      href="#"
+      role="button"
+      title="Not linked to NetBox"
+      >Fetch Netbox</a
+    >
+  {% endif %}
   {% if perms.data.change_remotepowerdevice %}
   <a class="btn btn-secondary btn-sm regenerate-remotepowerdevice-cobbler" href="javascript:void(0);" onclick="regenerate_remotepowerdevice_cobbler()" role="button">Regenerate Cobbler Record</a>
   {% endif %}

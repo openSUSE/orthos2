@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from orthos2.data.models import Enclosure
+from orthos2.taskmanager.models import SingleTask
 
 
 class EnclosureListViewTest(TestCase):
@@ -255,3 +256,51 @@ class DeleteEnclosureViewTest(TestCase):
         response = self.client.post(url)
         assert response.status_code == 403
         assert Enclosure.objects.filter(pk=self.enclosure.pk).exists()
+
+
+class EnclosureFetchNetboxViewTest(TestCase):
+    fixtures = ["orthos2/frontend/tests/user/fixtures/users.json"]
+
+    def setUp(self) -> None:
+        self.enclosure = Enclosure.objects.create(name="AcmeEnclosure", netbox_id=42)
+
+    def test_superuser_queues_fetch_task(self) -> None:
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse(
+            "frontend:enclosure_netbox_fetch", kwargs={"id": self.enclosure.pk}
+        )
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert SingleTask.objects.filter(name="NetboxFetchFullEnclosure").exists()
+
+    def test_superuser_get_when_not_synced_does_not_queue_task(self) -> None:
+        unsynced = Enclosure.objects.create(name="UnsyncedEnclosure")
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse("frontend:enclosure_netbox_fetch", kwargs={"id": unsynced.pk})
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert not SingleTask.objects.filter(name="NetboxFetchFullEnclosure").exists()
+
+
+class EnclosureCompareNetboxViewTest(TestCase):
+    fixtures = ["orthos2/frontend/tests/user/fixtures/users.json"]
+
+    def setUp(self) -> None:
+        self.enclosure = Enclosure.objects.create(name="AcmeEnclosure", netbox_id=42)
+
+    def test_superuser_queues_compare_task(self) -> None:
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse(
+            "frontend:enclosure_netbox_compare", kwargs={"id": self.enclosure.pk}
+        )
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert SingleTask.objects.filter(name="NetboxCompareEnclosure").exists()
+
+    def test_superuser_get_when_not_synced_does_not_queue_task(self) -> None:
+        unsynced = Enclosure.objects.create(name="UnsyncedEnclosure")
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse("frontend:enclosure_netbox_compare", kwargs={"id": unsynced.pk})
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert not SingleTask.objects.filter(name="NetboxCompareEnclosure").exists()

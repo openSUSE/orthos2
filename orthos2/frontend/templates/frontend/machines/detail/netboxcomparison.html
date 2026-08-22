@@ -4,7 +4,11 @@
 {% block tabcontent %}
 <div style="display: table; width: 100%;">
 <div style="display: table-row;" class="float-end">
-  <a class="text-end btn btn-secondary btn-sm" href="{% url 'frontend:netbox_compare' machine.id %}" role="button">Preview and Compare data with NetBox</a>
+  {% if machine.netbox_id %}
+    <a class="text-end btn btn-secondary btn-sm" href="{% url 'frontend:netbox_compare' machine.id %}" role="button">Preview and Compare data with NetBox</a>
+  {% else %}
+    <a class="text-end btn btn-secondary btn-sm disabled" href="#" role="button" title="Not linked to NetBox">Preview and Compare data with NetBox</a>
+  {% endif %}
 </div>
 </div>
 

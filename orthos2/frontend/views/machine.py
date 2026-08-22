@@ -564,6 +564,10 @@ def fetch_netbox(request: HttpRequest, id: int) -> HttpResponseRedirect:
         messages.error(request, "Machine does not exist!")
         return redirect("frontend:machines")
 
+    if requested_machine.netbox_id == 0:
+        messages.error(request, "Machine is not linked to NetBox!")
+        return redirect("frontend:detail", id=id)
+
     try:
         TaskManager.add(tasks.NetboxFetchFullMachine(requested_machine.pk))
         messages.info(
@@ -584,6 +588,10 @@ def compare_netbox(request: HttpRequest, id: int) -> HttpResponseRedirect:
     except Machine.DoesNotExist:
         messages.error(request, "Machine does not exist!")
         return redirect("frontend:machines")
+
+    if requested_machine.netbox_id == 0:
+        messages.error(request, "Machine is not linked to NetBox!")
+        return redirect("frontend:detail", id=id)
 
     try:
         TaskManager.add(tasks.NetboxCompareFullMachine(requested_machine.pk))

@@ -156,6 +156,10 @@ def manufacturer_fetch_netbox(request: HttpRequest, id: int) -> HttpResponseRedi
         messages.error(request, "Manufacturer does not exist!")
         return redirect("frontend:manufacturers")
 
+    if requested_manufacturer.netbox_id == 0:
+        messages.error(request, "Manufacturer is not linked to NetBox!")
+        return redirect("frontend:manufacturer_detail", id=id)
+
     try:
         TaskManager.add(tasks.NetboxFetchFullManufacturer(requested_manufacturer.pk))
         messages.info(
@@ -203,6 +207,10 @@ def manufacturer_compare_netbox(request: HttpRequest, id: int) -> HttpResponseRe
     except Manufacturer.DoesNotExist:
         messages.error(request, "Manufacturer does not exist!")
         return redirect("frontend:manufacturers")
+
+    if requested_manufacturer.netbox_id == 0:
+        messages.error(request, "Manufacturer is not linked to NetBox!")
+        return redirect("frontend:manufacturer_detail", id=id)
 
     try:
         TaskManager.add(tasks.NetboxCompareManufacturer(requested_manufacturer.pk))

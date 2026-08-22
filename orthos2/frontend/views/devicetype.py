@@ -134,6 +134,10 @@ def devicetype_fetch_netbox(request: HttpRequest, id: int) -> HttpResponseRedire
         messages.error(request, "Device Type does not exist!")
         return redirect("frontend:devicetypes")
 
+    if requested_devicetype.netbox_id == 0:
+        messages.error(request, "Device Type is not linked to NetBox!")
+        return redirect("frontend:devicetype_detail", id=id)
+
     try:
         TaskManager.add(tasks.NetboxFetchFullDeviceType(requested_devicetype.pk))
         messages.info(
@@ -181,6 +185,10 @@ def devicetype_compare_netbox(request: HttpRequest, id: int) -> HttpResponseRedi
     except DeviceType.DoesNotExist:
         messages.error(request, "Device Type does not exist!")
         return redirect("frontend:devicetypes")
+
+    if requested_devicetype.netbox_id == 0:
+        messages.error(request, "Device Type is not linked to NetBox!")
+        return redirect("frontend:devicetype_detail", id=id)
 
     try:
         TaskManager.add(tasks.NetboxCompareDeviceType(requested_devicetype.pk))

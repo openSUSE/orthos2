@@ -14,6 +14,7 @@ from orthos2.data.models import (
     ServerConfig,
     System,
 )
+from orthos2.taskmanager.models import SingleTask
 
 
 class RemotePowerDeviceViewTestCase(TestCase):
@@ -337,3 +338,57 @@ class RemotePowerDeviceNetboxComparisonViewTest(RemotePowerDeviceViewTestCase):
         )
         response = self.client.get(url)
         assert response.status_code == 200
+
+
+class RemotePowerDeviceFetchNetboxViewTest(RemotePowerDeviceViewTestCase):
+    def test_superuser_queues_fetch_task(self) -> None:
+        self.remotepowerdevice.netbox_id = 42
+        self.remotepowerdevice.save()
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse(
+            "frontend:remotepowerdevice_netbox_fetch",
+            kwargs={"id": self.remotepowerdevice.pk},
+        )
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert SingleTask.objects.filter(name="NetboxFetchRemotePowerDevice").exists()
+
+    def test_superuser_get_when_not_synced_does_not_queue_task(self) -> None:
+        assert self.remotepowerdevice.netbox_id == 0
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse(
+            "frontend:remotepowerdevice_netbox_fetch",
+            kwargs={"id": self.remotepowerdevice.pk},
+        )
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert not SingleTask.objects.filter(
+            name="NetboxFetchRemotePowerDevice"
+        ).exists()
+
+
+class RemotePowerDeviceCompareNetboxViewTest(RemotePowerDeviceViewTestCase):
+    def test_superuser_queues_compare_task(self) -> None:
+        self.remotepowerdevice.netbox_id = 42
+        self.remotepowerdevice.save()
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse(
+            "frontend:remotepowerdevice_netbox_compare",
+            kwargs={"id": self.remotepowerdevice.pk},
+        )
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert SingleTask.objects.filter(name="NetboxCompareRemotePowerDevice").exists()
+
+    def test_superuser_get_when_not_synced_does_not_queue_task(self) -> None:
+        assert self.remotepowerdevice.netbox_id == 0
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse(
+            "frontend:remotepowerdevice_netbox_compare",
+            kwargs={"id": self.remotepowerdevice.pk},
+        )
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert not SingleTask.objects.filter(
+            name="NetboxCompareRemotePowerDevice"
+        ).exists()

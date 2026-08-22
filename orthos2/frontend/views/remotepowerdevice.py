@@ -305,6 +305,10 @@ def remotepowerdevice_fetch_netbox(
         messages.error(request, "Remote Power Device does not exist!")
         return redirect("frontend:remotepowerdevices")
 
+    if requested_remotepowerdevice.netbox_id == 0:
+        messages.error(request, "Remote Power Device is not linked to NetBox!")
+        return redirect("frontend:remotepowerdevice_detail", id=id)
+
     try:
         TaskManager.add(
             tasks.NetboxFetchRemotePowerDevice(requested_remotepowerdevice.pk)
@@ -363,6 +367,10 @@ def remotepowerdevice_compare_netbox(
     except RemotePowerDevice.DoesNotExist:
         messages.error(request, "Remote Power Device does not exist!")
         return redirect("frontend:remotepowerdevices")
+
+    if requested_remotepowerdevice.netbox_id == 0:
+        messages.error(request, "Remote Power Device is not linked to NetBox!")
+        return redirect("frontend:remotepowerdevice_detail", id=id)
 
     try:
         TaskManager.add(
