@@ -181,10 +181,15 @@ from .system import (
 from .token import DeleteToken, TokenListView
 from .user import users_create, users_password_restore, users_preferences
 from .users import (
+    DeleteUser,
+    NewUser,
+    UserDetailedEdit,
     UserListView,
     user_detail,
     user_reservations,
     user_reserve_machine,
+    user_send_password_reset,
+    user_toggle_active,
     user_tokens,
 )
 
@@ -269,6 +274,11 @@ __all__ = [
     "user_reservations",
     "user_reserve_machine",
     "user_tokens",
+    "NewUser",
+    "UserDetailedEdit",
+    "DeleteUser",
+    "user_toggle_active",
+    "user_send_password_reset",
     "TokenListView",
     "DeleteToken",
     "RemotePowerDevicesListView",

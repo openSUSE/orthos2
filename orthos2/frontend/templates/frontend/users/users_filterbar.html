@@ -54,6 +54,10 @@
           <span class="hint">Found {{ paginator.count }} User(s)</span>
         </div>
       </div>
+
+      <a class="nav-link ms-auto" href="{% url 'frontend:new_user' %}">
+        <button type="button" class="btn btn-success">+</button>
+      </a>
     </div>
   </div>
 </div>

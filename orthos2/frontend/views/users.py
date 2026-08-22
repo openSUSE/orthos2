@@ -17,12 +17,16 @@ from django.http import (
     HttpResponseRedirect,
 )
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
-from django.views.generic import ListView
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from rest_framework.authtoken.models import Token
 
 from orthos2.data.models import Machine
 from orthos2.frontend.forms.reservemachine import ReserveMachineForUserForm
+from orthos2.frontend.forms.useradmin import UserAdminForm
+from orthos2.frontend.mixins import SuperuserRequiredMixin
+from orthos2.frontend.views.user import reset_and_notify_password
 
 
 class UserListView(ListView):  # type: ignore
@@ -80,6 +84,89 @@ class UserListView(ListView):  # type: ignore
         context = super().get_context_data(**kwargs)
         context["title"] = "Users"
         return context
+
+
+class NewUser(SuperuserRequiredMixin, CreateView):
+    model = User
+    template_name = "frontend/users/new_user.html"
+    success_url = reverse_lazy("frontend:users")
+    form_class = UserAdminForm
+
+    def form_valid(self, form: UserAdminForm) -> HttpResponseRedirect:
+        self.object = form.save(commit=False)
+        # No password field on this form - the account starts with no usable
+        # password; a superuser grants access via "Send password reset email".
+        self.object.set_unusable_password()
+        self.object.save()
+        form.save_m2m()
+        messages.success(
+            self.request,
+            f"User '{self.object.username}' created. "
+            "Use 'Send password reset email' on their profile to grant access.",
+        )
+        return redirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["title"] = "New User"
+        context["action"] = "new"
+        return context
+
+
+class UserDetailedEdit(SuperuserRequiredMixin, UpdateView):
+    model = User
+    template_name = "frontend/users/new_user.html"
+    success_url = reverse_lazy("frontend:users")
+    form_class = UserAdminForm
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Edit User"
+        context["action"] = "edit"
+        return context
+
+
+class DeleteUser(SuperuserRequiredMixin, DeleteView):  # type: ignore
+    model = User
+    template_name = "frontend/users/user_confirm_deletion.html"
+    success_url = reverse_lazy("frontend:users")
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Delete User"
+        return context
+
+
+@login_required
+def user_toggle_active(request: HttpRequest, id: int) -> HttpResponseRedirect:
+    if not request.user.is_superuser:
+        raise PermissionDenied
+    user_obj = get_object_or_404(User, pk=id)
+    if request.method == "POST":
+        user_obj.is_active = not user_obj.is_active
+        user_obj.save()
+        state = "activated" if user_obj.is_active else "deactivated"
+        messages.success(request, f"User '{user_obj.username}' {state}.")
+    return redirect("frontend:user_detail", id=id)
+
+
+@login_required
+def user_send_password_reset(request: HttpRequest, id: int) -> HttpResponseRedirect:
+    if not request.user.is_superuser:
+        raise PermissionDenied
+    user_obj = get_object_or_404(User, pk=id)
+    if request.method == "POST":
+        if user_obj.social_auth.exists():  # type: ignore[attr-defined]
+            messages.error(
+                request,
+                f"'{user_obj.username}' logs in via OIDC - no local password to reset.",
+            )
+        else:
+            reset_and_notify_password(user_obj)
+            messages.success(
+                request, f"Password reset email sent to '{user_obj.username}'."
+            )
+    return redirect("frontend:user_detail", id=id)
 
 
 @login_required

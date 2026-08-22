@@ -253,6 +253,27 @@ urlpatterns = [
         r"^logout/$", auth_views.LogoutView.as_view(), {"next_page": "/"}, name="logout"
     ),
     path("users", views.UserListView.as_view(), name="users"),
+    path("users/new", views.NewUser.as_view(), name="new_user"),
+    path(
+        "users/edit/<int:pk>/",
+        views.UserDetailedEdit.as_view(),
+        name="edit_user",
+    ),
+    path(
+        "users/delete/<int:pk>/",
+        views.DeleteUser.as_view(),
+        name="delete_user",
+    ),
+    re_path(
+        r"^user/(?P<id>[0-9]+)/toggle-active$",
+        views.user_toggle_active,
+        name="user_toggle_active",
+    ),
+    re_path(
+        r"^user/(?P<id>[0-9]+)/send-password-reset$",
+        views.user_send_password_reset,
+        name="user_send_password_reset",
+    ),
     re_path(
         r"^user/(?P<id>[0-9]+)/detail$",
         views.user_detail,
