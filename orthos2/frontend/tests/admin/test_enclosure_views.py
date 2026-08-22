@@ -32,6 +32,22 @@ class EnclosureListViewTest(TestCase):
         assert response.status_code == 200
         assert b"AcmeEnclosure" in response.content
 
+    def test_filter_has_netbox_yes(self) -> None:
+        Enclosure.objects.create(name="SyncedEnclosure", netbox_id=42)
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse("frontend:enclosures")
+        response = self.client.get(url, {"has_netbox": "1"})
+        assert b"SyncedEnclosure" in response.content
+        assert b"AcmeEnclosure" not in response.content
+
+    def test_filter_has_netbox_no(self) -> None:
+        Enclosure.objects.create(name="SyncedEnclosure", netbox_id=42)
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse("frontend:enclosures")
+        response = self.client.get(url, {"has_netbox": "0"})
+        assert b"AcmeEnclosure" in response.content
+        assert b"SyncedEnclosure" not in response.content
+
 
 class EnclosureDetailViewTest(TestCase):
     fixtures = ["orthos2/frontend/tests/user/fixtures/users.json"]

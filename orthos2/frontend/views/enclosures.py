@@ -52,6 +52,12 @@ class EnclosureListView(PermissionRequiredMixin, ListView):
         if self.request.GET.get("device_type"):
             filters.append(Q(device_type__name=self.request.GET.get("device_type")))
 
+        has_netbox = self.request.GET.get("has_netbox")
+        if has_netbox == "1":
+            filters.append(Q(netbox_id__gt=0))
+        elif has_netbox == "0":
+            filters.append(Q(netbox_id=0))
+
         enclosures = super().get_queryset().filter(*filters)  # type: ignore
 
         return enclosures

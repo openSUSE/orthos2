@@ -47,6 +47,12 @@ class MachineListView(ListView):  # type: ignore
         if self.request.GET.get("domain"):
             filters.append(Q(fqdn_domain__name=self.request.GET.get("domain")))
 
+        has_netbox = self.request.GET.get("has_netbox")
+        if has_netbox == "1":
+            filters.append(Q(netbox_id__gt=0))
+        elif has_netbox == "0":
+            filters.append(Q(netbox_id=0))
+
         status = self.request.GET.get("status")
         if status and status == "ping":
             filters.append(

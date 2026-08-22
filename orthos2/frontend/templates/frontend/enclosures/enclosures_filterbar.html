@@ -20,6 +20,15 @@
 
       <span class="ms-2"></span>
 
+      <span class="hint" style="margin-right: 0.5rem;">NetBox Synchronized</span>
+      <div class="btn-group" role="group" style="margin-right: 0.5rem;">
+        <a class="btn btn-secondary btn-sm {% active request '1' %}" href="?{% url_replace request 'has_netbox' '1' %}" role="button">Yes</a>
+        <a class="btn btn-secondary btn-sm {% active request '0' %}" href="?{% url_replace request 'has_netbox' '0' %}" role="button">No</a>
+        <a class="btn btn-secondary btn-sm" href="?{% url_replace request 'has_netbox' '' True %}" role="button">&#215;</a>
+      </div>
+
+      <span class="ms-2"></span>
+
       {% include 'frontend/snippet.search.html' with search_hint='Name' %}
 
       <span class="ms-2"></span>
