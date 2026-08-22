@@ -124,6 +124,7 @@ from .manufacturer import (
     manufacturer_fetch_netbox,
     manufacturer_netboxcomparison,
 )
+from .oidc_diagnostics import oidc_diagnostics
 from .regenerate import (
     regenerate_cobbler,
     regenerate_domain_cobbler,
@@ -304,6 +305,7 @@ __all__ = [
     "manufacturer_fetch_netbox",
     "manufacturer_netboxcomparison",
     "manufacturer_compare_netbox",
+    "oidc_diagnostics",
     "DeviceTypeListView",
     "NewDeviceType",
     "DeviceTypeDetailedEdit",

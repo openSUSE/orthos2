@@ -299,6 +299,7 @@ urlpatterns = [
     re_path(
         r"^password/restore$", views.users_password_restore, name="password_restore"
     ),
+    path("oidc-diagnostics", views.oidc_diagnostics, name="oidc_diagnostics"),
     path("groups", views.GroupListView.as_view(), name="groups"),
     re_path(
         r"^group/(?P<id>[0-9]+)/detail$",
