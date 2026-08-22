@@ -31,11 +31,11 @@
                   >{{ token.user.username }}</a
                 >
               </td>
-              <td><code>{{ token.key|slice:":8" }}…</code></td>
+              <td><code>{{ token.key }}</code></td>
               <td>{{ token.created }}</td>
               <td>
                 <a
-                  href="{% url 'frontend:delete_token' token.key %}"
+                  href="{% url 'frontend:delete_token' token.user.pk %}"
                   class="btn btn-danger btn-sm"
                 >
                   Revoke

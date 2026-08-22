@@ -19,6 +19,7 @@ from django.http import (
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
+from rest_framework.authtoken.models import Token
 
 from orthos2.data.models import Machine
 from orthos2.frontend.forms.reservemachine import ReserveMachineForUserForm
@@ -118,6 +119,23 @@ def user_reservations(request: HttpRequest, id: int) -> HttpResponse:
         )
     except User.DoesNotExist:
         raise Http404("User does not exist")
+
+
+@login_required
+def user_tokens(request: HttpRequest, id: int) -> HttpResponse:
+    if not request.user.is_superuser:
+        raise PermissionDenied
+    user_obj = get_object_or_404(User, pk=id)
+    tokens = Token.objects.filter(user=user_obj)
+    return render(
+        request,
+        "frontend/users/detail/tokens.html",
+        {
+            "user_obj": user_obj,
+            "tokens": tokens,
+            "title": f"User {user_obj.username} Tokens",
+        },
+    )
 
 
 @login_required

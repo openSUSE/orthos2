@@ -21,6 +21,13 @@
               >Reservations</a
             >
           </li>
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'user_tokens' %}"
+              href="{% url 'frontend:user_tokens' user_obj.pk %}"
+              >Tokens</a
+            >
+          </li>
         </ul>
 
         <div class="tab-content">

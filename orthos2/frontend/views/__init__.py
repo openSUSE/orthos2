@@ -180,7 +180,13 @@ from .system import (
 )
 from .token import DeleteToken, TokenListView
 from .user import users_create, users_password_restore, users_preferences
-from .users import UserListView, user_detail, user_reservations, user_reserve_machine
+from .users import (
+    UserListView,
+    user_detail,
+    user_reservations,
+    user_reserve_machine,
+    user_tokens,
+)
 
 __all__ = [
     "annotation",
@@ -262,6 +268,7 @@ __all__ = [
     "user_detail",
     "user_reservations",
     "user_reserve_machine",
+    "user_tokens",
     "TokenListView",
     "DeleteToken",
     "RemotePowerDevicesListView",
