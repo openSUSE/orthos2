@@ -67,8 +67,8 @@ def has_valid_domain_ending(
     valid domain endings are given.
 
     Example:
-        example.de
-        example.com
+        orthos2.test
+        sub.orthos2.test
     """
     if valid_endings is None:
         return True

@@ -36,7 +36,7 @@
     "pk": null,
     "fields": {
       "key": "domain.validendings",
-      "value": "example.de, excample.com"
+      "value": "orthos2.test, sub.orthos2.test"
     }
   },
   {
@@ -212,7 +212,7 @@
     "pk": null,
     "fields": {
       "key": "mail.validdomains",
-      "value": "example.de, example.com"
+      "value": "orthos2.test, sub.orthos2.test"
     }
   },
   {

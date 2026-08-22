@@ -25,10 +25,10 @@ class EditMachineCommandTestCase(APITestCase):
     def setUp(self, m_is_dns_resolvable: mock.MagicMock) -> None:
         m_is_dns_resolvable.return_value = True
 
-        ServerConfig.objects.create(key="domain.validendings", value="bar.de")
+        ServerConfig.objects.create(key="domain.validendings", value="orthos2.test")
 
         Domain(
-            name="foo.bar.de",
+            name="foo.orthos2.test",
             ip_v4="127.0.0.1",
             ip_v6="::1",
             dynamic_range_v4_start="127.0.0.1",
@@ -42,17 +42,17 @@ class EditMachineCommandTestCase(APITestCase):
         self.machine.system = System.get_system_manager().get_by_natural_key(
             "BareMetal"
         )
-        self.machine.fqdn = "machine1.foo.bar.de"
+        self.machine.fqdn = "machine1.foo.orthos2.test"
         self.machine.architecture_id = (
             Architecture.get_architecture_manager().get_by_natural_key("x86_64").id
         )
         self.machine.save()
 
         self.superuser = User.objects.create_superuser(
-            username="superuser", email="super@test.de", password="secret"
+            username="superuser", email="super@orthos2.test", password="secret"
         )
         self.regular_user = User.objects.create_user(
-            username="user", email="user@test.de", password="secret"
+            username="user", email="user@orthos2.test", password="secret"
         )
         superuser_token, _ = Token.objects.get_or_create(user=self.superuser)
         self.superuser_token = superuser_token.key
@@ -134,7 +134,7 @@ class EditMachineTest(EditMachineCommandTestCase):
     def test_superuser_post_unknown_fqdn_returns_error(self) -> None:
         self._auth_superuser()
         url = reverse(
-            "api:machine_edit_post", kwargs={"fqdn": "does-not-exist.foo.bar.de"}
+            "api:machine_edit_post", kwargs={"fqdn": "does-not-exist.foo.orthos2.test"}
         )
         response = self.client.post(
             url,

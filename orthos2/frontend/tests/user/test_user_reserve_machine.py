@@ -29,7 +29,7 @@ class UserReserveMachineViewTest(TestCase):
         self.superuser = User.objects.get(username="superuser")
         self.regular_user = User.objects.get(username="user")
         self.target_user = User.objects.create_user(
-            username="targetuser", password="linux", email="target@example.com"
+            username="targetuser", password="linux", email="target@orthos2.test"
         )
 
     def _reserve_url(self, user_id: int) -> str:

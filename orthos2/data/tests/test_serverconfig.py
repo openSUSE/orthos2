@@ -135,9 +135,10 @@ class GeneralManagerTest(TestCase):
         assert ServerConfig.get_server_config_manager().get_smtp_relay() is None
         ServerConfig.get_server_config_manager().filter(key=SMTP_RELAY).delete()
 
-        ServerConfig(key=SMTP_RELAY, value="foo.test.de").save()
+        ServerConfig(key=SMTP_RELAY, value="smtp.orthos2.test").save()
         assert (
-            ServerConfig.get_server_config_manager().get_smtp_relay() == "foo.test.de"
+            ServerConfig.get_server_config_manager().get_smtp_relay()
+            == "smtp.orthos2.test"
         )
         ServerConfig.get_server_config_manager().filter(key=SMTP_RELAY).delete()
 

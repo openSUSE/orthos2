@@ -17,7 +17,7 @@ class InfoTest(APITestCase):
 
     def setUp(self) -> None:
         self.user = User.objects.create_superuser(
-            username="testuser", email="test@test.de", password="12345"
+            username="testuser", email="test@orthos2.test", password="12345"
         )
         self.client.force_authenticate(user=self.user)
 

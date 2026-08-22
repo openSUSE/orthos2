@@ -27,24 +27,24 @@ logging.disable(logging.CRITICAL)
 class MiscMethodTests(TestCase):
     def test_get_domain(self) -> None:
         """get_domain() should return the domain for a given FQDN."""
-        fqdn = "foo.bar"
-        assert get_domain(fqdn) == "bar"
+        fqdn = "foo.orthos2.test"
+        assert get_domain(fqdn) == "orthos2.test"
 
-        fqdn = "foo.bar.suse.de"
-        assert get_domain(fqdn) == "bar.suse.de"
+        fqdn = "foo.sub.orthos2.test"
+        assert get_domain(fqdn) == "sub.orthos2.test"
 
-        fqdn = "foo.bar.foobar.suse.de"
-        assert get_domain(fqdn) == "bar.foobar.suse.de"
+        fqdn = "foo.deep.sub.orthos2.test"
+        assert get_domain(fqdn) == "deep.sub.orthos2.test"
 
     def test_get_hostname(self) -> None:
         """get_hostname() should return the hostname for a given FQDN."""
-        fqdn = "foo.bar"
+        fqdn = "foo.orthos2.test"
         assert get_hostname(fqdn) == "foo"
 
-        fqdn = "foo.bar.suse.de"
+        fqdn = "foo.sub.orthos2.test"
         assert get_hostname(fqdn) == "foo"
 
-        fqdn = "foo.bar.foobar.suse.de"
+        fqdn = "foo.deep.sub.orthos2.test"
         assert get_hostname(fqdn) == "foo"
 
     @mock.patch("orthos2.utils.misc.socket.gethostbyname")
@@ -52,7 +52,7 @@ class MiscMethodTests(TestCase):
         """is_dns_resolvable() should return True if a FQDN is resolvable, False otherwise."""
         import socket
 
-        fqdn = "foo.bar.suse.de"
+        fqdn = "foo.orthos2.test"
         mocked_gethostbyname.return_value = "192.168.0.1"
         assert is_dns_resolvable(fqdn) is True
 
@@ -65,7 +65,7 @@ class MiscMethodTests(TestCase):
         False otherwise.
         """
         assert has_valid_domain_ending("test.foo", "foo") is True
-        assert has_valid_domain_ending("test.foo.bar", "foo.bar") is True
+        assert has_valid_domain_ending("test.orthos2.test", "orthos2.test") is True
         assert has_valid_domain_ending("test.foo", ["foo"]) is True
         assert has_valid_domain_ending("test.foo", ["bar", "foo"]) is True
 
@@ -86,11 +86,12 @@ class MiscMethodTests(TestCase):
 class MiscSuggestIpTests(TestCase):
     def setUp(self) -> None:
         ServerConfig(
-            key="domain.validendings", value="example.de, example.com, foo.de"
+            key="domain.validendings",
+            value="orthos2.test, sub.orthos2.test, other.orthos2.test",
         ).save()
 
         self.domain = Domain(
-            name="example.de",
+            name="orthos2.test",
             ip_v4="192.168.178.0",
             ip_v6="fe80:0:0:1::",
             subnet_mask_v4=29,
@@ -109,7 +110,7 @@ class MiscSuggestIpTests(TestCase):
         self.arch.save()
 
         self.machine = Machine(
-            fqdn="test.example.de", system=self.sys, architecture=self.arch
+            fqdn="test.orthos2.test", system=self.sys, architecture=self.arch
         )
         self.machine.save()
 
@@ -178,7 +179,7 @@ class MiscSuggestIpTests(TestCase):
         """
         # Arrange
         small_domain = Domain(
-            name="small.example.de",
+            name="small.orthos2.test",
             ip_v4="192.168.179.0",
             ip_v6="::1",
             subnet_mask_v4=29,
@@ -201,7 +202,7 @@ class ChecksMethodTests(TestCase):
     @mock.patch("orthos2.utils.misc.subprocess.Popen")
     def test_ping_check(self, mocked_popen: mock.MagicMock):
         """ping_check() should return True if a FQDN is pingable, False otherwise."""
-        fqdn = "foo.bar.suse.de"
+        fqdn = "foo.orthos2.test"
         mocked_popen.return_value.returncode = 0
         assert ping_check(fqdn) is True
 
@@ -218,7 +219,7 @@ class ChecksMethodTests(TestCase):
         """nmap_check() should return True if a host runs SSH, False otherwise."""
         import socket
 
-        fqdn = "foo.bar.suse.de"
+        fqdn = "foo.orthos2.test"
         mocked_ping_check.return_value = False
         mocked_connect.return_value = True
         assert nmap_check(fqdn) is False

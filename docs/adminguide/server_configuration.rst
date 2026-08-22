@@ -27,7 +27,7 @@ Environment Variable: ``ORTHOS_NETBOX_URL``
 
 Default: ``""`` (empty string)
 
-Example: ``https://netbox.example.org``
+Example: ``https://netbox.orthos2.test``
 
 NETBOX_TOKEN
 ============
@@ -53,9 +53,9 @@ Multiple endings can be separated by a comma.
 
 Leave empty if all domains should be accepted.
 
-Default: ``example.de, example.com``
+Default: ``orthos2.test, sub.orthos2.test``
 
-Example: ``example.de, example.com, example.bayern``
+Example: ``orthos2.test, sub.orthos2.test, other.orthos2.test``
 
 ``mail.from.address``
 =====================
