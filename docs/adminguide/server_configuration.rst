@@ -93,7 +93,7 @@ Default: blank
 
 The path to the online repo is set here. If errors occur in the Orthos code, they can be reported there.
 
-Default: https://gitlab.suse.de/orthos-maintainers/orthos2/issues
+Default: https://github.com/openSUSE/orthos2/issues
 
 ``orthos.configuration.inline.begin``
 =====================================
@@ -139,7 +139,7 @@ Here you can activate or deactivate the writing of the machine installation file
 
 The path to the Orthos documentation.
 
-Default: https://gitlab.suse.de/orthos-maintainers/orthos2/tree/development/docs
+Default: https://github.com/openSUSE/orthos2/tree/master/docs
 
 ``orthos.web.welcomemessage``
 =============================
@@ -225,7 +225,7 @@ Default: oroot
 ==================================
 
 Local directory where the machine object copies are stored after deleting a machine
-(see [Machines](./adminguide/machine.md) for more information).
+(see :ref:`machines` for more information).
 
 Default: ``/tmp``
 

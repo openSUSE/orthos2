@@ -14,7 +14,7 @@ List View
 #########
 
 .. image:: ../img/userguide/20_netboxcomparison_list_view.png
-  :alt: Orthos2 Enclosure List View
+  :alt: Orthos2 NetBox Comparison List View
 
 This page provides a list of comparison runs between Orthos 2 and NetBox.
 
@@ -22,6 +22,6 @@ Detail View
 ###########
 
 .. image:: ../img/userguide/21_netboxcomparison_detail_view.png
-  :alt: Orthos2 Enclosure List View
+  :alt: Orthos2 NetBox Comparison Detail View
 
 This page provides a detail view of a single comparison for a single object.

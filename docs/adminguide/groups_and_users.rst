@@ -36,8 +36,8 @@ Name of group. Please, use unique name.
 Permissions
 ===========
 
-Detailed Orthos administration rights. Every user in the profile must have the blalbla enabled to login to the admin
-dashboard. by the name of rights, rights are self-explanatory.
+Detailed Orthos administration rights. Every user in the profile must have the Staff status enabled to login to the
+admin dashboard. Rights that can be assigned are self-explanatory.
 
 Example: ``admin | log entry | Can add log entry, data | enclosure | Can add enclosure etc.``
 

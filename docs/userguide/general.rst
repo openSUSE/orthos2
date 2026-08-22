@@ -17,9 +17,8 @@ tasks:
 - reboot the machines remotely and
 - managing remote consoles.
 
-This document describes the usage. For implementation specific notes, please refer to the “Developer’s Guide”. However,
-sometimes this document describes some aspects of the implementation simply to let the user better understand why things
-work as they do. All users of Orthos have a very technical background.
+This document describes the usage. Sometimes this document describes some aspects of the implementation simply to let
+the user better understand why things work as they do. All users of Orthos have a very technical background.
 
 
 Architecture
