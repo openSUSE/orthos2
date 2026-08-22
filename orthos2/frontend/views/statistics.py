@@ -3,6 +3,7 @@ All views that are related to "/statistics".
 """
 
 import datetime
+import hashlib
 from typing import List
 
 from django.contrib.auth.decorators import login_required
@@ -12,6 +13,17 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from orthos2.data.models import Architecture, Domain, Machine, ReservationHistory
+
+# Restricting to these hex digits keeps colors mid-brightness (matches the
+# previous getRandomColor()'s '789ABCD' palette) instead of ranging into
+# near-black/near-white, which would be hard to tell apart on the chart.
+_COLOR_DIGITS = "789ABCD"
+
+
+def _domain_color(name: str) -> str:
+    """Deterministic per-domain chart color, stable across requests/reloads."""
+    digest = hashlib.md5(name.encode()).digest()
+    return "#" + "".join(_COLOR_DIGITS[b % len(_COLOR_DIGITS)] for b in digest[:6])
 
 
 @login_required
@@ -86,6 +98,10 @@ def statistics(request: HttpRequest) -> HttpResponse:
         "domains": {
             "labels": list(Domain.objects.all().values_list("name", flat=True)),
             "values": [domain.machine_set.count() for domain in Domain.objects.all()],
+            "colors": [
+                _domain_color(name)
+                for name in Domain.objects.all().values_list("name", flat=True)
+            ],
         },
         "released_reservations": released_reservations,
         "reserved_machines": reserved_machines,

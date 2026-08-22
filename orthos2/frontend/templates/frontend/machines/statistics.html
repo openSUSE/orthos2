@@ -142,15 +142,6 @@
 
 {% block javascript %}
 <script>
-function getRandomColor() {
-  var letters = '789ABCD'.split('');
-  var color = '#';
-  for (var i = 0; i < 6; i++ ) {
-    color += letters[Math.round(Math.random() * 6)];
-  }
-  return color;
-}
-
 new Chart(document.getElementById("statusChart"),{
   type:"bar",
   data: {
@@ -204,8 +195,8 @@ new Chart(document.getElementById("domainChart"),{
       {
         data: [{{ data.domains.values|join:", " }}],
         backgroundColor: [
-        {% for label in data.domains.labels %}
-          getRandomColor(),
+        {% for color in data.domains.colors %}
+          "{{ color }}",
         {% endfor %}
         ]
       }
