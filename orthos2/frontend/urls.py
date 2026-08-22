@@ -299,6 +299,23 @@ urlpatterns = [
     re_path(
         r"^password/restore$", views.users_password_restore, name="password_restore"
     ),
+    path("groups", views.GroupListView.as_view(), name="groups"),
+    re_path(
+        r"^group/(?P<id>[0-9]+)/detail$",
+        views.group_detail,
+        name="group_detail",
+    ),
+    path("groups/new", views.NewGroup.as_view(), name="new_group"),
+    path(
+        "groups/edit/<int:pk>/",
+        views.GroupDetailedEdit.as_view(),
+        name="edit_group",
+    ),
+    path(
+        "groups/delete/<int:pk>/",
+        views.DeleteGroup.as_view(),
+        name="delete_group",
+    ),
     path("tokens", views.TokenListView.as_view(), name="tokens"),
     path(
         "tokens/delete/<int:user_id>/",

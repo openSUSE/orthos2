@@ -1,0 +1,20 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <form method="post">
+      {% csrf_token %}
+      <p>Are you sure you want to delete group "{{ object.name }}"?</p>
+      <input
+        class="btn btn-danger btn-sm"
+        type="submit"
+        value="Confirm deletion"
+      />
+    </form>
+  </div>
+{% endblock %}

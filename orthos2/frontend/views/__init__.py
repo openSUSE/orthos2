@@ -66,6 +66,7 @@ from .enclosures import (
     enclosure_machines,
     enclosure_netboxcomparison,
 )
+from .group import DeleteGroup, GroupDetailedEdit, GroupListView, NewGroup, group_detail
 from .machine import (
     BMCDetailedEdit,
     DeleteAnnotation,
@@ -259,6 +260,11 @@ __all__ = [
     "enclosure_netboxcomparison",
     "enclosure_compare_netbox",
     "enclosure_fetch_netbox",
+    "GroupListView",
+    "NewGroup",
+    "GroupDetailedEdit",
+    "DeleteGroup",
+    "group_detail",
     "regenerate_cobbler",
     "regenerate_domain_cscreen",
     "regenerate_domain_cobbler",

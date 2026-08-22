@@ -1,0 +1,43 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="mb-3">
+      <form
+        class="pt-3"
+        method="post"
+        {% if action == 'new' %}
+          action="{% url 'frontend:new_group' %}"
+        {% elif action == 'edit' %}
+          action="{% url 'frontend:edit_group' object.id %}"
+        {% endif %}
+      >
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+
+        {% for field in form %}
+          {{ field.errors }}
+          <div class="row" style="margin: 5px;">
+            <div class="col-3">
+              <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+            </div>
+            <div class="col-9">
+              {{ field }}
+              <small class="form-text text-muted">{{ field.help_text }}</small>
+            </div>
+          </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-secondary btn-sm w-100">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
