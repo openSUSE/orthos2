@@ -56,10 +56,20 @@ You can:
 - Report Problems for each machine
 - Get an overview of the reservation history
 
-If administrative rights are required, they must be set up by an Orthos administrator. Below a screenshot of the login
-page.
+If administrative rights are required, they must be set up by an Orthos administrator.
+
+Login
+=====
+
+Most users authenticate via OIDC by clicking "Login with Authentik":
+
+.. image:: ../img/userguide/01_login_screen_oidc.png
+  :alt: Orthos2 OIDC Login Screen
 
 .. note:: Account creation and password restoration may be disabled in case OIDC authentication is configured.
 
-.. image:: ../img/userguide/01_login_screen.jpg
-  :alt: Orthos2 Login Screen
+Power users who maintain a local-only Orthos account (not backed by the OIDC provider) can reach the built-in login
+form by appending ``?builtin=true`` to the login page URL:
+
+.. image:: ../img/userguide/01_login_screen_built_in.png
+  :alt: Orthos2 Built-in Login Screen
