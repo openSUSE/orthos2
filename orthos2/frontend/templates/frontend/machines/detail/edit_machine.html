@@ -43,6 +43,11 @@
                   >
                 </div>
               </div>
+            {% else %}
+              {# Field isn't relevant for this system, but it's still a
+                 required part of the form - submit its unchanged value as
+                 hidden so unrelated edits don't fail validation. #}
+              {{ field.as_hidden }}
             {% endif %}
           {% elif field.name == "hypervisor" %}
             {% if object.system.virtual %}
@@ -61,6 +66,8 @@
                   >
                 </div>
               </div>
+            {% else %}
+              {{ field.as_hidden }}
             {% endif %}
           {% else %}
             {{ field.errors }}
