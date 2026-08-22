@@ -25,17 +25,29 @@ Architecture
 ############
 
 
-.. image:: ../img/userguide/00_architecture.png
-  :alt: Orthos2 High-Level Architecture
+.. code-block:: text
 
-Image Overall Architecture shows the overall architecture. All data is kept in the database. The Orthos Server is the
+      +--------------------------------------------+
+      |                                            |
+      |   +--------------+     +----------------+  |
+      |   |   Database   |<----|  Orthos Server |  |
+      |   +--------------+     +----------------+  |
+      |          ^                     ^           |
+      |          |                     |           |
+      |          |     +------------+  |           |
+      |          +-----| Orthos Web |--+           |
+      |                +------------+              |
+      |                                            |
+      +--------------------------------------------+
+
+The diagram above shows the overall architecture. All data is kept in the database. The Orthos Server is the
 central component of Orthos. It has the following tasks:
 
 - gathering machine data,
 - communicating with the clients,
 - executing jobs such as rebooting or installating the machine or syncing some files.
 
-There is the web UI for simple tasks. For more complex opperations, please use the API.
+There is the web UI for simple tasks. For more complex operations, please use the API.
 
 Web Client
 ##########
