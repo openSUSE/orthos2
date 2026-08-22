@@ -54,6 +54,11 @@ urlpatterns = [
         name="remotepowerdevice_detail",
     ),
     re_path(
+        r"^remote-power-devices/(?P<id>[0-9]+)/machines$",
+        views.remotepowerdevice_machines,
+        name="remotepowerdevice_machines",
+    ),
+    re_path(
         r"^remote-power-devices/(?P<id>[0-9]+)/netboxcomparison$",
         views.remotepowerdevice_netboxcomparison,
         name="remotepowerdevice_netbox_comparisons",

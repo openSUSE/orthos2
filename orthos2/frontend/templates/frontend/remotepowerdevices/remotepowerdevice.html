@@ -17,6 +17,13 @@
           </li>
           <li class="nav-item">
             <a
+              class="nav-link {% active_view request 'remotepowerdevice_machines' %}"
+              href="{% url 'frontend:remotepowerdevice_machines' remotepowerdevice.pk %}"
+              >Machines</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
               class="nav-link {% active_view request 'remotepowerdevice_netbox_comparisons' %}"
               href="{% url 'frontend:remotepowerdevice_netbox_comparisons' remotepowerdevice.pk %}"
               >Netbox Comparison</a

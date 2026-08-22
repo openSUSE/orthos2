@@ -142,6 +142,7 @@ from .remotepowerdevice import (
     remotepowerdevice_compare_netbox,
     remotepowerdevice_detail,
     remotepowerdevice_fetch_netbox,
+    remotepowerdevice_machines,
     remotepowerdevice_netboxcomparison,
 )
 from .remotepowertype import (
@@ -296,6 +297,7 @@ __all__ = [
     "DeleteRemotePowerDevice",
     "remotepowerdevice_detail",
     "remotepowerdevice_fetch_netbox",
+    "remotepowerdevice_machines",
     "remotepowerdevice_netboxcomparison",
     "remotepowerdevice_compare_netbox",
     "ManufacturerListView",

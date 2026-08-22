@@ -13,6 +13,7 @@
           <tr style="border: 1px solid #ddd;">
             <th>FQDN {% order_list request 'fqdn' %}</th>
             <th>NetBox ID {% order_list request 'netbox_id' %}</th>
+            <th>Machines</th>
             <th width="80px">&nbsp;</th>
           </tr>
         </thead>
@@ -28,6 +29,13 @@
                 >
               </td>
               <td>{{ remotepowerdevice.netbox_id }}</td>
+              <td>
+                <a
+                  href="{% url 'frontend:remotepowerdevice_machines' remotepowerdevice.pk %}"
+                  class="text-muted"
+                  >{{ remotepowerdevice.machine_count }}</a
+                >
+              </td>
               <td>
                 <a
                   href="{% url 'frontend:delete_remotepowerdevice' remotepowerdevice.pk %}"

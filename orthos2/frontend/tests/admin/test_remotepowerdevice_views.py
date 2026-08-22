@@ -7,9 +7,12 @@ from django.urls import reverse
 from orthos2.data.models import (
     Architecture,
     Domain,
+    Machine,
+    RemotePower,
     RemotePowerDevice,
     RemotePowerType,
     ServerConfig,
+    System,
 )
 
 
@@ -60,6 +63,33 @@ class RemotePowerDevicesListViewTest(RemotePowerDeviceViewTestCase):
         assert response.status_code == 200
         assert b"rpower.orthos2.test" in response.content
 
+    def test_superuser_get_shows_machine_count(self) -> None:
+        other_device = RemotePowerDevice.objects.create(
+            fqdn="other-rpower.orthos2.test",
+            mac="AA:BB:CC:DD:EE:00",
+            fence_agent=self.fence_agent,
+            architecture=self.architecture,
+            domain=self.domain,
+        )
+        machine = Machine.objects.create(
+            fqdn="powered-machine.orthos2.test",
+            system=System.objects.get(name="BareMetal"),
+            architecture=self.architecture,
+        )
+        RemotePower.objects.create(
+            machine=machine, remote_power_device=self.remotepowerdevice
+        )
+
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse("frontend:remotepowerdevices")
+        response = self.client.get(url)
+        listed = {
+            remotepowerdevice.pk: remotepowerdevice
+            for remotepowerdevice in response.context["object_list"]
+        }
+        assert listed[self.remotepowerdevice.pk].machine_count == 1
+        assert listed[other_device.pk].machine_count == 0
+
 
 class RemotePowerDeviceDetailViewTest(RemotePowerDeviceViewTestCase):
     def test_unauthenticated_get_redirects_to_login(self) -> None:
@@ -97,6 +127,54 @@ class RemotePowerDeviceDetailViewTest(RemotePowerDeviceViewTestCase):
     def test_nonexistent_remotepowerdevice_returns_404(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))
         url = reverse("frontend:remotepowerdevice_detail", kwargs={"id": 99999})
+        response = self.client.get(url)
+        assert response.status_code == 404
+
+
+class RemotePowerDeviceMachinesViewTest(RemotePowerDeviceViewTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.machine = Machine.objects.create(
+            fqdn="powered-machine.orthos2.test",
+            system=System.objects.get(name="BareMetal"),
+            architecture=self.architecture,
+        )
+        RemotePower.objects.create(
+            machine=self.machine, remote_power_device=self.remotepowerdevice
+        )
+
+    def test_unauthenticated_get_redirects_to_login(self) -> None:
+        url = reverse(
+            "frontend:remotepowerdevice_machines",
+            kwargs={"id": self.remotepowerdevice.pk},
+        )
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert "login" in response.url.lower()  # type: ignore[attr-defined]
+
+    def test_regular_user_get_redirects_to_login(self) -> None:
+        self.client.force_login(User.objects.get(username="user"))
+        url = reverse(
+            "frontend:remotepowerdevice_machines",
+            kwargs={"id": self.remotepowerdevice.pk},
+        )
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert "login" in response.url.lower()  # type: ignore[attr-defined]
+
+    def test_superuser_get_lists_machines_using_this_device(self) -> None:
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse(
+            "frontend:remotepowerdevice_machines",
+            kwargs={"id": self.remotepowerdevice.pk},
+        )
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert b"powered-machine.orthos2.test" in response.content
+
+    def test_nonexistent_remotepowerdevice_returns_404(self) -> None:
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse("frontend:remotepowerdevice_machines", kwargs={"id": 99999})
         response = self.client.get(url)
         assert response.status_code == 404
 
