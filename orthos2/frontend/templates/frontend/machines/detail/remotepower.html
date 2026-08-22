@@ -2,60 +2,71 @@
 {% load filters %}
 
 {% block tabcontent %}
-  <div class="title d-flex align-items-center">
-    <h5>Remote Power</h5>
-    {% if request.user.is_superuser and not machine.has_remotepower %}
-      <a
-        class="btn btn-success btn-sm ms-auto"
-        href="{% url 'frontend:new_remotepower' machine.pk %}"
-        >+</a
-      >
-    {% endif %}
-  </div>
-
   {% if machine.has_remotepower %}
-    <table class="table table-bordered small">
-      <tbody class="thead-default">
-        <tr>
-          <td class="th fw-bold" width="200px">Fence Agent</td>
-          <td>{{ machine.remotepower.get_remotepower_fence.name }}</td>
-        </tr>
-        <tr>
-          <td class="th fw-bold">Remote Power Device</td>
-          <td>{{ machine.remotepower.remote_power_device }}</td>
-        </tr>
-        <tr>
-          <td class="th fw-bold">Port</td>
-          <td>{{ machine.remotepower.port }}</td>
-        </tr>
-        <tr>
-          <td class="th fw-bold">Comment</td>
-          <td>{{ machine.remotepower.comment }}</td>
-        </tr>
-        <tr>
-          <td class="th fw-bold">Options</td>
-          <td>{{ machine.remotepower.options }}</td>
-        </tr>
-      </tbody>
-    </table>
-    {% if request.user.is_superuser %}
-      <div class="btn-group-vertical d-flex" style="max-width: 200px;">
-        <a
-          class="btn btn-warning btn-sm"
-          href="{% url 'frontend:edit_remotepower' machine.pk %}"
-          >Edit Remote Power</a
-        >
+    <div class="row">
+      <div class="col-10">
+        <div class="title">
+          <h5>Remote Power</h5>
+        </div>
+        <table class="table table-bordered small">
+          <tbody class="thead-default">
+            <tr>
+              <td class="th fw-bold" width="200px">Fence Agent</td>
+              <td>{{ machine.remotepower.get_remotepower_fence.name }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Remote Power Device</td>
+              <td>{{ machine.remotepower.remote_power_device }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Port</td>
+              <td>{{ machine.remotepower.port }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Comment</td>
+              <td>{{ machine.remotepower.comment }}</td>
+            </tr>
+            <tr>
+              <td class="th fw-bold">Options</td>
+              <td>{{ machine.remotepower.options }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <br />
-      <div class="btn-group-vertical d-flex" style="max-width: 200px;">
-        <a
-          class="btn btn-danger btn-sm"
-          href="{% url 'frontend:delete_remotepower' machine.pk %}"
-          >Delete Remote Power</a
-        >
-      </div>
-    {% endif %}
+      {% if request.user.is_superuser %}
+        <div class="col-2">
+          <div class="title">
+            <h5>Actions</h5>
+          </div>
+          <div class="btn-group-vertical d-flex">
+            <a
+              class="btn btn-warning btn-sm"
+              href="{% url 'frontend:edit_remotepower' machine.pk %}"
+              >Edit Remote Power</a
+            >
+          </div>
+          <br />
+          <div class="btn-group-vertical d-flex">
+            <a
+              class="btn btn-danger btn-sm"
+              href="{% url 'frontend:delete_remotepower' machine.pk %}"
+              >Delete Remote Power</a
+            >
+          </div>
+        </div>
+      {% endif %}
+    </div>
   {% else %}
+    <div class="title d-flex align-items-center">
+      <h5>Remote Power</h5>
+      {% if request.user.is_superuser %}
+        <a
+          class="btn btn-success btn-sm ms-auto"
+          href="{% url 'frontend:new_remotepower' machine.pk %}"
+          >+</a
+        >
+      {% endif %}
+    </div>
     <div class="alert alert-info">
       No remote power configured for this machine!
     </div>
