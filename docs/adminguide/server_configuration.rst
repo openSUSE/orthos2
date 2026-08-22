@@ -23,11 +23,11 @@ NETBOX_URL
 
 URL in the format of ``<protocol>://<fqdn>:<port>``. Specifies the NetBox instance used to retrieve data from.
 
-Environment Variable: ``ORTHOS_NETBOX_URL``
+Environment Variable: ``ORTHOS2_NETBOX_URL``
 
 Default: ``""`` (empty string)
 
-Example: ``https://netbox.example.org``
+Example: ``https://netbox.orthos2.test``
 
 NETBOX_TOKEN
 ============
@@ -40,10 +40,35 @@ Default: ``""`` (emtpy string)
 
 Example: ``1111111111aaaaaaaa22222222bbbbbbbb333333``
 
+NETBOX_AUTH_SCHEME
+==================
+
+The HTTP authentication scheme used for the ``Authorization`` header sent with the ``NETBOX_TOKEN``.
+
+Environment Variable: ``ORTHOS2_NETBOX_AUTH_SCHEME``
+
+Default: ``Bearer``
+
 ServerConfig
 ############
 
-The list of settings below can be modified at runtime in the Django Admin Interface.
+The list of settings below can be modified at runtime via the Server Configuration page in the web frontend
+(Administration → Server Configuration).
+
+``cobbler.prune.enabled``
+=========================
+
+Whether to prune orphaned Cobbler records (systems no longer known to Orthos) during Cobbler regeneration.
+
+Default: ``false``
+
+``cobbler.prune.dryrun``
+========================
+
+Whether Cobbler pruning only logs what would be removed instead of actually removing it. Only relevant if
+``cobbler.prune.enabled`` is ``true``.
+
+Default: ``true``
 
 ``domain.validendings``
 =======================
@@ -53,9 +78,9 @@ Multiple endings can be separated by a comma.
 
 Leave empty if all domains should be accepted.
 
-Default: ``example.de, example.com``
+Default: ``orthos2.test, sub.orthos2.test``
 
-Example: ``example.de, example.com, example.bayern``
+Example: ``orthos2.test, sub.orthos2.test, other.orthos2.test``
 
 ``mail.from.address``
 =====================
@@ -81,6 +106,16 @@ A whitespace after the prefix is recommended.
 
 Default: ``[ORTHOS]<whitespace>``
 
+``mail.validdomains``
+=====================
+
+List of valid domains for new users' email addresses on self-registration. Multiple domains can be separated by a
+comma.
+
+No default; if this key is not configured, new-account email validation fails for every address.
+
+Example: ``orthos2.test, sub.orthos2.test``
+
 ``orthos.api.welcomemessage``
 =============================
 
@@ -93,7 +128,7 @@ Default: blank
 
 The path to the online repo is set here. If errors occur in the Orthos code, they can be reported there.
 
-Default: https://gitlab.suse.de/orthos-maintainers/orthos2/issues
+Default: https://github.com/openSUSE/orthos2/issues
 
 ``orthos.configuration.inline.begin``
 =====================================
@@ -139,7 +174,7 @@ Here you can activate or deactivate the writing of the machine installation file
 
 The path to the Orthos documentation.
 
-Default: https://gitlab.suse.de/orthos-maintainers/orthos2/tree/development/docs
+Default: https://github.com/openSUSE/orthos2/tree/master/docs
 
 ``orthos.web.welcomemessage``
 =============================
@@ -158,54 +193,12 @@ Default password for remote power access.
 
 Default user for remote power access.
 
-``remotepower.dominionpx.password``
-===================================
-
-Password for remote Power Distribution Unit(Dominion PX) access.
-
-Default: xxxxxxx
-
-``remotepower.dominionpx.username.``
-====================================
-
-User for remote Power Distribution Unit(Dominion PX) access.
-
-Default: orthos
-
 ``remotepower.ipmi.command``
 ============================
 
 Path and command to power cycle over baseboard management controller (ipmitool).
 
 Default: ``/usr/bin/ipmitool -I lanplus -H {{ machine.bmc.fqdn }} -U {{ ipmi.user }} -P {{ ipmi.password }} power {{ action }}``
-
-``remotepower.ipmi.password``
-=============================
-
-Password for remote power access over baseboard management controller.
-
-Default: xxxxxxx
-
-``remotepower.ipmi.username``
-=============================
-
-User for remote power access over baseboard management controller.
-
-Default: oroot
-
-``remotepower.sentry.password``
-===============================
-
-Password for remote Remote Power Manager(sentry) access.
-
-Default: xxxxxxx
-
-``remotepower.sentry.username``
-===============================
-
-User for remote Remote Power Manager(sentry) access.
-
-Default: orthos
 
 ``serialconsole.ipmi.password``
 ===============================
@@ -221,11 +214,19 @@ User for serial over LAN(SOL) over the baseboard management controller.
 
 Default: oroot
 
+``serialization.execute``
+=========================
+
+Whether a copy of a machine object is stored as a file before it is deleted, see :doc:`machine` ("Delete a
+machine").
+
+Default: ``false`` (if unset, no backup is written)
+
 ``serialization.output.directory``
 ==================================
 
 Local directory where the machine object copies are stored after deleting a machine
-(see [Machines](./adminguide/machine.md) for more information).
+(see :ref:`machines` for more information).
 
 Default: ``/tmp``
 
@@ -280,12 +281,29 @@ Set the SSH connecting timeout (in seconds).
 
 Default: ``10``
 
+``ssh.use.systemuser``
+=======================
+
+Whether SSH connections to machines use the local system user's own SSH configuration (e.g. ssh-agent/``~/.ssh``)
+instead of the key files configured in ``ssh.keys.paths``.
+
+Default: ``false``
+
 ``tasks.daily.executiontime``
 =============================
 
 Time at which the daily tasks are started. Must be in 24h format.
 
 Default: ``00:00``
+
+``virtualization.libvirt.bridge``
+==================================
+
+The network bridge on the libvirt host that new virtual machines are attached to.
+
+No default; VM creation fails with an error if this key is not configured.
+
+Example: ``br0``
 
 ``virtualization.libvirt.images.directory``
 ===========================================

@@ -12,9 +12,10 @@ List View
 .. image:: ../img/userguide/14_enclosure_view_list.png
   :alt: Orthos2 Enclosure List View
 
-This page will show a list of all enclosures and allow you to delete individual servers if desired. The quick filter
-allows you to display only servers of a specific Device Type. The green plus button on the top right can be used to
-navigate to the add view.
+This page will show a list of all enclosures and allow you to delete individual enclosures if desired (deleting an
+enclosure also deletes its linked machines). The quick filter allows you to search by name or display only
+enclosures of a specific Device Type. The green plus button on the top right can be used to navigate to the add
+view.
 
 Add View
 ########
@@ -22,8 +23,9 @@ Add View
 .. image:: ../img/userguide/15_enclosure_add.png
   :alt: Orthos2 Add Enclosure
 
-The add view is reused to edit enclosures as well and takes the name, NetBox ID and optionally a Device Type and
-Description. In case the NetBox ID is different to zero, Orthos 2 will try to fetch the location and description from
+The add view is reused to edit enclosures as well and takes the name, NetBox ID, "Is Virtual" flag and optionally a
+Device Type and Description. "Is Virtual" tells Orthos 2 whether to fetch this enclosure from NetBox as a Virtual
+Machine or as a physical Device. In case the NetBox ID is different to zero, Orthos 2 will try to fetch the location and description from
 a NetBox "Device" object. In case the containing Orthos 2 Machines are NetBox "Virtual Machines", please use the ID of
 the NetBox "Device" which hosts the cluster. If a NetBox Virtual Machine Cluster consists of multiple host nodes, this
 mapping will not make sense anymore and it is better to leave the NetBox ID at its default of zero.
@@ -37,8 +39,8 @@ Overview
 .. image:: ../img/userguide/16_enclosure_overview.png
   :alt: Orthos2 Enclosure Overview Details
 
-Here the name, Device Type, description and location can be seen. On the bottom of the tab the link for the HTTP API and
-Django Admin can be seen.
+Here the name, Device Type, description and location can be seen. On the bottom of the tab the link for the HTTP API
+can be seen.
 
 Actions
 =======

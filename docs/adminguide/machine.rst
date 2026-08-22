@@ -52,7 +52,7 @@ System (required)
 
 The type of system of the machine.
 
-Example: VM, BMC, BareMetal, LPAR, Desctop, RemotePower etc.
+Example: VM, BMC, BareMetal, LPAR, Desktop, RemotePower etc.
 
 Serial number/Product code/Device Type
 =======================================
@@ -214,13 +214,6 @@ is via telnet. Access to the console runs via the CScreen srever.
 
 Example: sconsole3.arch.suse.de
 
-Device
-======
-
-Kernel device through which the output for the serial console runs.
-
-Example: ttyS0, ttyS1 etc.
-
 Port
 ====
 
@@ -233,8 +226,19 @@ A free command can be entered here.
 
 Example: telnet sconsole3.arch.suse.de 2008
 
+Comment
+=======
+
+Free-text comment for this serial console configuration.
+
 REMOTE POWER description
 ########################
+
+Fence Agent
+===========
+
+The Remote Power Type (fence agent) used to control power for this machine. Available choices depend on whether the
+machine is a BMC, a Hypervisor, or has a Remote Power Device assigned, see :doc:`remote_power_type`.
 
 Remote power device
 ===================
@@ -248,6 +252,11 @@ Port
 
 Network port for accessing the RemotePower.
 
+Comment
+=======
+
+Free-text comment for this remote power configuration.
+
 Options
 =======
 
@@ -256,10 +265,11 @@ The option to append to the fence agents call. See individual fence agent for av
 Delete a machine
 ################
 
-To delete a machine, choose from the machine list and press 'Delete' at the bottom of the machine view. All related
-information that is also deleted together with the machine object is displayed. Press ``Yes`` to confirm. For
-administrative reasons, a copy of each deleted machine object is stored in the form of a file. The format (JSON, Yaml)
-as well as the target directory can be set via the server configuration.
+There is no "Delete" button for a machine in the web frontend; a machine can currently only be deleted via the API
+(``DELETE`` command). All related sub-objects (network interfaces, BMC, serial console, remote power, annotations,
+etc.) are deleted together with the machine. If the ``serialization.execute`` key is enabled (the default), a copy of
+each deleted machine object is stored in the form of a file beforehand. The format (JSON, Yaml) as well as the target
+directory can be set via the server configuration.
 
 Further configuration information can be found in the :ref:`admin-guide` (``serialization.*``).
 

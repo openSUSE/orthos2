@@ -119,7 +119,7 @@ class Login(WebTest):
 
             form = page.form  # type: ignore
             form["login"] = "user-nopassword"
-            form["email"] = "user-nopassword@foo.bar"
+            form["email"] = "user-nopassword@orthos2.test"
             page = form.submit().maybe_follow()  # type: ignore
 
             self.assertContains(page, "Password restored - check your mails.")  # type: ignore
@@ -178,7 +178,7 @@ class LoginOIDCBehavior(WebTest):
 
     def test_login_screen_with_oidc_default(self) -> None:
         """When OIDC is configured, default screen shows only OIDC button."""
-        with self.settings(SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.example.com"):
+        with self.settings(SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.orthos2.test"):
             page = self.app.get(reverse("frontend:login"))  # type: ignore
 
             # Should show OIDC button
@@ -193,7 +193,7 @@ class LoginOIDCBehavior(WebTest):
 
     def test_login_screen_with_oidc_builtin_param(self) -> None:
         """When OIDC is configured but ?builtin=true, show built-in form."""
-        with self.settings(SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.example.com"):
+        with self.settings(SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.orthos2.test"):
             page = self.app.get(reverse("frontend:login") + "?builtin=true")  # type: ignore
 
             # Should show built-in login form
@@ -208,7 +208,7 @@ class LoginOIDCBehavior(WebTest):
 
     def test_builtin_login_works_with_oidc_enabled(self) -> None:
         """Verify built-in auth still functions when OIDC is configured."""
-        with self.settings(SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.example.com"):
+        with self.settings(SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.orthos2.test"):
             page = self.app.get(reverse("frontend:login") + "?builtin=true")  # type: ignore
             form = page.form  # type: ignore
             form["username"] = "user"
@@ -220,7 +220,7 @@ class LoginOIDCBehavior(WebTest):
 
     def test_next_parameter_preserved_with_builtin(self) -> None:
         """Ensure ?next parameter works with ?builtin=true."""
-        with self.settings(SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.example.com"):
+        with self.settings(SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.orthos2.test"):
             page = self.app.get(  # type: ignore
                 reverse("frontend:login") + "?builtin=true&next=/machines/my"
             )
@@ -235,7 +235,7 @@ class LoginOIDCBehavior(WebTest):
     def test_password_free_user_with_oidc_and_builtin(self) -> None:
         """Password-free user redirect should work with OIDC + builtin."""
         with self.settings(
-            SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.example.com",
+            SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.orthos2.test",
             AUTH_ALLOW_USER_CREATION=True,
         ):
             page = self.app.get(reverse("frontend:login") + "?builtin=true")  # type: ignore
@@ -251,7 +251,7 @@ class LoginOIDCBehavior(WebTest):
     def test_navbar_links_hidden_on_oidc_only_screen(self) -> None:
         """Create Account and Restore Password links hidden on OIDC-only screen."""
         with self.settings(
-            SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.example.com",
+            SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.orthos2.test",
             AUTH_ALLOW_USER_CREATION=True,
         ):
             page = self.app.get(reverse("frontend:login"))  # type: ignore
@@ -263,7 +263,7 @@ class LoginOIDCBehavior(WebTest):
     def test_navbar_links_visible_on_builtin_screen(self) -> None:
         """Create Account and Restore Password links appear on builtin screen."""
         with self.settings(
-            SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.example.com",
+            SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.orthos2.test",
             AUTH_ALLOW_USER_CREATION=True,
         ):
             page = self.app.get(reverse("frontend:login") + "?builtin=true")  # type: ignore
@@ -285,7 +285,7 @@ class LoginOIDCBehaviorNoCSRF(WebTest):
 
     def test_post_to_oidc_only_screen_ignored(self) -> None:
         """POST requests to OIDC-only screen should not process form."""
-        with self.settings(SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.example.com"):
+        with self.settings(SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.orthos2.test"):
             # POST to OIDC-only screen (without builtin param)
             response = self.app.post(  # type: ignore
                 reverse("frontend:login"),

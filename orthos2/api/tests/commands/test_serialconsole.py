@@ -16,10 +16,10 @@ class SerialConsoleCommandTestCase(APITestCase):
 
     def setUp(self) -> None:
         self.superuser = User.objects.create_superuser(
-            username="superuser", email="super@test.de", password="secret"
+            username="superuser", email="super@orthos2.test", password="secret"
         )
         self.regular_user = User.objects.create_user(
-            username="user", email="user@test.de", password="secret"
+            username="user", email="user@orthos2.test", password="secret"
         )
         superuser_token, _ = Token.objects.get_or_create(user=self.superuser)
         self.superuser_token = superuser_token.key

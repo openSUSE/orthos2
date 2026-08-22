@@ -39,12 +39,8 @@ Contact email
 
 Email address to the person who is the contact person for an architecture.
 
-Write DHCPv4
-============
+Default profile
+===============
 
-Enable/disable writing a DHCPv4 file for this architecture.
-
-Write DHCPv6
-============
-
-Enable/disable writing a DHCPv6 file for this architecture.
+The name of the Cobbler profile used as the default installation choice for machines of this architecture when
+using the "Setup Machine" action.

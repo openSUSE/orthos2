@@ -25,7 +25,7 @@ class AddBMCTest(APITestCase):
 
     def setUp(self) -> None:
         self.user = User.objects.create_superuser(
-            username="testuser", email="test@test.de", password="12345"
+            username="testuser", email="test@orthos2.test", password="12345"
         )
         auth_token, _ = Token.objects.get_or_create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION="Token " + auth_token.key)
@@ -89,7 +89,7 @@ class AddMachineTest(APITestCase):
 
     def setUp(self) -> None:
         self.user = User.objects.create_superuser(
-            username="testuser", email="test@test.de", password="12345"
+            username="testuser", email="test@orthos2.test", password="12345"
         )
         auth_token, _ = Token.objects.get_or_create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION="Token " + auth_token.key)
@@ -143,7 +143,7 @@ class AddRemotePowerDeviceTest(APITestCase):
 
     def setUp(self) -> None:
         self.user = User.objects.create_superuser(
-            username="testuser", email="test@test.de", password="12345"
+            username="testuser", email="test@orthos2.test", password="12345"
         )
         auth_token, _ = Token.objects.get_or_create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION="Token " + auth_token.key)

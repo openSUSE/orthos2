@@ -5,7 +5,7 @@
     "fields": {
       "username": "superuser",
       "password": "pbkdf2_sha256$36000$FFhkWCuL1AyE$QFlRwInY3INsxQ0Y+N5rWGpp/3MSTsU72PRkkEnZkvs=",
-      "email": "superuser@foo.bar",
+      "email": "superuser@orthos2.test",
       "is_superuser": true,
       "is_staff": true
     }
@@ -16,7 +16,7 @@
     "fields": {
       "username": "user",
       "password": "pbkdf2_sha256$36000$FFhkWCuL1AyE$QFlRwInY3INsxQ0Y+N5rWGpp/3MSTsU72PRkkEnZkvs=",
-      "email": "user@foo.bar",
+      "email": "user@orthos2.test",
       "is_superuser": false,
       "is_staff": false
     }
@@ -26,7 +26,7 @@
     "pk": null,
     "fields": {
       "username": "user-nopassword",
-      "email": "user-nopassword@foo.bar",
+      "email": "user-nopassword@orthos2.test",
       "is_superuser": false,
       "is_staff": false
     }
@@ -36,7 +36,7 @@
     "pk": null,
     "fields": {
       "username": "user-nopassword-multiple1",
-      "email": "user-nopassword-multiple@foo.bar",
+      "email": "user-nopassword-multiple@orthos2.test",
       "is_superuser": false,
       "is_staff": false
     }
@@ -46,7 +46,7 @@
     "pk": null,
     "fields": {
       "username": "user-nopassword-multiple2",
-      "email": "user-nopassword-multiple@foo.baz",
+      "email": "user-nopassword-multiple@sub.orthos2.test",
       "is_superuser": false,
       "is_staff": false
     }

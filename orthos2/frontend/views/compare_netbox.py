@@ -51,6 +51,18 @@ class NetboxOrthosComparisionRunListView(PermissionRequiredMixin, ListView):
         if date_to:
             filters.append(Q(compare_timestamp__date__lte=date_to))
 
+        query = self.request.GET.get("query")
+        if query:
+            filters.append(
+                Q(object_bmc__fqdn__icontains=query)
+                | Q(object_device_type__name__icontains=query)
+                | Q(object_enclosure__name__icontains=query)
+                | Q(object_machine__fqdn__icontains=query)
+                | Q(object_manufacturer__name__icontains=query)
+                | Q(object_network_interface__name__icontains=query)
+                | Q(object_remote_power_device__fqdn__icontains=query)
+            )
+
         return super().get_queryset().filter(*filters)  # type: ignore
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:

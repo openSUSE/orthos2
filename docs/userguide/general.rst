@@ -17,26 +17,37 @@ tasks:
 - reboot the machines remotely and
 - managing remote consoles.
 
-This document describes the usage. For implementation specific notes, please refer to the “Developer’s Guide”. However,
-sometimes this document describes some aspects of the implementation simply to let the user better understand why things
-work as they do. All users of Orthos have a very technical background.
+This document describes the usage. Sometimes this document describes some aspects of the implementation simply to let
+the user better understand why things work as they do. All users of Orthos have a very technical background.
 
 
 Architecture
 ############
 
 
-.. image:: ../img/userguide/00_architecture.png
-  :alt: Orthos2 High-Level Architecture
+.. code-block:: text
 
-Image Overall Architecture shows the overall architecture. All data is kept in the database. The Orthos Server is the
+      +--------------------------------------------+
+      |                                            |
+      |   +--------------+     +----------------+  |
+      |   |   Database   |<----|  Orthos Server |  |
+      |   +--------------+     +----------------+  |
+      |          ^                     ^           |
+      |          |                     |           |
+      |          |     +------------+  |           |
+      |          +-----| Orthos Web |--+           |
+      |                +------------+              |
+      |                                            |
+      +--------------------------------------------+
+
+The diagram above shows the overall architecture. All data is kept in the database. The Orthos Server is the
 central component of Orthos. It has the following tasks:
 
 - gathering machine data,
 - communicating with the clients,
 - executing jobs such as rebooting or installating the machine or syncing some files.
 
-There is the web UI for simple tasks. For more complex opperations, please use the API.
+There is the web UI for simple tasks. For more complex operations, please use the API.
 
 Web Client
 ##########
@@ -57,10 +68,20 @@ You can:
 - Report Problems for each machine
 - Get an overview of the reservation history
 
-If administrative rights are required, they must be set up by an Orthos administrator. Below a screenshot of the login
-page.
+If administrative rights are required, they must be set up by an Orthos administrator.
+
+Login
+=====
+
+Most users authenticate via OIDC by clicking "Login with Authentik":
+
+.. image:: ../img/userguide/01_login_screen_oidc.png
+  :alt: Orthos2 OIDC Login Screen
 
 .. note:: Account creation and password restoration may be disabled in case OIDC authentication is configured.
 
-.. image:: ../img/userguide/01_login_screen.jpg
-  :alt: Orthos2 Login Screen
+Power users who maintain a local-only Orthos account (not backed by the OIDC provider) can reach the built-in login
+form by appending ``?builtin=true`` to the login page URL:
+
+.. image:: ../img/userguide/01_login_screen_built_in.png
+  :alt: Orthos2 Built-in Login Screen
