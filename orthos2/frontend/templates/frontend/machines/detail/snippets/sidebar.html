@@ -3,6 +3,13 @@
   <h5>Actions</h5>
 </div>
 
+{% if user.is_superuser %}
+<div class="btn-group-vertical d-flex">
+  <a class="btn btn-warning btn-sm" href="{% url 'frontend:edit_machine' machine.id %}" role="button">Edit Machine</a>
+</div>
+<br/>
+{% endif %}
+
 <div class="btn-group-vertical d-flex">
   {% if machine.reserved_by and user.username == machine.reserved_by.username %}
   <a class="btn btn-secondary btn-sm" href="{% url 'frontend:reserve_machine' machine.id %}" role="button">Extend Reservation</a>
