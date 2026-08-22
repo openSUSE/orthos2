@@ -25,6 +25,8 @@ Tabs
   machine, to reinstall, to report errors and to write annotations.
 - CPU, Network, Serial Console, Remote Power, Installations, PCI, USB, SCSI, Miscellaneous and Reservation History:
   Detailed information on the respective subitem.
+- Virtualization: Shown for dedicated VM hosts with a virtualization API configured; lists the host's VM guests.
+- Cobbler Cleanup: Shown for machines serving as a Cobbler server; lets you clean up stale Cobbler records.
 - Ansible Results: Results of the Ansible checks run against the machine. (Only visible with Admin Permissions.)
 - NetBox Comparison: This page compares the data between Orthos 2 and NetBox. (Only visible with Admin Permissions.)
 
@@ -73,8 +75,9 @@ Once you have reserved the machine yourself, several more actions become availab
 - Rescan All: Rescan all information of a machine.
 - Rescan Installations: Rescan the installation status of a machine.
 - Power On, Power Off, Reboot, Check Power Status: Control and query the machine's remote power state.
-- Fetch NetBox, Setup Machine: Shown but disabled; these remain administrator-only actions even for the reserving
-  user.
+- Fetch NetBox, Setup Machine: Available to you too while the machine is reserved under your name; each is enabled
+  based on the machine's own state (whether it has a NetBox ID, and whether it supports the "Setup Machine"
+  workflow) rather than on your permissions.
 
 Administrators see all actions enabled, plus a few administrator-only ones, regardless of who has the machine
 reserved:

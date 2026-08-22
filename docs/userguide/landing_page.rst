@@ -16,14 +16,14 @@ Administrators see a few additional entries in the sidebar, and an "Add Machine"
 Sidebar Navigation
 ##################
 
-.. image:: ../img/userguide/03_top_menu_overviews.png
+.. image:: ../img/userguide/03_sidebar_navigation.png
   :alt: Orthos2 Sidebar Navigation (administrator, all entries expanded)
   :align: right
 
 The sidebar on the left gives access to the different machine overviews and tools:
 
 - All Machines: Overview of all machines that are available in Orthos.
-- Free Machines: Overview of all machines that are currently not reserved.
+- Free Machines: Overview of all machines that are currently not reserved and not a dedicated VM host.
 - My Machines: Overview of all Orthos machines reserved under your name.
 - Virtual Machines: Overview of all virtual machines. (Host and Guest)
 - :doc:`advanced_search`: Advanced machine search.

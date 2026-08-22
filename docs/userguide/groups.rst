@@ -10,7 +10,7 @@ The Groups page lets administrators manage permission groups and assign granular
   :alt: Orthos2 Groups List
 
 - Name: The group's name.
-- Permissions: The permissions assigned to this group.
+- Permissions: The number of permissions assigned to this group.
 
 Users can be added to groups from their own detail page under :doc:`users`. See
 :doc:`../adminguide/groups_and_users` for background on the permission model.
