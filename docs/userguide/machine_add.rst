@@ -2,8 +2,8 @@
 Machine Add
 ***********
 
-.. note:: The tab "Add Machine" can only be used for people with administrative capabilities. For this to work a NetBox
-          instance has to be connected to Orthos 2 beforehand in the backend.
+.. note:: The "Add Machine" button (shown above the machine table) can only be used by administrators. For this to
+          work a NetBox instance has to be connected to Orthos 2 beforehand in the backend.
 
 .. image:: ../img/userguide/13_machine_add_netbox.png
   :alt: Orthos2 Machine Add with NetBox
