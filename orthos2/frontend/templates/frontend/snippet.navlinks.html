@@ -22,6 +22,15 @@
       >Virtual Machines</a
     >
   </li>
+  {% if request.user.is_superuser %}
+  <li
+    class="nav-item position-relative {% active_view request 'administrative_machines' %}"
+  >
+    <a class="nav-link" href="{% url 'frontend:administrative_machines' %}"
+      >Administrative Machines</a
+    >
+  </li>
+  {% endif %}
   <li
     class="nav-item position-relative {% active_view request 'advanced_search' %}"
   >

@@ -7,10 +7,14 @@ from django.urls import reverse
 from orthos2.data.models import (
     Architecture,
     Domain,
+    Machine,
+    RemotePower,
     RemotePowerDevice,
     RemotePowerType,
     ServerConfig,
+    System,
 )
+from orthos2.taskmanager.models import SingleTask
 
 
 class RemotePowerDeviceViewTestCase(TestCase):
@@ -60,6 +64,33 @@ class RemotePowerDevicesListViewTest(RemotePowerDeviceViewTestCase):
         assert response.status_code == 200
         assert b"rpower.orthos2.test" in response.content
 
+    def test_superuser_get_shows_machine_count(self) -> None:
+        other_device = RemotePowerDevice.objects.create(
+            fqdn="other-rpower.orthos2.test",
+            mac="AA:BB:CC:DD:EE:00",
+            fence_agent=self.fence_agent,
+            architecture=self.architecture,
+            domain=self.domain,
+        )
+        machine = Machine.objects.create(
+            fqdn="powered-machine.orthos2.test",
+            system=System.objects.get(name="BareMetal"),
+            architecture=self.architecture,
+        )
+        RemotePower.objects.create(
+            machine=machine, remote_power_device=self.remotepowerdevice
+        )
+
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse("frontend:remotepowerdevices")
+        response = self.client.get(url)
+        listed = {
+            remotepowerdevice.pk: remotepowerdevice
+            for remotepowerdevice in response.context["object_list"]
+        }
+        assert listed[self.remotepowerdevice.pk].machine_count == 1
+        assert listed[other_device.pk].machine_count == 0
+
 
 class RemotePowerDeviceDetailViewTest(RemotePowerDeviceViewTestCase):
     def test_unauthenticated_get_redirects_to_login(self) -> None:
@@ -97,6 +128,54 @@ class RemotePowerDeviceDetailViewTest(RemotePowerDeviceViewTestCase):
     def test_nonexistent_remotepowerdevice_returns_404(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))
         url = reverse("frontend:remotepowerdevice_detail", kwargs={"id": 99999})
+        response = self.client.get(url)
+        assert response.status_code == 404
+
+
+class RemotePowerDeviceMachinesViewTest(RemotePowerDeviceViewTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.machine = Machine.objects.create(
+            fqdn="powered-machine.orthos2.test",
+            system=System.objects.get(name="BareMetal"),
+            architecture=self.architecture,
+        )
+        RemotePower.objects.create(
+            machine=self.machine, remote_power_device=self.remotepowerdevice
+        )
+
+    def test_unauthenticated_get_redirects_to_login(self) -> None:
+        url = reverse(
+            "frontend:remotepowerdevice_machines",
+            kwargs={"id": self.remotepowerdevice.pk},
+        )
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert "login" in response.url.lower()  # type: ignore[attr-defined]
+
+    def test_regular_user_get_redirects_to_login(self) -> None:
+        self.client.force_login(User.objects.get(username="user"))
+        url = reverse(
+            "frontend:remotepowerdevice_machines",
+            kwargs={"id": self.remotepowerdevice.pk},
+        )
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert "login" in response.url.lower()  # type: ignore[attr-defined]
+
+    def test_superuser_get_lists_machines_using_this_device(self) -> None:
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse(
+            "frontend:remotepowerdevice_machines",
+            kwargs={"id": self.remotepowerdevice.pk},
+        )
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert b"powered-machine.orthos2.test" in response.content
+
+    def test_nonexistent_remotepowerdevice_returns_404(self) -> None:
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse("frontend:remotepowerdevice_machines", kwargs={"id": 99999})
         response = self.client.get(url)
         assert response.status_code == 404
 
@@ -259,3 +338,57 @@ class RemotePowerDeviceNetboxComparisonViewTest(RemotePowerDeviceViewTestCase):
         )
         response = self.client.get(url)
         assert response.status_code == 200
+
+
+class RemotePowerDeviceFetchNetboxViewTest(RemotePowerDeviceViewTestCase):
+    def test_superuser_queues_fetch_task(self) -> None:
+        self.remotepowerdevice.netbox_id = 42
+        self.remotepowerdevice.save()
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse(
+            "frontend:remotepowerdevice_netbox_fetch",
+            kwargs={"id": self.remotepowerdevice.pk},
+        )
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert SingleTask.objects.filter(name="NetboxFetchRemotePowerDevice").exists()
+
+    def test_superuser_get_when_not_synced_does_not_queue_task(self) -> None:
+        assert self.remotepowerdevice.netbox_id == 0
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse(
+            "frontend:remotepowerdevice_netbox_fetch",
+            kwargs={"id": self.remotepowerdevice.pk},
+        )
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert not SingleTask.objects.filter(
+            name="NetboxFetchRemotePowerDevice"
+        ).exists()
+
+
+class RemotePowerDeviceCompareNetboxViewTest(RemotePowerDeviceViewTestCase):
+    def test_superuser_queues_compare_task(self) -> None:
+        self.remotepowerdevice.netbox_id = 42
+        self.remotepowerdevice.save()
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse(
+            "frontend:remotepowerdevice_netbox_compare",
+            kwargs={"id": self.remotepowerdevice.pk},
+        )
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert SingleTask.objects.filter(name="NetboxCompareRemotePowerDevice").exists()
+
+    def test_superuser_get_when_not_synced_does_not_queue_task(self) -> None:
+        assert self.remotepowerdevice.netbox_id == 0
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse(
+            "frontend:remotepowerdevice_netbox_compare",
+            kwargs={"id": self.remotepowerdevice.pk},
+        )
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert not SingleTask.objects.filter(
+            name="NetboxCompareRemotePowerDevice"
+        ).exists()

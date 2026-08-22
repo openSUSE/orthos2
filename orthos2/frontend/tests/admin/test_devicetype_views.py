@@ -8,6 +8,7 @@ from django.urls import reverse
 
 from orthos2.data.models import DeviceType, Manufacturer
 from orthos2.data.models.netboxorthoscomparision import NetboxOrthosComparisionRun
+from orthos2.taskmanager.models import SingleTask
 
 
 class DeviceTypeListViewTest(TestCase):
@@ -319,6 +320,17 @@ class DeviceTypeFetchNetboxViewTest(TestCase):
         response = self.client.get(url)
         assert response.status_code == 302
 
+    def test_superuser_get_when_not_synced_does_not_queue_task(self) -> None:
+        manufacturer = Manufacturer.objects.create(name="OtherCorp")
+        unsynced = DeviceType.objects.create(
+            name="UnsyncedDeviceType", manufacturer=manufacturer
+        )
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse("frontend:devicetype_netbox_fetch", kwargs={"id": unsynced.pk})
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert not SingleTask.objects.filter(name="NetboxFetchFullDeviceType").exists()
+
 
 class DeviceTypeCompareNetboxViewTest(TestCase):
     fixtures = ["orthos2/frontend/tests/user/fixtures/users.json"]
@@ -352,6 +364,17 @@ class DeviceTypeCompareNetboxViewTest(TestCase):
         )
         response = self.client.get(url)
         assert response.status_code == 302
+
+    def test_superuser_get_when_not_synced_does_not_queue_task(self) -> None:
+        manufacturer = Manufacturer.objects.create(name="OtherCorp")
+        unsynced = DeviceType.objects.create(
+            name="UnsyncedDeviceType", manufacturer=manufacturer
+        )
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse("frontend:devicetype_netbox_compare", kwargs={"id": unsynced.pk})
+        response = self.client.get(url)
+        assert response.status_code == 302
+        assert not SingleTask.objects.filter(name="NetboxCompareDeviceType").exists()
 
 
 class DeviceTypeNetboxComparisonViewTest(TestCase):

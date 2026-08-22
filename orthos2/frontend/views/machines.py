@@ -47,6 +47,12 @@ class MachineListView(ListView):  # type: ignore
         if self.request.GET.get("domain"):
             filters.append(Q(fqdn_domain__name=self.request.GET.get("domain")))
 
+        has_netbox = self.request.GET.get("has_netbox")
+        if has_netbox == "1":
+            filters.append(Q(netbox_id__gt=0))
+        elif has_netbox == "0":
+            filters.append(Q(netbox_id=0))
+
         status = self.request.GET.get("status")
         if status and status == "ping":
             filters.append(
@@ -155,6 +161,26 @@ class FreeMachineListView(MachineListView):
         context["title"] = "Free Machines"
         context["view"] = "free"
         return super(FreeMachineListView, self).render_to_response(
+            context, **response_kwargs
+        )
+
+
+class AdministrativeMachineListView(MachineListView):
+    """`Administrative Machines` list view."""
+
+    def get_queryset(self) -> QuerySet["Machine"]:
+        """Filter machines which are administrative themselves or belong to an administrative system."""
+        machines = super(AdministrativeMachineListView, self).get_queryset()
+        return machines.filter(Q(administrative=True) | Q(system__administrative=True))
+
+    def render_to_response(
+        self,
+        context: Dict[str, Any],
+        **response_kwargs: Dict[str, Any],
+    ) -> HttpResponse:
+        context["title"] = "Administrative Machines"
+        context["view"] = "administrative"
+        return super(AdministrativeMachineListView, self).render_to_response(
             context, **response_kwargs
         )
 

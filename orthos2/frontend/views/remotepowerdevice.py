@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING, Any, Dict
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.db.models import Count, OuterRef, QuerySet, Subquery
+from django.db.models.functions import Coalesce
 from django.http import (
     Http404,
     HttpRequest,
@@ -20,7 +22,13 @@ from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-from orthos2.data.models import Architecture, Domain, RemotePowerDevice, RemotePowerType
+from orthos2.data.models import (
+    Architecture,
+    Domain,
+    RemotePower,
+    RemotePowerDevice,
+    RemotePowerType,
+)
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.misc import get_domain
@@ -58,6 +66,23 @@ class RemotePowerDevicesListView(PermissionRequiredMixin, ListView):
             )
             return ordering
         return "fqdn"
+
+    def get_queryset(self) -> QuerySet["RemotePowerDevice"]:
+        # RemotePower.remote_power_device uses related_name="+", so there's no
+        # reverse relation to Count() through directly - use a correlated
+        # subquery instead.
+        machine_count_subquery = (
+            RemotePower.objects.filter(remote_power_device=OuterRef("pk"))
+            .order_by()
+            .values("remote_power_device")
+            .annotate(count=Count("machine"))
+            .values("count")
+        )
+        return (
+            super()
+            .get_queryset()  # type: ignore[attr-defined]
+            .annotate(machine_count=Coalesce(Subquery(machine_count_subquery), 0))
+        )
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -248,6 +273,29 @@ def remotepowerdevice_detail(request: HttpRequest, id: int) -> HttpResponse:
 
 
 @login_required
+@permission_required("data.change_remotepowerdevice")
+def remotepowerdevice_machines(request: HttpRequest, id: int) -> HttpResponse:
+    try:
+        remotepowerdevice = RemotePowerDevice.objects.get(pk=id)
+    except RemotePowerDevice.DoesNotExist:
+        raise Http404("Remote Power Device does not exist")
+
+    return render(
+        request,
+        "frontend/remotepowerdevices/detail/machines.html",
+        {
+            "remotepowerdevice": remotepowerdevice,
+            "remotepowers": RemotePower.objects.filter(
+                remote_power_device=remotepowerdevice
+            )
+            .select_related("machine")
+            .order_by("machine__fqdn"),
+            "title": f"Remote Power Device {remotepowerdevice.fqdn} Machines",
+        },
+    )
+
+
+@login_required
 def remotepowerdevice_fetch_netbox(
     request: HttpRequest, id: int
 ) -> HttpResponseRedirect:
@@ -256,6 +304,10 @@ def remotepowerdevice_fetch_netbox(
     except RemotePowerDevice.DoesNotExist:
         messages.error(request, "Remote Power Device does not exist!")
         return redirect("frontend:remotepowerdevices")
+
+    if requested_remotepowerdevice.netbox_id == 0:
+        messages.error(request, "Remote Power Device is not linked to NetBox!")
+        return redirect("frontend:remotepowerdevice_detail", id=id)
 
     try:
         TaskManager.add(
@@ -315,6 +367,10 @@ def remotepowerdevice_compare_netbox(
     except RemotePowerDevice.DoesNotExist:
         messages.error(request, "Remote Power Device does not exist!")
         return redirect("frontend:remotepowerdevices")
+
+    if requested_remotepowerdevice.netbox_id == 0:
+        messages.error(request, "Remote Power Device is not linked to NetBox!")
+        return redirect("frontend:remotepowerdevice_detail", id=id)
 
     try:
         TaskManager.add(

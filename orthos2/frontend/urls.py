@@ -54,6 +54,11 @@ urlpatterns = [
         name="remotepowerdevice_detail",
     ),
     re_path(
+        r"^remote-power-devices/(?P<id>[0-9]+)/machines$",
+        views.remotepowerdevice_machines,
+        name="remotepowerdevice_machines",
+    ),
+    re_path(
         r"^remote-power-devices/(?P<id>[0-9]+)/netboxcomparison$",
         views.remotepowerdevice_netboxcomparison,
         name="remotepowerdevice_netbox_comparisons",
@@ -100,6 +105,11 @@ urlpatterns = [
         r"^machines/virtualmachines$",
         views.VirtualMachineListView.as_view(),
         name="virtual_machines",
+    ),
+    re_path(
+        r"^machines/administrative$",
+        views.AdministrativeMachineListView.as_view(),
+        name="administrative_machines",
     ),
     re_path(r"^machines/search", views.machine_search, name="advanced_search"),
     path("machine/add", views.machine_add, name="machine_add"),

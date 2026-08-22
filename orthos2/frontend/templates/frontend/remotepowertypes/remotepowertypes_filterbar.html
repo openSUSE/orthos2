@@ -4,8 +4,38 @@
   <div class="row">
     <div class="col-12 d-flex align-items-center">
 
-      <div style="display: inline-block">
-          <span class="hint">Found {{ paginator.count }} Remote Power Type(s)</span>
+      <div class="d-flex align-items-center flex-wrap">
+        <span class="hint" style="margin-right: 0.5rem;">Device Category</span>
+        <div class="btn-group" role="group" style="margin-right: 1rem;">
+          <a
+            class="btn btn-secondary btn-sm {% active request 'bmc' %}"
+            href="?{% url_replace request 'device' 'bmc' %}"
+            role="button"
+            >BMC</a
+          >
+          <a
+            class="btn btn-secondary btn-sm {% active request 'rpowerdevice' %}"
+            href="?{% url_replace request 'device' 'rpowerdevice' %}"
+            role="button"
+            >Remote Power Device</a
+          >
+          <a
+            class="btn btn-secondary btn-sm {% active request 'hypervisor' %}"
+            href="?{% url_replace request 'device' 'hypervisor' %}"
+            role="button"
+            >Hypervisor</a
+          >
+          <a
+            class="btn btn-secondary btn-sm"
+            href="?{% url_replace request 'device' '' True %}"
+            role="button"
+            >&#215;</a
+          >
+        </div>
+
+        <div style="display: inline-block">
+            <span class="hint">Found {{ paginator.count }} Remote Power Type(s)</span>
+        </div>
       </div>
 
       <a class="nav-link ms-auto" href="{% url 'frontend:new_remotepowertype' %}">

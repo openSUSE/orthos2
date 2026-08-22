@@ -120,6 +120,38 @@ class DomainDetailViewTest(TestCase):
             in response.content
         )
 
+    def test_superuser_get_shows_tftp_server_link(self) -> None:
+        tftp_server = Machine.objects.create(
+            fqdn="tftp.orthos2.test",
+            system=System.objects.get(name="BareMetal"),
+            architecture=Architecture.objects.get(name="x86_64"),
+        )
+        self.domain.tftp_server = tftp_server
+        self.domain.save()
+
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse("frontend:domain_detail", kwargs={"id": self.domain.pk})
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert (
+            reverse("frontend:detail", kwargs={"id": tftp_server.pk}).encode()
+            in response.content
+        )
+
+    def test_superuser_get_shows_footer_api_and_edit_links(self) -> None:
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse("frontend:domain_detail", kwargs={"id": self.domain.pk})
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert (
+            f"{reverse('api:domain')}?name={self.domain.name}".encode()
+            in response.content
+        )
+        assert (
+            reverse("frontend:edit_domain", kwargs={"pk": self.domain.pk}).encode()
+            in response.content
+        )
+
 
 class NewDomainViewTest(TestCase):
     fixtures = ["orthos2/frontend/tests/user/fixtures/users.json"]

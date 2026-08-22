@@ -133,6 +133,34 @@ class ChangeView(WebTest):
         self.assertContains(page, "VIRTUALIZATION CLIENT")  # type: ignore
         self.assertNotContains(page, "VIRTUALIZATION SERVER")  # type: ignore
 
+    def test_editing_machine_on_non_hypervisor_capable_system_persists(self) -> None:
+        """Regression test: submitting the edit form for a machine whose
+        system cannot host VMs must still persist unrelated field changes,
+        even though the form hides the hypervisor-only fields (vm_max, ...)
+        for such systems."""
+        non_hypervisor_system = System.objects.create(name="Non-Hypervisor Test")
+        m3 = Machine()
+        m3.pk = 3
+        m3.system = non_hypervisor_system
+        m3.fqdn = "machine3.foo.bar.de"
+        m3.architecture_id = (
+            Architecture.get_architecture_manager().get_by_natural_key("x86_64").id
+        )
+        m3.save()
+
+        page = self.app.get(  # type: ignore
+            reverse("frontend:edit_machine", args=["3"]), user="superuser"
+        )
+
+        form = page.forms[1]  # type: ignore
+        form["administrative"] = True  # type: ignore
+        response = form.submit()  # type: ignore
+
+        assert response.status_code == 302  # type: ignore
+
+        m3.refresh_from_db()
+        assert m3.administrative is True
+
     def test_deactivate_sol_button_visible_for_ipmi_console(self) -> None:
         """The machine detail page should expose the SOL deactivate action for IPMI consoles."""
 

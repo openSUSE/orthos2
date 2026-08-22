@@ -1,42 +1,44 @@
-{% extends 'frontend/remotepowertypes/remotepowertype.html' %}
+{% extends 'frontend/remotepowerdevices/remotepowerdevice.html' %}
 
 {% block tabcontent %}
   <div class="row">
     <div class="col-10">
       <div class="container-fluid">
         <div class="title">
-          <h5>Devices using {{ remotepowertype.name }}</h5>
+          <h5>Machines using {{ remotepowerdevice.fqdn }}</h5>
         </div>
 
-        {% if devices %}
+        {% if remotepowers %}
           <table class="table table-striped table-bordered table-fixed small">
             <thead class="thead-default">
               <tr style="border: 1px solid #ddd;">
-                <th>{% if remotepowertype.device == 'rpowerdevice' %}FQDN{% else %}Machine{% endif %}</th>
-                <th>NetBox ID</th>
+                <th>Machine</th>
               </tr>
             </thead>
 
             <tbody>
-              {% for device in devices %}
+              {% for remotepower in remotepowers %}
                 <tr>
                   <td>
-                    <a href="{{ device.url }}" class="text-muted">{{ device.label }}</a>
+                    <a
+                      href="{% url 'frontend:detail' remotepower.machine.pk %}"
+                      class="text-muted"
+                      >{{ remotepower.machine.fqdn }}</a
+                    >
                   </td>
-                  <td>{{ device.netbox_id }}</td>
                 </tr>
               {% endfor %}
             </tbody>
           </table>
         {% else %}
           <div class="alert alert-info">
-            No devices use this remote power type.
+            No machines use this remote power device.
           </div>
         {% endif %}
       </div>
     </div>
     <div class="col-2">
-      {% include 'frontend/remotepowertypes/detail/actions.html' %}
+      {% include 'frontend/remotepowerdevices/detail/actions.html' %}
     </div>
   </div>
 {% endblock %}

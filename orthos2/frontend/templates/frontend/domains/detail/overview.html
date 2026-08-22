@@ -26,7 +26,13 @@
             </tr>
             <tr>
               <td class="th fw-bold">TFTP Server</td>
-              <td>{{ domain.tftp_server|default_if_none:"-" }}</td>
+              <td>
+                {% if domain.tftp_server %}
+                <a href="{% url 'frontend:detail' domain.tftp_server.id %}">{{ domain.tftp_server }}</a>
+                {% else %}
+                -
+                {% endif %}
+              </td>
             </tr>
             <tr>
               <td class="th fw-bold">CScreen Server</td>
