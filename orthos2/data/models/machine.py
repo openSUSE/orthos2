@@ -786,6 +786,15 @@ class Machine(models.Model):
         )
         if product_code is not None:
             self.product_code = product_code
+        # Device Type
+        netbox_device_type_id = (netbox_machine.get("device_type") or {}).get("id")
+        if netbox_device_type_id and (
+            self.device_type is None
+            or self.device_type.netbox_id != netbox_device_type_id
+        ):
+            self.device_type = DeviceType.get_or_create_from_netbox(
+                netbox_device_type_id
+            )
         # Verify all NetworkInterfaces are created
         if self.system.virtual:
             device_network_interfaces = netbox_api.check_vm_interface_by_id(
