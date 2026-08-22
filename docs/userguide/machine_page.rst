@@ -6,19 +6,26 @@ Each machine (machine object) has its own page here you have the possibility to 
 machine, to request the status of a machine, to have machines scanned, to install the machine with a new OS, to open
 error tickets and to write annotations to the machines.
 
-.. image:: ../img/userguide/05_machine_page.png
-  :alt: Orthos2 Machine Overview Page
+.. image:: ../img/userguide/05_machine_page_user.png
+  :alt: Orthos2 Machine Overview Page (regular user)
 
-Navigation Bar
-##############
+Administrators see additional tabs and actions, such as editing the machine, power control, and NetBox/Cobbler
+maintenance actions:
 
-.. image:: ../img/userguide/06_machine_infos.png
-  :alt: Orthos2 Machine Details Tabs
+.. image:: ../img/userguide/05_machine_page_admin.png
+  :alt: Orthos2 Machine Overview Page (administrator)
+
+Tabs
+####
+
+.. image:: ../img/userguide/06_machine_infos_admin.png
+  :alt: Orthos2 Machine Details Tabs (administrator)
 
 - Overview: The most important information about a machine, information about the status, possibility to scan the
   machine, to reinstall, to report errors and to write annotations.
-- CPU, Network, Installation, PCI, USB, SCSI, Miscellaneous and Reservation History: Detailed information on the
-  Subitems.
+- CPU, Network, Serial Console, Remote Power, Installations, PCI, USB, SCSI, Miscellaneous and Reservation History:
+  Detailed information on the respective subitem.
+- Ansible Results: Results of the Ansible checks run against the machine. (Only visible with Admin Permissions.)
 - NetBox Comparison: This page compares the data between Orthos 2 and NetBox. (Only visible with Admin Permissions.)
 
 Status
@@ -44,28 +51,41 @@ Additional machine information should be entered here. For example, upgrades, ha
 Machine Actions
 ###############
 
-.. image:: ../img/userguide/09_machine_actions.png
-  :alt: Orthos2 Machine Overview - Crop on Actions
+Before reserving a machine, a regular user only sees the Reserve Machine and Report Problem actions:
 
-- Reserve Machines: Here it is possible to reserve a machine under your name. In general, make sure that machines are
+.. image:: ../img/userguide/09_machine_actions_user.png
+  :alt: Orthos2 Machine Overview - Crop on Actions (regular user, unreserved)
+
+- Reserve Machine: Here it is possible to reserve a machine under your name. In general, make sure that machines are
   only reserved for as long as you actually need them. A maximum of 90 days is planned. Please remember that other users
   may also need the machine. If you need a machine for a longer period of time, only an Orthos administrator can make
   reservations under your name for longer time periods, up to infinite for constant machine assignment.
-- Rescan Status: Rescan the status information of a machine.
-- Rescan All: Rescan all information of a machine.
-- Rescan Installations: Resacan the installation status of a machine.
-- Rescan Network Interfaces: Rescan the machine network interfaces.
-- Fetch NetBox: Fetch all data from NetBox and overwrite machine data in Orthos 2. (Only visible with Admin
-  Permissions.)
-- Setup Machine: Here you can install your machine according to your needs. You have the possibility to install SLES, 
-  SLED, Opensuse Leap, Opensuse and Tumbleweed. During the installation you have several options: install, install ssh
-  install ssh auto, install auto etc.
-- Queue SOL Deactivation: For machines with IPMI serial consoles, this action queues a background task to deactivate
-  Serial-over-LAN (SOL) via the configured serial console server.
 - Report Problem: If you unexpectedly encounter a problem with the machine, you can create a support ticket here.
 
-.. image:: ../img/userguide/10_machine_release.jpg
-  :alt: Orthos2 Machine Overview - Crop on Release & Extend Reservation
+Once you have reserved the machine yourself, several more actions become available:
 
-- Release Machine: This field is only for machines that are reserved under your name. Here you have the possibility to
-  release the machine for other users.
+.. image:: ../img/userguide/09_machine_actions_user_reserved.png
+  :alt: Orthos2 Machine Overview - Crop on Actions (regular user, reserved by you)
+
+- Extend Reservation: Extend your existing reservation.
+- Release Machine: Release the machine again so other users may reserve it.
+- Rescan Status: Rescan the status information of a machine.
+- Rescan All: Rescan all information of a machine.
+- Rescan Installations: Rescan the installation status of a machine.
+- Power On, Power Off, Reboot, Check Power Status: Control and query the machine's remote power state.
+- Fetch NetBox, Setup Machine: Shown but disabled; these remain administrator-only actions even for the reserving
+  user.
+
+Administrators see all actions enabled, plus a few administrator-only ones, regardless of who has the machine
+reserved:
+
+.. image:: ../img/userguide/09_machine_actions_admin.png
+  :alt: Orthos2 Machine Overview - Crop on Actions (administrator)
+
+- Edit Machine: Edit the machine's fields directly.
+- Fetch NetBox: Fetch all data from NetBox and overwrite machine data in Orthos 2.
+- Setup Machine: Here you can install your machine according to your needs. You have the possibility to install SLES,
+  SLED, openSUSE Leap and openSUSE Tumbleweed. During the installation you have several options: install, install ssh
+  install ssh auto, install auto etc.
+- Regenerate MOTD: Regenerate the machine's message of the day.
+- Regenerate Cobbler Record: Regenerate the machine's Cobbler configuration.
