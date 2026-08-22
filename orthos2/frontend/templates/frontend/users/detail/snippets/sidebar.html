@@ -10,3 +10,54 @@
     >Reserve Machine</a
   >
 </div>
+<br />
+<div class="btn-group-vertical d-flex">
+  <a
+    class="btn btn-warning btn-sm"
+    href="{% url 'frontend:edit_user' user_obj.pk %}"
+    role="button"
+    >Edit User</a
+  >
+</div>
+<br />
+<div class="btn-group-vertical d-flex">
+  <form
+    method="post"
+    action="{% url 'frontend:user_toggle_active' user_obj.pk %}"
+    class="w-100"
+  >
+    {% csrf_token %}
+    <button type="submit" class="btn btn-secondary btn-sm w-100">
+      {% if user_obj.is_active %}Deactivate{% else %}Activate{% endif %} User
+    </button>
+  </form>
+</div>
+<br />
+<div class="btn-group-vertical d-flex">
+  <form
+    method="post"
+    action="{% url 'frontend:user_send_password_reset' user_obj.pk %}"
+    class="w-100"
+  >
+    {% csrf_token %}
+    <button
+      type="submit"
+      class="btn btn-secondary btn-sm w-100"
+      {% if user_obj.social_auth.all %}
+        disabled
+        title="Logs in via OIDC - no local password to reset"
+      {% endif %}
+    >
+      Send Password Reset Email
+    </button>
+  </form>
+</div>
+<br />
+<div class="btn-group-vertical d-flex">
+  <a
+    class="btn btn-danger btn-sm"
+    href="{% url 'frontend:delete_user' user_obj.pk %}"
+    role="button"
+    >Delete User</a
+  >
+</div>

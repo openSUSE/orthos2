@@ -21,6 +21,13 @@
               >Reservations</a
             >
           </li>
+          <li class="nav-item">
+            <a
+              class="nav-link {% active_view request 'user_tokens' %}"
+              href="{% url 'frontend:user_tokens' user_obj.pk %}"
+              >Tokens</a
+            >
+          </li>
         </ul>
 
         <div class="tab-content">
@@ -29,9 +36,9 @@
         </div>
 
         <span style="font-size: 0.7em; font-family: Monospace;"
-          >Admin:
-          <a href="{% url 'admin:auth_user_change' user_obj.id %}"
-            >{% url 'admin:auth_user_change' user_obj.id %}</a
+          >Edit:
+          <a href="{% url 'frontend:edit_user' user_obj.id %}"
+            >{% url 'frontend:edit_user' user_obj.id %}</a
           ></span
         >
       </main>

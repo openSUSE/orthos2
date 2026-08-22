@@ -360,6 +360,15 @@ def main():
         token=settings.NETBOX_TOKEN,
     )
 
+    # This script is re-run on every dev container restart against a persistent
+    # NetBox instance. Everything it creates is anchored to "orthos2-site", so
+    # its presence means a previous run already completed - skip re-running the
+    # ~50 POST calls below, which would otherwise fail with HTTP 400 (already
+    # exists) for most objects and silently no-op (return {}) for the rest.
+    if netbox.check_site("orthos2-site"):
+        print("NetBox dev fixtures already provisioned - skipping setup_netbox.py.")
+        return
+
     # Create Custom Field Choice Set
     try:
         netbox.post_custom_field_choice_sets(

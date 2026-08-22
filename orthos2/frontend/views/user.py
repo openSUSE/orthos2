@@ -29,6 +29,22 @@ from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 
 
+def reset_and_notify_password(user: User) -> None:
+    """
+    Set `user` a new random password and email it via `SendRestoredPassword`.
+
+    Shared by the self-service "forgot password" flow and the superuser
+    "send password reset email" action on a User's edit page.
+    """
+    alphabet = string.ascii_letters + string.digits
+    password = "".join(secrets.choice(alphabet) for i in range(10))  # type: ignore
+    user.set_password(password)
+    user.save()
+
+    task = tasks.SendRestoredPassword(user.id, password)  # type: ignore
+    TaskManager.add(task)
+
+
 def users_create(
     request: HttpRequest,
 ) -> Union[HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse]:
@@ -94,13 +110,7 @@ def users_password_restore(
                 messages.error(request, "E-Mail/login does not exist.")
                 return redirect("frontend:password_restore")
 
-            alphabet = string.ascii_letters + string.digits
-            password = "".join(secrets.choice(alphabet) for i in range(10))  # type: ignore
-            user.set_password(password)
-            user.save()
-
-            task = tasks.SendRestoredPassword(user.id, password)  # type: ignore
-            TaskManager.add(task)
+            reset_and_notify_password(user)
 
             # check for multiple accounts from deprecated Orthos
             task = tasks.CheckMultipleAccounts(user.id)  # type: ignore

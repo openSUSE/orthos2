@@ -1,0 +1,66 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block navbar %}
+  {% include 'frontend/snippet.navlinks.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <div class="title">
+      <h5>Associations</h5>
+    </div>
+    <table class="table table-striped table-bordered table-fixed small">
+      <thead class="thead-default">
+        <tr>
+          <th>Server URL</th>
+          <th>Handle</th>
+          <th>Assoc Type</th>
+          <th>Issued</th>
+          <th>Lifetime</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for association in associations %}
+          <tr>
+            <td>{{ association.server_url }}</td>
+            <td>{{ association.handle }}</td>
+            <td>{{ association.assoc_type }}</td>
+            <td>{{ association.issued }}</td>
+            <td>{{ association.lifetime }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td class="text-muted" colspan="5">No associations found.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="title">
+      <h5>Nonces</h5>
+    </div>
+    <table class="table table-striped table-bordered table-fixed small">
+      <thead class="thead-default">
+        <tr>
+          <th>Server URL</th>
+          <th>Timestamp</th>
+          <th>Salt</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for nonce in nonces %}
+          <tr>
+            <td>{{ nonce.server_url }}</td>
+            <td>{{ nonce.timestamp }}</td>
+            <td>{{ nonce.salt }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td class="text-muted" colspan="3">No nonces found.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

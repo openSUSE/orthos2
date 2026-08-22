@@ -253,6 +253,27 @@ urlpatterns = [
         r"^logout/$", auth_views.LogoutView.as_view(), {"next_page": "/"}, name="logout"
     ),
     path("users", views.UserListView.as_view(), name="users"),
+    path("users/new", views.NewUser.as_view(), name="new_user"),
+    path(
+        "users/edit/<int:pk>/",
+        views.UserDetailedEdit.as_view(),
+        name="edit_user",
+    ),
+    path(
+        "users/delete/<int:pk>/",
+        views.DeleteUser.as_view(),
+        name="delete_user",
+    ),
+    re_path(
+        r"^user/(?P<id>[0-9]+)/toggle-active$",
+        views.user_toggle_active,
+        name="user_toggle_active",
+    ),
+    re_path(
+        r"^user/(?P<id>[0-9]+)/send-password-reset$",
+        views.user_send_password_reset,
+        name="user_send_password_reset",
+    ),
     re_path(
         r"^user/(?P<id>[0-9]+)/detail$",
         views.user_detail,
@@ -268,10 +289,39 @@ urlpatterns = [
         views.user_reserve_machine,
         name="user_reserve_machine",
     ),
+    re_path(
+        r"^user/(?P<id>[0-9]+)/tokens$",
+        views.user_tokens,
+        name="user_tokens",
+    ),
     re_path(r"^user/create$", views.users_create, name="create_user"),
     re_path(r"^user/preferences$", views.users_preferences, name="preferences_user"),
     re_path(
         r"^password/restore$", views.users_password_restore, name="password_restore"
+    ),
+    path("oidc-diagnostics", views.oidc_diagnostics, name="oidc_diagnostics"),
+    path("groups", views.GroupListView.as_view(), name="groups"),
+    re_path(
+        r"^group/(?P<id>[0-9]+)/detail$",
+        views.group_detail,
+        name="group_detail",
+    ),
+    path("groups/new", views.NewGroup.as_view(), name="new_group"),
+    path(
+        "groups/edit/<int:pk>/",
+        views.GroupDetailedEdit.as_view(),
+        name="edit_group",
+    ),
+    path(
+        "groups/delete/<int:pk>/",
+        views.DeleteGroup.as_view(),
+        name="delete_group",
+    ),
+    path("tokens", views.TokenListView.as_view(), name="tokens"),
+    path(
+        "tokens/delete/<int:user_id>/",
+        views.DeleteToken.as_view(),
+        name="delete_token",
     ),
     re_path(r"^statistics$", views.statistics, name="statistics"),
     re_path(

@@ -30,10 +30,21 @@ server_start() {
     git switch "$OLD_BRANCH"
     git stash pop
     python3.11 manage.py migrate
-    # Load test machine fixtures for development
-    python3.11 manage.py loaddata orthos2/data/fixtures/tests/test_domain_orthos2test.json || true
-    python3.11 manage.py loaddata orthos2/data/fixtures/tests/test_machine_docker.json || true
-    DJANGO_SUPERUSER_PASSWORD="$ORTHOS2_SUPERUSER_PASSWORD" python3.11 manage.py createsuperuser --noinput --username admin --email admin@example.com
+    # Load test machine fixtures for development. Both fixtures use fixed
+    # keys/fqdns that collide with a previous run's data on the persistent dev
+    # DB, so skip loading them again if that data is already there.
+    python3.11 manage.py shell -c "
+from orthos2.data.models import ServerConfig
+exit(0 if ServerConfig.objects.filter(key='domain.validendings').exists() else 1)
+" || python3.11 manage.py loaddata orthos2/data/fixtures/tests/test_domain_orthos2test.json
+    python3.11 manage.py shell -c "
+from orthos2.data.models import Machine
+exit(0 if Machine.objects.filter(fqdn='testmachine.orthos2.test').exists() else 1)
+" || python3.11 manage.py loaddata orthos2/data/fixtures/tests/test_machine_docker.json
+    python3.11 manage.py shell -c "
+from django.contrib.auth.models import User
+exit(0 if User.objects.filter(username='admin').exists() else 1)
+" || DJANGO_SUPERUSER_PASSWORD="$ORTHOS2_SUPERUSER_PASSWORD" python3.11 manage.py createsuperuser --noinput --username admin --email admin@example.com
     python3.11 manage.py shell </code/docker/orthos/django-generate-admin-token
     python3.11 manage.py runserver 0.0.0.0:8000
 }

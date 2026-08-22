@@ -5,5 +5,5 @@ import pathlib
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 
-token = Token.objects.create(user=User.objects.get(username="admin"))
+token, _created = Token.objects.get_or_create(user=User.objects.get(username="admin"))
 pathlib.Path("/var/lib/orthos2/admin-token").write_text(token.key)

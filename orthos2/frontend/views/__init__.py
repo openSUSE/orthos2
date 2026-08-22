@@ -66,6 +66,7 @@ from .enclosures import (
     enclosure_machines,
     enclosure_netboxcomparison,
 )
+from .group import DeleteGroup, GroupDetailedEdit, GroupListView, NewGroup, group_detail
 from .machine import (
     BMCDetailedEdit,
     DeleteAnnotation,
@@ -123,6 +124,7 @@ from .manufacturer import (
     manufacturer_fetch_netbox,
     manufacturer_netboxcomparison,
 )
+from .oidc_diagnostics import oidc_diagnostics
 from .regenerate import (
     regenerate_cobbler,
     regenerate_domain_cobbler,
@@ -178,8 +180,20 @@ from .system import (
     SystemListView,
     system_detail,
 )
+from .token import DeleteToken, TokenListView
 from .user import users_create, users_password_restore, users_preferences
-from .users import UserListView, user_detail, user_reservations, user_reserve_machine
+from .users import (
+    DeleteUser,
+    NewUser,
+    UserDetailedEdit,
+    UserListView,
+    user_detail,
+    user_reservations,
+    user_reserve_machine,
+    user_send_password_reset,
+    user_toggle_active,
+    user_tokens,
+)
 
 __all__ = [
     "annotation",
@@ -247,6 +261,11 @@ __all__ = [
     "enclosure_netboxcomparison",
     "enclosure_compare_netbox",
     "enclosure_fetch_netbox",
+    "GroupListView",
+    "NewGroup",
+    "GroupDetailedEdit",
+    "DeleteGroup",
+    "group_detail",
     "regenerate_cobbler",
     "regenerate_domain_cscreen",
     "regenerate_domain_cobbler",
@@ -261,6 +280,14 @@ __all__ = [
     "user_detail",
     "user_reservations",
     "user_reserve_machine",
+    "user_tokens",
+    "NewUser",
+    "UserDetailedEdit",
+    "DeleteUser",
+    "user_toggle_active",
+    "user_send_password_reset",
+    "TokenListView",
+    "DeleteToken",
     "RemotePowerDevicesListView",
     "RemotePowerDeviceDetailedEdit",
     "NewRemotePowerDevice",
@@ -278,6 +305,7 @@ __all__ = [
     "manufacturer_fetch_netbox",
     "manufacturer_netboxcomparison",
     "manufacturer_compare_netbox",
+    "oidc_diagnostics",
     "DeviceTypeListView",
     "NewDeviceType",
     "DeviceTypeDetailedEdit",
