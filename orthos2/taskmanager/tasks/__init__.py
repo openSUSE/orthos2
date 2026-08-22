@@ -9,6 +9,7 @@ from .daily import (
     DailyCheckForPrimaryNetwork,
     DailyCheckReservationExpirations,
     DailyMachineChecks,
+    DailyManufacturerDeviceTypeCleanup,
     DailyNetboxFetch,
 )
 from .machinetasks import MachineCheck, RegenerateMOTD
@@ -50,6 +51,7 @@ __all__ = [
     "DailyCheckForPrimaryNetwork",
     "DailyCheckReservationExpirations",
     "DailyMachineChecks",
+    "DailyManufacturerDeviceTypeCleanup",
     "DailyNetboxFetch",
     "DeactivateSerialOverLan",
     "MachineCheck",

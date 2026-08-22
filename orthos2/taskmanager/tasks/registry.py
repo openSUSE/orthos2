@@ -25,6 +25,7 @@ from orthos2.taskmanager.tasks.daily import (
     DailyCheckForPrimaryNetwork,
     DailyCheckReservationExpirations,
     DailyMachineChecks,
+    DailyManufacturerDeviceTypeCleanup,
     DailyNetboxFetch,
 )
 from orthos2.taskmanager.tasks.machinetasks import MachineCheck, RegenerateMOTD
@@ -63,6 +64,7 @@ DAILY_TASK_CLASSES: List[Type[Task]] = [
     DailyCheckReservationExpirations,
     DailyCheckForPrimaryNetwork,
     DailyNetboxFetch,
+    DailyManufacturerDeviceTypeCleanup,
 ]
 """
 Tasks intended to run on a recurring daily schedule (see `orthos2.taskmanager.tasks.daily`) -

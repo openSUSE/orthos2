@@ -90,3 +90,21 @@ class DailyNetboxFetch(Task):
         TaskManager.add(tasks.NetboxFetchNetworkInterface())
         TaskManager.add(tasks.NetboxFetchBMC())
         TaskManager.add(tasks.NetboxFetchRemotePowerDevice())
+
+
+class DailyManufacturerDeviceTypeCleanup(Task):
+    """
+    Delete Manufacturer/DeviceType rows no longer referenced by any Machine
+    or Enclosure.
+    """
+
+    def execute(self) -> None:
+        """
+        Execute the task.
+        """
+        from orthos2.data.models import DeviceType, Manufacturer
+
+        # DeviceType first: DeviceType.manufacturer is on_delete=CASCADE, so a
+        # Manufacturer only becomes orphaned once all its DeviceTypes are gone.
+        DeviceType.objects.filter(machine__isnull=True, enclosure__isnull=True).delete()
+        Manufacturer.objects.filter(devicetype__isnull=True).delete()
