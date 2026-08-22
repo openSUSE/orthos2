@@ -9,7 +9,7 @@ from django.urls import reverse  # type: ignore
 from django.views.generic.edit import FormView
 from requests import HTTPError
 
-from orthos2.data.models import Architecture, Enclosure, Machine, System
+from orthos2.data.models import Architecture, DeviceType, Enclosure, Machine, System
 from orthos2.utils.netbox import Netbox
 
 
@@ -93,9 +93,11 @@ class AddMachineFormView(FormView):  # type: ignore
     def form_valid(self, form: BaseForm) -> HttpResponse:
         netbox_api = Netbox.get_instance()
         netbox_object_type = form.data["netbox_object_type"]
+        device_type_id = None
         if netbox_object_type == "device":
             netbox_object = safe_fetch_device(netbox_api, form.data["netbox_id"])
             object_name = netbox_object.get("name", "")
+            device_type_id = (netbox_object.get("device_type") or {}).get("id")
             # Try existing enclosure
             try:
                 existing_enclosure = Enclosure.objects.get(name=object_name)
@@ -106,12 +108,17 @@ class AddMachineFormView(FormView):  # type: ignore
                 # Try next objects type
                 pass
         else:
+            # Virtual machines have no device_type in NetBox.
             netbox_object = safe_fetch_vm(netbox_api, form.data["netbox_id"])
             object_name = netbox_object.get("name", "")
         # Try existing machine
         try:
             existing_machine = Machine.objects.get(fqdn=object_name)
             existing_machine.netbox_id = form.data["netbox_id"]
+            if device_type_id:
+                existing_machine.device_type = DeviceType.get_or_create_from_netbox(
+                    device_type_id
+                )
             existing_machine.save()
             self.__machine_pk = existing_machine.pk
             return super().form_valid(form)  # type: ignore
@@ -139,6 +146,10 @@ class AddMachineFormView(FormView):  # type: ignore
         new_machine.architecture = target_arch
         new_machine.system_id = form.data["system"]
         new_machine.netbox_id = form.data["netbox_id"]
+        if device_type_id:
+            new_machine.device_type = DeviceType.get_or_create_from_netbox(
+                device_type_id
+            )
         try:
             new_machine.save()
         except ValidationError as e:

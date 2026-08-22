@@ -72,6 +72,60 @@ class Manufacturer(models.Model):
         """
         return cast(ManufacturerManager, cls.objects)
 
+    @classmethod
+    def get_or_create_from_netbox(
+        cls, netbox_manufacturer_id: Optional[int]
+    ) -> Optional["Manufacturer"]:
+        """
+        Resolve a NetBox manufacturer ID to an Orthos2 `Manufacturer`,
+        creating it the first time Orthos2 sees it.
+
+        Looks up by `netbox_id` first, falling back to `name` (which is
+        unique) and backfilling `netbox_id` onto a match instead of creating
+        a duplicate - migration 0044_initial_required_data.py seeds 28
+        `Manufacturer` rows (e.g. "AMD") unlinked from NetBox.
+
+        :returns: None if `netbox_manufacturer_id` is unset, NetBox no longer
+            has a matching manufacturer (404), or its name is missing.
+        :raises HTTPError: In case any HTTP code except 200 and 404 is returned.
+        """
+        if not netbox_manufacturer_id:
+            return None
+
+        try:
+            return cls.objects.get(netbox_id=netbox_manufacturer_id)
+        except cls.DoesNotExist:
+            pass
+
+        netbox_api = Netbox.get_instance()
+        try:
+            netbox_manufacturer = netbox_api.fetch_manufacturer(netbox_manufacturer_id)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                logger.info(
+                    "Fetching Manufacturer %s from NetBox failed with status 404.",
+                    netbox_manufacturer_id,
+                )
+                return None
+            raise e
+
+        manufacturer_name = netbox_manufacturer.get("name")
+        if not manufacturer_name:
+            logger.warning(
+                "NetBox Manufacturer %s has no name, cannot resolve it.",
+                netbox_manufacturer_id,
+            )
+            return None
+
+        manufacturer, created = cls.objects.get_or_create(
+            name=manufacturer_name,
+            defaults={"netbox_id": netbox_manufacturer_id},
+        )
+        if not created and manufacturer.netbox_id == 0:
+            manufacturer.netbox_id = netbox_manufacturer_id
+            manufacturer.save()
+        return manufacturer
+
     def fetch_netbox_record(self) -> Optional[Dict[str, Any]]:
         """
         Fetch the record of this Manufacturer object from NetBox.

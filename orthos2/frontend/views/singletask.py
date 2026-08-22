@@ -4,11 +4,13 @@ All views that are under "/singletasks".
 
 from typing import Any, Dict
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.http import Http404, HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
+from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from orthos2.frontend.forms.task import SingleTaskForm
@@ -79,3 +81,24 @@ def singletask_detail(request: HttpRequest, id: int) -> HttpResponse:
         "frontend/singletasks/detail/overview.html",
         {"singletask": singletask, "title": "Single Task {}".format(singletask.name)},
     )
+
+
+@require_POST
+@login_required
+def singletask_toggle_running(request: HttpRequest, id: int) -> HttpResponseRedirect:
+    """
+    Forcibly flip the 'running' flag - recovery for a task stuck as running
+    because the taskmanager process was killed/restarted mid-execution.
+    """
+    if not request.user.is_superuser:  # type: ignore
+        raise PermissionDenied
+
+    task = get_object_or_404(SingleTask, pk=id)
+    task.running = not task.running
+    task.save()
+    messages.warning(
+        request,
+        "Forced 'running' flag of task '{}' to {}.".format(task.name, task.running),
+    )
+
+    return redirect("frontend:singletask_detail", id=task.pk)

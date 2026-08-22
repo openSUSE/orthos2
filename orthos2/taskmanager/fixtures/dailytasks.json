@@ -46,5 +46,21 @@
       "executed_at": "2021-06-23T22:01:10.967Z",
       "enabled": true
     }
+  },
+  {
+    "model": "taskmanager.dailytask",
+    "pk": null,
+    "fields": {
+      "name": "DailyManufacturerDeviceTypeCleanup",
+      "module": "orthos2.taskmanager.tasks.daily",
+      "arguments": "[[], {}]",
+      "hash": "24b05a7844bb8565363920670e1a83331ecb087d",
+      "priority": 10,
+      "running": false,
+      "updated": "2026-08-22T00:00:00.000Z",
+      "created": "2026-08-22T00:00:00.000Z",
+      "executed_at": "2026-08-22T00:00:00.000Z",
+      "enabled": true
+    }
   }
 ]

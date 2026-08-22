@@ -28,6 +28,21 @@
   {% endif %}
 </form>
 <br />
+<form
+  method="post"
+  action="{% url 'frontend:dailytask_toggle_running' dailytask.pk %}"
+  class="w-100"
+>
+  {% csrf_token %}
+  <button
+    type="submit"
+    class="btn btn-danger btn-sm w-100"
+    title="Recovery for a task stuck as running because the taskmanager was killed/restarted mid-execution"
+  >
+    Force Toggle "Running" Flag
+  </button>
+</form>
+<br />
 <div class="btn-group-vertical d-flex">
   <a
     class="btn btn-danger btn-sm"

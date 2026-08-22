@@ -93,6 +93,64 @@ class DeviceType(models.Model):
         """
         return cast(DeviceTypeManager, cls.objects)
 
+    @classmethod
+    def get_or_create_from_netbox(
+        cls, netbox_device_type_id: Optional[int]
+    ) -> Optional["DeviceType"]:
+        """
+        Resolve a NetBox device-type ID to an Orthos2 `DeviceType`, creating
+        it (and its `Manufacturer`, via `Manufacturer.get_or_create_from_netbox()`,
+        if needed) the first time Orthos2 sees it. Falls back to `(name,
+        manufacturer)` and backfills `netbox_id` onto a match instead of
+        creating a duplicate, the same way `Manufacturer` does - `DeviceType`
+        has no DB-level uniqueness constraint, but a manufacturer shouldn't
+        end up with two rows for what NetBox considers the same model.
+
+        :returns: None if `netbox_device_type_id` is unset, NetBox no longer
+            has a matching device type (404), or its manufacturer can't be
+            resolved.
+        :raises HTTPError: In case any HTTP code except 200 and 404 is returned.
+        """
+        if not netbox_device_type_id:
+            return None
+
+        try:
+            return cls.objects.get(netbox_id=netbox_device_type_id)
+        except cls.DoesNotExist:
+            pass
+
+        netbox_api = Netbox.get_instance()
+        try:
+            netbox_devicetype = netbox_api.fetch_device_type(netbox_device_type_id)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                logger.info(
+                    "Fetching DeviceType %s from NetBox failed with status 404.",
+                    netbox_device_type_id,
+                )
+                return None
+            raise e
+
+        netbox_manufacturer_id = (netbox_devicetype.get("manufacturer") or {}).get("id")
+        manufacturer = Manufacturer.get_or_create_from_netbox(netbox_manufacturer_id)
+        if manufacturer is None:
+            logger.warning(
+                "Could not resolve manufacturer for NetBox DeviceType %s, "
+                "cannot create it.",
+                netbox_device_type_id,
+            )
+            return None
+
+        device_type, created = cls.objects.get_or_create(
+            name=netbox_devicetype.get("model", ""),
+            manufacturer=manufacturer,
+            defaults={"netbox_id": netbox_device_type_id},
+        )
+        if not created and device_type.netbox_id == 0:
+            device_type.netbox_id = netbox_device_type_id
+            device_type.save()
+        return device_type
+
     def fetch_netbox_record(self) -> Optional[Dict[str, Any]]:
         """
         Fetch the record of this DeviceType object from NetBox.
