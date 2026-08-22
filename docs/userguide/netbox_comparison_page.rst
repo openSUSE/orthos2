@@ -18,6 +18,16 @@ List View
 
 This page provides a list of comparison runs between Orthos 2 and NetBox.
 
+Quick Filter
+############
+
+.. image:: ../img/userguide/22_netboxcomparison_quick_filter.png
+  :alt: Orthos2 NetBox Comparison Quick Filter
+
+- All Object Types: Filter comparisons by object type (machine, network_interface, enclosure, etc.).
+- From / To: Filter comparisons by the date range they were run in.
+- Object Name Search: Search comparisons by (partial) object name.
+
 Detail View
 ###########
 
