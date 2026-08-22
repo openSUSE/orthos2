@@ -33,7 +33,11 @@
           {% endblock %}
         </div>
         <span style="font-size: 0.7em; font-family: Monospace;"
-          >Edit:
+          >API:
+          <a href="{% url 'api:domain' %}?name={{ domain.name }}"
+            >{% url 'api:domain' %}?name={{ domain.name }}</a
+          >
+          | Edit:
           <a href="{% url 'frontend:edit_domain' domain.id %}"
             >{% url 'frontend:edit_domain' domain.id %}</a
           ></span
