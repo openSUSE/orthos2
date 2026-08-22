@@ -1,9 +1,34 @@
 body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  /* Bound the whole page to the viewport height instead of letting the
+     document scroll: the header (a flex-shrink:0 sibling of #app-shell)
+     then never scrolls out of view, and #app-shell's own children get a
+     real height to scroll independently within (see #sidenav/
+     #page-content-wrapper below). */
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  margin: 0;
+}
+
+.navbar {
+  flex-shrink: 0;
 }
 
 #app-shell {
-  min-height: 100vh;
+  flex: 1 1 auto;
+  /* Without this, a flex item won't shrink below its content's intrinsic
+     height, so overflow-y: auto on its children would never actually
+     kick in - #app-shell would just grow past the viewport instead. */
+  min-height: 0;
+}
+
+#sidenav {
+  overflow-y: auto;
+}
+
+#page-content-wrapper {
+  overflow-y: auto;
 }
 
 /* .offcanvas-lg resets background/width to transparent/auto above the lg
