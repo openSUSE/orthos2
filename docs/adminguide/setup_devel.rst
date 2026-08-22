@@ -45,10 +45,11 @@ Installation/Setup (Devel system)
 6. Setting up the SSC credentials for docker:
 
    .. code-block::
-        get a registration code from SUSE Customer Center
-       $ docker run --rm registry.suse.com/suse/sle15:latest bash -c \
-            "zypper -n in SUSEConnect; SUSEConnect --regcode YOUR_REGISTRATION_CODE; \
-            cat /etc/zypp/credentials.d/SCCcredentials"
+
+      # get a registration code from SUSE Customer Center
+      $ docker run --rm registry.suse.com/suse/sle15:latest bash -c \
+          "zypper -n in SUSEConnect; SUSEConnect --regcode YOUR_REGISTRATION_CODE; \
+          cat /etc/zypp/credentials.d/SCCcredentials"
 
    (if you don't use Docker `click here for more information <https://opensource.suse.com/bci-docs/guides/container-suseconnect>`__)
 
