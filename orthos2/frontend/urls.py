@@ -106,6 +106,11 @@ urlpatterns = [
         views.VirtualMachineListView.as_view(),
         name="virtual_machines",
     ),
+    re_path(
+        r"^machines/administrative$",
+        views.AdministrativeMachineListView.as_view(),
+        name="administrative_machines",
+    ),
     re_path(r"^machines/search", views.machine_search, name="advanced_search"),
     path("machine/add", views.machine_add, name="machine_add"),
     re_path(r"^machine/(?P<id>[0-9]+)/$", views.machine, name="detail"),

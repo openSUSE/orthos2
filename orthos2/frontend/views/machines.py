@@ -165,6 +165,26 @@ class FreeMachineListView(MachineListView):
         )
 
 
+class AdministrativeMachineListView(MachineListView):
+    """`Administrative Machines` list view."""
+
+    def get_queryset(self) -> QuerySet["Machine"]:
+        """Filter machines which are administrative themselves or belong to an administrative system."""
+        machines = super(AdministrativeMachineListView, self).get_queryset()
+        return machines.filter(Q(administrative=True) | Q(system__administrative=True))
+
+    def render_to_response(
+        self,
+        context: Dict[str, Any],
+        **response_kwargs: Dict[str, Any],
+    ) -> HttpResponse:
+        context["title"] = "Administrative Machines"
+        context["view"] = "administrative"
+        return super(AdministrativeMachineListView, self).render_to_response(
+            context, **response_kwargs
+        )
+
+
 class VirtualMachineListView(MachineListView):
     """`Virtual Machines` list view."""
 

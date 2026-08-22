@@ -107,6 +107,7 @@ from .machine import (
     virtualization_add,
 )
 from .machines import (
+    AdministrativeMachineListView,
     AllMachineListView,
     FreeMachineListView,
     MachineListView,
@@ -254,6 +255,7 @@ __all__ = [
     "MyMachineListView",
     "FreeMachineListView",
     "VirtualMachineListView",
+    "AdministrativeMachineListView",
     "machine_search",
     "enclosure_machines",
     "enclosure_detail",
