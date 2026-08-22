@@ -130,3 +130,24 @@ def dailytask_switch(request: HttpRequest, id: int) -> HttpResponseRedirect:
     messages.info(request, "Successfully {}d task '{}'.".format(action, task.name))
 
     return redirect("frontend:dailytask_detail", id=task.pk)
+
+
+@require_POST
+@login_required
+def dailytask_toggle_running(request: HttpRequest, id: int) -> HttpResponseRedirect:
+    """
+    Forcibly flip the 'running' flag - recovery for a task stuck as running
+    because the taskmanager process was killed/restarted mid-execution.
+    """
+    if not request.user.is_superuser:  # type: ignore
+        raise PermissionDenied
+
+    task = get_object_or_404(DailyTask, pk=id)
+    task.running = not task.running
+    task.save()
+    messages.warning(
+        request,
+        "Forced 'running' flag of task '{}' to {}.".format(task.name, task.running),
+    )
+
+    return redirect("frontend:dailytask_detail", id=task.pk)

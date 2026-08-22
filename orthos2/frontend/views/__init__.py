@@ -31,6 +31,7 @@ from .dailytask import (
     dailytask_detail,
     dailytask_execute,
     dailytask_switch,
+    dailytask_toggle_running,
 )
 from .devicetype import (
     DeleteDeviceType,
@@ -171,6 +172,7 @@ from .singletask import (
     SingleTaskDetailedEdit,
     SingleTaskListView,
     singletask_detail,
+    singletask_toggle_running,
 )
 from .statistics import statistics
 from .system import (
@@ -329,6 +331,7 @@ __all__ = [
     "SingleTaskDetailedEdit",
     "DeleteSingleTask",
     "singletask_detail",
+    "singletask_toggle_running",
     "DailyTaskListView",
     "NewDailyTask",
     "DailyTaskDetailedEdit",
@@ -336,6 +339,7 @@ __all__ = [
     "dailytask_detail",
     "dailytask_execute",
     "dailytask_switch",
+    "dailytask_toggle_running",
     "RemotePowerTypeListView",
     "NewRemotePowerType",
     "RemotePowerTypeDetailedEdit",

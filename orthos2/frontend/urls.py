@@ -544,6 +544,11 @@ urlpatterns = [
         views.DeleteSingleTask.as_view(),
         name="delete_singletask",
     ),
+    path(
+        "singletask/<int:id>/toggle-running/",
+        views.singletask_toggle_running,
+        name="singletask_toggle_running",
+    ),
     # Daily Tasks
     path("dailytasks", views.DailyTaskListView.as_view(), name="dailytasks"),
     re_path(
@@ -571,6 +576,11 @@ urlpatterns = [
         "dailytask/<int:id>/switch/",
         views.dailytask_switch,
         name="dailytask_switch",
+    ),
+    path(
+        "dailytask/<int:id>/toggle-running/",
+        views.dailytask_toggle_running,
+        name="dailytask_toggle_running",
     ),
     # Remote Power Types
     path(

@@ -216,3 +216,58 @@ class DeleteSingleTaskViewTest(TestCase):
         response = self.client.post(url)
         assert response.status_code == 403
         assert SingleTask.objects.filter(pk=self.singletask.pk).exists()
+
+
+class SingleTaskToggleRunningViewTest(TestCase):
+    fixtures = ["orthos2/frontend/tests/user/fixtures/users.json"]
+
+    def setUp(self) -> None:
+        self.singletask = SingleTask.objects.create(
+            name="AcmeTask", module="acme.module", arguments="[[], {}]", running=True
+        )
+
+    def test_unauthenticated_post_redirects_to_login(self) -> None:
+        url = reverse(
+            "frontend:singletask_toggle_running", kwargs={"id": self.singletask.pk}
+        )
+        response = self.client.post(url)
+        assert response.status_code == 302
+        assert "login" in response.url.lower()  # type: ignore[attr-defined]
+
+    def test_regular_user_post_is_forbidden(self) -> None:
+        self.client.force_login(User.objects.get(username="user"))
+        url = reverse(
+            "frontend:singletask_toggle_running", kwargs={"id": self.singletask.pk}
+        )
+        response = self.client.post(url)
+        assert response.status_code == 403
+
+    def test_get_is_not_allowed(self) -> None:
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse(
+            "frontend:singletask_toggle_running", kwargs={"id": self.singletask.pk}
+        )
+        response = self.client.get(url)
+        assert response.status_code == 405
+
+    def test_superuser_post_flips_running_from_true_to_false(self) -> None:
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse(
+            "frontend:singletask_toggle_running", kwargs={"id": self.singletask.pk}
+        )
+        response = self.client.post(url)
+        assert response.status_code == 302
+        self.singletask.refresh_from_db()
+        assert self.singletask.running is False
+
+    def test_superuser_post_flips_running_from_false_to_true(self) -> None:
+        self.singletask.running = False
+        self.singletask.save()
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse(
+            "frontend:singletask_toggle_running", kwargs={"id": self.singletask.pk}
+        )
+        response = self.client.post(url)
+        assert response.status_code == 302
+        self.singletask.refresh_from_db()
+        assert self.singletask.running is True
