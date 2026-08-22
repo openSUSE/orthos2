@@ -26,35 +26,39 @@ The sidebar on the left gives access to the different machine overviews and tool
 - Free Machines: Overview of all machines that are currently not reserved.
 - My Machines: Overview of all Orthos machines reserved under your name.
 - Virtual Machines: Overview of all virtual machines. (Host and Guest)
-- Advanced Search: Advanced machine search.
-- Manufacturers: Overview of the known hardware manufacturers.
-- Device Types: Overview of the known device types.
-- Statistics: Statistics about the machines located in Orthos.
+- :doc:`advanced_search`: Advanced machine search.
+- :doc:`manufacturers`: Overview of the known hardware manufacturers.
+- :doc:`devicetypes`: Overview of the known device types.
+- :doc:`statistics`: Statistics about the machines located in Orthos.
 - Documentation / API Documentation: Links to this documentation and the REST API documentation.
 - REST API: Browsable REST API.
 
 Administrators additionally see:
 
-- Administrative Machines: Overview of machines flagged for administrative purposes. (Only visible with Admin Permissions.)
+- :doc:`administrative_machines`: Overview of machines flagged for administrative purposes. (Only visible with Admin
+  Permissions.)
 - NetBox Comparisons: Check the comparison logs between Orthos 2 and NetBox. (Only visible with Admin Permissions.)
-- Enclosures: Create, View, Edit and Delete Enclosures of Orthos 2. (Only visible with Admin Permissions.)
-- Remote Power Devices: Overview of the configured Remote Power Devices. (Only visible with Admin Permissions.)
-- Ansible Results: Overview of Ansible run results. (Only visible with Admin Permissions.)
-- Administration: Access to the Django administration backend. (Only visible with Admin Permissions.) It links directly
-  to:
+  See :doc:`netbox_comparison_page`.
+- Enclosures: Create, View, Edit and Delete Enclosures of Orthos 2. (Only visible with Admin Permissions.) See
+  :doc:`enclosure_page`.
+- :doc:`remote_power_devices`: Overview of the configured Remote Power Devices. (Only visible with Admin
+  Permissions.)
+- :doc:`ansible_results`: Overview of Ansible run results. (Only visible with Admin Permissions.)
+- Administration: A collapsible menu section (not the Django administration backend) that expands in place to reveal
+  further administrative pages. (Only visible with Admin Permissions.) It links to:
 
-  - Serial Console Types
-  - Systems
-  - Remote Power Types
-  - Architectures
-  - Server Configuration
-  - Single Tasks
-  - Daily Tasks
-  - Domains
-  - Users
-  - Tokens
-  - Groups
-  - OIDC Diagnostics
+  - :doc:`serial_console_types`
+  - :doc:`systems`
+  - :doc:`remote_power_types`
+  - :doc:`architectures`
+  - :doc:`server_configuration`
+  - :doc:`single_tasks`
+  - :doc:`daily_tasks`
+  - :doc:`domains`
+  - :doc:`users`
+  - :doc:`tokens`
+  - :doc:`groups`
+  - :doc:`oidc_diagnostics`
 
 The "Add Machine" button above the machine table lets administrators add a machine directly from NetBox, see
 :doc:`machine_add`.
