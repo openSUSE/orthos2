@@ -75,14 +75,6 @@
     "model": "data.serverconfig",
     "pk": null,
     "fields": {
-      "key": "setup.list.command",
-      "value": "/usr/bin/cobbler system  --list {{ architecture }}"
-    }
-  },
-  {
-    "model": "data.serverconfig",
-    "pk": null,
-    "fields": {
       "key": "orthos.web.welcomemessage",
       "value": ""
     }
@@ -277,14 +269,6 @@
     "fields": {
       "key": "remotepower.ipmi.command",
       "value": "/usr/bin/ipmitool -I lanplus -H {{ machine.bmc.fqdn }} -U {{ ipmi.user }} -P {{ ipmi.password }} power {{ action }}"
-    }
-  },
-  {
-    "model": "data.serverconfig",
-    "pk": null,
-    "fields": {
-      "key": "cobbler.command",
-      "value": "/usr/bin/cobbler"
     }
   },
   {

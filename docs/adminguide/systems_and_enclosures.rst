@@ -32,6 +32,16 @@ Virtual
 
 Use this if the system a virtual system (VM Gast).
 
+Allow BMC
+=========
+
+Whether a network interface can be assigned to a machine of this system to serve as its BMC.
+
+Allow Hypervisor
+================
+
+Whether machines of this system may be marked as a dedicated VM host and serve virtual machines.
+
 Administrative
 ==============
 
@@ -71,6 +81,12 @@ Description
 ===========
 
 Since Enclosure is the generic term of a complete system, this should be as precise as possible.
+
+Is Virtual
+==========
+
+Whether the enclosure is a Virtual Machine or a Device in NetBox. Determines whether NetBox comparisons/fetches
+treat it as a VM or a physical device.
 
 NetBox ID
 =========
