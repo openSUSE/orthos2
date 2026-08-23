@@ -44,7 +44,7 @@ exit(0 if Machine.objects.filter(fqdn='testmachine.orthos2.test').exists() else 
     python3.11 manage.py shell -c "
 from django.contrib.auth.models import User
 exit(0 if User.objects.filter(username='admin').exists() else 1)
-" || DJANGO_SUPERUSER_PASSWORD="$ORTHOS2_SUPERUSER_PASSWORD" python3.11 manage.py createsuperuser --noinput --username admin --email admin@example.com
+" || DJANGO_SUPERUSER_PASSWORD="$ORTHOS2_SUPERUSER_PASSWORD" python3.11 manage.py createsuperuser --noinput --username admin --email admin@orthos2.test
     python3.11 manage.py shell </code/docker/orthos/django-generate-admin-token
     python3.11 manage.py runserver 0.0.0.0:8000
 }

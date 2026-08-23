@@ -30,10 +30,10 @@ class ChangeView(WebTest):
     def setUp(self, m_is_dns_resolvable: mock.MagicMock):
         m_is_dns_resolvable.return_value = True
 
-        ServerConfig.objects.create(key="domain.validendings", value="bar.de")
+        ServerConfig.objects.create(key="domain.validendings", value="orthos2.test")
 
         Domain(
-            name="foo.bar.de",
+            name="foo.orthos2.test",
             ip_v4="127.0.0.1",
             ip_v6="::1",
             dynamic_range_v4_start="127.0.0.1",
@@ -45,7 +45,7 @@ class ChangeView(WebTest):
         m1 = Machine()
         m1.pk = 1
         m1.system = System.get_system_manager().get_by_natural_key("BareMetal")
-        m1.fqdn = "machine1.foo.bar.de"
+        m1.fqdn = "machine1.foo.orthos2.test"
         m1.architecture_id = (
             Architecture.get_architecture_manager().get_by_natural_key("x86_64").id
         )
@@ -56,7 +56,7 @@ class ChangeView(WebTest):
         m2.pk = 2
         m2.administrative = True
         m2.system = System.get_system_manager().get_by_natural_key("BareMetal")
-        m2.fqdn = "machine2.foo.bar.de"
+        m2.fqdn = "machine2.foo.orthos2.test"
         m2.architecture_id = (
             Architecture.get_architecture_manager().get_by_natural_key("x86_64").id
         )
@@ -120,7 +120,7 @@ class ChangeView(WebTest):
         m3 = Machine()
         m3.pk = 3
         m3.system = virtual_system
-        m3.fqdn = "machine3.foo.bar.de"
+        m3.fqdn = "machine3.foo.orthos2.test"
         m3.architecture_id = (
             Architecture.get_architecture_manager().get_by_natural_key("x86_64").id
         )
@@ -142,7 +142,7 @@ class ChangeView(WebTest):
         m3 = Machine()
         m3.pk = 3
         m3.system = non_hypervisor_system
-        m3.fqdn = "machine3.foo.bar.de"
+        m3.fqdn = "machine3.foo.orthos2.test"
         m3.architecture_id = (
             Architecture.get_architecture_manager().get_by_natural_key("x86_64").id
         )

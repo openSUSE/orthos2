@@ -119,7 +119,7 @@ class MachineAPIFormTests(TestCase):
         # Arrange & Act
         form = MachineAPIForm(
             {
-                "fqdn": "test.foo.de",
+                "fqdn": "test.foo.orthos2.test",
                 "enclosure": "",
                 "architecture_id": "1",
                 "system_id": "1",

@@ -36,7 +36,7 @@
     "pk": null,
     "fields": {
       "key": "domain.validendings",
-      "value": "example.de, excample.com"
+      "value": "orthos2.test, sub.orthos2.test"
     }
   },
   {
@@ -69,14 +69,6 @@
     "fields": {
       "key": "setup.execute.command",
       "value": "/usr/bin/cobbler system edit --name={{machine.fqdn}}  --profile={{architecture}}:{{choice}} --netboot=True"
-    }
-  },
-  {
-    "model": "data.serverconfig",
-    "pk": null,
-    "fields": {
-      "key": "setup.list.command",
-      "value": "/usr/bin/cobbler system  --list {{ architecture }}"
     }
   },
   {
@@ -212,7 +204,7 @@
     "pk": null,
     "fields": {
       "key": "mail.validdomains",
-      "value": "example.de, example.com"
+      "value": "orthos2.test, sub.orthos2.test"
     }
   },
   {
@@ -277,14 +269,6 @@
     "fields": {
       "key": "remotepower.ipmi.command",
       "value": "/usr/bin/ipmitool -I lanplus -H {{ machine.bmc.fqdn }} -U {{ ipmi.user }} -P {{ ipmi.password }} power {{ action }}"
-    }
-  },
-  {
-    "model": "data.serverconfig",
-    "pk": null,
-    "fields": {
-      "key": "cobbler.command",
-      "value": "/usr/bin/cobbler"
     }
   },
   {

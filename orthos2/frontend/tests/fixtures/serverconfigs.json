@@ -20,7 +20,7 @@
     "pk": null,
     "fields": {
       "key": "mail.validdomains",
-      "value": "example.de, example.com, foo.bar"
+      "value": "sub.orthos2.test, other.orthos2.test, orthos2.test"
     }
   }
 ]

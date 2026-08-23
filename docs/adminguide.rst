@@ -6,7 +6,7 @@ Administrator`s Guide
 
 These pages are partly very technical. You should read the User Guide before to understand the basic concept and the goals of Orthos. 
 This document describes how to create and administrate groups and users, architectures, domains,
-machines, machine groups, serial console types, systems and enclosures, manufacturers and device types. Furthermore, the
+machines, serial console types, systems and enclosures, manufacturers and device types. Furthermore, the
 administration of the Orthos server will be discussed.
 
 .. toctree::
@@ -24,6 +24,5 @@ administration of the Orthos server will be discussed.
     Systems and Enclosures <adminguide/systems_and_enclosures>
     Manufacturers and Device Types <adminguide/manufacturers_and_devicetypes>
     Serial Console Type <adminguide/serial_console_type>
-    Machine Groups <adminguide/machine_groups>
     Remote Power Types <adminguide/remote_power_type>
     Remote Power Devices <adminguide/remote_power_device>

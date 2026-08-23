@@ -16,7 +16,7 @@ class CreateAccount(WebTest):
         with self.settings(AUTH_ALLOW_USER_CREATION=True):
             form = self.app.get(reverse("frontend:create_user")).form  # type: ignore
             form["login"] = "new-user"
-            form["email"] = "new-user@foo.bar"
+            form["email"] = "new-user@orthos2.test"
             form["password"] = "linux1234"
             form["password2"] = "linux1234"
             page = form.submit().maybe_follow()  # type: ignore
@@ -29,7 +29,7 @@ class CreateAccount(WebTest):
         """Check if password is too short (at least 8 characters)."""
         form = self.app.get(reverse("frontend:create_user")).form  # type: ignore
         form["login"] = "new-user"
-        form["email"] = "new-user@foo.bar"
+        form["email"] = "new-user@orthos2.test"
         form["password"] = "1234567"
         form["password2"] = "1234567"
         page = form.submit().maybe_follow()  # type: ignore
@@ -42,7 +42,7 @@ class CreateAccount(WebTest):
         """Check if passwords do match."""
         form = self.app.get(reverse("frontend:create_user")).form  # type: ignore
         form["login"] = "new-user"
-        form["email"] = "new-user@foo.bar"
+        form["email"] = "new-user@orthos2.test"
         form["password"] = "123456789"
         form["password2"] = "123456798"
         page = form.submit().maybe_follow()  # type: ignore
@@ -55,7 +55,7 @@ class CreateAccount(WebTest):
         """Check if user does already exists."""
         form = self.app.get(reverse("frontend:create_user")).form  # type: ignore
         form["login"] = "user"
-        form["email"] = "user@foo.bar"
+        form["email"] = "user@orthos2.test"
         form["password"] = "12345678"
         form["password2"] = "12345678"
         page = form.submit().maybe_follow()  # type: ignore
@@ -68,7 +68,7 @@ class CreateAccount(WebTest):
         """Check if email does already exists."""
         form = self.app.get(reverse("frontend:create_user")).form  # type: ignore
         form["login"] = "new-user"
-        form["email"] = "user@foo.bar"
+        form["email"] = "user@orthos2.test"
         form["password"] = "12345678"
         form["password2"] = "12345678"
         page = form.submit().maybe_follow()  # type: ignore

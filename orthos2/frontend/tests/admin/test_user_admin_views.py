@@ -36,7 +36,7 @@ class NewUserViewTest(TestCase):
             url,
             {
                 "username": "newperson",
-                "email": "newperson@foo.bar",
+                "email": "newperson@orthos2.test",
                 "first_name": "New",
                 "last_name": "Person",
                 "is_active": "on",
@@ -59,7 +59,7 @@ class UserDetailedEditViewTest(TestCase):
 
     def setUp(self) -> None:
         self.target = User.objects.create_user(
-            username="targetuser", email="target@foo.bar"
+            username="targetuser", email="target@orthos2.test"
         )
 
     def test_unauthenticated_get_redirects_to_login(self) -> None:
@@ -87,7 +87,7 @@ class UserDetailedEditViewTest(TestCase):
             url,
             {
                 "username": "targetuser",
-                "email": "changed@foo.bar",
+                "email": "changed@orthos2.test",
                 "first_name": "",
                 "last_name": "",
                 "is_active": "on",
@@ -96,7 +96,7 @@ class UserDetailedEditViewTest(TestCase):
         )
         assert response.status_code == 302
         self.target.refresh_from_db()
-        assert self.target.email == "changed@foo.bar"
+        assert self.target.email == "changed@orthos2.test"
         assert self.target.is_staff
 
     def test_regular_user_post_does_not_update_user(self) -> None:

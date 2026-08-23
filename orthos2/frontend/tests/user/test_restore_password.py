@@ -18,7 +18,7 @@ class CreateAccount(WebTest):
         """Test restore password functionality."""
         form = self.app.get(reverse("frontend:password_restore")).form  # type: ignore
         form["login"] = "user"
-        form["email"] = "user@foo.bar"
+        form["email"] = "user@orthos2.test"
         page = form.submit().maybe_follow()  # type: ignore
 
         self.assertNotEqual(page.context["user"].username, "user")  # type: ignore
@@ -42,7 +42,7 @@ class CreateAccount(WebTest):
         """Check if login exists."""
         form = self.app.get(reverse("frontend:password_restore")).form  # type: ignore
         form["login"] = "unknown"
-        form["email"] = "user@foo.bar"
+        form["email"] = "user@orthos2.test"
         page = form.submit().maybe_follow()  # type: ignore
 
         self.assertNotEqual(page.context["user"].username, "unknown")  # type: ignore

@@ -153,7 +153,7 @@ class AddCommand(BaseAPIView):
         ADD system BareMetal
         ADD remotepowertype "Dummy BMC"
         ADD architecture x86_64
-        ADD serverconfig foo.bar baz
+        ADD serverconfig orthos2.test baz
         ADD enclosure Rack01
         ADD domainarchitecture
         ADD domain foo.domain.tld

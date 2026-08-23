@@ -118,5 +118,5 @@ The end of the range for auto-generated IPv6 addresses that are handed out by Or
 Setup architectures
 ===================
 
-Here the list of domains with their corresponding contact e-mails are being listed. If an architecture is not listed,
-its machines cannot use the "Setup machine" functionality.
+Here the list of architectures supported by this domain, each with a corresponding contact e-mail, is listed. If an
+architecture is not listed, its machines cannot use the "Setup machine" functionality.

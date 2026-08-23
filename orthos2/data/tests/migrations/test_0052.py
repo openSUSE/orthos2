@@ -25,7 +25,7 @@ class TestDirectMigration0052(TestCase):
 
         # Create an existing domain
         Domain.objects.create(
-            name="example.com",
+            name="orthos2.test",
             ip_v4="192.168.1.0",
             ip_v6="2001:db8::",
             dynamic_range_v4_start="192.168.1.200",
@@ -41,7 +41,7 @@ class TestDirectMigration0052(TestCase):
 
         # Create RemotePowerDevice
         rpd1 = RemotePowerDevice.objects.create(
-            fqdn="pdu.example.com",
+            fqdn="pdu.orthos2.test",
             mac="AA:BB:CC:DD:EE:01",
             fence_agent=fence_agent,
         )
@@ -55,7 +55,7 @@ class TestDirectMigration0052(TestCase):
         RemotePowerDeviceNew = new_state.apps.get_model("data", "RemotePowerDevice")
 
         rpd1_new = RemotePowerDeviceNew.objects.get(id=rpd1.id)
-        self.assertEqual(rpd1_new.domain.name, "example.com")
+        self.assertEqual(rpd1_new.domain.name, "orthos2.test")
         self.assertEqual(rpd1_new.architecture.name, "embedded")
 
         # Cleanup
@@ -82,7 +82,7 @@ class TestDirectMigration0052(TestCase):
 
         # Create RemotePowerDevice with a domain that does not exist in the database
         test_rpd = RemotePowerDevice.objects.create(
-            fqdn="pdu.missing-domain.com",
+            fqdn="pdu.missing-domain.orthos2.test",
             mac="AA:BB:CC:DD:EE:02",
             fence_agent=fence_agent,
         )
@@ -90,7 +90,7 @@ class TestDirectMigration0052(TestCase):
         # Act & Assert
         with self.assertRaisesMessage(
             CommandError,
-            'Domain "missing-domain.com" does not exist! Please create it first.',
+            'Domain "missing-domain.orthos2.test" does not exist! Please create it first.',
         ):
             migrator.apply_tested_migration(
                 ("data", "0052_remotepowerdevice_architecture_and_more")

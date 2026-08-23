@@ -4,7 +4,7 @@
     "pk": null,
     "fields": {
       "key": "domain.validendings",
-      "value": "example.de, example.com, foo.de"
+      "value": "orthos2.test, sub.orthos2.test, foo.orthos2.test"
     }
   }
 ]

@@ -23,10 +23,10 @@ class MachineDetailedEditViewTest(TestCase):
     def setUp(self, m_is_dns_resolvable: mock.MagicMock) -> None:
         m_is_dns_resolvable.return_value = True
 
-        ServerConfig.objects.create(key="domain.validendings", value="bar.de")
+        ServerConfig.objects.create(key="domain.validendings", value="orthos2.test")
 
         Domain(
-            name="foo.bar.de",
+            name="foo.orthos2.test",
             ip_v4="127.0.0.1",
             ip_v6="::1",
             dynamic_range_v4_start="127.0.0.1",
@@ -40,7 +40,7 @@ class MachineDetailedEditViewTest(TestCase):
         self.machine.system = System.get_system_manager().get_by_natural_key(
             "BareMetal"
         )
-        self.machine.fqdn = "machine1.foo.bar.de"
+        self.machine.fqdn = "machine1.foo.orthos2.test"
         self.machine.architecture_id = (
             Architecture.get_architecture_manager().get_by_natural_key("x86_64").id
         )
