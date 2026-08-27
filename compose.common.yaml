@@ -56,6 +56,10 @@ services:
       orthos:
         aliases:
           - authentik.orthos2.test
+          # cobblerd/http-api don't listen on port 80 themselves (see the "cobblerd"/"http-api" services
+          # below) - orthos2's plain "http://cobbler.orthos2.test/cobbler_api" XML-RPC calls only work
+          # because this alias sends that hostname straight to Traefik, which then path-routes it.
+          - cobbler.orthos2.test
     security_opt:
       - label:disable
   orthos2:
@@ -121,23 +125,188 @@ services:
       interval: 1s
       timeout: 5s
       retries: 10
-  cobbler:
-    hostname: cobbler.orthos2.test
-    build:
-      context: docker/cobbler
-      dockerfile: cobbler.dockerfile
-      secrets:
-        - SCCcredentials
+  # Cobbler now runs as upstream's own published container images (see
+  # https://cobbler.readthedocs.io/en/latest/user-guide/docker-deployment.html).
+  cobblerd:
+    image: ghcr.io/cobbler/cobblerd:v4.0.0b5
+    command: ["cobblerd", "-F"]
+    environment:
+      COBBLER_XMLRPC_BIND_ADDRESS: "0.0.0.0"
+    configs:
+      - source: cobbler-settings
+        target: /etc/cobbler/settings.yaml
+        mode: 0640
+      - source: cobbler-logging-config
+        target: /etc/cobbler/logging_config.conf
+        mode: 0644
+      # Registered as the active "dhcpv4"/"dhcpv6" templates by
+      # docker/orthos/setup_cobbler_dhcp_templates.py - only cobblerd renders DHCP config
+      # (modules.process_management/isc.py), so http-api doesn't need these.
+      - source: cobbler-dhcp-template
+        target: /var/lib/cobbler/templates/orthos2-dhcp.template
+        mode: 0644
+      - source: cobbler-dhcpv6-template
+        target: /var/lib/cobbler/templates/orthos2-dhcp6.template
+        mode: 0644
+      # Registered as the active "named_primary" template by
+      # docker/orthos/setup_cobbler_dns_templates.py.
+      - source: cobbler-named-template
+        target: /var/lib/cobbler/templates/orthos2-named.template
+        mode: 0644
+    volumes:
+      - cobbler-etc:/etc/cobbler:z
+      - cobbler-var-lib:/var/lib/cobbler:z
+      - cobbler-webdir:/srv/www/cobbler:z
+      - cobbler-tftproot:/srv/tftpboot:z
+      - cobbler-dhcp-config:/etc/cobbler-dhcp:z
+      - cobbler-dns-config:/etc/cobbler-dns:z
+      # bind.py writes named.conf's referenced zone files here (settings.bind_zonefile_path) -
+      # without sharing it, they'd land on cobblerd's own ephemeral filesystem, same bug class as
+      # the dhcpd6.conf fix in the Cobbler repo's docker/images/cobblerd/Dockerfile.
+      - cobbler-dns-zones:/var/lib/named:z
+      # Required to restart the sidecar DHCP & DNS containers
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Read-only source tree for distro kernels/initrds - modules.httpd/tftpd below serve
+      # straight from here (managers.dynamic_httpd/dynamic_tftp) instead of copying content
+      # into cobbler-webdir/cobbler-tftproot, and it's also where a Distro's "kernel"/"initrd"
+      # paths must point so cobblerd's own file-existence check finds them.
+      - type: bind
+        source: ${COBBLER_DISTRO_SOURCE_DIR:-./distro-sources}
+        target: /srv/distro-sources
+        read_only: true
+        bind:
+          create_host_path: true
     networks:
       - orthos
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.cobbler-http.rule=Host(`cobbler.orthos2.test`)"
-      - "traefik.http.routers.cobbler-http.entrypoints=web"
-      - "traefik.http.routers.cobbler-https.rule=Host(`cobbler.orthos2.test`)"
-      - "traefik.http.routers.cobbler-https.entrypoints=websecure"
-      - "traefik.http.routers.cobbler-https.tls=true"
-      - "traefik.http.services.cobbler.loadbalancer.server.port=80"
+      - "traefik.http.routers.cobbler-api-http.rule=Host(`cobbler.orthos2.test`) && PathPrefix(`/cobbler_api`)"
+      - "traefik.http.routers.cobbler-api-http.entrypoints=web"
+      - "traefik.http.routers.cobbler-api-http.middlewares=cobbler-api-strip"
+      - "traefik.http.routers.cobbler-api-https.rule=Host(`cobbler.orthos2.test`) && PathPrefix(`/cobbler_api`)"
+      - "traefik.http.routers.cobbler-api-https.entrypoints=websecure"
+      - "traefik.http.routers.cobbler-api-https.tls=true"
+      - "traefik.http.routers.cobbler-api-https.middlewares=cobbler-api-strip"
+      - "traefik.http.middlewares.cobbler-api-strip.stripprefix.prefixes=/cobbler_api"
+      - "traefik.http.services.cobbler-api.loadbalancer.server.port=25151"
+    security_opt:
+      - label:disable
+    restart: unless-stopped
+
+  http-api:
+    image: ghcr.io/cobbler/cobblerd:v4.0.0b5
+    command: ["gunicorn", "cobbler.services:application", "--bind", "0.0.0.0:8000"]
+    environment:
+      COBBLER_XMLRPC_HOST: "cobblerd"
+    configs:
+      - source: cobbler-settings
+        target: /etc/cobbler/settings.yaml
+        mode: 0440
+    volumes:
+      - cobbler-webdir:/srv/www/cobbler:ro,z
+      - cobbler-tftproot:/srv/tftpboot:ro,z
+      - type: bind
+        source: ${COBBLER_DISTRO_SOURCE_DIR:-./distro-sources}
+        target: /srv/distro-sources
+        read_only: true
+        bind:
+          create_host_path: true
+    networks:
+      - orthos
+    depends_on:
+      cobblerd:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cobbler-http-api-http.rule=Host(`cobbler.orthos2.test`) && (PathPrefix(`/cblr`) || PathPrefix(`/httpboot`) || PathPrefix(`/images`))"
+      - "traefik.http.routers.cobbler-http-api-http.entrypoints=web"
+      - "traefik.http.routers.cobbler-http-api-http.middlewares=cobbler-svc-strip"
+      - "traefik.http.routers.cobbler-http-api-https.rule=Host(`cobbler.orthos2.test`) && (PathPrefix(`/cblr`) || PathPrefix(`/httpboot`) || PathPrefix(`/images`))"
+      - "traefik.http.routers.cobbler-http-api-https.entrypoints=websecure"
+      - "traefik.http.routers.cobbler-http-api-https.tls=true"
+      - "traefik.http.routers.cobbler-http-api-https.middlewares=cobbler-svc-strip"
+      - "traefik.http.middlewares.cobbler-svc-strip.stripprefix.prefixes=/cblr/svc"
+      - "traefik.http.services.cobbler-http-api.loadbalancer.server.port=8000"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz', timeout=5)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+    restart: unless-stopped
+
+  cobbler-tftp:
+    image: ghcr.io/cobbler/cobbler-tftp:latest
+    environment:
+      COBBLER_XMLRPC_HOST: "cobblerd"
+    ports:
+      - "69:69/udp"
+    networks:
+      - orthos
+    depends_on:
+      cobblerd:
+        condition: service_healthy
+    restart: unless-stopped
+
+  cobbler-dhcp:
+    image: ghcr.io/cobbler/cobbler-dhcp:v4.0.0b5
+    networks:
+      - orthos
+    volumes:
+      - cobbler-dhcp-config:/etc/cobbler-dhcp:ro,z
+    depends_on:
+      cobblerd:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Same image as "cobbler-dhcp", running ISC dhcpd's separate "-6" (DHCPv6) mode against the
+  # dhcpd6.conf the cobblerd Dockerfile fix now shares into this same volume. Reads it straight
+  # from the shared directory rather than via a "/etc/dhcpd6.conf" symlink, since this image (built
+  # for the v4 role) only sets one up for dhcpd.conf. dhcpd6 needs its own lease directory/file
+  # bootstrapped first, same reason the image's own Dockerfile does this for dhcpd.leases - ISC
+  # dhcpd never creates one itself and exits immediately if it's missing.
+  #
+  # This image's Dockerfile bakes in "cobbler.io/managed-service=dhcp" (see
+  # docker/images/dhcp/Dockerfile in the Cobbler repo) - reusing it verbatim for a second container
+  # would make cobblerd's process_management.docker restart-by-label lookup ambiguous (it hard-errors
+  # if more than one container carries the label it's searching for). Overriding the label here to
+  # "dhcp6", paired with the "dhcpd6: dhcp6" entry in modules.process_management.docker_service_labels
+  # below, keeps the v4/v6 sidecars independently restartable.
+  cobbler-dhcp6:
+    image: ghcr.io/cobbler/cobbler-dhcp:v4.0.0b5
+    entrypoint:
+      - sh
+      - -c
+      - |
+        mkdir -p /var/lib/dhcp6/db && touch -a /var/lib/dhcp6/db/dhcpd6.leases && \
+        exec dhcpd -6 -f -cf /etc/cobbler-dhcp/dhcpd6.conf -lf /var/lib/dhcp6/db/dhcpd6.leases
+    labels:
+      - "cobbler.io/managed-service=dhcp6"
+    networks:
+      - orthos
+    volumes:
+      - cobbler-dhcp-config:/etc/cobbler-dhcp:ro,z
+    depends_on:
+      cobblerd:
+        condition: service_healthy
+    restart: unless-stopped
+
+  cobbler-dns:
+    image: ghcr.io/cobbler/cobbler-dns:v4.0.0b5
+    volumes:
+      - cobbler-dns-config:/etc/cobbler-dns:ro,z
+      # Read-write, unlike cobbler-dns-config above: BIND's own "directory" option (where
+      # dump-file/statistics-file/memstatistics-file and its own runtime state live) is this same
+      # path, and named refuses to start ("directory ... is not writable") if it can't write there
+      # - even though it only ever reads the zone files cobblerd renders into it.
+      - cobbler-dns-zones:/var/lib/named:z
+    networks:
+      - orthos
+    depends_on:
+      cobblerd:
+        condition: service_healthy
+    restart: unless-stopped
+
   serial_console:
     hostname: sconsole.orthos2.test
     networks:
@@ -176,8 +345,145 @@ services:
 secrets:
   SCCcredentials:
     file: docker/secrets/SCCcredentials
+
+# Injected into both cobblerd and http-api above; only lists keys that differ from cobbler.settings's
+# built-in defaults (Settings.from_dict() overlays these onto an already fully-populated Settings()).
+# "modules" is given in full, not as a partial override - from_dict() replaces each top-level key
+# wholesale rather than deep-merging, so a partial "modules" override would silently blank out any
+# sub-key left out below instead of leaving it at its default.
+configs:
+  cobbler-settings:
+    content: |
+      tftpboot_location: "/srv/tftpboot"
+      webdir: "/srv/www/cobbler"
+      manage_tftpd: false
+      server: "cobbler.orthos2.test"
+      # Without these, `cobbler sync` never writes /etc/cobbler-dhcp/dhcpd.conf or
+      # /etc/cobbler-dns/named.conf (both default to false) - the cobbler-dhcp/cobbler-dns
+      # sidecars below would then crash-loop forever on a dangling symlink to a file that
+      # sync never creates, instead of just until the first sync (as documented upstream).
+      manage_dhcp_v4: true
+      manage_dhcp_v6: true
+      manage_dns: true
+      # False (the default) is only safe once settings.yaml is already on the current schema
+      # version, which it is here (freshly generated by this image) - true would let cobblerd
+      # silently rewrite this config on a schema change instead of refusing to start with a
+      # clear "automigration disabled but required" error. Flip to true only when upgrading
+      # cobblerd across a settings-schema-breaking version and migrating an existing volume.
+      auto_migrate_settings: false
+      # Forward zone: plain domain name(s), matched by longest DNS-name suffix.
+      manage_forward_zones:
+        - "orthos2.test"
+      # Reverse zone: a dotted-decimal *prefix* (not CIDR, not in-addr.arpa) - "192.0.2" here
+      # covers the whole 192.0.2.0/24 network (cobbler/modules/managers/bind.py matches it via
+      # "^192\.0\.2\." against each system's address, then reverses the remaining octet).
+      #
+      # The "2001:db8" entry isn't optional once manage_dhcp_v6/the "2001:db8::/64" DHCPv6 subnet
+      # below are in play: bind.py's __reverse_zones() only pre-populates its zone dict from this
+      # list, then does an unconditional zones[zone][...] = ... for every system's address - any
+      # IPv6 host under a network with no matching entry here makes `cobbler sync` raise a bare
+      # KeyError and abort (not skip that one host). The exact string only needs to contain a ":"
+      # and be a parseable IPv6 prefix - bind.py re-derives the real zone key from
+      # __expand_ipv6(zone + "::1")[:19], which independently normalizes "2001:db8"/"2001:db8::"/
+      # etc. to "2001:0db8:0000:0000" - the same value it computes for each host's own address.
+      manage_reverse_zones:
+        - "192.0.2"
+        - "2001:db8"
+      # Matches the "cobbler-dns-zones" volume mounted rw on both cobblerd and cobbler-dns below -
+      # bind.py writes named.conf's referenced zone files here, same as the default already is.
+      bind_zonefile_path: "/var/lib/named"
+
+      modules:
+        authentication:
+          module: "authentication.configfile"
+          hash_algorithm: "sha3_512"
+        authorization:
+          module: "authorization.allowall"
+        dns:
+          module: "managers.bind"
+        dhcp:
+          module: "managers.isc"
+        httpd:
+          module: "managers.dynamic_httpd"
+        tftpd:
+          module: "managers.dynamic_tftp"
+        process_management:
+          module: "auto"
+          docker_socket_path: "/var/run/docker.sock"
+          docker_service_labels:
+            dhcpd: "dhcp"
+            dhcpd4: "dhcp"
+            # Distinct from "dhcp" ("cobbler-dhcp") - "cobbler-dhcp6" overrides its
+            # cobbler.io/managed-service label to "dhcp6" precisely so these two don't collide.
+            dhcpd6: "dhcp6"
+            named: "dns"
+            dnsmasq: "dnsmasq"
+        serializers:
+          module: "serializers.file"
+
+  # Overrides the RPM-shipped /etc/cobbler/logging_config.conf: raises handler_stdout to DEBUG
+  # (root logger is already DEBUG) so debug-level output actually reaches "docker compose logs
+  # cobblerd" instead of being filtered out by the handler, and drops the FileHandler entirely -
+  # containers log to stdout, not to a file that would silently accumulate inside the container
+  # (or need its own volume/rotation) at /var/log/cobbler/cobbler.log.
+  cobbler-logging-config:
+    content: |
+      [loggers]
+      keys=root
+
+      [handlers]
+      keys=stdout
+
+      [formatters]
+      keys=stdout
+
+      [logger_root]
+      level=DEBUG
+      handlers=stdout
+
+      [handler_stdout]
+      class=StreamHandler
+      level=DEBUG
+      formatter=stdout
+      args=(sys.stdout,)
+
+      [formatter_stdout]
+      format=%(levelname)s | %(message)s
+      class=logging.Formatter
+
+  # Custom DHCPv4/v6 templates covering the orthos2 dev stack's "192.0.2.0/24"/"2001:db8::/64"
+  # networks - Cobbler 4.0 templates are DB objects selected by tag, not a fixed
+  # /etc/cobbler/dhcp.template path (see docs/user-guide/templating.rst), so these files alone
+  # do nothing until docker/orthos/setup_cobbler_dhcp_templates.py registers them as Template
+  # items tagged "dhcpv4"/"dhcpv6" + "active".
+  cobbler-dhcp-template:
+    file: docker/orthos/cobbler-templates/dhcp.template
+  cobbler-dhcpv6-template:
+    file: docker/orthos/cobbler-templates/dhcp6.template
+
+  # Fixes the built-in "named_primary" template's logging block so the "cobbler-dns" sidecar
+  # actually starts (see docker/orthos/cobbler-templates/named.template) - registered as the active
+  # "named_primary" template by docker/orthos/setup_cobbler_dns_templates.py.
+  cobbler-named-template:
+    file: docker/orthos/cobbler-templates/named.template
+
 volumes:
   database:
     driver: local
+  cobbler-etc:
+  cobbler-var-lib:
+  cobbler-webdir:
+  cobbler-tftproot:
+  cobbler-dhcp-config:
+  cobbler-dns-config:
+  cobbler-dns-zones:
 networks:
+  # Pinned (rather than Docker's default auto-assigned subnet) because the "cobbler-dhcp" sidecar
+  # joins this same network - dhcpd refuses to listen on any interface without a matching "subnet"
+  # declaration for its actual address, so docker/orthos/cobbler-templates/dhcp.template's dummy
+  # subnet has to name this exact, stable value rather than chase whatever Docker happens to pick.
   orthos:
+    ipam:
+      config:
+        - subnet: "172.20.0.0/16"
+          gateway: "172.20.0.1"
