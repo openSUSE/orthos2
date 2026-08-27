@@ -1,0 +1,43 @@
+options {
+          listen-on port 53 { 127.0.0.1; };
+          directory       "@@bind_zonefiles@@";
+          dump-file       "@@bind_zonefiles@@/data/cache_dump.db";
+          statistics-file "@@bind_zonefiles@@/data/named_stats.txt";
+          memstatistics-file "@@bind_zonefiles@@/data/named_mem_stats.txt";
+          allow-query     { localhost; };
+          recursion yes;
+};
+
+# Adapted from Cobbler's built-in cheetah/etc/named.template (see
+# cobbler/data/templates/cheetah/etc/named.template in the Cobbler repo) - the built-in "logging"
+# block below writes to a *relative* path ("data/named.run", under "directory" above) whose parent
+# "data/" is never created by either cobblerd or this image, so named fails at startup validating it
+# ("checking logging configuration failed: file not found") before it ever gets to loading zones.
+# Log to stderr instead - Docker captures it into "docker compose logs cobbler-dns" the same as
+# stdout - and drop the dependency on that missing directory entirely.
+logging {
+        channel stdout_log {
+                stderr;
+                severity dynamic;
+                print-time yes;
+                print-severity yes;
+                print-category yes;
+        };
+        category default { stdout_log; };
+        category queries { stdout_log; };
+};
+
+#for $zone in $forward_zones
+zone "${zone}." {
+    type master;
+    file "$zone";
+};
+
+#end for
+#for $zone, $arpa in $reverse_zones
+zone "${arpa}." {
+    type master;
+    file "$zone";
+};
+
+#end for
