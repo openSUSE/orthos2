@@ -3,9 +3,10 @@
 A Prometheus [HTTP service discovery](https://prometheus.io/docs/prometheus/latest/http_sd/)
 adapter for Cobbler. Replaces the old `configgen.py` one-off script (in `orthos2-gitops`) that
 wrote a static target list into git by hand. This service queries the configured Cobbler
-servers' `get_systems()` XML-RPC call on demand (cached for `CACHE_TTL_SECONDS`) and serves the
-current set of targets - both the `default` (host) and `bmc` interface of every system - as
-Prometheus HTTP SD groups on `GET /sd`.
+servers' `get_network_interfaces()` XML-RPC call on demand (cached for `CACHE_TTL_SECONDS`) and
+serves the current set of targets - both the `default` (host) and `bmc` interface of every
+system - as Prometheus HTTP SD groups on `GET /sd`. Requires Cobbler >=4.0.0, which moved
+network interfaces to their own first-class items (no longer embedded on `get_systems()`).
 
 It is plain, dependency-free Python 3 (stdlib only: `http.server`, `xmlrpc.client`, `json`,
 `threading`) so it has no dependency on Django, Orthos2, or a running Cobbler instance to be
