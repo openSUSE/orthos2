@@ -160,6 +160,11 @@ package-lock.json
 /docker/secrets/*
 !/docker/secrets/.keep
 
+# Local Cobbler distro source tree bind-mounted into cobblerd/http-api (see compose.common.yaml
+# and docker/orthos/setup_fake_cobbler_distro.py)
+/distro-sources/
+
+
 # Ignore AI stuff
 .github/instructions/codacy.instructions.md
 .claude

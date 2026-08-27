@@ -3,9 +3,15 @@
 Prometheus HTTP service discovery (https://prometheus.io/docs/prometheus/latest/http_sd/)
 adapter for Cobbler. Replaces the old one-off `configgen.py` script (which wrote a static
 target list into git) with a long-running service that queries the configured Cobbler
-servers' `get_systems()` XML-RPC on demand (short-TTL cached) and returns the current set of
-targets - both the `default` (host) and `bmc` interface of every system - as valid Prometheus
-HTTP SD groups.
+servers' `get_network_interfaces()` XML-RPC on demand (short-TTL cached) and returns the
+current set of targets - both the `default` (host) and `bmc` interface of every system - as
+valid Prometheus HTTP SD groups.
+
+Cobbler >=4.0.0 turned network interfaces into separate first-class items: `get_systems()`
+no longer embeds an `interfaces` dict on the system at all, so interfaces must be fetched via
+their own bulk call. Orthos2 names them `<fqdn>-default`/`<fqdn>-bmc` (see
+`orthos2/utils/cobbler.py`), and `dns_name`/`ip_address`/`ipv6_address` moved into nested
+`dns.name`/`ipv4.address`/`ipv6.address` sub-objects (only `mac_address` stayed flat).
 """
 
 import json
@@ -26,7 +32,7 @@ CONFIG_PATH = os.environ.get(
 CACHE_TTL_SECONDS = float(os.environ.get("CACHE_TTL_SECONDS", "300"))
 LISTEN_PORT = int(os.environ.get("LISTEN_PORT", "8080"))
 
-KNOWN_INTERFACE_ROLES = ("default", "bmc")
+KNOWN_INTERFACE_ROLE_SUFFIXES = {"-default": "default", "-bmc": "bmc"}
 
 
 def load_server_config(path: str) -> List[Dict[str, str]]:
@@ -41,10 +47,11 @@ def load_server_config(path: str) -> List[Dict[str, str]]:
     return servers
 
 
-def fetch_systems(server: Dict[str, str]) -> List[Dict[str, Any]]:
+def fetch_network_interfaces(server: Dict[str, str]) -> List[Dict[str, Any]]:
     """
-    Fetch `get_systems()` from a single Cobbler server, logging in first if credentials are
-    configured for it. Raises on failure - callers are expected to catch and skip the server.
+    Fetch `get_network_interfaces()` from a single Cobbler server, logging in first if
+    credentials are configured for it. Raises on failure - callers are expected to catch and
+    skip the server.
     """
     url = server["url"]
     proxy = xmlrpc.client.ServerProxy(url)
@@ -57,18 +64,18 @@ def fetch_systems(server: Dict[str, str]) -> List[Dict[str, Any]]:
         except (xmlrpc.client.Fault, OSError) as e:
             logger.warning("Login to Cobbler server %s failed: %s", url, e)
 
-    systems = proxy.get_systems()
-    if not isinstance(systems, list):
+    interfaces = proxy.get_network_interfaces()
+    if not isinstance(interfaces, list):
         raise ValueError(
-            f"Cobbler server {url} did not return a list for get_systems()"
+            f"Cobbler server {url} did not return a list for get_network_interfaces()"
         )
-    return systems
+    return interfaces
 
 
 def build_sd_groups(servers: List[Dict[str, str]]) -> List[Dict[str, Any]]:
     """
     Query every configured Cobbler server and turn the result into Prometheus HTTP SD groups,
-    one per system interface (`default`/`bmc`). A server that fails is logged and skipped
+    one per known interface role (`default`/`bmc`). A server that fails is logged and skipped
     rather than failing the whole response.
     """
     groups: List[Dict[str, Any]] = []
@@ -76,37 +83,44 @@ def build_sd_groups(servers: List[Dict[str, str]]) -> List[Dict[str, Any]]:
     for server in servers:
         url = server["url"]
         try:
-            systems = fetch_systems(server)
+            interfaces = fetch_network_interfaces(server)
         except (xmlrpc.client.Fault, OSError, ValueError) as e:
             logger.warning("Skipping Cobbler server %s: %s", url, e)
             continue
 
-        for system in systems:
-            interfaces = system.get("interfaces", {})
-            for interface_name, interface in interfaces.items():
-                if interface_name not in KNOWN_INTERFACE_ROLES:
-                    continue
+        for interface in interfaces:
+            name = interface.get("name", "")
+            role = next(
+                (
+                    role
+                    for suffix, role in KNOWN_INTERFACE_ROLE_SUFFIXES.items()
+                    if name.endswith(suffix)
+                ),
+                None,
+            )
+            if role is None:
+                continue
 
-                dns_name = interface.get("dns_name")
-                if not dns_name:
-                    continue
+            dns_name = interface.get("dns", {}).get("name")
+            if not dns_name:
+                continue
 
-                has_ipv4 = bool(interface.get("ip_address"))
-                has_ipv6 = bool(interface.get("ipv6_address"))
-                if not has_ipv4 and not has_ipv6:
-                    continue
+            has_ipv4 = bool(interface.get("ipv4", {}).get("address"))
+            has_ipv6 = bool(interface.get("ipv6", {}).get("address"))
+            if not has_ipv4 and not has_ipv6:
+                continue
 
-                groups.append(
-                    {
-                        "targets": [dns_name],
-                        "labels": {
-                            "__meta_cobbler_role": interface_name,
-                            "__meta_cobbler_has_ipv4": "true" if has_ipv4 else "false",
-                            "__meta_cobbler_has_ipv6": "true" if has_ipv6 else "false",
-                            "__meta_cobbler_server": url,
-                        },
-                    }
-                )
+            groups.append(
+                {
+                    "targets": [dns_name],
+                    "labels": {
+                        "__meta_cobbler_role": role,
+                        "__meta_cobbler_has_ipv4": "true" if has_ipv4 else "false",
+                        "__meta_cobbler_has_ipv6": "true" if has_ipv6 else "false",
+                        "__meta_cobbler_server": url,
+                    },
+                }
+            )
 
     return groups
 
