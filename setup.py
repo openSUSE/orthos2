@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     setup(
         name="orthos2",
-        version="1.18",
+        version="1.19",
         description="Machine administration server",
         long_description=long_description,
         long_description_content_type="text/markdown",
