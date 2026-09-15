@@ -272,6 +272,29 @@ class LoginOIDCBehavior(WebTest):
             self.assertContains(page, "Create Account")  # type: ignore
             self.assertContains(page, "Restore Password")  # type: ignore
 
+    def test_oidc_login_button_text_defaults_to_authentik(self) -> None:
+        """Without ORTHOS2_OIDC_LOGIN_BUTTON_TEXT set, the button says "Login with Authentik"."""
+        with self.settings(SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.orthos2.test"):
+            page = self.app.get(reverse("frontend:login"))  # type: ignore
+
+            self.assertContains(page, "Login with Authentik")  # type: ignore
+
+    def test_oidc_login_button_text_is_configurable(self) -> None:
+        """OIDC_LOGIN_BUTTON_TEXT overrides the button label on both login screens."""
+        with self.settings(
+            SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://auth.orthos2.test",
+            OIDC_LOGIN_BUTTON_TEXT="Login with CustomIDP",
+        ):
+            oidc_only_page = self.app.get(reverse("frontend:login"))  # type: ignore
+            self.assertContains(oidc_only_page, "Login with CustomIDP")  # type: ignore
+            self.assertNotContains(oidc_only_page, "Login with Authentik")  # type: ignore
+
+            builtin_page = self.app.get(  # type: ignore
+                reverse("frontend:login") + "?builtin=true"
+            )
+            self.assertContains(builtin_page, "Login with CustomIDP")  # type: ignore
+            self.assertNotContains(builtin_page, "Login with Authentik")  # type: ignore
+
 
 class LoginOIDCBehaviorNoCSRF(WebTest):
     """Test login screen behavior with OIDC configuration."""

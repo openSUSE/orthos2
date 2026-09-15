@@ -152,6 +152,7 @@ def login(
         "oidc_configured": oidc_configured,
         "show_oidc_only": show_oidc_only,
         "show_builtin_form": show_builtin_form,
+        "oidc_login_button_text": settings.OIDC_LOGIN_BUTTON_TEXT,
     }
     context.update(extra_context)
 
