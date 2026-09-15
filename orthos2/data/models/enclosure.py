@@ -233,6 +233,18 @@ class Enclosure(models.Model):
             orthos_result=self.location_rack_position or "<not set>",
             netbox_result=netbox_location_rack_position_result,
         ).save()
+        # Device Type
+        netbox_device_type = netbox_device.get("device_type")
+        NetboxOrthosComparisionResult(
+            run_id=run_obj,
+            property_name="device_type",
+            orthos_result=str(self.device_type) if self.device_type else "<not set>",
+            netbox_result=(
+                "<not set>"
+                if netbox_device_type is None
+                else netbox_device_type.get("display", "<not set>")
+            ),
+        ).save()
 
     def fetch_netbox(self) -> None:
         """
@@ -272,4 +284,13 @@ class Enclosure(models.Model):
         if location_rack_position is not None:
             # When no rack position is set, then the JSON value is "null" --> Python "None"
             self.location_rack_position = location_rack_position
+        # Device Type
+        netbox_device_type_id = (netbox_device.get("device_type") or {}).get("id")
+        if netbox_device_type_id and (
+            self.device_type is None
+            or self.device_type.netbox_id != netbox_device_type_id
+        ):
+            self.device_type = DeviceType.get_or_create_from_netbox(
+                netbox_device_type_id
+            )
         self.save()

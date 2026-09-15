@@ -81,6 +81,13 @@ class NewDomainArchitectureViewTest(DomainArchitectureViewTestCase):
         )
         response = self.client.get(url)
         assert response.status_code == 200
+        self.assertContains(response, "Cancel")
+        self.assertContains(
+            response,
+            reverse(
+                "frontend:domain_architectures", kwargs={"domain_id": self.domain.pk}
+            ),
+        )
 
     def test_superuser_post_creates_domainarchitecture(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))
@@ -138,6 +145,13 @@ class DomainArchitectureDetailedEditViewTest(DomainArchitectureViewTestCase):
         )
         response = self.client.get(url)
         assert response.status_code == 200
+        self.assertContains(response, "Cancel")
+        self.assertContains(
+            response,
+            reverse(
+                "frontend:domain_architectures", kwargs={"domain_id": self.domain.pk}
+            ),
+        )
 
     def test_superuser_post_updates_domainarchitecture(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))
@@ -195,6 +209,13 @@ class DeleteDomainArchitectureViewTest(DomainArchitectureViewTestCase):
         )
         response = self.client.get(url)
         assert response.status_code == 200
+        self.assertContains(response, "Cancel")
+        self.assertContains(
+            response,
+            reverse(
+                "frontend:domain_architectures", kwargs={"domain_id": self.domain.pk}
+            ),
+        )
 
     def test_superuser_post_deletes_domainarchitecture(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))

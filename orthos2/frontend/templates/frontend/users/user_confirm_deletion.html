@@ -10,6 +10,12 @@
     <form method="post">
       {% csrf_token %}
       <p>Are you sure you want to delete user "{{ object.username }}"?</p>
+      <a
+        href="{% url 'frontend:users' %}"
+        class="btn btn-outline-secondary btn-sm"
+      >
+        Cancel
+      </a>
       <input
         class="btn btn-danger btn-sm"
         type="submit"

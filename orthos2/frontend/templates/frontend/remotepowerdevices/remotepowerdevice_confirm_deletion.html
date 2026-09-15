@@ -11,6 +11,12 @@
         Are you sure you want to delete remote power device "{{ object.fqdn }}"?
       </p>
       {{ form }}
+      <a
+        href="{% url 'frontend:remotepowerdevices' %}"
+        class="btn btn-outline-secondary btn-sm"
+      >
+        Cancel
+      </a>
       <input
         class="btn btn-danger btn-sm"
         type="submit"

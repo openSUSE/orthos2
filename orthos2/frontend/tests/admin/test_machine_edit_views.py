@@ -69,6 +69,10 @@ class MachineDetailedEditViewTest(TestCase):
         url = reverse("frontend:edit_machine", kwargs={"pk": self.machine.pk})
         response = self.client.get(url)
         assert response.status_code == 200
+        self.assertContains(response, "Cancel")
+        self.assertContains(
+            response, reverse("frontend:detail", kwargs={"id": self.machine.pk})
+        )
 
     def test_superuser_post_updates_machine(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))
@@ -97,6 +101,26 @@ class MachineDetailedEditViewTest(TestCase):
         assert response.status_code == 200
         self.machine.refresh_from_db()
         assert self.machine.hypervisor_id is None
+
+    def test_superuser_get_vm_form_does_not_leak_template_comment(self) -> None:
+        """
+        The hidden-field branch for the hypervisor-only fields
+        (vm_dedicated_host, vm_auto_delete, vm_max, virt_api_int) is preceded
+        by a multiline `{# ... #}` comment, which Django's template engine
+        doesn't support - it renders literally instead of being stripped.
+        Editing a VM (whose system doesn't allow being a hypervisor) hits
+        that branch once per field, so the leaked comment would appear 4
+        times in the rendered form.
+        """
+        self.machine.system = System.get_system_manager().get_by_natural_key("VM KVM")
+        self.machine.save()
+
+        self.client.force_login(User.objects.get(username="superuser"))
+        url = reverse("frontend:edit_machine", kwargs={"pk": self.machine.pk})
+        response = self.client.get(url)
+
+        assert response.status_code == 200
+        self.assertNotContains(response, "isn't relevant for this system")
 
     def test_superuser_post_collect_system_information_without_full_connectivity_shows_error(
         self,

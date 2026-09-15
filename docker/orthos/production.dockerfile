@@ -28,9 +28,11 @@ COPY settings /etc/orthos2/settings
 
 COPY production-server.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-# Create required directories
-RUN mkdir -p /srv/www/orthos2
-RUN chown -R orthos:orthos /srv/www/orthos2
+# Create required directories. /var/lib/orthos2 is used as $HOME by the orthos
+# user - the orthos RPM ships a tmpfiles.d entry for it, but systemd-tmpfiles
+# doesn't run during `docker build`, so create/chown it explicitly here too.
+RUN mkdir -p /srv/www/orthos2 /var/lib/orthos2
+RUN chown -R orthos:orthos /srv/www/orthos2 /var/lib/orthos2
 
 RUN orthos-admin collectstatic
 EXPOSE 8000

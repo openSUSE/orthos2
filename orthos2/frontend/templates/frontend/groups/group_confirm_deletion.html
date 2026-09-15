@@ -10,6 +10,12 @@
     <form method="post">
       {% csrf_token %}
       <p>Are you sure you want to delete group "{{ object.name }}"?</p>
+      <a
+        href="{% url 'frontend:groups' %}"
+        class="btn btn-outline-secondary btn-sm"
+      >
+        Cancel
+      </a>
       <input
         class="btn btn-danger btn-sm"
         type="submit"

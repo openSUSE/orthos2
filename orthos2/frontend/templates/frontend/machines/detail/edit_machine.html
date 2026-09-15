@@ -44,9 +44,11 @@
                 </div>
               </div>
             {% else %}
-              {# Field isn't relevant for this system, but it's still a
-                 required part of the form - submit its unchanged value as
-                 hidden so unrelated edits don't fail validation. #}
+              {% comment %}
+                Field isn't relevant for this system, but it's still a required
+                part of the form - submit its unchanged value as hidden so
+                unrelated edits don't fail validation.
+              {% endcomment %}
               {{ field.as_hidden }}
             {% endif %}
           {% elif field.name == "hypervisor" %}
@@ -85,9 +87,21 @@
           {% endif %}
         {% endfor %}
 
-        <button type="submit" class="btn btn-secondary btn-sm w-100">
-          Submit
-        </button>
+        <div class="row" style="margin: 5px;">
+          <div class="col-6">
+            <a
+              href="{% url 'frontend:detail' object.pk %}"
+              class="btn btn-outline-secondary btn-sm w-100"
+            >
+              Cancel
+            </a>
+          </div>
+          <div class="col-6">
+            <button type="submit" class="btn btn-secondary btn-sm w-100">
+              Submit
+            </button>
+          </div>
+        </div>
       </form>
     </div>
   </div>

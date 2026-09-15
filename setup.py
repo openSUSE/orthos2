@@ -20,21 +20,15 @@ def requires(filename: str = "requirements.txt"):
 
 
 if __name__ == "__main__":
+    with open("README.md", "r") as readme:
+        long_description = readme.read()
+
     setup(
         name="orthos2",
-        version="1.18",
+        version="1.19",
         description="Machine administration server",
-        long_description="""
-        Orthos is the machine administration tool of the development network at SUSE.
-        It is used for following tasks:
-
-        getting the state of the machine
-        overview about the hardware
-        overview about the installed software (installations)
-        reservation of the machines
-        generating the DHCP configuration (via Cobbler)
-        reboot the machines remotely
-        managing remote (serial) consoles""",
+        long_description=long_description,
+        long_description_content_type="text/markdown",
         author="orthos team",
         url="https://github.com/openSUSE/orthos2",
         license="GPLv2+",

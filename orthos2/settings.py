@@ -93,6 +93,11 @@ REMOTE_AUTH_BACKEND = "social_core.backends.open_id_connect.OpenIdConnectAuth"
 SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = os.environ.get("OIDC_ENDPOINT", "")
 SOCIAL_AUTH_OIDC_KEY = os.environ.get("OIDC_KEY", "default")
 SOCIAL_AUTH_OIDC_SECRET = os.environ.get("OIDC_SECRET", "default")
+# Label shown on the OIDC login button; lets deployments brand it after their
+# own identity provider instead of always saying "Authentik".
+OIDC_LOGIN_BUTTON_TEXT = os.environ.get(
+    "ORTHOS2_OIDC_LOGIN_BUTTON_TEXT", "Login with Authentik"
+)
 
 SOCIAL_AUTH_JSONFIELD_ENABLED = True
 

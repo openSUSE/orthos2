@@ -12,6 +12,12 @@
         ({{ object.mac_address }}) from {{ object.machine.fqdn }}?
       </p>
       {{ form }}
+      <a
+        href="{% url 'frontend:networkinterfaces' object.machine_id %}"
+        class="btn btn-outline-secondary btn-sm"
+      >
+        Cancel
+      </a>
       <input
         class="btn btn-danger btn-sm"
         type="submit"

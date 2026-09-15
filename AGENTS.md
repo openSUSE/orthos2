@@ -19,7 +19,7 @@ Orthos2 is a Django-based machine administration tool used by SUSE's development
 The project is organized into specialized Django apps:
 
 - **orthos2/data**: Core domain models and business logic
-  - Models: `Machine`, `Domain`, `NetworkInterface`, `BMC`, `SerialConsole`, `RemotePower`, `Installation`, `ReservationHistory`, `Enclosure`, `MachineGroup`, etc.
+  - Models: `Machine`, `Domain`, `NetworkInterface`, `BMC`, `SerialConsole`, `RemotePower`, `Installation`, `ReservationHistory`, `Enclosure`, etc.
   - Handles virtualization, server config management, and hardware components
   
 - **orthos2/api**: REST API layer using Django REST Framework
@@ -95,8 +95,8 @@ docker compose exec -it orthos2 pytest
 
 # Run specific app tests
 docker compose exec -it orthos2 pytest orthos2/data
-docker compose exec -it orthos2 pytest orthos2/dataapi
-docker compose exec -it orthos2 pytest orthos2/datafrontend
+docker compose exec -it orthos2 pytest orthos2/api
+docker compose exec -it orthos2 pytest orthos2/frontend
 
 # Run specific test file
 docker compose exec -it orthos2 pytest -k "test_serverconfig"
@@ -118,7 +118,7 @@ npx prettier --write "**/*.html"
 pre-commit run --all-files
 
 # Type checking (configured for Python 3.11, strict mode)
-pyright
+mypy orthos2
 ```
 
 Pre-commit hooks automatically run `black` and `isort` on commit.
@@ -130,19 +130,19 @@ Pre-commit hooks automatically run `black` and `isort` on commit.
 docker/orthos/devel-server.sh
 
 # Create migrations
-python manage.py makemigrations
+python3.11 manage.py makemigrations
 
 # Apply migrations
-python manage.py migrate
+python3.11 manage.py migrate
 
 # Create superuser
-python manage.py createsuperuser
+python3.11 manage.py createsuperuser
 
 # Load fixture data (useful for development)
-python manage.py loaddata orthos2/data/fixtures/architectures.json
-python manage.py loaddata orthos2/data/fixtures/devicetypes.json
-python manage.py loaddata orthos2/data/fixtures/serialconsoletypes.json
-python manage.py loaddata orthos2/data/fixtures/systems.json
+python3.11 manage.py loaddata orthos2/data/fixtures/architectures.json
+python3.11 manage.py loaddata orthos2/data/fixtures/devicetypes.json
+python3.11 manage.py loaddata orthos2/data/fixtures/serialconsoletypes.json
+python3.11 manage.py loaddata orthos2/data/fixtures/systems.json
 ```
 
 ### Container Development Workflow
@@ -173,7 +173,7 @@ Docker files there, and any new `COPY` sources as siblings of the Dockerfile tha
 - **Environment variables**: All `ORTHOS_*` and `ORTHOS2_*` prefixed vars (see `docker/orthos/orthos2dev.env`, generated
   by `docker/manage-secrets.py`, for examples)
 - **Key env vars**:
-  - `ORTHOS_SECRET_KEY`: Django secret key
+  - `ORTHOS2_SECRET_KEY`: Django secret key
   - `ORTHOS2_DB_ENGINE`: Database backend
   - `ORTHOS2_POSTGRES_*`: PostgreSQL connection settings
   - `ALLOWED_HOSTS`: Django allowed hosts
@@ -208,7 +208,6 @@ API endpoints follow a command pattern:
 
 Key relationships to understand:
 - `Machine` is the central model, related to `Domain`, `NetworkInterface`, `BMC`, `SerialConsole`, `Installation`
-- `Machine` can be part of `MachineGroup` (many-to-many via `MachineGroupMembership`)
 - `Machine` has `ReservationHistory` for tracking usage
 - `Enclosure` contains multiple machines (physical chassis relationship)
 - `RemotePowerDevice` controls power for multiple machines
