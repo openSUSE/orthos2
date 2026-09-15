@@ -1,4 +1,5 @@
 import logging
+import subprocess
 from unittest import mock
 
 from django.test import TestCase
@@ -241,6 +242,27 @@ class ChecksMethodTests(TestCase):
 
         result = execute("echo foo")
         assert result[0] == "foo\n"
+        assert result[2] == 0
+
+    def test_execute_gives_child_a_closed_blocking_stdin(self) -> None:
+        """execute() must not let the child inherit the caller's stdin fd.
+
+        Otherwise tools like ansible-playbook can fail with
+        "Ansible requires blocking IO on stdin/stdout/stderr" when the
+        taskmanager's own stdin is non-blocking/unusable.
+        """
+        with mock.patch("orthos2.utils.misc.subprocess.Popen") as mocked_popen:
+            mocked_popen.return_value.communicate.return_value = (b"", b"")
+            mocked_popen.return_value.returncode = 0
+
+            execute("true")
+
+            _, kwargs = mocked_popen.call_args
+            assert kwargs["stdin"] == subprocess.DEVNULL
+
+        # cat immediately hits EOF on a DEVNULL stdin instead of blocking for input.
+        result = execute("cat")
+        assert result[0] == ""
         assert result[2] == 0
 
     def test_normalize_ascii(self) -> None:
