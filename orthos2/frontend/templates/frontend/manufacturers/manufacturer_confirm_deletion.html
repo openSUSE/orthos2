@@ -13,6 +13,12 @@
       {% csrf_token %}
       <p>Are you sure you want to delete manufacturer "{{ object.name }}"?</p>
       {{ form }}
+      <a
+        href="{% url 'frontend:manufacturers' %}"
+        class="btn btn-outline-secondary btn-sm"
+      >
+        Cancel
+      </a>
       <input
         class="btn btn-danger btn-sm"
         type="submit"

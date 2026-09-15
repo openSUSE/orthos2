@@ -177,6 +177,11 @@ class DeleteBMCViewTest(BMCViewTestCase):
         url = reverse("frontend:delete_bmc", kwargs={"pk": self.bmc.pk})
         response = self.client.get(url)
         assert response.status_code == 200
+        self.assertContains(response, "Cancel")
+        self.assertContains(
+            response,
+            reverse("frontend:networkinterfaces", kwargs={"id": self.machine.pk}),
+        )
 
     def test_superuser_post_deletes_bmc(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))

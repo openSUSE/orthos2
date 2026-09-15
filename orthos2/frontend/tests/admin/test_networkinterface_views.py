@@ -34,6 +34,10 @@ class DeleteNetworkInterfaceViewTest(TestCase):
         url = reverse("frontend:delete_networkinterface", kwargs={"pk": 3})
         response = self.client.get(url)
         assert response.status_code == 200
+        self.assertContains(response, "Cancel")
+        self.assertContains(
+            response, reverse("frontend:networkinterfaces", kwargs={"id": 2})
+        )
 
     def test_superuser_post_deletes_secondary_interface(self) -> None:
         # NetworkInterface pk=3 is secondary (machine=2, primary=False)
@@ -97,6 +101,10 @@ class NewNetworkInterfaceViewTest(TestCase):
         url = reverse("frontend:new_networkinterface", kwargs={"machine_id": 1})
         response = self.client.get(url)
         assert response.status_code == 200
+        self.assertContains(response, "Cancel")
+        self.assertContains(
+            response, reverse("frontend:networkinterfaces", kwargs={"id": 1})
+        )
 
     def test_superuser_post_creates_networkinterface(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))
@@ -188,6 +196,10 @@ class NetworkInterfaceDetailedEditViewTest(TestCase):
         url = reverse("frontend:edit_networkinterface", kwargs={"pk": 3})
         response = self.client.get(url)
         assert response.status_code == 200
+        self.assertContains(response, "Cancel")
+        self.assertContains(
+            response, reverse("frontend:networkinterfaces", kwargs={"id": 2})
+        )
 
     def test_superuser_post_updates_networkinterface(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))

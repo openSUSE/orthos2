@@ -17,6 +17,12 @@
       </p>
       <blockquote>{{ object.text }}</blockquote>
       {{ form }}
+      <a
+        href="{% url 'frontend:detail' object.machine_id %}"
+        class="btn btn-outline-secondary btn-sm"
+      >
+        Cancel
+      </a>
       <input
         class="btn btn-danger btn-sm"
         type="submit"

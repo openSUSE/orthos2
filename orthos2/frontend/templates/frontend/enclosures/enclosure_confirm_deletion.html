@@ -9,6 +9,12 @@
       {% csrf_token %}
       <p>Are you sure you want to delete enclosure "{{ object.name }}"?</p>
       {{ form }}
+      <a
+        href="{% url 'frontend:enclosures' %}"
+        class="btn btn-outline-secondary btn-sm"
+      >
+        Cancel
+      </a>
       <input
         class="btn btn-danger btn-sm"
         type="submit"
