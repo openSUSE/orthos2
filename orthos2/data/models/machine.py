@@ -734,9 +734,8 @@ class Machine(models.Model):
             run_id=run_obj,
             property_name="architecture",
             orthos_result=self.architecture.name or "<not set>",
-            netbox_result=netbox_machine.get("custom_fields", {}).get(
-                "arch", "<not set>"
-            ),
+            netbox_result=netbox_machine.get("custom_fields", {}).get("arch")
+            or "<not set>",
         ).save()
         # SystemType
         # Serial Number
