@@ -1,5 +1,4 @@
 import datetime
-import ipaddress
 import logging
 import re
 import uuid
@@ -940,16 +939,12 @@ class Machine(models.Model):
                     continue
                 bmc.mac = primary_mac.get("mac_address")
                 if ipv4_address_count > 0:
-                    bmc.ip_address_v4 = str(
-                        ipaddress.ip_network(
-                            ipv4_addresses[0].get("address")  # type: ignore
-                        ).network_address
+                    bmc.ip_address_v4 = ip_strip_subnet_size(
+                        ipv4_addresses[0].get("address", "")  # type: ignore
                     )
                 if ipv6_address_count > 0:
-                    bmc.ip_address_v6 = str(
-                        ipaddress.ip_network(
-                            ipv6_addresses[0].get("address")  # type: ignore
-                        ).network_address
+                    bmc.ip_address_v6 = ip_strip_subnet_size(
+                        ipv6_addresses[0].get("address", "")  # type: ignore
                     )
                 # Username & Password will be pulled from Hashicorp Vault in the future but for
                 # now they have to be manually given.
