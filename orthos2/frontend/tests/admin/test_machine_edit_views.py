@@ -69,6 +69,10 @@ class MachineDetailedEditViewTest(TestCase):
         url = reverse("frontend:edit_machine", kwargs={"pk": self.machine.pk})
         response = self.client.get(url)
         assert response.status_code == 200
+        self.assertContains(response, "Cancel")
+        self.assertContains(
+            response, reverse("frontend:detail", kwargs={"id": self.machine.pk})
+        )
 
     def test_superuser_post_updates_machine(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))

@@ -54,6 +54,8 @@ class UserReserveMachineViewTest(TestCase):
         self.assertContains(response, "Machine FQDN")
         self.assertContains(response, "Reason")
         self.assertContains(response, "Until")
+        self.assertContains(response, "Cancel")
+        self.assertContains(response, self._detail_url(self.target_user.pk))
 
     def test_reserve_form_forbidden_for_non_superuser(self) -> None:
         self.client.force_login(self.regular_user)

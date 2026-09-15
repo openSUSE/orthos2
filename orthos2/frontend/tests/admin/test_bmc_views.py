@@ -42,6 +42,11 @@ class NewBMCViewTest(BMCViewTestCase):
         url = reverse("frontend:new_bmc", kwargs={"machine_id": self.machine.pk})
         response = self.client.get(url)
         assert response.status_code == 200
+        self.assertContains(response, "Cancel")
+        self.assertContains(
+            response,
+            reverse("frontend:networkinterfaces", kwargs={"id": self.machine.pk}),
+        )
 
     def test_superuser_post_creates_bmc(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))
@@ -113,6 +118,11 @@ class BMCDetailedEditViewTest(BMCViewTestCase):
         url = reverse("frontend:edit_bmc", kwargs={"pk": self.bmc.pk})
         response = self.client.get(url)
         assert response.status_code == 200
+        self.assertContains(response, "Cancel")
+        self.assertContains(
+            response,
+            reverse("frontend:networkinterfaces", kwargs={"id": self.machine.pk}),
+        )
 
     def test_superuser_post_updates_bmc(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))

@@ -91,6 +91,8 @@ class NewArchitectureViewTest(TestCase):
         url = reverse("frontend:new_architecture")
         response = self.client.get(url)
         assert response.status_code == 200
+        self.assertContains(response, "Cancel")
+        self.assertContains(response, reverse("frontend:architectures"))
 
     def test_superuser_post_creates_architecture(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))
@@ -130,6 +132,8 @@ class ArchitectureDetailedEditViewTest(TestCase):
         url = reverse("frontend:edit_architecture", kwargs={"pk": self.architecture.pk})
         response = self.client.get(url)
         assert response.status_code == 200
+        self.assertContains(response, "Cancel")
+        self.assertContains(response, reverse("frontend:architectures"))
 
     def test_superuser_post_updates_architecture(self) -> None:
         self.client.force_login(User.objects.get(username="superuser"))

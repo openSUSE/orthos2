@@ -41,6 +41,13 @@ class AddMachineDeviceTypeTest(TestCase):
             name="EPYC ROME", manufacturer=self.manufacturer, netbox_id=6
         )
 
+    def test_get_shows_cancel_link_to_machine_list(self) -> None:
+        self.client.force_login(self.superuser)
+        response = self.client.get(reverse("frontend:machine_add"))
+        assert response.status_code == 200
+        self.assertContains(response, "Cancel")
+        self.assertContains(response, reverse("frontend:machines"))
+
     def _post_add_machine(self, netbox_object_type: str):
         self.client.force_login(self.superuser)
         return self.client.post(

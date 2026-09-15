@@ -90,9 +90,21 @@
           </div>
         </div>
 
-        <button type="submit" class="btn btn-secondary btn-sm btn-block">
-          Submit
-        </button>
+        <div class="row" style="margin: 5px;">
+          <div class="col-6">
+            <a
+              href="{% url 'frontend:enclosures' %}"
+              class="btn btn-outline-secondary btn-sm btn-block"
+            >
+              Cancel
+            </a>
+          </div>
+          <div class="col-6">
+            <button type="submit" class="btn btn-secondary btn-sm btn-block">
+              Submit
+            </button>
+          </div>
+        </div>
       </form>
     </div>
   </div>
