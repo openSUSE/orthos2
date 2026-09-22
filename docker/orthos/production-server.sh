@@ -26,7 +26,10 @@ taskmanager_start() {
     OIDC_SECRET=$(cat /run/secrets/OIDCsecret)
     export OIDC_SECRET
     # Wait for it
-    until curl --output /dev/null --silent --head --fail http://orthos2:8000; do
+    ORTHOS2_WEB_SERVICE_HOST="${ORTHOS2_WEB_SERVICE_HOST:-orthos2}"
+    ORTHOS2_WEB_SERVICE_PORT="${ORTHOS2_WEB_SERVICE_PORT:-8000}"
+    until curl --output /dev/null --silent --head --fail -H "Host: localhost" \
+        "http://${ORTHOS2_WEB_SERVICE_HOST}:${ORTHOS2_WEB_SERVICE_PORT}"; do
         echo "Waiting for main application to become available"
         sleep 5
     done
