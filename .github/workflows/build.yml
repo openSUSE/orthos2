@@ -1,0 +1,38 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  verify-production-uid:
+    runs-on: ubuntu-latest
+    # Skip on PRs from forks: the SCC_CREDENTIALS secret is not available to
+    # workflows triggered by fork PRs, so the job would fail before it can build.
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Create Credentials
+        env:
+          SCC_CREDENTIALS: ${{ secrets.SCC_CREDENTIALS }}
+        run: |
+          echo "$SCC_CREDENTIALS" > docker/secrets/SCCcredentials
+      - name: Build production image (not pushed anywhere)
+        run: |
+          DOCKER_BUILDKIT=1 docker build -f docker/orthos/production.dockerfile \
+            -t orthos2:ci-verify \
+            --secret id=SCCcredentials,src=docker/secrets/SCCcredentials \
+            --build-arg PROJECT=production docker/orthos
+      - name: Verify orthos UID/GID is pinned to 499/486
+        run: |
+          UID_ACTUAL=$(docker run --rm orthos2:ci-verify getent passwd orthos | cut -d: -f3)
+          GID_ACTUAL=$(docker run --rm orthos2:ci-verify getent passwd orthos | cut -d: -f4)
+          echo "orthos uid=$UID_ACTUAL gid=$GID_ACTUAL"
+          test "$UID_ACTUAL" = "499"
+          test "$GID_ACTUAL" = "486"
