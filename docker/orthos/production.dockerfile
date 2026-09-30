@@ -28,6 +28,17 @@ COPY settings /etc/orthos2/settings
 
 COPY production-server.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+# system-user-orthos.conf allocates the orthos user/group dynamically (systemd-sysusers,
+# ID "-") so that bare-metal/VM RPM installs sharing a host with other packages don't
+# collide. That dynamic ID isn't reproducible across image builds, which breaks anything
+# that needs a stable UID/GID for this image specifically (e.g. Kubernetes securityContext
+# and volume ownership) - so pin it here, in the image only, right after the RPM creates
+# the account and before anything else can create orthos-owned content. 499/486 are the
+# empirically-observed collision-free IDs sysusers already picks on this base image (uid
+# 499 is unused, but gid 499 is already taken by another system group, so sysusers falls
+# back to 486 for the group) - pinning them just makes that observed allocation
+# deterministic instead of leaving it to chance on future rebuilds.
+RUN usermod -u 499 orthos && groupmod -g 486 orthos
 # Create required directories. /var/lib/orthos2 is used as $HOME by the orthos
 # user - the orthos RPM ships a tmpfiles.d entry for it, but systemd-tmpfiles
 # doesn't run during `docker build`, so create/chown it explicitly here too.
