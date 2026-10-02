@@ -1,22 +1,32 @@
 import logging
-from typing import Callable, Optional, Tuple
+from typing import Callable, Dict, Optional, Tuple
 
+from django.conf import settings
+from django.core.cache import cache
 from django.utils import timezone
 
 from orthos2.data.models import Machine, ServerConfig
 from orthos2.taskmanager.models import Task
-from orthos2.utils.machinechecks import (
-    get_installations,
-    get_status_ip,
-    login_test,
-    nmap_check,
-    ping_check_ipv4,
-    ping_check_ipv6,
-)
+from orthos2.utils.machinechecks import get_installations, get_status_ip, login_test
 from orthos2.utils.misc import sync, wrap80
+from orthos2.utils.prometheus import Prometheus
 from orthos2.utils.ssh import SSH
 
 logger = logging.getLogger("tasks")
+
+
+def _cached_probe_success_map(job: str) -> Dict[str, bool]:
+    """
+    Fetch `Prometheus.probe_success_map(job)`, cached briefly so a fleet-wide nightly rescan
+    (many `MachineCheck` task instances running close together) only queries Prometheus once
+    per job rather than once per machine.
+    """
+    result = cache.get_or_set(
+        f"prometheus_probe_success_map:{job}",
+        lambda: Prometheus.get_instance().probe_success_map(job),
+        timeout=300,
+    )
+    return result if result is not None else {}
 
 
 class MachineCheck(Task):
@@ -67,8 +77,8 @@ class MachineCheck(Task):
     def __init__(self, fqdn: str, scan: int) -> None:
         self.fqdn = fqdn
         self.scan = scan
-        self.machine = None
-        self.online = None
+        self.machine: Optional[Machine] = None
+        self.online: Optional[bool] = None
 
     def _get_methods(self) -> Tuple[Callable[[], None], ...]:
         """
@@ -94,7 +104,10 @@ class MachineCheck(Task):
 
     def status(self) -> None:
         """
-        Checks ping, SSH and login status.
+        Checks ping, SSH and login status. Ping (IPv4/IPv6) and SSH-port reachability are
+        sourced from Prometheus (the mgmt_cluster monitoring stack scrapes blackbox_exporter
+        probes for every host and BMC); only the SSH login test is still performed locally,
+        since no exporter can test a real login without being handed credentials.
         """
         if self.machine is None:
             raise ValueError("Machine not set!")
@@ -105,22 +118,41 @@ class MachineCheck(Task):
         self.machine.status_login = False
 
         if self.machine.check_connectivity > Machine.Connectivity.NONE:
-            if ping_check_ipv4(self.fqdn, timeout=1):
+            ipv4_map = _cached_probe_success_map(settings.PROMETHEUS_ICMP_IPV4_JOB)
+            ipv6_map = _cached_probe_success_map(settings.PROMETHEUS_ICMP_IPV6_JOB)
+
+            if ipv4_map.get(self.fqdn):
                 self.machine.status_ipv4 = Machine.StatusIP.REACHABLE
-            if ping_check_ipv6(self.fqdn, timeout=1):
+            if ipv6_map.get(self.fqdn):
                 self.machine.status_ipv6 = Machine.StatusIP.REACHABLE
 
             if (
                 self.machine.status_ping
                 and self.machine.check_connectivity > Machine.Connectivity.PING
             ):
-                self.machine.status_ssh = nmap_check(self.fqdn)
+                ssh_map = _cached_probe_success_map(settings.PROMETHEUS_SSH_JOB)
+                self.machine.status_ssh = bool(ssh_map.get(self.fqdn))
 
                 if (
                     self.machine.status_ssh
                     and self.machine.check_connectivity > Machine.Connectivity.SSH
                 ):
                     self.machine.status_login = login_test(self.fqdn)
+
+            if self.machine.has_bmc():
+                bmc = self.machine.bmc
+                bmc.status_ipv4 = (
+                    Machine.StatusIP.REACHABLE
+                    if ipv4_map.get(bmc.fqdn)
+                    else Machine.StatusIP.UNREACHABLE
+                )
+                bmc.status_ipv6 = (
+                    Machine.StatusIP.REACHABLE
+                    if ipv6_map.get(bmc.fqdn)
+                    else Machine.StatusIP.UNREACHABLE
+                )
+                bmc.last_check = timezone.now()
+                bmc.save()
         self.online = bool(self.machine.status_login)
         self.machine.save()
 
