@@ -1,5 +1,8 @@
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "orthos2.settings"
+# Keep the Django test run scoped to the app; docker/cobbler-http-sd/tests is a standalone,
+# non-Django test suite with its own dedicated runner (see docker/cobbler-http-sd/README).
+testpaths = ["orthos2"]
 
 [tool.isort]
 profile = "black"
