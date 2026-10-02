@@ -27,6 +27,7 @@
         <th width="80px">IPv6</th>
         <th width="80px">SSH</th>
         <th width="80px">Login</th>
+        <th width="80px">BMC</th>
       </tr>
     </thead>
     <tbody>
@@ -81,6 +82,7 @@
         {% status_ipv6 machine %}
         {% status_ssh machine %}
         {% status_login machine %}
+        {% status_bmc machine %}
 
       </tr>
     {% endfor %}

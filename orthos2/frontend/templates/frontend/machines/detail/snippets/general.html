@@ -83,6 +83,18 @@
       <td>{{ machine.netbox_last_fetch_attempt }}</td>
     </tr>
     {% endif %}
+    {% if GRAFANA_URL %}
+    <tr>
+      <td class="th fw-bold">Grafana Dashboard</td>
+      <td><a href="{{ GRAFANA_URL }}/d/{{ GRAFANA_HOST_DASHBOARD_UID }}/orthos-2-host-details?var-instance={{ machine.fqdn|urlencode }}">Host: {{ machine.fqdn }}</a></td>
+    </tr>
+    {% if machine.bmc %}
+    <tr>
+      <td class="th fw-bold">Grafana Dashboard (BMC)</td>
+      <td><a href="{{ GRAFANA_URL }}/d/{{ GRAFANA_HOST_DASHBOARD_UID }}/orthos-2-host-details?var-instance={{ machine.bmc.fqdn|urlencode }}">BMC: {{ machine.bmc.fqdn }}</a></td>
+    </tr>
+    {% endif %}
+    {% endif %}
     {% if perms.data and perms.data.change_enclosure %}
     <tr>
       <td class="th fw-bold">Enclosure</td>
