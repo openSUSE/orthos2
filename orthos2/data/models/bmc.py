@@ -28,6 +28,32 @@ logger = logging.getLogger("models")
 
 
 class BMC(models.Model):
+    class StatusIP:
+        """
+        Mirrors `orthos2.data.models.machine.Machine.StatusIP` (same integer values, so the
+        values stored here remain comparable against `Machine.StatusIP.*`). Duplicated instead
+        of imported because `machine.py` already imports `BMC`, so importing `Machine` here
+        would create a circular import.
+        """
+
+        UNREACHABLE = 0
+        REACHABLE = 1
+        CONFIRMED = 2
+        MAC_MISMATCH = 3
+        ADDRESS_MISMATCH = 4
+        NO_ADDRESS = 5
+        AF_DISABLED = 6
+
+        CHOICE = (
+            (UNREACHABLE, "unreachable"),
+            (REACHABLE, "reachable"),
+            (CONFIRMED, "confirmed"),
+            (MAC_MISMATCH, "MAC mismatch"),
+            (ADDRESS_MISMATCH, "address mismatch"),
+            (NO_ADDRESS, "no address assigned"),
+            (AF_DISABLED, "address-family disabled"),
+        )
+
     username: "models.CharField[str, str]" = models.CharField(
         max_length=256,
         blank=True,
@@ -83,6 +109,38 @@ class BMC(models.Model):
         "NetBox Last Fetched at",
         null=True,
         blank=True,
+    )
+
+    status_ipv4: "models.SmallIntegerField[int, int]" = models.SmallIntegerField(
+        "Status IPv4",
+        choices=StatusIP.CHOICE,
+        editable=False,
+        default=StatusIP.UNREACHABLE,
+        help_text="Does this IPv4 address respond to ping?",
+    )
+
+    status_ipv6: "models.SmallIntegerField[int, int]" = models.SmallIntegerField(
+        "Status IPv6",
+        choices=StatusIP.CHOICE,
+        editable=False,
+        default=StatusIP.UNREACHABLE,
+        help_text="Does this IPv6 address respond to ping?",
+    )
+
+    last_check: "models.DateTimeField[datetime.datetime, datetime.datetime]" = (
+        models.DateTimeField(
+            "Checked at",
+            editable=False,
+            default=datetime.datetime(
+                year=2016,
+                month=1,
+                day=1,
+                hour=10,
+                minute=0,
+                second=00,
+                tzinfo=datetime.timezone.utc,
+            ),
+        )
     )
 
     netboxorthoscomparisionruns: "RelatedManager[NetboxOrthosComparisionRun]"

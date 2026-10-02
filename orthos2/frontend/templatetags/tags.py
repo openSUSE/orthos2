@@ -5,7 +5,7 @@ from django.http import HttpRequest
 from django.urls import resolve, reverse  # type: ignore
 from django.utils.safestring import SafeString, mark_safe
 
-from orthos2.data.models import Machine, NetboxOrthosComparisionRun, ServerConfig
+from orthos2.data.models import BMC, Machine, NetboxOrthosComparisionRun, ServerConfig
 
 register = template.Library()
 
@@ -168,6 +168,60 @@ def status_ipv6(machine: Machine) -> SafeString:
         result = '<td class="bg-warning text-center" title="{}"><i class="fa-solid fa-triangle-exclamation"></i></td>'
 
     return mark_safe(result.format(text))
+
+
+@register.simple_tag
+def status_bmc_ipv4(bmc: BMC) -> SafeString:
+    text = dict(BMC.StatusIP.CHOICE).get(bmc.status_ipv4)
+
+    if bmc.status_ipv4 == BMC.StatusIP.UNREACHABLE:
+        result = '<td class="red text-center" title="{}"><i class="fa-solid fa-xmark"></i></td>'
+    elif bmc.status_ipv4 in (BMC.StatusIP.REACHABLE, BMC.StatusIP.CONFIRMED):
+        result = '<td class="green text-center" title="{}"><i class="fa-solid fa-check"></i></td>'
+    elif bmc.status_ipv4 == BMC.StatusIP.AF_DISABLED:
+        result = '<td class="green text-center" title="{}"><i class="fa-solid fa-circle-minus"></i></td>'
+    else:
+        result = '<td class="bg-warning text-center" title="{}"><i class="fa-solid fa-triangle-exclamation"></i></td>'
+
+    return mark_safe(result.format(text))
+
+
+@register.simple_tag
+def status_bmc_ipv6(bmc: BMC) -> SafeString:
+    text = dict(BMC.StatusIP.CHOICE).get(bmc.status_ipv6)
+
+    if bmc.status_ipv6 == BMC.StatusIP.UNREACHABLE:
+        result = '<td class="red text-center" title="{}"><i class="fa-solid fa-xmark"></i></td>'
+    elif bmc.status_ipv6 in (BMC.StatusIP.REACHABLE, BMC.StatusIP.CONFIRMED):
+        result = '<td class="green text-center" title="{}"><i class="fa-solid fa-check"></i></td>'
+    elif bmc.status_ipv6 == BMC.StatusIP.AF_DISABLED:
+        result = '<td class="green text-center" title="{}"><i class="fa-solid fa-circle-minus"></i></td>'
+    else:
+        result = '<td class="bg-warning text-center" title="{}"><i class="fa-solid fa-triangle-exclamation"></i></td>'
+
+    return mark_safe(result.format(text))
+
+
+@register.simple_tag
+def status_bmc(machine: Machine) -> SafeString:
+    """
+    Single combined BMC-reachability indicator (IPv4 or IPv6), for use in dense list views.
+    See `status_bmc_ipv4`/`status_bmc_ipv6` for the separate per-protocol indicators.
+    """
+    if not machine.has_bmc():
+        return mark_safe(
+            '<td class="text-center"><span class="text-small">-</span></td>'
+        )
+
+    bmc = machine.bmc
+    reachable_states = (BMC.StatusIP.REACHABLE, BMC.StatusIP.CONFIRMED)
+    if bmc.status_ipv4 in reachable_states or bmc.status_ipv6 in reachable_states:
+        return mark_safe(
+            '<td class="green text-center" title="BMC reachable"><i class="fa-solid fa-check"></i></td>'
+        )
+    return mark_safe(
+        '<td class="red text-center" title="BMC unreachable"><i class="fa-solid fa-xmark"></i></td>'
+    )
 
 
 @register.simple_tag

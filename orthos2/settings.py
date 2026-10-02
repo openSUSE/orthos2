@@ -125,6 +125,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "orthos2.frontend.context_processors.netbox_url",
+                "orthos2.frontend.context_processors.grafana_url",
             ],
         },
     },
@@ -304,6 +305,19 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 NETBOX_URL = os.environ.get("ORTHOS2_NETBOX_URL", "")
 NETBOX_TOKEN = os.environ.get("ORTHOS2_NETBOX_TOKEN", "")
 NETBOX_AUTH_SCHEME = os.environ.get("ORTHOS2_NETBOX_AUTH_SCHEME", "Bearer")
+
+PROMETHEUS_URL = os.environ.get("ORTHOS2_PROMETHEUS_URL", "")
+PROMETHEUS_ICMP_IPV4_JOB = os.environ.get(
+    "ORTHOS2_PROMETHEUS_ICMP_IPV4_JOB", "icmp-arch-ipv4"
+)
+PROMETHEUS_ICMP_IPV6_JOB = os.environ.get(
+    "ORTHOS2_PROMETHEUS_ICMP_IPV6_JOB", "icmp-arch-ipv6"
+)
+PROMETHEUS_SSH_JOB = os.environ.get("ORTHOS2_PROMETHEUS_SSH_JOB", "ssh-arch")
+GRAFANA_URL = os.environ.get("ORTHOS2_GRAFANA_URL", "")
+GRAFANA_HOST_DASHBOARD_UID = os.environ.get(
+    "ORTHOS2_GRAFANA_HOST_DASHBOARD_UID", "fd234888-992a-4855-a11d-22669e3c3b60"
+)
 
 # Check for alternative settings file. If this file exists, we use it and evaluate the code.
 # This is intended to be used for production mode.

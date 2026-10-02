@@ -5,16 +5,19 @@ NO_CACHE ?=
 DOCKER_BUILD := DOCKER_BUILDKIT=1 docker build $(if $(NO_CACHE),--no-cache,)
 
 COMPOSE_DEV := docker compose -f compose.common.yaml -f compose.dev.yaml -f compose.dev.override.yml
+COMPOSE_DEV_MONITORING := $(COMPOSE_DEV) -f compose.monitoring.yml
 COMPOSE_TESTING := docker compose -f compose.common.yaml -f compose.testing.yaml -f compose.dev.override.yml
 COMPOSE_PROD := docker compose -f compose.yaml
 
 .PHONY: help \
 	build-dev up-dev down-dev logs-dev clean-dev test-dev \
+	up-dev-monitoring down-dev-monitoring logs-dev-monitoring \
 	pull-testing build-testing netbox-token up-testing down-testing logs-testing clean-testing \
 	pull-prod up-prod down-prod logs-prod
 
 help:
 	@echo "Targets: build-dev up-dev down-dev logs-dev clean-dev | pull-testing build-testing up-testing down-testing logs-testing clean-testing | pull-prod up-prod down-prod logs-prod"
+	@echo "Optional dev add-on: up-dev-monitoring down-dev-monitoring logs-dev-monitoring (Prometheus/Grafana/Blackbox Exporter, see docker/monitoring/README.md)"
 	@echo "Set NO_CACHE=1 to force --no-cache on any build-* target."
 	@echo "Run pull-testing/pull-prod first to fetch OBS images rebuilt under the same tag before building/starting."
 
@@ -40,6 +43,16 @@ test-dev:
 	$(COMPOSE_DEV) exec -it orthos2 bash -c 'coverage run --source="." -m pytest orthos2'
 	$(COMPOSE_DEV) exec -it orthos2 bash -c 'coverage report'
 	$(COMPOSE_DEV) exec -it orthos2 bash -c 'coverage xml'
+
+# --- optional dev add-on: Prometheus/Grafana/Blackbox Exporter (see docker/monitoring/README.md) ---
+up-dev-monitoring: build-dev
+	$(COMPOSE_DEV_MONITORING) up -d
+
+down-dev-monitoring:
+	$(COMPOSE_DEV_MONITORING) down
+
+logs-dev-monitoring:
+	$(COMPOSE_DEV_MONITORING) logs -f
 
 # --- testing stack (docker/orthos/production.dockerfile, exercised without a full prod env) ---
 # OBS rebuilds these base images on transitive dependency changes without changing the

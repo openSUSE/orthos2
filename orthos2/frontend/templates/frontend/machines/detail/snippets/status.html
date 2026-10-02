@@ -7,10 +7,12 @@
 <table class="table table-striped small table-bordered table-fixed">
   <thead class="thead-default text-start">
     <tr>
-      <th width="25%">IPv4</th>
-      <th width="25%">IPv6</th>
-      <th width="25%">SSH</th>
-      <th width="25%">Login</th>
+      <th width="16%">IPv4</th>
+      <th width="16%">IPv6</th>
+      <th width="16%">SSH</th>
+      <th width="16%">Login</th>
+      <th width="16%">BMC IPv4</th>
+      <th width="16%">BMC IPv6</th>
     </tr>
   </thead>
   <tbody>
@@ -19,6 +21,13 @@
       {% status_ipv6 machine %}
       {% status_ssh machine %}
       {% status_login machine %}
+      {% if machine.bmc %}
+        {% status_bmc_ipv4 machine.bmc %}
+        {% status_bmc_ipv6 machine.bmc %}
+      {% else %}
+        <td class="text-center"><span class="text-small">-</span></td>
+        <td class="text-center"><span class="text-small">-</span></td>
+      {% endif %}
     </tr>
   </tbody>
 </table>

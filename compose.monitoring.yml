@@ -1,0 +1,64 @@
+# Optional add-on for the dev stack: a minimal Prometheus + Grafana + Blackbox Exporter setup
+# for exercising ORTHOS2_PROMETHEUS_URL/ORTHOS2_GRAFANA_URL locally. Not included by `make
+# up-dev` - start it explicitly via `make up-dev-monitoring` (see docker/monitoring/README.md).
+services:
+  prometheus:
+    image: prom/prometheus:v3.13.4
+    hostname: prometheus.orthos2.test
+    networks:
+      - orthos
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus-http.rule=Host(`prometheus.orthos2.test`)"
+      - "traefik.http.routers.prometheus-http.entrypoints=web"
+      - "traefik.http.routers.prometheus-https.rule=Host(`prometheus.orthos2.test`)"
+      - "traefik.http.routers.prometheus-https.entrypoints=websecure"
+      - "traefik.http.routers.prometheus-https.tls=true"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+    volumes:
+      - ./docker/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro,z
+
+  blackbox_exporter:
+    image: prom/blackbox-exporter:v0.28.0
+    networks:
+      - orthos
+    # ICMP probes need a raw socket.
+    cap_add:
+      - NET_RAW
+    volumes:
+      - ./docker/monitoring/blackbox.yml:/etc/blackbox_exporter/config.yml:ro,z
+
+  grafana:
+    image: grafana/grafana:13.2.3
+    hostname: grafana.orthos2.test
+    networks:
+      - orthos
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana-http.rule=Host(`grafana.orthos2.test`)"
+      - "traefik.http.routers.grafana-http.entrypoints=web"
+      - "traefik.http.routers.grafana-https.rule=Host(`grafana.orthos2.test`)"
+      - "traefik.http.routers.grafana-https.entrypoints=websecure"
+      - "traefik.http.routers.grafana-https.tls=true"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_SERVER_DOMAIN: grafana.orthos2.test
+      GF_SERVER_ROOT_URL: "https://grafana.orthos2.test"
+    volumes:
+      - ./docker/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro,z
+      - ./docker/monitoring/grafana/dashboards:/var/lib/grafana/dashboards/orthos2:ro,z
+    depends_on:
+      - prometheus
+
+  orthos2:
+    environment:
+      ORTHOS2_PROMETHEUS_URL: "http://prometheus:9090"
+      ORTHOS2_GRAFANA_URL: "https://grafana.orthos2.test"
+
+  orthos2_taskmanager:
+    environment:
+      ORTHOS2_PROMETHEUS_URL: "http://prometheus:9090"
+      ORTHOS2_GRAFANA_URL: "https://grafana.orthos2.test"
