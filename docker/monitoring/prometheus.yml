@@ -1,0 +1,66 @@
+global:
+  scrape_interval: 30s
+
+# Mirrors the mgmt_cluster production scrape config (orthos2-gitops's
+# 02-kube-prometheus-stack-release.yml) closely enough that setting
+# ORTHOS2_PROMETHEUS_URL=http://prometheus:9090 locally exercises the same
+# job names orthos2/settings.py defaults to (icmp-arch-ipv4/ipv6, ssh-arch).
+scrape_configs:
+  - job_name: icmp-arch-ipv4
+    metrics_path: /probe
+    params:
+      module: [icmpv4]
+    http_sd_configs:
+      - url: http://cobbler_http_sd:8080/sd
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_cobbler_has_ipv4]
+        regex: "true"
+        action: keep
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox_exporter:9115
+
+  - job_name: icmp-arch-ipv6
+    metrics_path: /probe
+    params:
+      module: [icmpv6]
+    http_sd_configs:
+      - url: http://cobbler_http_sd:8080/sd
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_cobbler_has_ipv6]
+        regex: "true"
+        action: keep
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox_exporter:9115
+
+  - job_name: ssh-arch
+    metrics_path: /probe
+    params:
+      module: [ssh_banner]
+    http_sd_configs:
+      - url: http://cobbler_http_sd:8080/sd
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_cobbler_role]
+        regex: "default"
+        action: keep
+      # `instance` must stay the bare fqdn (matching icmp-arch-ipv4/ipv6 and what
+      # orthos2's MachineCheck.status() looks up by) - only __param_target (what
+      # blackbox_exporter actually connects to) gets the :22 suffix.
+      - source_labels: [__address__]
+        target_label: instance
+      - source_labels: [__address__]
+        regex: "(.*)"
+        replacement: "${1}:22"
+        target_label: __param_target
+      - target_label: __address__
+        replacement: blackbox_exporter:9115

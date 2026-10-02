@@ -1,0 +1,12 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    # Matches the datasource uid baked into every panel of the dashboards in
+    # ../dashboards (copied from orthos2-gitops's dashboard ConfigMap), so they work
+    # unmodified against this local datasource.
+    uid: prometheus-orthos2
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true

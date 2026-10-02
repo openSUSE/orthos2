@@ -1,0 +1,22 @@
+# Same module definitions as orthos2-gitops's 03-blackbox-exporter-release.yml.
+modules:
+  icmpv4:
+    prober: icmp
+    timeout: 5s
+    icmp:
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: false
+  icmpv6:
+    prober: icmp
+    timeout: 5s
+    icmp:
+      preferred_ip_protocol: "ip6"
+      ip_protocol_fallback: false
+  ssh_banner:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: false
+      query_response:
+        - expect: "^SSH-2.0-"
