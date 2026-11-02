@@ -13,7 +13,7 @@ from orthos2.data.models import Architecture, DeviceType, Machine, Manufacturer,
 
 NETBOX_DEVICE_RECORD = {
     "name": "newmachine.orthos2.test",
-    "custom_fields": {"arch": "x86_64"},
+    "custom_fields": {"arch": {"value": "x86_64", "label": "x86_64"}},
     "device_type": {
         "id": 6,
         "manufacturer": {"id": 4, "name": "AMD"},
@@ -23,7 +23,7 @@ NETBOX_DEVICE_RECORD = {
 
 NETBOX_VM_RECORD = {
     "name": "newvm.orthos2.test",
-    "custom_fields": {"arch": "x86_64"},
+    "custom_fields": {"arch": {"value": "x86_64", "label": "x86_64"}},
 }
 
 

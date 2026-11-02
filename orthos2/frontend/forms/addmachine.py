@@ -10,7 +10,7 @@ from django.views.generic.edit import FormView
 from requests import HTTPError
 
 from orthos2.data.models import Architecture, DeviceType, Enclosure, Machine, System
-from orthos2.utils.netbox import Netbox
+from orthos2.utils.netbox import Netbox, unwrap_custom_field_choice
 
 
 def safe_fetch_device(netbox_api: Netbox, netbox_id: str) -> Dict[str, Any]:
@@ -126,7 +126,9 @@ class AddMachineFormView(FormView):  # type: ignore
             # Try next object type
             pass
         # Create new machine
-        machine_arch = netbox_object.get("custom_fields", {}).get("arch")
+        machine_arch = unwrap_custom_field_choice(
+            netbox_object.get("custom_fields", {}).get("arch")
+        )
         if machine_arch is None:
             form.add_error(
                 "netbox_id",

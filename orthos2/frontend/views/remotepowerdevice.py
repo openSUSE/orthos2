@@ -32,7 +32,7 @@ from orthos2.data.models import (
 from orthos2.taskmanager import tasks
 from orthos2.taskmanager.models import TaskManager
 from orthos2.utils.misc import get_domain
-from orthos2.utils.netbox import Netbox
+from orthos2.utils.netbox import Netbox, unwrap_custom_field_choice
 
 if TYPE_CHECKING:
     from orthos2.types import AuthenticatedHttpRequest
@@ -215,7 +215,9 @@ class NewRemotePowerDevice(PermissionRequiredMixin, CreateView):
             )
             return super().form_invalid(form)  # type: ignore
         # Fetch architecture from NetBox
-        remotepowerdevice_arch = netbox_object.get("custom_fields", {}).get("arch")
+        remotepowerdevice_arch = unwrap_custom_field_choice(
+            netbox_object.get("custom_fields", {}).get("arch")
+        )
         if remotepowerdevice_arch is None:
             form.add_error(
                 "netbox_id",

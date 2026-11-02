@@ -17,6 +17,16 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 logger = logging.getLogger("utils")
 
 
+def unwrap_custom_field_choice(value: Optional[Any]) -> Optional[str]:
+    """
+    NetBox 4.7+ returns custom select/choice fields as either `None` or a
+    `{"value": ..., "label": ...}` sub-object instead of a plain scalar.
+    """
+    if isinstance(value, dict):
+        return value.get("value")
+    return value
+
+
 class REST:
     def __init__(self, host: str, token: str):
         self.base_url = "{}/api".format(host)

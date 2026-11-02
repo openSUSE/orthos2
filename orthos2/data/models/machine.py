@@ -51,7 +51,7 @@ from orthos2.utils.misc import (
     ip_strip_subnet_size,
     is_dns_resolvable,
 )
-from orthos2.utils.netbox import Netbox
+from orthos2.utils.netbox import Netbox, unwrap_custom_field_choice
 
 if TYPE_CHECKING:
     from django.db.models.fields.related_descriptors import RelatedManager
@@ -734,12 +734,27 @@ class Machine(models.Model):
             run_id=run_obj,
             property_name="architecture",
             orthos_result=self.architecture.name or "<not set>",
-            netbox_result=netbox_machine.get("custom_fields", {}).get("arch")
+            netbox_result=unwrap_custom_field_choice(
+                netbox_machine.get("custom_fields", {}).get("arch")
+            )
             or "<not set>",
         ).save()
         # SystemType
         # Serial Number
+        NetboxOrthosComparisionResult(
+            run_id=run_obj,
+            property_name="serial_number",
+            orthos_result=self.serial_number or "<not set>",
+            netbox_result=netbox_machine.get("serial") or "<not set>",
+        ).save()
         # Product Code
+        NetboxOrthosComparisionResult(
+            run_id=run_obj,
+            property_name="product_code",
+            orthos_result=self.product_code or "<not set>",
+            netbox_result=netbox_machine.get("custom_fields", {}).get("product_code")
+            or "<not set>",
+        ).save()
         # Description
         NetboxOrthosComparisionResult(
             run_id=run_obj,
@@ -747,8 +762,25 @@ class Machine(models.Model):
             orthos_result=self.comment or "<not set>",
             netbox_result=netbox_machine.get("description", "<not set>"),
         ).save()
-        # CPU Cores, Sockets, Threads
-        # RAM (GB)
+        # CPU Cores, Sockets, Threads and RAM (MB) are only tracked on NetBox
+        # Device objects, not VirtualMachine objects.
+        if not self.system.virtual:
+            custom_fields = netbox_machine.get("custom_fields", {})
+            for property_name, orthos_value in (
+                ("cpu_sockets", self.cpu_physical),
+                ("cpu_cores", self.cpu_cores),
+                ("cpu_threads", self.cpu_threads),
+                ("ram_amount", self.ram_amount),
+            ):
+                netbox_value = custom_fields.get(property_name)
+                NetboxOrthosComparisionResult(
+                    run_id=run_obj,
+                    property_name=property_name,
+                    orthos_result=str(orthos_value) if orthos_value else "<not set>",
+                    netbox_result=(
+                        str(netbox_value) if netbox_value is not None else "<not set>"
+                    ),
+                ).save()
         # dmidecode
         # lsscsi
         # lspci
