@@ -10,47 +10,48 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import app  # noqa: E402
 
-SYSTEM_WITH_BOTH_INTERFACES = {
-    "name": "host1",
-    "interfaces": {
-        "default": {
-            "dns_name": "host1.example.org",
-            "ip_address": "10.0.0.1",
-            "ipv6_address": "",
-        },
-        "bmc": {
-            "dns_name": "host1-sp.example.org",
-            "ip_address": "10.0.0.2",
-            "ipv6_address": "",
-        },
+INTERFACES_HOST1_BOTH = [
+    {
+        "name": "host1-default",
+        "mac_address": "00:11:22:33:44:01",
+        "dns": {"name": "host1.example.org"},
+        "ipv4": {"address": "10.0.0.1"},
+        "ipv6": {"address": ""},
     },
-}
+    {
+        "name": "host1-bmc",
+        "mac_address": "00:11:22:33:44:02",
+        "dns": {"name": "host1-sp.example.org"},
+        "ipv4": {"address": "10.0.0.2"},
+        "ipv6": {"address": ""},
+    },
+]
 
-SYSTEM_WITH_UNKNOWN_INTERFACE = {
-    "name": "weird",
-    "interfaces": {
-        "eth1": {
-            "dns_name": "weird-eth1.example.org",
-            "ip_address": "10.0.0.3",
-            "ipv6_address": "",
-        },
+INTERFACES_UNKNOWN_ROLE = [
+    {
+        "name": "weird-eth1",
+        "mac_address": "00:11:22:33:44:03",
+        "dns": {"name": "weird-eth1.example.org"},
+        "ipv4": {"address": "10.0.0.3"},
+        "ipv6": {"address": ""},
     },
-}
+]
 
-SYSTEM_WITHOUT_ADDRESSES = {
-    "name": "noaddr",
-    "interfaces": {
-        "default": {
-            "dns_name": "noaddr.example.org",
-            "ip_address": "",
-            "ipv6_address": "",
-        },
+INTERFACES_WITHOUT_ADDRESSES = [
+    {
+        "name": "noaddr-default",
+        "mac_address": "00:11:22:33:44:04",
+        "dns": {"name": "noaddr.example.org"},
+        "ipv4": {"address": ""},
+        "ipv6": {"address": ""},
     },
-}
+]
 
 
 def test_build_sd_groups_normal_parse():
-    with patch.object(app, "fetch_systems", return_value=[SYSTEM_WITH_BOTH_INTERFACES]):
+    with patch.object(
+        app, "fetch_network_interfaces", return_value=INTERFACES_HOST1_BOTH
+    ):
         groups = app.build_sd_groups(
             [{"url": "http://cobbler.example.com/cobbler_api"}]
         )
@@ -70,8 +71,8 @@ def test_build_sd_groups_normal_parse():
 def test_build_sd_groups_skips_unknown_interfaces_and_empty_addresses():
     with patch.object(
         app,
-        "fetch_systems",
-        return_value=[SYSTEM_WITH_UNKNOWN_INTERFACE, SYSTEM_WITHOUT_ADDRESSES],
+        "fetch_network_interfaces",
+        return_value=INTERFACES_UNKNOWN_ROLE + INTERFACES_WITHOUT_ADDRESSES,
     ):
         groups = app.build_sd_groups(
             [{"url": "http://cobbler.example.com/cobbler_api"}]
@@ -84,9 +85,9 @@ def test_build_sd_groups_skips_a_server_that_errors_but_keeps_others():
     def fake_fetch(server):
         if server["url"] == "http://down.example.com/cobbler_api":
             raise OSError("connection refused")
-        return [SYSTEM_WITH_BOTH_INTERFACES]
+        return INTERFACES_HOST1_BOTH
 
-    with patch.object(app, "fetch_systems", side_effect=fake_fetch):
+    with patch.object(app, "fetch_network_interfaces", side_effect=fake_fetch):
         groups = app.build_sd_groups(
             [
                 {"url": "http://down.example.com/cobbler_api"},
@@ -101,23 +102,25 @@ def test_build_sd_groups_empty_server_list_returns_empty_list():
     assert app.build_sd_groups([]) == []
 
 
-def test_fetch_systems_anonymous_when_no_credentials():
+def test_fetch_network_interfaces_anonymous_when_no_credentials():
     proxy = MagicMock()
-    proxy.get_systems.return_value = [SYSTEM_WITH_BOTH_INTERFACES]
+    proxy.get_network_interfaces.return_value = INTERFACES_HOST1_BOTH
 
     with patch.object(xmlrpc.client, "ServerProxy", return_value=proxy):
-        systems = app.fetch_systems({"url": "http://cobbler.example.com/cobbler_api"})
+        interfaces = app.fetch_network_interfaces(
+            {"url": "http://cobbler.example.com/cobbler_api"}
+        )
 
     proxy.login.assert_not_called()
-    assert systems == [SYSTEM_WITH_BOTH_INTERFACES]
+    assert interfaces == INTERFACES_HOST1_BOTH
 
 
-def test_fetch_systems_logs_in_when_credentials_present():
+def test_fetch_network_interfaces_logs_in_when_credentials_present():
     proxy = MagicMock()
-    proxy.get_systems.return_value = []
+    proxy.get_network_interfaces.return_value = []
 
     with patch.object(xmlrpc.client, "ServerProxy", return_value=proxy):
-        app.fetch_systems(
+        app.fetch_network_interfaces(
             {
                 "url": "http://cobbler.example.com/cobbler_api",
                 "username": "testuser",
@@ -128,13 +131,15 @@ def test_fetch_systems_logs_in_when_credentials_present():
     proxy.login.assert_called_once_with("testuser", "testpass")
 
 
-def test_fetch_systems_raises_on_non_list_result():
+def test_fetch_network_interfaces_raises_on_non_list_result():
     proxy = MagicMock()
-    proxy.get_systems.return_value = {"not": "a list"}
+    proxy.get_network_interfaces.return_value = {"not": "a list"}
 
     with patch.object(xmlrpc.client, "ServerProxy", return_value=proxy):
         with pytest.raises(ValueError):
-            app.fetch_systems({"url": "http://cobbler.example.com/cobbler_api"})
+            app.fetch_network_interfaces(
+                {"url": "http://cobbler.example.com/cobbler_api"}
+            )
 
 
 def test_load_server_config(tmp_path):
