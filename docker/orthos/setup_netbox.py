@@ -389,21 +389,6 @@ def main():
         )
     except requests.exceptions.RequestException:
         pass
-    # Create Custom Field Choice Set
-    try:
-        netbox.post_custom_field_choice_sets(
-            {
-                "name": "fence agent choices",
-                "extra_choices": [
-                    ["redfish", "redfish"],
-                    ["ipmilanplus", "ipmilanplus"],
-                    ["eaton_ssh", "eaton_ssh"],
-                ],
-                "order_alphabetically": True,
-            }
-        )
-    except requests.exceptions.RequestException:
-        pass
     # Create Custom Field "arch"
     try:
         netbox.post_custom_fields(
@@ -436,12 +421,30 @@ def main():
                 "name": "fence_agent",
                 "label": "Fence Agent",
                 "object_types": ["dcim.interface"],
-                "type": "select",
-                "choice_set": {"name": "fence agent choices"},
+                "type": "text",
             }
         )
     except requests.exceptions.RequestException:
         pass
+    # Create Custom Fields "cpu_sockets", "cpu_cores", "cpu_threads", "ram_amount"
+    # These only exist on NetBox Device objects, not VirtualMachine objects.
+    for cf_name, cf_label in (
+        ("cpu_sockets", "CPU Sockets"),
+        ("cpu_cores", "CPU Cores"),
+        ("cpu_threads", "CPU Threads"),
+        ("ram_amount", "RAM Amount (MB)"),
+    ):
+        try:
+            netbox.post_custom_fields(
+                {
+                    "name": cf_name,
+                    "label": cf_label,
+                    "object_types": ["dcim.device"],
+                    "type": "integer",
+                }
+            )
+        except requests.exceptions.RequestException:
+            pass
     # Create Site Group
     try:
         netbox.post_site_group(
@@ -611,7 +614,16 @@ def main():
         site_orthos2,
     )
     netbox.patch_device(
-        device_standalone.get("id", -1), {"custom_fields": {"arch": "x86_64"}}
+        device_standalone.get("id", -1),
+        {
+            "custom_fields": {
+                "arch": "x86_64",
+                "cpu_sockets": 2,
+                "cpu_cores": 64,
+                "cpu_threads": 128,
+                "ram_amount": 524288,
+            }
+        },
     )
     # Create MAC address
     mac_address_normal = create_mac_address(netbox, "00:00:5E:00:53:01")
@@ -671,7 +683,16 @@ def main():
         site_orthos2,
     )
     netbox.patch_device(
-        device_kvm_host.get("id", -1), {"custom_fields": {"arch": "x86_64"}}
+        device_kvm_host.get("id", -1),
+        {
+            "custom_fields": {
+                "arch": "x86_64",
+                "cpu_sockets": 2,
+                "cpu_cores": 64,
+                "cpu_threads": 128,
+                "ram_amount": 1048576,
+            }
+        },
     )
     # Create Cluster Type
     cluster_type_kvm_host = netbox.post_cluster_type(
@@ -739,7 +760,16 @@ def main():
         site_orthos2,
     )
     netbox.patch_device(
-        device_cobbler.get("id", -1), {"custom_fields": {"arch": "x86_64"}}
+        device_cobbler.get("id", -1),
+        {
+            "custom_fields": {
+                "arch": "x86_64",
+                "cpu_sockets": 1,
+                "cpu_cores": 8,
+                "cpu_threads": 16,
+                "ram_amount": 32768,
+            }
+        },
     )
     # Create 2x PowerHMC VMs
     virtual_machine_hmc_1 = netbox.post_virtual_machine(
@@ -772,7 +802,16 @@ def main():
         site_orthos2,
     )
     netbox.patch_device(
-        device_ppc64le_lpar.get("id", -1), {"custom_fields": {"arch": "ppc64le"}}
+        device_ppc64le_lpar.get("id", -1),
+        {
+            "custom_fields": {
+                "arch": "ppc64le",
+                "cpu_sockets": 1,
+                "cpu_cores": 16,
+                "cpu_threads": 32,
+                "ram_amount": 65536,
+            }
+        },
     )
 
     # Create cluster for PPC64LE LPAR
@@ -820,7 +859,16 @@ def main():
     )
     netbox.patch_device(
         device_s390_chassis.get("id", -1),
-        {"rack": rack_s390.get("id"), "custom_fields": {"arch": "s390x"}},
+        {
+            "rack": rack_s390.get("id"),
+            "custom_fields": {
+                "arch": "s390x",
+                "cpu_sockets": 4,
+                "cpu_cores": 96,
+                "cpu_threads": 192,
+                "ram_amount": 2097152,
+            },
+        },
     )
     # Create S390 LPAR
     device_s390_lpar = create_device(
@@ -832,7 +880,16 @@ def main():
         site_orthos2,
     )
     netbox.patch_device(
-        device_s390_lpar.get("id", -1), {"custom_fields": {"arch": "s390x"}}
+        device_s390_lpar.get("id", -1),
+        {
+            "custom_fields": {
+                "arch": "s390x",
+                "cpu_sockets": 1,
+                "cpu_cores": 8,
+                "cpu_threads": 16,
+                "ram_amount": 32768,
+            }
+        },
     )
     # Create S390 Cluster
     cluster_s390_lpar = netbox.post_cluster(
@@ -870,7 +927,16 @@ def main():
         site_orthos2,
     )
     netbox.patch_device(
-        device_pikvm.get("id", -1), {"custom_fields": {"arch": "aarch64"}}
+        device_pikvm.get("id", -1),
+        {
+            "custom_fields": {
+                "arch": "aarch64",
+                "cpu_sockets": 1,
+                "cpu_cores": 4,
+                "cpu_threads": 4,
+                "ram_amount": 2048,
+            }
+        },
     )
     interface_pikvm = create_interface(netbox, "pikvm-v4.orthos2.test", "eth0")
     assign_ip_address_to_interface(netbox, ip_address_v4_pikvm, interface_pikvm)
