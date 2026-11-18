@@ -1,3 +1,30 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "orthos2"
+version = "1.22"
+description = "Machine administration server"
+readme = {file = "README.md", content-type = "text/markdown"}
+authors = [{name = "orthos team"}]
+license = "GPL-2.0-or-later"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+dynamic = ["dependencies"]
+
+[project.urls]
+Homepage = "https://github.com/openSUSE/orthos2"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+exclude = ["*tests*", "*docker*", "docs"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "orthos2.settings"
 # Keep the Django test run scoped to the app; docker/cobbler-http-sd/tests is a standalone,

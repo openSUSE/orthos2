@@ -42,6 +42,8 @@ BuildRequires:  python-rpm-macros
 BuildRequires:  sysuser-tools
 BuildRequires:  %{python_module devel}
 BuildRequires:  %{python_module setuptools}
+BuildRequires:  %{python_module pip}
+BuildRequires:  %{python_module wheel}
 BuildRequires:  %{python_module django >= 4.2}
 BuildRequires:  %{python_module django-extensions}
 BuildRequires:  %{python_module social-auth-app-django}
@@ -109,11 +111,11 @@ This subpackage contains the nginx configuration file for Orthos 2.
 
 %build
 %sysusers_generate_pre system-user-orthos.conf orthos system-user-orthos.conf
-%python_build
+%pyproject_wheel
 
 %install
 install -D -m 0644 system-user-orthos.conf %{buildroot}%{_sysusersdir}/system-user-orthos.conf
-%python_install
+%pyproject_install
 
 mkdir -p %{buildroot}%{_prefix}/bin
 %python_expand %fdupes %{buildroot}/%{$python_sitelib}/orthos2/
